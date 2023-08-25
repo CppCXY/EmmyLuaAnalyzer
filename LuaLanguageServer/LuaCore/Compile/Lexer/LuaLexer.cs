@@ -45,7 +45,7 @@ public class LuaLexer
                     {
                         Reader.Bump();
                         LexLongString(sep);
-                        return LuaTokenKind.TkLongString;
+                        return LuaTokenKind.TkLongComment;
                     }
                 }
 
@@ -147,8 +147,86 @@ public class LuaLexer
             {
                 return LexNumber();
             }
-            default:
+            case SourceReader.Eof:
+            {
                 return LuaTokenKind.TkEof;
+            }
+            case '/':
+            {
+                Reader.Bump();
+                if (Reader.CurrentChar != '/') return LuaTokenKind.TkDiv;
+                Reader.Bump();
+                return LuaTokenKind.TkIDiv;
+            }
+            case '*':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkMul;
+            }
+            case '+':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkPlus;
+            }
+            case '%':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkMod;
+            }
+            case '^':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkPow;
+            }
+            case '#':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkLen;
+            }
+            case '&':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkBitAnd;
+            }
+            case '|':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkBitOr;
+            }
+            case '(':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkLeftParen;
+            }
+            case ')':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkRightParen;
+            }
+            case '{':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkLeftBrace;
+            }
+            case '}':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkRightBrace;
+            }
+            case ']':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkRightBracket;
+            }
+            case ';':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkSemiColon;
+            }
+            // default:
+            // {
+            //
+            // }
         }
     }
 
@@ -191,15 +269,126 @@ public class LuaLexer
         return LuaTokenKind.TkLongString;
     }
 
+    private enum NumberState
+    {
+        Int,
+        Float,
+        Hex,
+        HexFloat,
+        WithExpo,
+    }
+
     private LuaTokenKind LexNumber()
     {
+        var state = NumberState.Int;
         var first = Reader.CurrentChar;
         Reader.Bump();
-        // 解析16进制整数
-        if (first == '0' && Reader.CurrentChar is 'x' or 'X') /* hexadecimal? */
+        switch (first)
+        {
+            case '0' when Reader.CurrentChar is 'X' or 'x':
+                Reader.Bump();
+                state = NumberState.Hex;
+                break;
+            case '.':
+                state = NumberState.Float;
+                break;
+        }
+
+        Reader.EatWhen(ch =>
+        {
+            switch (state)
+            {
+                case NumberState.Int:
+                {
+                    switch (ch)
+                    {
+                        case >= '0' and <= '9':
+                            return true;
+                        case '.':
+                            state = NumberState.Float;
+                            return true;
+                    }
+
+                    if (Reader.CurrentChar is not ('e' or 'E')) return false;
+                    if (Reader.CurrentChar is '+' or '-')
+                    {
+                        Reader.Bump();
+                    }
+
+                    state = NumberState.WithExpo;
+                    return true;
+                }
+                case NumberState.Float:
+                {
+                    if (ch is >= '0' and <= '9') return true;
+                    if (Reader.CurrentChar is not ('e' or 'E')) return false;
+                    if (Reader.CurrentChar is '+' or '-')
+                    {
+                        Reader.Bump();
+                    }
+
+                    state = NumberState.WithExpo;
+                    return true;
+                }
+                case NumberState.Hex:
+                {
+                    switch (ch)
+                    {
+                        case >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F':
+                            return true;
+                        case '.':
+                            state = NumberState.HexFloat;
+                            return true;
+                    }
+
+                    if (Reader.CurrentChar is not ('P' or 'p')) return false;
+                    if (Reader.CurrentChar is '+' or '-')
+                    {
+                        Reader.Bump();
+                    }
+
+                    state = NumberState.WithExpo;
+                    return true;
+                }
+                case NumberState.HexFloat:
+                {
+                    if (ch is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F')
+                    {
+                        return true;
+                    }
+
+                    if (Reader.CurrentChar is not ('P' or 'p')) return false;
+                    if (Reader.CurrentChar is '+' or '-')
+                    {
+                        Reader.Bump();
+                    }
+
+                    state = NumberState.WithExpo;
+                    return true;
+                }
+                case NumberState.WithExpo:
+                {
+                    return ch is >= '0' and <= '9';
+                }
+                default:
+                {
+                    return false;
+                }
+            }
+        });
+
+        // TODO Subdivide the number type
+        if (Reader.CurrentChar is 'i')
         {
             Reader.Bump();
-            Reader.EatWhen(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
+            return LuaTokenKind.TkComplex;
+        }
+
+        // skip suffix
+        // ReSharper disable once InvertIf
+        if (state is NumberState.Int or NumberState.Hex)
+        {
+            Reader.EatWhen(ch => ch is 'u' or 'U' or 'l' or 'L');
             return LuaTokenKind.TkInt;
         }
 

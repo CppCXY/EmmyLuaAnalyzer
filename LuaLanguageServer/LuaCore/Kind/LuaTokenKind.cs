@@ -55,6 +55,7 @@ public enum LuaTokenKind
     TkBitXor, // ~
     TkColon, // :
     TkDbColon, // ::
+    TkSemiColon, // ;
     TkLeftBracket, // [
     TkRightBracket, // ]
     TkLeftParen, // (
@@ -63,6 +64,7 @@ public enum LuaTokenKind
     TkRightBrace, // }
     TkFlt, // float
     TkNumber, // number
+    TkComplex, // complex
     TkInt, // int
     TkName, // name
     TkString, // string

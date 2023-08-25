@@ -59,19 +59,17 @@ public class SourceReader
         }
     }
 
-    public bool CheckNext1(char ch)
+    public char NextChar
     {
-        if (CurrentPosition >= Text.Length || Text[CurrentPosition] != ch) return false;
-        Bump();
-        return true;
-    }
+        get
+        {
+            if (!IsEof && CurrentPosition + 1 < Text.Length)
+            {
+                return Text[CurrentPosition + 1];
+            }
 
-    public bool CheckNext2(char ch1, char ch2)
-    {
-        if (CurrentPosition >= Text.Length || (Text[CurrentPosition] != ch1 && Text[CurrentPosition] != ch2))
-            return false;
-        Bump();
-        return true;
+            return Eof;
+        }
     }
 
     public SourceRange SavedRange => new SourceRange(StartPosition, FinishPosition - StartPosition + 1);
