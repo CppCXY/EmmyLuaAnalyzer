@@ -9,7 +9,6 @@
 
     <ItemGroup>
       <Folder Include="LanguageServer\" />
-      <Folder Include="LuaCore\Workspace\" />
     </ItemGroup>
 
 </Project>

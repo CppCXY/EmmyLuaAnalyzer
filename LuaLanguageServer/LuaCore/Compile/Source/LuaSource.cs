@@ -8,18 +8,18 @@ public class LuaSource
     }
 
     public string Text { get; set; }
+
     public LuaLanguage Language { get; set; }
 
     private LineIndex LineIndex { get; set; }
 
-    private LuaSource(string text, LuaLanguage language)
+    internal LuaSource(string text, LuaLanguage language)
     {
         Text = text;
         Language = language;
         LineIndex = LineIndex.Parse(text);
     }
 
-    // 我需要知道一个字符串偏移值在第几行第几列
     public int GetCol(int offset)
     {
         return LineIndex.GetCol(offset, Text);
@@ -186,5 +186,21 @@ internal class LineIndex
     public int GetTotalLine()
     {
         return _indexs.Count;
+    }
+}
+
+public class LuaSourceFile : LuaSource
+{
+    public static LuaSourceFile From(string filePath, string text, LuaLanguage language)
+    {
+        return new LuaSourceFile(filePath, text, language);
+    }
+
+    public string FilePath { get; set; }
+
+    private LuaSourceFile(string filePath, string text, LuaLanguage language)
+        : base(text, language)
+    {
+        FilePath = filePath;
     }
 }

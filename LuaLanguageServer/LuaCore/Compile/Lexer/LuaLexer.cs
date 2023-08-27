@@ -1,11 +1,12 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Source;
+﻿using System.Globalization;
+using LuaLanguageServer.LuaCore.Compile.Source;
 using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Compile.Lexer;
 
 public class LuaLexer
 {
-    private LuaSource Source { get; }
+    public LuaSource Source { get; }
     private SourceReader Reader { get; }
 
     public LuaLexer(LuaSource source)
@@ -14,7 +15,97 @@ public class LuaLexer
         Reader = new SourceReader(source.Text);
     }
 
-    public LuaTokenKind Lex()
+    // 名字开始, 包括unicode
+    private static bool IsNameStart(char c)
+    {
+        // 根据Unicode标准，以下类别的字符可以作为标识符的开头：
+        // UppercaseLetter, LowercaseLetter, TitlecaseLetter, ModifierLetter, OtherLetter, LetterNumber
+        // 参考：https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax
+        return CharUnicodeInfo.GetUnicodeCategory(c) switch
+        {
+            UnicodeCategory.UppercaseLetter => true,
+            UnicodeCategory.LowercaseLetter => true,
+            UnicodeCategory.TitlecaseLetter => true,
+            UnicodeCategory.ModifierLetter => true,
+            UnicodeCategory.OtherLetter => true,
+            UnicodeCategory.LetterNumber => true,
+            // 下划线也是开头
+            UnicodeCategory.ConnectorPunctuation => c == '_',
+            _ => false
+        };
+    }
+
+    private static bool IsNameContinue(char c)
+    {
+        // 根据Unicode标准，以下类别的字符可以作为标识符的后续部分：
+        // UppercaseLetter, LowercaseLetter, TitlecaseLetter, ModifierLetter, OtherLetter, LetterNumber, NonSpacingMark, SpacingCombiningMark, DecimalDigitNumber, ConnectorPunctuation
+        // 参考：https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax
+        return CharUnicodeInfo.GetUnicodeCategory(c) switch
+        {
+            UnicodeCategory.UppercaseLetter => true,
+            UnicodeCategory.LowercaseLetter => true,
+            UnicodeCategory.TitlecaseLetter => true,
+            UnicodeCategory.ModifierLetter => true,
+            UnicodeCategory.OtherLetter => true,
+            UnicodeCategory.LetterNumber => true,
+            UnicodeCategory.NonSpacingMark => true,
+            UnicodeCategory.SpacingCombiningMark => true,
+            UnicodeCategory.DecimalDigitNumber => true,
+            UnicodeCategory.ConnectorPunctuation => true,
+            _ => false
+        };
+    }
+
+    private LuaTokenKind NameToKind(ReadOnlySpan<char> word)
+    {
+        return word switch
+        {
+            "and" => LuaTokenKind.TkAnd,
+            "break" => LuaTokenKind.TkBreak,
+            "do" => LuaTokenKind.TkDo,
+            "else" => LuaTokenKind.TkElse,
+            "elseif" => LuaTokenKind.TkElseIf,
+            "end" => LuaTokenKind.TkEnd,
+            "false" => LuaTokenKind.TkFalse,
+            "for" => LuaTokenKind.TkFor,
+            "function" => LuaTokenKind.TkFunction,
+            "goto" => Source.Language.LanguageLevel > LuaLanguageLevel.Lua51
+                ? LuaTokenKind.TkGoto
+                : LuaTokenKind.TkName,
+            "if" => LuaTokenKind.TkIf,
+            "in" => LuaTokenKind.TkIn,
+            "local" => LuaTokenKind.TkLocal,
+            "nil" => LuaTokenKind.TkNil,
+            "not" => LuaTokenKind.TkNot,
+            "or" => LuaTokenKind.TkOr,
+            "repeat" => LuaTokenKind.TkRepeat,
+            "return" => LuaTokenKind.TkReturn,
+            "then" => LuaTokenKind.TkThen,
+            "true" => LuaTokenKind.TkTrue,
+            "until" => LuaTokenKind.TkUntil,
+            "while" => LuaTokenKind.TkWhile,
+            _ => LuaTokenKind.TkName
+        };
+    }
+
+    public List<LuaTokenData> Tokenize()
+    {
+        var tokens = new List<LuaTokenData>();
+        while (!Reader.IsEof)
+        {
+            var kind = Lex();
+            if (kind == LuaTokenKind.TkEof)
+            {
+                break;
+            }
+
+            tokens.Add(new LuaTokenData(kind, Reader.SavedRange));
+        }
+
+        return tokens;
+    }
+
+    private LuaTokenKind Lex()
     {
         Reader.ResetBuff();
 
@@ -72,16 +163,32 @@ public class LuaLexer
             case '<':
             {
                 Reader.Bump();
-                if (Reader.CurrentChar != '=') return LuaTokenKind.TkLt;
-                Reader.Bump();
-                return LuaTokenKind.TkLe;
+                switch (Reader.CurrentChar)
+                {
+                    case '=':
+                        Reader.Bump();
+                        return LuaTokenKind.TkLe;
+                    case '<':
+                        Reader.Bump();
+                        return LuaTokenKind.TkShl;
+                    default:
+                        return LuaTokenKind.TkLt;
+                }
             }
             case '>':
             {
                 Reader.Bump();
-                if (Reader.CurrentChar != '=') return LuaTokenKind.TkGt;
-                Reader.Bump();
-                return LuaTokenKind.TkGe;
+                switch (Reader.CurrentChar)
+                {
+                    case '=':
+                        Reader.Bump();
+                        return LuaTokenKind.TkGe;
+                    case '>':
+                        Reader.Bump();
+                        return LuaTokenKind.TkShr;
+                    default:
+                        return LuaTokenKind.TkGt;
+                }
             }
             case '~':
             {
@@ -181,7 +288,9 @@ public class LuaLexer
             case '#':
             {
                 Reader.Bump();
-                return LuaTokenKind.TkLen;
+                if (Reader.CurrentChar != '!') return LuaTokenKind.TkLen;
+                Reader.EatWhen(ch => ch is not '\n' and not '\r');
+                return LuaTokenKind.TkShebang;
             }
             case '&':
             {
@@ -221,12 +330,26 @@ public class LuaLexer
             case ';':
             {
                 Reader.Bump();
-                return LuaTokenKind.TkSemiColon;
+                return LuaTokenKind.TkSemicolon;
             }
-            // default:
-            // {
-            //
-            // }
+            case ',':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkComma;
+            }
+            // 所有非数字可见字符包括unicode字符
+            case var ch when IsNameStart(ch):
+            {
+                Reader.Bump();
+                Reader.EatWhen(IsNameContinue);
+                var name = Reader.CurrentSavedText;
+                return NameToKind(name);
+            }
+            default:
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkUnknown;
+            }
         }
     }
 

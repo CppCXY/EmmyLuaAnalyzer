@@ -55,14 +55,13 @@ public enum LuaTokenKind
     TkBitXor, // ~
     TkColon, // :
     TkDbColon, // ::
-    TkSemiColon, // ;
+    TkSemicolon, // ;
     TkLeftBracket, // [
     TkRightBracket, // ]
     TkLeftParen, // (
     TkRightParen, // )
     TkLeftBrace, // {
     TkRightBrace, // }
-    TkFlt, // float
     TkNumber, // number
     TkComplex, // complex
     TkInt, // int
@@ -75,6 +74,7 @@ public enum LuaTokenKind
     TkEof, // eof
 
     // error
+    TkUnknown, // unknown
     TkUnCompleteLongStringStart, // [==
     TkUnFinishedLongString, // ]]
     TkUnFinishedString, // string
