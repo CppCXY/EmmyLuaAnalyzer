@@ -7,7 +7,7 @@ namespace LuaLanguageServer.LuaCore.Compile.Parser;
 public class LuaParser : IMarkerEventContainer
 {
     private LuaLexer Lexer { get; }
-    private List<LuaTokenData> Tokens { get; set; }
+    public List<LuaTokenData> Tokens { get; internal set; }
 
     public List<MarkEvent> Events { get; }
 

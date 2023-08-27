@@ -4,6 +4,7 @@ using LuaLanguageServer.LuaCore.Compile.Parser;
 using LuaLanguageServer.LuaCore.Compile.Source;
 using LuaLanguageServer.LuaCore.Compile.TreeBuilder;
 using LuaLanguageServer.LuaCore.Kind;
+using LuaLanguageServer.LuaCore.Syntax.Green;
 
 namespace LuaLanguageServer.LuaCore.Syntax.Tree;
 
@@ -35,7 +36,7 @@ public class LuaSyntaxTree
         return tree;
     }
 
-    public static  LuaSyntaxTree Create(LuaSource source)
+    public static LuaSyntaxTree Create(LuaSource source)
     {
         return Create(source, LuaLanguage.Default);
     }
@@ -44,4 +45,7 @@ public class LuaSyntaxTree
     {
         Source = source;
     }
+
+    internal List<GreenNode> GreenNodes = new List<GreenNode>();
+
 }
