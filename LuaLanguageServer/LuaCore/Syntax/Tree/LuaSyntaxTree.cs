@@ -2,7 +2,6 @@
 using LuaLanguageServer.LuaCore.Compile.Lexer;
 using LuaLanguageServer.LuaCore.Compile.Parser;
 using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Compile.TreeBuilder;
 using LuaLanguageServer.LuaCore.Kind;
 using LuaLanguageServer.LuaCore.Syntax.Green;
 
@@ -11,6 +10,8 @@ namespace LuaLanguageServer.LuaCore.Syntax.Tree;
 public class LuaSyntaxTree
 {
     public LuaSource Source { get; }
+
+    private List<GreenNode> GreenNodes { get; }
 
     public static LuaSyntaxTree ParseText(string text, LuaLanguage language)
     {
@@ -25,15 +26,13 @@ public class LuaSyntaxTree
 
     public static LuaSyntaxTree Create(LuaSource source, LuaLanguage language)
     {
-        LuaParser parser = new LuaParser(new LuaLexer(source));
+        var parser = new LuaParser(new LuaLexer(source));
         parser.Parse();
-
-        var tree = new LuaSyntaxTree(source);
-
-        var builder = new LuaGreenTreeBuilder(tree, parser);
+        var builder = new LuaGreenTreeBuilder(parser);
         builder.BuildTree();
+        var greenNodes = builder.GreenNodes;
 
-        return tree;
+        return new LuaSyntaxTree(source, greenNodes);
     }
 
     public static LuaSyntaxTree Create(LuaSource source)
@@ -41,11 +40,9 @@ public class LuaSyntaxTree
         return Create(source, LuaLanguage.Default);
     }
 
-    internal LuaSyntaxTree(LuaSource source)
+    internal LuaSyntaxTree(LuaSource source, List<GreenNode> greenNodes)
     {
         Source = source;
+        GreenNodes = greenNodes;
     }
-
-    internal List<GreenNode> GreenNodes = new List<GreenNode>();
-
 }

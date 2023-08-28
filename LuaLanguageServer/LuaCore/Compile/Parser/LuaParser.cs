@@ -1,13 +1,14 @@
 ﻿using LuaLanguageServer.LuaCore.Compile.Grammar.Lua;
 using LuaLanguageServer.LuaCore.Compile.Lexer;
+using LuaLanguageServer.LuaCore.Compile.Source;
 using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Compile.Parser;
 
-public class LuaParser : IMarkerEventContainer
+public class LuaParser : IParser
 {
     private LuaLexer Lexer { get; }
-    public List<LuaTokenData> Tokens { get; internal set; }
+    private List<LuaTokenData> Tokens { get; set; }
 
     public List<MarkEvent> Events { get; }
 
@@ -16,6 +17,8 @@ public class LuaParser : IMarkerEventContainer
     private int _tokenIndex;
 
     private bool _invalid;
+
+    private LuaDocParser _docParser;
 
     public Marker Marker()
     {
@@ -32,6 +35,7 @@ public class LuaParser : IMarkerEventContainer
         _current = LuaTokenKind.TkEof;
         _tokenIndex = 0;
         _invalid = true;
+        _docParser = new LuaDocParser(this);
     }
 
     public void Parse()
@@ -60,13 +64,16 @@ public class LuaParser : IMarkerEventContainer
 
     public void Bump()
     {
-        Events.Add(new MarkEvent.EatToken(_tokenIndex, Current));
+        var kind = Current;
+        var range = Tokens[_tokenIndex].Range;
+        Events.Add(new MarkEvent.EatToken(range, kind));
         _tokenIndex++;
         _invalid = true;
     }
 
-    private void SkipTrivia(ref int index)
+    private void ParseTrivia(ref int index)
     {
+        SourceRange range;
         for (; index < Tokens.Count; index++)
         {
             if (Tokens[index].Kind is not (LuaTokenKind.TkShortComment or LuaTokenKind.TkLongComment
@@ -84,7 +91,7 @@ public class LuaParser : IMarkerEventContainer
             if (!_invalid) return _current;
 
             _invalid = false;
-            SkipTrivia(ref _tokenIndex);
+            ParseTrivia(ref _tokenIndex);
             _current = _tokenIndex < Tokens.Count ? Tokens[_tokenIndex].Kind : LuaTokenKind.TkEof;
             return _current;
         }
@@ -113,7 +120,7 @@ public class LuaParser : IMarkerEventContainer
         get
         {
             var next = _tokenIndex + 1;
-            SkipTrivia(ref next);
+            ParseTrivia(ref next);
             return next >= Tokens.Count ? LuaTokenKind.TkEof : Tokens[next].Kind;
         }
     }

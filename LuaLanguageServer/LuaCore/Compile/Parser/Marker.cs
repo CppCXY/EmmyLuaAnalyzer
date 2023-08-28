@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using LuaLanguageServer.LuaCore.Compile.Source;
 using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Compile.Parser;
@@ -7,7 +8,7 @@ public record MarkEvent
 {
     public sealed record NodeStart(int Parent, LuaSyntaxKind Kind) : MarkEvent;
 
-    public sealed record EatToken(int Index, LuaTokenKind Kind) : MarkEvent;
+    public sealed record EatToken(SourceRange Range, LuaTokenKind Kind) : MarkEvent;
 
     public sealed record Error(string Err) : MarkEvent;
 

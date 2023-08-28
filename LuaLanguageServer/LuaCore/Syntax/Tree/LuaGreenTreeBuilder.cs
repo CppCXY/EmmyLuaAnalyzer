@@ -1,18 +1,17 @@
 ﻿using LuaLanguageServer.LuaCore.Compile.Parser;
 using LuaLanguageServer.LuaCore.Kind;
-using LuaLanguageServer.LuaCore.Syntax.Tree;
+using LuaLanguageServer.LuaCore.Syntax.Green;
 
-namespace LuaLanguageServer.LuaCore.Compile.TreeBuilder;
+namespace LuaLanguageServer.LuaCore.Syntax.Tree;
 
 public class LuaGreenTreeBuilder
 {
-    private LuaSyntaxTree Tree { get; }
-
     private LuaParser Parser { get; }
 
-    public LuaGreenTreeBuilder( LuaSyntaxTree tree, LuaParser parser)
+    internal List<GreenNode> GreenNodes => new List<GreenNode>();
+
+    public LuaGreenTreeBuilder(LuaParser parser)
     {
-        Tree = tree;
         Parser = parser;
     }
 
@@ -75,21 +74,17 @@ public class LuaGreenTreeBuilder
 
     private void StartNode(LuaSyntaxKind kind)
     {
-
     }
 
     private void FinishNode()
     {
-
     }
 
     private void EatTriavias()
     {
-
     }
 
     private void EatToken()
     {
-
     }
 }

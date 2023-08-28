@@ -16,7 +16,7 @@ public class LuaLexer
     }
 
     // 名字开始, 包括unicode
-    private static bool IsNameStart(char c)
+    public static bool IsNameStart(char c)
     {
         // 根据Unicode标准，以下类别的字符可以作为标识符的开头：
         // UppercaseLetter, LowercaseLetter, TitlecaseLetter, ModifierLetter, OtherLetter, LetterNumber
@@ -35,7 +35,7 @@ public class LuaLexer
         };
     }
 
-    private static bool IsNameContinue(char c)
+    public static bool IsNameContinue(char c)
     {
         // 根据Unicode标准，以下类别的字符可以作为标识符的后续部分：
         // UppercaseLetter, LowercaseLetter, TitlecaseLetter, ModifierLetter, OtherLetter, LetterNumber, NonSpacingMark, SpacingCombiningMark, DecimalDigitNumber, ConnectorPunctuation
