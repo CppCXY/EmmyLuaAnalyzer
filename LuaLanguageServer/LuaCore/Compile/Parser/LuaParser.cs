@@ -71,9 +71,46 @@ public class LuaParser : IParser
         _invalid = true;
     }
 
+    // 分析连续的空白/注释
     private void ParseTrivia(ref int index)
     {
-        SourceRange range;
+        var lineCount = 0;
+        var docTokenData = new List<LuaTokenData>();
+        for (; index < Tokens.Count; index++)
+        {
+            switch (Tokens[index].Kind)
+            {
+                case LuaTokenKind.TkShortComment:
+                case LuaTokenKind.TkLongComment:
+                case LuaTokenKind.TkShebang:
+                {
+                    docTokenData.Add(Tokens[index]);
+                    break;
+                }
+                case LuaTokenKind.TkEndOfLine:
+                {
+                    lineCount++;
+                    goto case LuaTokenKind.TkWhitespace;
+                }
+                case LuaTokenKind.TkWhitespace:
+                    if (docTokenData.Count == 0)
+                    {
+                        Events.Add(new MarkEvent.EatToken(Tokens[index].Range, Tokens[index].Kind));
+                    }
+                    else
+                    {
+                        docTokenData.Add(Tokens[index]);
+                    }
+
+                    break;
+                default:
+                    return;
+            }
+        }
+    }
+
+    private void SkipTrivia(ref int index)
+    {
         for (; index < Tokens.Count; index++)
         {
             if (Tokens[index].Kind is not (LuaTokenKind.TkShortComment or LuaTokenKind.TkLongComment
@@ -120,7 +157,7 @@ public class LuaParser : IParser
         get
         {
             var next = _tokenIndex + 1;
-            ParseTrivia(ref next);
+            SkipTrivia(ref next);
             return next >= Tokens.Count ? LuaTokenKind.TkEof : Tokens[next].Kind;
         }
     }
