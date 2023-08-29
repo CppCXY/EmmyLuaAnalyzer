@@ -7,7 +7,7 @@ namespace LuaLanguageServer.LuaCore.Compile.Parser;
 
 public class LuaParser : IParser
 {
-    private LuaLexer Lexer { get; }
+    public LuaLexer Lexer { get; }
     private List<LuaTokenData> Tokens { get; set; }
 
     public List<MarkEvent> Events { get; }
@@ -82,16 +82,23 @@ public class LuaParser : IParser
             {
                 case LuaTokenKind.TkShortComment:
                 case LuaTokenKind.TkLongComment:
-                case LuaTokenKind.TkShebang:
                 {
+                    lineCount = 0;
                     docTokenData.Add(Tokens[index]);
                     break;
                 }
                 case LuaTokenKind.TkEndOfLine:
                 {
                     lineCount++;
+                    if (lineCount >= 2 && docTokenData.Count > 0)
+                    {
+                        ParseComments(docTokenData);
+                        docTokenData.Clear();
+                    }
+
                     goto case LuaTokenKind.TkWhitespace;
                 }
+                case LuaTokenKind.TkShebang:
                 case LuaTokenKind.TkWhitespace:
                     if (docTokenData.Count == 0)
                     {
@@ -104,7 +111,50 @@ public class LuaParser : IParser
 
                     break;
                 default:
+                    // ReSharper disable once InvertIf
+                    if (docTokenData.Count > 0)
+                    {
+                        ParseComments(docTokenData);
+                        docTokenData.Clear();
+                    }
+
                     return;
+            }
+        }
+
+        // ReSharper disable once InvertIf
+        if (docTokenData.Count > 0)
+        {
+            ParseComments(docTokenData);
+            docTokenData.Clear();
+        }
+    }
+
+    private void ParseComments(List<LuaTokenData> tokenData)
+    {
+        var afterAddList = new List<LuaTokenData>();
+        // 反向遍历tokenData, 剔除里面的空白和行尾
+        for (var i = tokenData.Count - 1; i >= 0; i--)
+        {
+            if (tokenData[i].Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine)
+            {
+                afterAddList.Add(tokenData[i]);
+                tokenData.RemoveAt(i);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        _docParser.Parse(tokenData);
+        // ReSharper disable once InvertIf
+        if (afterAddList.Count != 0)
+        {
+            // 反向遍历添加到event中
+            for (var i = afterAddList.Count - 1; i >= 0; i--)
+            {
+                Events.Add(new MarkEvent.EatToken(afterAddList[i].Range, afterAddList[i].Kind));
             }
         }
     }

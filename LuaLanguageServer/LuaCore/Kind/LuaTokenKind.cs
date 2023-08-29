@@ -78,4 +78,34 @@ public enum LuaTokenKind
     TkUnCompleteLongStringStart, // [==
     TkUnFinishedLongString, // ]]
     TkUnFinishedString, // string
+
+    // doc
+    TkNormalStart, // --
+    TkDocLongStart, // --[[
+    TkDocStart, // ---
+    TkDocTrivia, // ----* and other can not parsed
+    TkDocAt, // @
+
+    // tag
+    TkTagClass, // class
+    TkTagEnum, // enum
+    TkTagInterface, // interface
+    TkTagAlias, // alias
+
+    TkTagField, // field
+    TkTagType, // type
+    TkTagParam, // param
+    TkTagReturn, // return
+    TkTagOverload, // overload
+    TkTagGeneric, // generic
+    TkTagSee, // see
+    TkTagDeprecated, // deprecated
+    TkTagAsync, // async
+    TkTagCast, // cast
+    TkTagOther, // other
+
+    TkDocOr, // |
+    TkDocContinue, // ---
+    TkDocDescriptionStart, // '#' or '@'
+    TkDocDescription, // description
 }

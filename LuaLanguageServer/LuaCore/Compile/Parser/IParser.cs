@@ -4,8 +4,6 @@ namespace LuaLanguageServer.LuaCore.Compile.Parser;
 
 public interface IParser : IMarkerEventContainer
 {
-    public void Parse();
-
     public void Expect(LuaTokenKind kind);
 
     public void Accept(LuaTokenKind kind);
