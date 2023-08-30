@@ -5,6 +5,9 @@ using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Compile.Parser;
 
+/// <summary>
+/// looking ahead parser
+/// </summary>
 public class LuaParser : IParser
 {
     public LuaLexer Lexer { get; }

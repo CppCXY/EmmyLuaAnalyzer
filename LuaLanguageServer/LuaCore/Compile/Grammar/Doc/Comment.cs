@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using LuaLanguageServer.LuaCore.Compile.Grammar.Lua;
+using LuaLanguageServer.LuaCore.Compile.Lexer;
 using LuaLanguageServer.LuaCore.Compile.Parser;
 using LuaLanguageServer.LuaCore.Kind;
 
@@ -20,19 +21,33 @@ public static class CommentParser
     {
         while (p.Current is not LuaTokenKind.TkEof)
         {
+            p.SetState(LuaDocLexerState.Init);
+
             switch (p.Current)
             {
                 case LuaTokenKind.TkDocStart:
                 {
+                    p.Bump();
+                    TagParser.Tag(p);
+                    break;
                 }
                 case LuaTokenKind.TkDocLongStart:
                 {
+                    p.Bump();
+                    TagParser.LongDocTag(p);
+                    break;
                 }
                 case LuaTokenKind.TkNormalStart:
                 {
+                    p.Bump();
+                    p.SetState(LuaDocLexerState.Description);
+                    p.Accept(LuaTokenKind.TkDocDescription);
+                    break;
                 }
-                case LuaTokenKind.TkDocTrivia:
+                case LuaTokenKind.TkEndOfLine or LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocTrivia:
                 {
+                    p.Bump();
+                    break;
                 }
                 default:
                 {

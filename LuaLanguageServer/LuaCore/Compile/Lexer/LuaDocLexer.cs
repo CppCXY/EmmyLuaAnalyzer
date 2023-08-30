@@ -5,10 +5,12 @@ namespace LuaLanguageServer.LuaCore.Compile.Lexer;
 
 public enum LuaDocLexerState
 {
+    Invalid,
     Init,
     Tag,
     Normal,
     Description,
+    Trivia
 }
 
 public class LuaDocLexer
@@ -20,6 +22,8 @@ public class LuaDocLexer
     private LuaTokenKind OriginTokenKind { get; set; }
 
     public LuaDocLexerState State { get; set; }
+
+    public bool Invalid => (State is LuaDocLexerState.Invalid) || Reader.IsEof;
 
     private static LuaTokenKind ToTag(ReadOnlySpan<char> text)
     {
@@ -68,7 +72,9 @@ public class LuaDocLexer
         {
             LuaDocLexerState.Init => LexInit(),
             LuaDocLexerState.Tag => LexTag(),
-            LuaDocLexerState.Normal => LexNormal()
+            LuaDocLexerState.Normal => LexNormal(),
+            LuaDocLexerState.Description => LexDescription(),
+            LuaDocLexerState.Trivia => LexTrivia()
         };
     }
 
@@ -94,20 +100,21 @@ public class LuaDocLexer
                         return LuaTokenKind.TkDocLongStart;
                     }
                     case 3:
-                        return LuaTokenKind.TkDocStart;
+                    {
+                        Reader.EatWhen(IsDocWhitespace);
+                        if (Reader.CurrentChar is '@')
+                        {
+                            return LuaTokenKind.TkDocStart;
+                        }
+
+                        goto default;
+                    }
                     default:
+                    {
+                        Reader.EatWhen(_ => true);
                         return LuaTokenKind.TkDocTrivia;
+                    }
                 }
-            }
-            case '@':
-            {
-                Reader.Bump();
-                return LuaTokenKind.TkDocAt;
-            }
-            case var ch when IsDocWhitespace(ch):
-            {
-                Reader.EatWhen(IsDocWhitespace);
-                return LuaTokenKind.TkWhitespace;
             }
             default:
             {
@@ -151,7 +158,7 @@ public class LuaDocLexer
             case ':':
             {
                 Reader.Bump();
-                return  LuaTokenKind.TkColon;
+                return LuaTokenKind.TkColon;
             }
             case '.':
             {
@@ -244,5 +251,17 @@ public class LuaDocLexer
                 return LuaTokenKind.TkDocTrivia;
             }
         }
+    }
+
+    private LuaTokenKind LexDescription()
+    {
+        Reader.EatWhen(_ => true);
+        return LuaTokenKind.TkDocDescription;
+    }
+
+    private LuaTokenKind LexTrivia()
+    {
+        Reader.EatWhen(_ => true);
+        return LuaTokenKind.TkDocTrivia;
     }
 }

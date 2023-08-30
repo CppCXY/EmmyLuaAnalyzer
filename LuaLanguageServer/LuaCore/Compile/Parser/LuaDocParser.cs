@@ -5,45 +5,44 @@ using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Compile.Parser;
 
+/// <summary>
+/// backtracking parser
+/// </summary>
 public class LuaDocParser : IParser
 {
     private LuaParser OwnerParser { get; }
 
     private LuaDocLexer Lexer { get; }
 
-    private bool LexerInvalid { get; set; }
-
     private LuaTokenData _current;
 
     private bool _invalid;
 
-    public LuaDocParser(LuaParser luaParser)
-    {
-        OwnerParser = luaParser;
-        LuaTokenQueue = new Queue<LuaTokenData>();
-        LexerInvalid = true;
-        Lexer = new LuaDocLexer(luaParser.Lexer.Source);
-        _current = new LuaTokenData(LuaTokenKind.TkEof, new SourceRange());
-        _invalid = true;
-    }
+    private int _originTokenIndex;
 
-    // public List<LuaTokenData> Tokens { get; }
-
-    private Queue<LuaTokenData> LuaTokenQueue { get; set; }
+    private List<LuaTokenData> OriginLuaTokenList { get; set; }
 
     public List<MarkEvent> Events => OwnerParser.Events;
 
     public Marker Marker() => OwnerParser.Marker();
 
+    public LuaDocParser(LuaParser luaParser)
+    {
+        OwnerParser = luaParser;
+        OriginLuaTokenList = new List<LuaTokenData>();
+        Lexer = new LuaDocLexer(luaParser.Lexer.Source);
+        _current = new LuaTokenData(LuaTokenKind.TkEof, new SourceRange());
+        _invalid = true;
+        _originTokenIndex = 0;
+    }
+
     public void Parse(List<LuaTokenData> luaTokenData)
     {
-        LexerInvalid = true;
-        LuaTokenQueue.Clear();
-        foreach (var token in luaTokenData)
-        {
-            LuaTokenQueue.Enqueue(token);
-        }
-
+        OriginLuaTokenList.Clear();
+        OriginLuaTokenList.AddRange(luaTokenData);
+        _originTokenIndex = 0;
+        _invalid = true;
+        Lexer.State = LuaDocLexerState.Invalid;
         CommentParser.Comment(this);
     }
 
@@ -52,43 +51,26 @@ public class LuaDocParser : IParser
         var kind = LuaTokenKind.TkEof;
         do
         {
-            if (LexerInvalid)
+            if (Lexer.Invalid)
             {
-                if (LuaTokenQueue.Any())
+                if (_originTokenIndex >= OriginLuaTokenList.Count)
                 {
-                    var tokenData = LuaTokenQueue.Dequeue();
-                    if (tokenData.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine)
-                    {
-                        return tokenData;
-                    }
+                    break;
+                }
 
-                    Lexer.Reset(tokenData);
-                    LexerInvalid = false;
-                }
-                else
+                var tokenData = OriginLuaTokenList[_originTokenIndex++];
+                if (tokenData.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine)
                 {
-                    return new LuaTokenData(LuaTokenKind.TkEof, new SourceRange());
+                    return tokenData;
                 }
+
+                Lexer.Reset(tokenData);
             }
 
             kind = Lexer.Lex();
-            if (kind is LuaTokenKind.TkEof)
-            {
-                LexerInvalid = true;
-            }
         } while (kind == LuaTokenKind.TkEof);
 
         return new LuaTokenData(kind, Lexer.Reader.SavedRange);
-    }
-
-    private void SkipTrivia()
-    {
-        var tokenData = LexToken();
-        while (tokenData.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine)
-        {
-            Events.Add(new MarkEvent.EatToken(tokenData.Range, tokenData.Kind));
-            tokenData = LexToken();
-        }
     }
 
     public void Expect(LuaTokenKind kind)
@@ -115,6 +97,11 @@ public class LuaDocParser : IParser
         _invalid = true;
     }
 
+    public void SetState(LuaDocLexerState state)
+    {
+        Lexer.State = state;
+    }
+
     public LuaTokenKind Current
     {
         get
@@ -122,8 +109,16 @@ public class LuaDocParser : IParser
             // ReSharper disable once InvertIf
             if (_invalid)
             {
-                SkipTrivia();
-                _current = LexToken();
+                if (Lexer.State == LuaDocLexerState.Normal)
+                {
+                    _current = LexToken();
+                    while (_current.Kind is LuaTokenKind.TkWhitespace)
+                    {
+                        Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                        _current = LexToken();
+                    }
+                }
+
                 _invalid = false;
             }
 
@@ -131,20 +126,39 @@ public class LuaDocParser : IParser
         }
     }
 
-    public LuaTokenKind LookAhead
+    public struct RollbackPoint
     {
-        get
+        public int EventPosition { get; set; }
+        public int OriginTokenIndex { get; set; }
+        public int LexerPosition { get; set; }
+        public LuaDocLexerState LexerState { get; set; }
+        public LuaTokenData Current { get; set; }
+        public bool Invalid { get; set; }
+    }
+
+    public RollbackPoint GetRollbackPoint()
+    {
+        return new RollbackPoint()
         {
-            // var index = 0;
-            // var tokenData = LexToken();
-            // while (tokenData.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine)
-            // {
-            //     index++;
-            //     tokenData = LexToken();
-            // }
-            //
-            // return tokenData.Kind;
-            throw new NotImplementedException();
-        }
+            EventPosition = Events.Count - 1,
+            OriginTokenIndex = _originTokenIndex - 1,
+            LexerPosition = Lexer.Reader.CurrentPosition,
+            LexerState = Lexer.State,
+            Current = _current,
+            Invalid = _invalid
+        };
+    }
+
+    public void Rollback(RollbackPoint rollbackPoint)
+    {
+        Events.RemoveRange(rollbackPoint.EventPosition + 1, Events.Count - rollbackPoint.EventPosition - 1);
+        _originTokenIndex = rollbackPoint.OriginTokenIndex;
+        var tokenData = OriginLuaTokenList[_originTokenIndex++];
+        Lexer.Reset(tokenData);
+        Lexer.Reader.CurrentPosition = rollbackPoint.LexerPosition;
+        Lexer.Reader.ResetBuff();
+        Lexer.State = rollbackPoint.LexerState;
+        _current = rollbackPoint.Current;
+        _invalid = rollbackPoint.Invalid;
     }
 }

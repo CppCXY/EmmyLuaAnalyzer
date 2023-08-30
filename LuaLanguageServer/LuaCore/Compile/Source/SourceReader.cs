@@ -9,7 +9,7 @@ public class SourceReader
     private bool IsSavedText { get; set; }
     private int StartPosition { get; set; }
     private int FinishPosition { get; set; }
-    private int CurrentPosition { get; set; }
+    public int CurrentPosition { get; set; }
 
     private SourceReader(string text, SourceRange range)
     {
@@ -19,6 +19,7 @@ public class SourceReader
         StartPosition = 0;
         CurrentPosition = 0;
         FinishPosition = 0;
+        IsEof = false;
     }
 
     public SourceReader(string text)
@@ -50,6 +51,7 @@ public class SourceReader
     {
         ValidRange = range;
         CurrentPosition = 0;
+        IsEof = false;
         ResetBuff();
     }
 

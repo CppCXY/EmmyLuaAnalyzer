@@ -45,4 +45,35 @@ public enum LuaSyntaxKind
 
     // comment
     Comment,
+
+    // doc
+    DocClass,
+    DocEnum,
+    DocInterface,
+    DocAlias,
+
+    DocField,
+    DocType,
+    DocParam,
+    DocReturn,
+    DocGeneric,
+    DocSee,
+    DocDeprecated,
+    DocCast,
+    DocOverload,
+    DocAsync,
+    DocOther,
+
+    // Type
+    TypeArray,
+    TypeUnion,
+    TypeFunction,
+    TypeGeneric,
+    TypeTuple,
+    TypeTable,
+    TypeLiteral,
+    TypeName,
+
+    // docOther
+    DocGenericDeclareList
 }

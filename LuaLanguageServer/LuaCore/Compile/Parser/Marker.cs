@@ -61,6 +61,7 @@ public struct Marker
 
 public struct CompleteMarker
 {
+    public static CompleteMarker Empty { get; } = new(-1, -1, LuaSyntaxKind.None, false);
     private int Start { get; }
     private int Finish { get; }
     public LuaSyntaxKind Kind { get; }

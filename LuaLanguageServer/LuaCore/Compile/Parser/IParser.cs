@@ -11,6 +11,4 @@ public interface IParser : IMarkerEventContainer
     public void Bump();
 
     public LuaTokenKind Current { get; }
-
-    public LuaTokenKind LookAhead { get; }
 }

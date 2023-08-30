@@ -82,9 +82,8 @@ public enum LuaTokenKind
     // doc
     TkNormalStart, // --
     TkDocLongStart, // --[[
-    TkDocStart, // ---
+    TkDocStart, // ---@
     TkDocTrivia, // ----* and other can not parsed
-    TkDocAt, // @
 
     // tag
     TkTagClass, // class
