@@ -12,7 +12,7 @@ public class LuaDocParser : IParser
 {
     private LuaParser OwnerParser { get; }
 
-    private LuaDocLexer Lexer { get; }
+    public LuaDocLexer Lexer { get; }
 
     private LuaTokenData _current;
 
@@ -125,6 +125,9 @@ public class LuaDocParser : IParser
             return _current.Kind;
         }
     }
+
+    public ReadOnlySpan<char> CurrentNameText =>
+        Current is not LuaTokenKind.TkName ? ReadOnlySpan<char>.Empty : Lexer.Reader.CurrentSavedText;
 
     public struct RollbackPoint
     {

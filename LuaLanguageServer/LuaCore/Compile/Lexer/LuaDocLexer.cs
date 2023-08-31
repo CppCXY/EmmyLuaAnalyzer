@@ -44,6 +44,9 @@ public class LuaDocLexer
             "async" => LuaTokenKind.TkTagAsync,
             "cast" => LuaTokenKind.TkTagCast,
             "deprecated" => LuaTokenKind.TkTagDeprecated,
+            "private" or "protected" or "public" or "package" => LuaTokenKind.TkVisibility,
+            "diagnostic" => LuaTokenKind.TkDiagnostic,
+            "meta" => LuaTokenKind.TkMeta,
             _ => LuaTokenKind.TkTagOther
         };
     }
@@ -163,6 +166,14 @@ public class LuaDocLexer
             case '.':
             {
                 Reader.Bump();
+                // ReSharper disable once InvertIf
+                if (Reader.CurrentChar is '.' && Reader.NextChar is '.')
+                {
+                    Reader.Bump();
+                    Reader.Bump();
+                    return LuaTokenKind.TkDots;
+                }
+
                 return LuaTokenKind.TkDot;
             }
             case ',':
@@ -215,6 +226,11 @@ public class LuaDocLexer
                 Reader.Bump();
                 return LuaTokenKind.TkDocOr;
             }
+            case '?':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkNullable;
+            }
             case '-':
             {
                 var count = Reader.EatWhen('-');
@@ -227,8 +243,8 @@ public class LuaDocLexer
             }
             case '#' or '@':
             {
-                Reader.Bump();
-                return LuaTokenKind.TkDocDescriptionStart;
+                Reader.EatWhen(_ => true);
+                return LuaTokenKind.TkDocDescription;
             }
             case var ch when char.IsDigit(ch):
             {

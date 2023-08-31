@@ -102,9 +102,12 @@ public enum LuaTokenKind
     TkTagAsync, // async
     TkTagCast, // cast
     TkTagOther, // other
+    TkVisibility, // public private protected package
+    TkDiagnostic, // diagnostic
+    TkMeta, // meta
 
     TkDocOr, // |
     TkDocContinue, // ---
-    TkDocDescriptionStart, // '#' or '@'
-    TkDocDescription, // description
+    TkDocDescription, // '#' or '@' description
+    TkNullable, // '?'
 }

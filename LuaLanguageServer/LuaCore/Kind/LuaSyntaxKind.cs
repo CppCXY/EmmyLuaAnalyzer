@@ -62,18 +62,25 @@ public enum LuaSyntaxKind
     DocCast,
     DocOverload,
     DocAsync,
+    DocVisibility,
     DocOther,
+    DocDiagnostic,
 
     // Type
     TypeArray,
     TypeUnion,
-    TypeFunction,
+    TypeFun,
     TypeGeneric,
     TypeTuple,
     TypeTable,
+    TypeParen,
     TypeLiteral,
     TypeName,
 
+    // parameter
+    TypedParameter,
+    // a: number
+    TypedField,
     // docOther
     DocGenericDeclareList
 }
