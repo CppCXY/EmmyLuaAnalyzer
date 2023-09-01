@@ -9,6 +9,7 @@ public enum LuaDocLexerState
     Init,
     Tag,
     Normal,
+    FieldStart,
     Description,
     Trivia
 }
@@ -44,10 +45,23 @@ public class LuaDocLexer
             "async" => LuaTokenKind.TkTagAsync,
             "cast" => LuaTokenKind.TkTagCast,
             "deprecated" => LuaTokenKind.TkTagDeprecated,
-            "private" or "protected" or "public" or "package" => LuaTokenKind.TkVisibility,
-            "diagnostic" => LuaTokenKind.TkDiagnostic,
-            "meta" => LuaTokenKind.TkMeta,
+            "private" or "protected" or "public" or "package" => LuaTokenKind.TkTagVisibility,
+            "diagnostic" => LuaTokenKind.TkTagDiagnostic,
+            "meta" => LuaTokenKind.TkTagMeta,
+            "version" => LuaTokenKind.TkTagVersion,
+            "as" => LuaTokenKind.TkTagAs,
+            "nodiscard" => LuaTokenKind.TkTagNodiscard,
+            "operator" => LuaTokenKind.TkTagOperator,
             _ => LuaTokenKind.TkTagOther
+        };
+    }
+
+    private static LuaTokenKind ToVisibilityOrName(ReadOnlySpan<char> text)
+    {
+        return text switch
+        {
+            "private" or "protected" or "public" or "package" => LuaTokenKind.TkDocVisibility,
+            _ => LuaTokenKind.TkName
         };
     }
 
@@ -66,18 +80,26 @@ public class LuaDocLexer
 
     public LuaTokenKind Lex()
     {
+        Reader.ResetBuff();
         if (Reader.IsEof)
         {
             return LuaTokenKind.TkEof;
         }
 
+        if (State is LuaDocLexerState.Invalid)
+        {
+            State = LuaDocLexerState.Init;
+        }
+
         return State switch
         {
-            LuaDocLexerState.Init => LexInit(),
+            LuaDocLexerState.Init or LuaDocLexerState.Invalid => LexInit(),
             LuaDocLexerState.Tag => LexTag(),
             LuaDocLexerState.Normal => LexNormal(),
             LuaDocLexerState.Description => LexDescription(),
-            LuaDocLexerState.Trivia => LexTrivia()
+            LuaDocLexerState.Trivia => LexTrivia(),
+            LuaDocLexerState.FieldStart => LexFieldStart(),
+            _ => throw new ArgumentOutOfRangeException()
         };
     }
 
@@ -100,17 +122,37 @@ public class LuaDocLexer
                         Reader.Bump(); // [
                         Reader.EatWhen('=');
                         Reader.Bump(); // [
-                        return LuaTokenKind.TkDocLongStart;
+                        switch (Reader.CurrentChar)
+                        {
+                            case '@':
+                            {
+                                Reader.Bump();
+                                return LuaTokenKind.TkDocLongStart;
+                            }
+                            default:
+                            {
+                                return LuaTokenKind.TkLongCommentStart;
+                            }
+                        }
                     }
                     case 3:
                     {
                         Reader.EatWhen(IsDocWhitespace);
                         if (Reader.CurrentChar is '@')
                         {
+                            Reader.Bump();
                             return LuaTokenKind.TkDocStart;
                         }
-
-                        goto default;
+                        else if (Reader.CurrentChar is '|')
+                        {
+                            Reader.Bump();
+                            return LuaTokenKind.TkDocEnumField;
+                        }
+                        else
+                        {
+                            Reader.Bump();
+                            return LuaTokenKind.TkNormalStart;
+                        }
                     }
                     default:
                     {
@@ -258,7 +300,7 @@ public class LuaDocLexer
             }
             case var ch when LuaLexer.IsNameStart(ch):
             {
-                Reader.EatWhen(c => LuaLexer.IsNameContinue(c) || c == '.');
+                Reader.EatWhen(c => LuaLexer.IsNameContinue(c) || c == '.' || c == '-');
                 return LuaTokenKind.TkName;
             }
             default:
@@ -279,5 +321,21 @@ public class LuaDocLexer
     {
         Reader.EatWhen(_ => true);
         return LuaTokenKind.TkDocTrivia;
+    }
+
+    private LuaTokenKind LexFieldStart()
+    {
+        switch (Reader.CurrentChar)
+        {
+            case var ch when LuaLexer.IsNameStart(ch):
+            {
+                Reader.EatWhen(LuaLexer.IsNameContinue);
+                return ToVisibilityOrName(Reader.CurrentSavedText);
+            }
+            default:
+            {
+                return LexNormal();
+            }
+        }
     }
 }

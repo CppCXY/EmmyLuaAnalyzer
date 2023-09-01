@@ -51,8 +51,9 @@ public enum LuaSyntaxKind
     DocEnum,
     DocInterface,
     DocAlias,
-
     DocField,
+    DocEnumField,
+
     DocType,
     DocParam,
     DocReturn,
@@ -65,6 +66,10 @@ public enum LuaSyntaxKind
     DocVisibility,
     DocOther,
     DocDiagnostic,
+    DocVersion,
+    DocAs,
+    DocNodiscard,
+    DocOperator,
 
     // Type
     TypeArray,

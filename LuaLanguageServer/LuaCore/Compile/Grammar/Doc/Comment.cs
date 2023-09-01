@@ -31,13 +31,19 @@ public static class CommentParser
                     TagParser.Tag(p);
                     break;
                 }
+                case LuaTokenKind.TkDocEnumField:
+                {
+                    p.Bump();
+                    TagParser.EnumField(p);
+                    break;
+                }
                 case LuaTokenKind.TkDocLongStart:
                 {
                     p.Bump();
                     TagParser.LongDocTag(p);
                     break;
                 }
-                case LuaTokenKind.TkNormalStart:
+                case LuaTokenKind.TkNormalStart or LuaTokenKind.TkLongCommentStart:
                 {
                     p.Bump();
                     p.SetState(LuaDocLexerState.Description);
@@ -53,6 +59,13 @@ public static class CommentParser
                 {
                     throw new UnreachableException();
                 }
+            }
+
+            // ReSharper disable once InvertIf
+            if (!p.Lexer.Reader.IsEof)
+            {
+                p.SetState(LuaDocLexerState.Trivia);
+                p.Accept(LuaTokenKind.TkDocTrivia);
             }
         }
     }

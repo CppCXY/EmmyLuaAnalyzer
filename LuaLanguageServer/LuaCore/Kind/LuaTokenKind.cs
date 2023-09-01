@@ -81,9 +81,12 @@ public enum LuaTokenKind
 
     // doc
     TkNormalStart, // --
-    TkDocLongStart, // --[[
+    TkLongCommentStart, // --[[
+    TkDocLongStart, // --[[@
     TkDocStart, // ---@
-    TkDocTrivia, // ----* and other can not parsed
+    TkDocTrivia, // other can not parsed
+    TkDocEnumField, // ---|
+
 
     // tag
     TkTagClass, // class
@@ -102,12 +105,17 @@ public enum LuaTokenKind
     TkTagAsync, // async
     TkTagCast, // cast
     TkTagOther, // other
-    TkVisibility, // public private protected package
-    TkDiagnostic, // diagnostic
-    TkMeta, // meta
+    TkTagVisibility, // public private protected package
+    TkTagDiagnostic, // diagnostic
+    TkTagMeta, // meta
+    TkTagVersion, // version
+    TkTagAs, // as
+    TkTagNodiscard, // nodiscard
+    TkTagOperator, // operator
 
     TkDocOr, // |
     TkDocContinue, // ---
     TkDocDescription, // '#' or '@' description
     TkNullable, // '?'
+    TkDocVisibility // public private protected package
 }

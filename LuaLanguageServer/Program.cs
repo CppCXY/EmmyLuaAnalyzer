@@ -6,6 +6,8 @@ using LuaLanguageServer.LuaCore.Compile.Source;
 var lang = new LuaLanguage();
 var source = LuaSource.From(
     """
+    --- 你说的对但是__
+    ---@class A {a :number} # 1231313
     local t= 123
     """, lang);
 

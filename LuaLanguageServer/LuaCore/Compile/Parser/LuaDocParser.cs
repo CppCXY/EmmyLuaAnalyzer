@@ -109,9 +109,9 @@ public class LuaDocParser : IParser
             // ReSharper disable once InvertIf
             if (_invalid)
             {
+                _current = LexToken();
                 if (Lexer.State == LuaDocLexerState.Normal)
                 {
-                    _current = LexToken();
                     while (_current.Kind is LuaTokenKind.TkWhitespace)
                     {
                         Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
