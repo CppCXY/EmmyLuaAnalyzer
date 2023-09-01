@@ -11,7 +11,7 @@ public class LuaSyntaxTree
 {
     public LuaSource Source { get; }
 
-    private List<GreenNode> GreenNodes { get; }
+    public GreenNode GreenRoot { get; }
 
     public static LuaSyntaxTree ParseText(string text, LuaLanguage language)
     {
@@ -24,25 +24,19 @@ public class LuaSyntaxTree
         return ParseText(text, LuaLanguage.Default);
     }
 
-    public static LuaSyntaxTree Create(LuaSource source, LuaLanguage language)
+    public static LuaSyntaxTree Create(LuaSource source)
     {
         var parser = new LuaParser(new LuaLexer(source));
         parser.Parse();
         var builder = new LuaGreenTreeBuilder(parser);
-        builder.BuildTree();
-        var greenNodes = builder.GreenNodes;
+        var root = builder.BuildTree();
 
-        return new LuaSyntaxTree(source, greenNodes);
+        return new LuaSyntaxTree(source, root);
     }
 
-    public static LuaSyntaxTree Create(LuaSource source)
-    {
-        return Create(source, LuaLanguage.Default);
-    }
-
-    internal LuaSyntaxTree(LuaSource source, List<GreenNode> greenNodes)
+    private LuaSyntaxTree(LuaSource source, GreenNode root)
     {
         Source = source;
-        GreenNodes = greenNodes;
+        GreenRoot = root;
     }
 }

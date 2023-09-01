@@ -1,36 +1,22 @@
-﻿using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.LuaCore.Compile.Source;
+using LuaLanguageServer.LuaCore.Kind;
 
 namespace LuaLanguageServer.LuaCore.Syntax.Green;
+
 
 /// <summary>
 /// 红绿树中的绿树节点
 /// </summary>
-public struct GreenNode
+public record GreenNode
 {
-    public LuaSyntaxKind Kind { get; }
+    public SourceRange Range { get; }
 
-    public int SlotCount { get; }
-
-    public int FullWidth { get; }
-
-    public GreenNode(LuaSyntaxKind kind, int slotCount, int fullWidth)
+    private GreenNode(SourceRange range)
     {
-        Kind = kind;
-        SlotCount = slotCount;
-        FullWidth = fullWidth;
+        Range = range;
     }
-}
 
-public struct GreenToken
-{
-    public LuaTokenKind Kind { get; }
-
-    public int FullWidth { get; }
-
-    public GreenToken(LuaTokenKind kind, int fullWidth)
-    {
-        Kind = kind;
-        FullWidth = fullWidth;
-    }
+    public record Node(LuaSyntaxKind Kind, SourceRange Range, List<GreenNode> Children) : GreenNode(Range);
+    public record Token(LuaTokenKind Kind, SourceRange Range) : GreenNode(Range);
 }
 

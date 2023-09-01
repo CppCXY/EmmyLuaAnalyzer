@@ -8,14 +8,15 @@ public class LuaGreenTreeBuilder
 {
     private LuaParser Parser { get; }
 
-    internal List<GreenNode> GreenNodes => new List<GreenNode>();
+    private GreenNodeBuilder NodeBuilder { get; }
 
     public LuaGreenTreeBuilder(LuaParser parser)
     {
         Parser = parser;
+        NodeBuilder = new GreenNodeBuilder();
     }
 
-    public void BuildTree()
+    public GreenNode BuildTree()
     {
         StartNode(LuaSyntaxKind.Source);
 
@@ -57,34 +58,33 @@ public class LuaGreenTreeBuilder
                 }
                 case MarkEvent.EatToken token:
                 {
-                    EatTriavias();
-                    EatToken();
+                    EatToken(token);
                     break;
                 }
                 case MarkEvent.Error error:
                     break;
-                case MarkEvent.NodeEnd nodeEnd:
-                    parents.RemoveAt(parents.Count - 1);
+                case MarkEvent.NodeEnd:
+                    FinishNode();
                     break;
             }
         }
 
         FinishNode();
+        return NodeBuilder.Finish();
     }
 
     private void StartNode(LuaSyntaxKind kind)
     {
+        NodeBuilder.StartNode(kind);
     }
 
     private void FinishNode()
     {
+        NodeBuilder.FinishNode();
     }
 
-    private void EatTriavias()
+    private void EatToken(MarkEvent.EatToken token)
     {
-    }
-
-    private void EatToken()
-    {
+        NodeBuilder.EatToken(token.Kind, token.Range);
     }
 }

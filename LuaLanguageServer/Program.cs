@@ -1,17 +1,11 @@
-﻿using LuaLanguageServer.LuaCore.Compile;
-using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Compile.Source;
+﻿using LuaLanguageServer.LuaCore.Syntax.Tree;
 
-var lang = new LuaLanguage();
-var source = LuaSource.From(
+var tree = LuaSyntaxTree.ParseText(
     """
     --- 你说的对但是__
     ---@class A {a :number} # 1231313
     local t= 123
-    """, lang);
+    """);
 
-LuaParser parser = new LuaParser(new LuaLexer(source));
-parser.Parse();
 
-Console.Write(parser.Events);
+Console.Write(tree.GreenRoot);
