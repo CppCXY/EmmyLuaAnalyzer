@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.LuaCore.Kind;
+using LuaLanguageServer.LuaCore.Syntax.Green;
 using LuaLanguageServer.LuaCore.Syntax.Location;
 using LuaLanguageServer.LuaCore.Syntax.Visitor;
 
@@ -9,9 +10,22 @@ public abstract class LuaSyntaxNode
 {
     public LuaSyntaxKind Kind { get; }
 
-    public LuaSyntaxNode(LuaSyntaxKind kind)
+    public GreenNode GreenNode { get; }
+
+    public LuaSyntaxNode? Parent { get; }
+
+    public LuaSyntaxNode(GreenNode greenNode)
     {
-        Kind = kind;
+        if (greenNode.IsSyntaxNode)
+        {
+            Kind = greenNode.SyntaxKind;
+        }
+        else
+        {
+            Kind = LuaSyntaxKind.None;
+        }
+
+        GreenNode = greenNode;
     }
     //
     // public abstract void Accept(LuaSyntaxVisitor visitor);

@@ -1,7 +1,8 @@
 ﻿namespace LuaLanguageServer.LuaCore.Kind;
 
-public enum LuaTokenKind
+public enum LuaTokenKind : ushort
 {
+    None,
     // KeyWord
     TkAnd,
     TkBreak,

@@ -1,5 +1,8 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Parser;
+﻿using System.Diagnostics;
+using LuaLanguageServer.LuaCore.Compile.Parser;
+using LuaLanguageServer.LuaCore.Compile.Source;
 using LuaLanguageServer.LuaCore.Kind;
+using LuaLanguageServer.LuaCore.Syntax.Diagnostic;
 using LuaLanguageServer.LuaCore.Syntax.Green;
 
 namespace LuaLanguageServer.LuaCore.Syntax.Tree;
@@ -10,13 +13,22 @@ public class LuaGreenTreeBuilder
 
     private GreenNodeBuilder NodeBuilder { get; }
 
+    private List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
+
     public LuaGreenTreeBuilder(LuaParser parser)
     {
         Parser = parser;
         NodeBuilder = new GreenNodeBuilder();
     }
 
-    public GreenNode BuildTree()
+    // 多返回值
+    public (GreenNode, List<Diagnostic.Diagnostic>) Build()
+    {
+        var tree = BuildTree();
+        return (tree, Diagnostics);
+    }
+
+    private GreenNode BuildTree()
     {
         StartNode(LuaSyntaxKind.Source);
 
@@ -62,10 +74,31 @@ public class LuaGreenTreeBuilder
                     break;
                 }
                 case MarkEvent.Error error:
+                {
+                    var nextTokenIndex = Parser.Events.FindIndex(i, it => it is MarkEvent.EatToken);
+                    if (nextTokenIndex > 0)
+                    {
+                        var range = Parser.Events[nextTokenIndex] switch
+                        {
+                            MarkEvent.EatToken(var tkRange, _) => tkRange,
+                            _ => throw new UnreachableException(),
+                        };
+                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                    }
+                    else
+                    {
+                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
+                            Parser.Lexer.Source.Text.Length
+                        )));
+                    }
+
                     break;
+                }
                 case MarkEvent.NodeEnd:
+                {
                     FinishNode();
                     break;
+                }
             }
         }
 

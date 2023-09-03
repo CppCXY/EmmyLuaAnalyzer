@@ -1,6 +1,6 @@
 ﻿namespace LuaLanguageServer.LuaCore.Kind;
 
-public enum LuaSyntaxKind
+public enum LuaSyntaxKind : ushort
 {
     None,
     Source,
@@ -84,8 +84,10 @@ public enum LuaSyntaxKind
 
     // parameter
     TypedParameter,
+
     // a: number
     TypedField,
+
     // docOther
     DocGenericDeclareList
 }

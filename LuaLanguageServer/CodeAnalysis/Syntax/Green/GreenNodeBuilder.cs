@@ -45,17 +45,18 @@ public class GreenNodeBuilder
                 nodeRange.Length += Children[i].Range.Length;
             }
 
+            Children[i].Slot = i - parentInfo.FirstChild;
             nodeChildren.Add(Children[i]);
         }
 
         Children.RemoveRange(parentInfo.FirstChild, Children.Count - parentInfo.FirstChild);
 
-        Children.Add(new GreenNode.Node(parentInfo.Kind, nodeRange, nodeChildren));
+        Children.Add(new GreenNode(parentInfo.Kind, nodeRange, nodeChildren));
     }
 
     public void EatToken(LuaTokenKind kind, SourceRange range)
     {
-        Children.Add(new GreenNode.Token(kind, range));
+        Children.Add(new GreenNode(kind, range));
     }
 
     public GreenNode Finish()
