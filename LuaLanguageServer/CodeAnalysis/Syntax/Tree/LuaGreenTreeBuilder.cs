@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
-using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
-using LuaLanguageServer.LuaCore.Syntax.Diagnostic;
-using LuaLanguageServer.LuaCore.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Compile.Parser;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
+using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Tree;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 public class LuaGreenTreeBuilder
 {
@@ -13,7 +13,7 @@ public class LuaGreenTreeBuilder
 
     private GreenNodeBuilder NodeBuilder { get; }
 
-    private List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
+    private List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> Diagnostics { get; } = new();
 
     public LuaGreenTreeBuilder(LuaParser parser)
     {
@@ -22,7 +22,7 @@ public class LuaGreenTreeBuilder
     }
 
     // 多返回值
-    public (GreenNode, List<Diagnostic.Diagnostic>) Build()
+    public (GreenNode, List<CodeAnalysis.Syntax.Diagnostic.Diagnostic>) Build()
     {
         var tree = BuildTree();
         return (tree, Diagnostics);
@@ -83,11 +83,11 @@ public class LuaGreenTreeBuilder
                             MarkEvent.EatToken(var tkRange, _) => tkRange,
                             _ => throw new UnreachableException(),
                         };
-                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                        Diagnostics.Add(new CodeAnalysis.Syntax.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
                     }
                     else
                     {
-                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
+                        Diagnostics.Add(new CodeAnalysis.Syntax.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
                             Parser.Lexer.Source.Text.Length
                         )));
                     }

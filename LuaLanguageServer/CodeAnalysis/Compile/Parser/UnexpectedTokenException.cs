@@ -1,6 +1,6 @@
-﻿using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Parser;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 
 public class UnexpectedTokenException : ApplicationException
 {

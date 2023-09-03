@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Kind;
+﻿namespace LuaLanguageServer.CodeAnalysis.Kind;
 
 public static class OperatorKind
 {

@@ -1,6 +1,6 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Source;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Diagnostic;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
 public class Diagnostic
 {

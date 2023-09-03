@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Lexer;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 
 public class LuaLexer
 {

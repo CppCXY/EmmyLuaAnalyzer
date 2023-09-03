@@ -1,7 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Syntax.Tree;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Location;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 /// <summary>
 /// A position in a source file.

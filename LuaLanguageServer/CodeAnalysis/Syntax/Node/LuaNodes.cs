@@ -1,6 +1,6 @@
-﻿using LuaLanguageServer.LuaCore.Syntax.Green;
+﻿using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Node;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 public class LuaSourceSyntax : LuaSyntaxNode
 {

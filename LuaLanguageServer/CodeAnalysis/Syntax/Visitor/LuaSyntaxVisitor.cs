@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Syntax.Visitor;
+﻿namespace LuaLanguageServer.CodeAnalysis.Syntax.Visitor;
 
 public class LuaSyntaxVisitor
 {

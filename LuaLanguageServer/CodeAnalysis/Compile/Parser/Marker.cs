@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Parser;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 
 public record MarkEvent
 {

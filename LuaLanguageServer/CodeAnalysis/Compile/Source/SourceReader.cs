@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Compile.Source;
+﻿namespace LuaLanguageServer.CodeAnalysis.Compile.Source;
 
 public class SourceReader
 {

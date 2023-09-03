@@ -1,7 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Green;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
 public class GreenNodeBuilder
 {

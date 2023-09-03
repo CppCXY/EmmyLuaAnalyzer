@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Compile;
+﻿namespace LuaLanguageServer.CodeAnalysis.Compile;
 
 public enum LuaLanguageLevel : short
 {

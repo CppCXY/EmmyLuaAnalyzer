@@ -1,4 +1,4 @@
-﻿using LuaLanguageServer.LuaCore.Syntax.Tree;
+﻿using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 var tree = LuaSyntaxTree.ParseText(
     """

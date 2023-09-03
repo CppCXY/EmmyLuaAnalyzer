@@ -1,7 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Green;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
 /// <summary>
 /// 红绿树中的绿树节点

@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Syntax.Location;
+﻿namespace LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 public enum LuaLocationKind : byte
 {

@@ -1,9 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Kind;
-using LuaLanguageServer.LuaCore.Syntax.Green;
-using LuaLanguageServer.LuaCore.Syntax.Location;
-using LuaLanguageServer.LuaCore.Syntax.Visitor;
+﻿using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Node;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 // 实现一个语法节点, 类似于roslyn的语法节点
 public abstract class LuaSyntaxNode

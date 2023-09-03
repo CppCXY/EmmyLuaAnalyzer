@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Syntax.Diagnostic;
+﻿namespace LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
 public enum DiagnosticSeverity
 {

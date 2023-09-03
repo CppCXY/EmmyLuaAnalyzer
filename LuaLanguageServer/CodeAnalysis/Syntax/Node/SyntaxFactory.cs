@@ -1,7 +1,6 @@
-﻿using LuaLanguageServer.LuaCore.Syntax.Green;
-using LuaLanguageServer.LuaCore.Syntax.Tree;
+﻿using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Node;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 public class SyntaxFactory
 {

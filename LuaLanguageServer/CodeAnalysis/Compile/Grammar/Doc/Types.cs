@@ -1,9 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Kind;
-using Microsoft.VisualBasic.CompilerServices;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Parser;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Grammar.Doc;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Grammar.Doc;
 
 public static class TypesParser
 {

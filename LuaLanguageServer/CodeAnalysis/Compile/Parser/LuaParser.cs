@@ -1,9 +1,8 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Grammar.Lua;
-using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Grammar.Lua;
+using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Parser;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 
 /// <summary>
 /// looking ahead parser

@@ -1,11 +1,11 @@
-﻿using LuaLanguageServer.LuaCore.Compile;
-using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Syntax.Green;
-using LuaLanguageServer.LuaCore.Syntax.Node;
+﻿using LuaLanguageServer.CodeAnalysis.Compile;
+using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
+using LuaLanguageServer.CodeAnalysis.Compile.Parser;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-namespace LuaLanguageServer.LuaCore.Syntax.Tree;
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 public class LuaSyntaxTree
 {
@@ -13,7 +13,7 @@ public class LuaSyntaxTree
 
     public GreenNode GreenRoot { get; }
 
-    public List<Diagnostic.Diagnostic> Diagnostics { get; }
+    public List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> Diagnostics { get; }
 
     private LuaSourceSyntax? _root;
 
@@ -38,7 +38,7 @@ public class LuaSyntaxTree
         return new LuaSyntaxTree(source, root, diagnostics);
     }
 
-    private LuaSyntaxTree(LuaSource source, GreenNode root, List<Diagnostic.Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaSource source, GreenNode root, List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> diagnostics)
     {
         Source = source;
         GreenRoot = root;

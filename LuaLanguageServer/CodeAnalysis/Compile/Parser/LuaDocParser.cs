@@ -1,9 +1,9 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Grammar.Doc;
-using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Source;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Grammar.Doc;
+using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Parser;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 
 /// <summary>
 /// backtracking parser

@@ -1,7 +1,7 @@
-﻿using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Kind;
+﻿using LuaLanguageServer.CodeAnalysis.Compile.Parser;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Grammar.Lua;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Grammar.Lua;
 
 public static class StatementParser
 {

@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
-using LuaLanguageServer.LuaCore.Compile.Grammar.Lua;
-using LuaLanguageServer.LuaCore.Compile.Lexer;
-using LuaLanguageServer.LuaCore.Compile.Parser;
-using LuaLanguageServer.LuaCore.Kind;
+using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
+using LuaLanguageServer.CodeAnalysis.Compile.Parser;
+using LuaLanguageServer.CodeAnalysis.Kind;
 
-namespace LuaLanguageServer.LuaCore.Compile.Grammar.Doc;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Grammar.Doc;
 
 public static class CommentParser
 {

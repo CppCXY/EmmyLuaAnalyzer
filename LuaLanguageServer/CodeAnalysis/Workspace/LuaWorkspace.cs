@@ -1,4 +1,4 @@
-﻿namespace LuaLanguageServer.LuaCore.Workspace;
+﻿namespace LuaLanguageServer.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
