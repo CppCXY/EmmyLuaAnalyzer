@@ -45,7 +45,7 @@ public class GreenNodeBuilder
                 nodeRange.Length += Children[i].Range.Length;
             }
 
-            Children[i].Slot = i - parentInfo.FirstChild;
+            Children[i] = Children[i].WithPosition(i - parentInfo.FirstChild);
             nodeChildren.Add(Children[i]);
         }
 

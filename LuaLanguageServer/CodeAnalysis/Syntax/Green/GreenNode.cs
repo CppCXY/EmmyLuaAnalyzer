@@ -16,7 +16,7 @@ public class GreenNode
 
     public SourceRange Range { get; }
 
-    public int Slot { get; internal set; } = 0;
+    public int ChildPosition { get; private set; } = 0;
 
     private readonly ushort _kind;
 
@@ -34,19 +34,28 @@ public class GreenNode
 
     public bool IsToken => _flag is NodeFlags.Token;
 
-    public GreenNode(LuaSyntaxKind kind, SourceRange range, List<GreenNode> children)
+    public GreenNode(LuaSyntaxKind kind, SourceRange range, List<GreenNode> children, int childPosition = 0)
     {
         _flag = NodeFlags.Node;
         _kind = (ushort)kind;
         Range = range;
         _children = children;
+        ChildPosition = childPosition;
     }
 
-    public GreenNode(LuaTokenKind kind, SourceRange range)
+    public GreenNode(LuaTokenKind kind, SourceRange range, int childPosition = 0)
     {
         _flag = NodeFlags.Token;
         _kind = (ushort)kind;
         Range = range;
+        ChildPosition = childPosition;
+    }
+
+    public GreenNode WithPosition(int position)
+    {
+        return IsSyntaxNode
+            ? new GreenNode(SyntaxKind, Range, Children, position)
+            : new GreenNode(TokenKind, Range, position);
     }
 
     // 遍历所有后代, 包括自己
