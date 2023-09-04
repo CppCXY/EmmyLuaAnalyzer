@@ -1,15 +1,15 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaSourceSyntax : LuaSyntaxNode
 {
-    public LuaBlockSyntax BlockSyntax { get; }
+    public LuaBlockSyntax BlockSyntax => FirstChild<LuaBlockSyntax>();
 
-    public LuaSourceSyntax(GreenNode greenNode, LuaBlockSyntax blockSyntax)
-        : base(greenNode)
+    public LuaSourceSyntax(GreenNode greenNode, LuaSyntaxTree tree)
+        : base(greenNode, tree, null)
     {
-        BlockSyntax = blockSyntax;
     }
 }
 

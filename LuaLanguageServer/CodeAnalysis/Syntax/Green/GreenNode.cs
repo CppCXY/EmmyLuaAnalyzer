@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+﻿using System.Collections.Immutable;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
 using LuaLanguageServer.CodeAnalysis.Kind;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
@@ -8,7 +9,7 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
 /// </summary>
 public class GreenNode
 {
-    enum NodeFlags
+    private enum NodeFlags
     {
         Node,
         Token
@@ -16,13 +17,13 @@ public class GreenNode
 
     public SourceRange Range { get; }
 
-    public int ChildPosition { get; private set; } = 0;
+    public int ChildPosition { get; internal set; } = 0;
 
     private readonly ushort _kind;
 
-    private List<GreenNode>? _children;
+    private ImmutableArray<GreenNode>? _children;
 
-    public List<GreenNode> Children => IsSyntaxNode ? _children! : new List<GreenNode>();
+    public IEnumerable<GreenNode> Children => IsSyntaxNode ? _children! : ImmutableArray<GreenNode>.Empty;
 
     private readonly NodeFlags _flag;
 
@@ -34,12 +35,12 @@ public class GreenNode
 
     public bool IsToken => _flag is NodeFlags.Token;
 
-    public GreenNode(LuaSyntaxKind kind, SourceRange range, List<GreenNode> children, int childPosition = 0)
+    public GreenNode(LuaSyntaxKind kind, SourceRange range, IEnumerable<GreenNode> children, int childPosition = 0)
     {
         _flag = NodeFlags.Node;
         _kind = (ushort)kind;
         Range = range;
-        _children = children;
+        _children = children.ToImmutableArray();
         ChildPosition = childPosition;
     }
 
@@ -49,57 +50,5 @@ public class GreenNode
         _kind = (ushort)kind;
         Range = range;
         ChildPosition = childPosition;
-    }
-
-    public GreenNode WithPosition(int position)
-    {
-        return IsSyntaxNode
-            ? new GreenNode(SyntaxKind, Range, Children, position)
-            : new GreenNode(TokenKind, Range, position);
-    }
-
-    // 遍历所有后代, 包括自己
-    public IEnumerable<GreenNode> DescendantWithSelf()
-    {
-        var stack = new Stack<GreenNode>();
-        stack.Push(this);
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            yield return node;
-            if (node.IsSyntaxNode)
-            {
-                foreach (var child in node.Children)
-                {
-                    stack.Push(child);
-                }
-            }
-        }
-    }
-
-    // 不包括自己
-    public IEnumerable<GreenNode> Descendants()
-    {
-        var stack = new Stack<GreenNode>();
-        if (IsSyntaxNode)
-        {
-            foreach (var child in Children)
-            {
-                stack.Push(child);
-            }
-        }
-
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            yield return node;
-            if (node.IsSyntaxNode)
-            {
-                foreach (var child in node.Children)
-                {
-                    stack.Push(child);
-                }
-            }
-        }
     }
 }

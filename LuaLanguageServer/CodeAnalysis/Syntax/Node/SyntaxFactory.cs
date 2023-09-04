@@ -1,11 +1,22 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 class SyntaxFactory
 {
+    public static LuaSyntaxNode CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    {
+        return greenNode.SyntaxKind switch
+        {
+            LuaSyntaxKind.Source => SourceSyntax(greenNode),
+            LuaSyntaxKind.Block => BlockSyntax(greenNode),
+            _ => throw new Exception("Unexpected SyntaxKind")
+        };
+    }
+
     public static LuaSourceSyntax SourceSyntax(GreenNode greenNode)
     {
         var block = BlockSyntax(greenNode.Children.First());

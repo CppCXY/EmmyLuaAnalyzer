@@ -17,7 +17,6 @@ public class GreenNodeBuilder
         }
     }
 
-
     private Stack<ParentInfo> Parents { get; } = new Stack<ParentInfo>();
 
     private List<GreenNode> Children { get; } = new List<GreenNode>();
@@ -45,7 +44,7 @@ public class GreenNodeBuilder
                 nodeRange.Length += Children[i].Range.Length;
             }
 
-            Children[i] = Children[i].WithPosition(i - parentInfo.FirstChild);
+            Children[i].ChildPosition = i - parentInfo.FirstChild;
             nodeChildren.Add(Children[i]);
         }
 
