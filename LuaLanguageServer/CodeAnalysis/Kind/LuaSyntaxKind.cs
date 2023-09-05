@@ -39,6 +39,7 @@ public enum LuaSyntaxKind : ushort
     NameExpr,
 
     VarDef,
+    ParamList,
     TableFieldAssign,
     TableFieldValue,
     Attribute,

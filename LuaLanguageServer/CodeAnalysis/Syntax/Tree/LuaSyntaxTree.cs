@@ -50,13 +50,13 @@ public class LuaSyntaxTree
     {
         get
         {
-            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
+            // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
             if (_root is null)
             {
-                _root = SyntaxFactory.SourceSyntax(GreenRoot);
+                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null).Node as LuaSourceSyntax;
             }
 
-            return _root;
+            return _root!;
         }
     }
 }

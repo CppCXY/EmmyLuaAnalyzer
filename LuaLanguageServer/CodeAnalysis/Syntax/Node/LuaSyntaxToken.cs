@@ -32,4 +32,6 @@ public class LuaSyntaxToken
             node = node.Parent;
         }
     }
+
+    public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(GreenNode.Range.StartOffset, GreenNode.Range.Length);
 }

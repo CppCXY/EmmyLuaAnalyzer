@@ -1,297 +1,267 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+﻿using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStatementSyntax : LuaSyntaxNode
+public class LuaStatSyntax : LuaSyntaxNode
 {
-    public LuaStatementSyntax(GreenNode greenNode)
-        : base(greenNode)
+    // public Comment?
+
+    public LuaStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
     {
     }
 }
 
-public class LuaLocalStatementSyntax : LuaStatementSyntax
+public class LuaLocalStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken Local { get; }
+    public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
 
-    public List<NameSyntax> NameSyntaxList { get; }
+    public IEnumerable<LuaNameSyntax> NameSyntaxList => ChildNodes<LuaNameSyntax>();
 
-    public LuaSyntaxToken? Assign { get; }
+    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
-    public List<ExpressionSyntax>? ExpressionSyntaxList { get; }
+    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
 
-    public LuaLocalStatementSyntax(GreenNode greenNode, LuaSyntaxToken local, List<NameSyntax> nameList,
-        LuaSyntaxToken? assign, List<ExpressionSyntax>? expressionList)
-        : base(greenNode)
-    {
-        Local = local;
-        NameSyntaxList = nameList;
-        Assign = assign;
-        ExpressionSyntaxList = expressionList;
-    }
-}
-
-public class LuaAssignmentStatementSyntax : LuaStatementSyntax
-{
-    public List<VarDefSyntax> VarList { get; }
-
-    public List<ExpressionSyntax> ExpressionSyntaxList { get; }
-
-    public LuaSyntaxToken Assign { get; }
-
-    public LuaAssignmentStatementSyntax(GreenNode greenNode, List<VarDefSyntax> varList, LuaSyntaxToken assign,
-        List<ExpressionSyntax> expressionList)
-        : base(greenNode)
-    {
-        VarList = varList;
-        Assign = assign;
-        ExpressionSyntaxList = expressionList;
-    }
-}
-
-public class LuaFunctionStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken Local { get; }
-
-    public LuaSyntaxToken Function { get; }
-
-    public LuaSyntaxToken Name { get; }
-
-    public LuaSyntaxToken OpenParen { get; }
-
-    public List<LuaSyntaxToken> ParamNameList { get; }
-
-    public LuaSyntaxToken CloseParen { get; }
-
-    public LuaBlockSyntax BlockSyntax { get; }
-
-    public LuaSyntaxToken End { get; }
-
-    public LuaFunctionStatementSyntax(GreenNode greenNode, LuaSyntaxToken local, LuaSyntaxToken function,
-        LuaSyntaxToken name, LuaSyntaxToken openParen, List<LuaSyntaxToken> paramNameList, LuaSyntaxToken closeParen,
-        LuaBlockSyntax blockSyntax, LuaSyntaxToken end)
-        : base(greenNode)
-    {
-        Local = local;
-        Function = function;
-        Name = name;
-        OpenParen = openParen;
-        ParamNameList = paramNameList;
-        CloseParen = closeParen;
-        BlockSyntax = blockSyntax;
-        End = end;
-    }
-}
-
-public class LuaLabelStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken LeftDoubleColon { get; }
-
-    public LuaSyntaxToken Name { get; }
-
-    public LuaSyntaxToken RightDoubleColon { get; }
-
-    public LuaLabelStatementSyntax(GreenNode greenNode, LuaSyntaxToken leftDoubleColon, LuaSyntaxToken name,
-        LuaSyntaxToken rightDoubleColon)
-        : base(greenNode)
-    {
-        LeftDoubleColon = leftDoubleColon;
-        Name = name;
-        RightDoubleColon = rightDoubleColon;
-    }
-}
-
-public class LuaGotoStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken Goto { get; }
-
-    public LuaSyntaxToken LabelName { get; }
-
-    public LuaGotoStatementSyntax(GreenNode greenNode, LuaSyntaxToken @goto, LuaSyntaxToken labelName)
-        : base(greenNode)
-    {
-        Goto = @goto;
-        LabelName = labelName;
-    }
-}
-
-public class LuaBreakStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken Break { get; }
-
-    public LuaBreakStatementSyntax(GreenNode greenNode, LuaSyntaxToken @break)
-        : base(greenNode)
-    {
-        Break = @break;
-    }
-}
-
-public class LuaReturnStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken Return { get; }
-
-    public List<ExpressionSyntax>? ExpressionSyntaxList { get; }
-
-    public LuaReturnStatementSyntax(GreenNode greenNode, LuaSyntaxToken @return,
-        List<ExpressionSyntax>? expressionSyntaxList)
-        : base(greenNode)
-    {
-        Return = @return;
-        ExpressionSyntaxList = expressionSyntaxList;
-    }
-}
-
-public class LuaIfStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken If { get; }
-
-    public ExpressionSyntax Condition { get; }
-
-    public LuaSyntaxToken Then { get; }
-
-    public LuaBlockSyntax ThenBlock { get; }
-
-    public List<LuaElseIfStatementSyntax>? ElseIfStatementSyntaxList { get; }
-
-    public LuaSyntaxToken? Else { get; }
-
-    public LuaBlockSyntax? ElseBlock { get; }
-
-    public LuaSyntaxToken End { get; }
-
-    public LuaIfStatementSyntax(GreenNode greenNode, LuaSyntaxToken @if, ExpressionSyntax condition,
-        LuaSyntaxToken then, LuaBlockSyntax thenBlock, List<LuaElseIfStatementSyntax>? elseIfStatementSyntaxList,
-        LuaSyntaxToken? @else, LuaBlockSyntax? elseBlock, LuaSyntaxToken end)
-        : base(greenNode)
-    {
-        If = @if;
-        Condition = condition;
-        Then = then;
-        ThenBlock = thenBlock;
-        ElseIfStatementSyntaxList = elseIfStatementSyntaxList;
-        Else = @else;
-        ElseBlock = elseBlock;
-        End = end;
-    }
-}
-
-public class LuaElseIfStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken ElseIf { get; }
-
-    public ExpressionSyntax Condition { get; }
-
-    public LuaSyntaxToken Then { get; }
-
-    public LuaBlockSyntax ThenBlock { get; }
-
-    public LuaElseIfStatementSyntax(GreenNode greenNode, LuaSyntaxToken elseIf, ExpressionSyntax condition,
-        LuaSyntaxToken then, LuaBlockSyntax thenBlock)
-        : base(greenNode)
-    {
-        ElseIf = elseIf;
-        Condition = condition;
-        Then = then;
-        ThenBlock = thenBlock;
-    }
-}
-
-public class LuaWhileStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken While { get; }
-
-    public ExpressionSyntax Condition { get; }
-
-    public LuaSyntaxToken Do { get; }
-
-    public LuaBlockSyntax Block { get; }
-
-    public LuaSyntaxToken End { get; }
-
-    public LuaWhileStatementSyntax(GreenNode greenNode, LuaSyntaxToken @while, ExpressionSyntax condition,
-        LuaSyntaxToken @do, LuaBlockSyntax block, LuaSyntaxToken end)
-        : base(greenNode)
-    {
-        While = @while;
-        Condition = condition;
-        Do = @do;
-        Block = block;
-        End = end;
-    }
-}
-
-public class LuaDoStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken Do { get; }
-
-    public LuaBlockSyntax Block { get; }
-
-    public LuaSyntaxToken End { get; }
-
-    public LuaDoStatementSyntax(GreenNode greenNode, LuaSyntaxToken @do, LuaBlockSyntax block, LuaSyntaxToken end)
-        : base(greenNode)
-    {
-        Do = @do;
-        Block = block;
-        End = end;
-    }
-}
-
-public class LuaForStatementSyntax : LuaStatementSyntax
-{
-    public LuaSyntaxToken For { get; }
-
-    public NameSyntax IteratorName { get; }
-
-    public LuaSyntaxToken Assign { get; }
-
-    public ExpressionSyntax InitExpr { get; }
-
-    public LuaSyntaxToken Comma1 { get; }
-
-    public ExpressionSyntax LimitExpr { get; }
-
-    public LuaSyntaxToken? Comma2 { get; }
-
-    public ExpressionSyntax? Step { get; }
-
-    public LuaForStatementSyntax(GreenNode greenNode, LuaSyntaxToken @for, NameSyntax iteratorName,
-        LuaSyntaxToken assign, ExpressionSyntax initExpr, LuaSyntaxToken comma1, ExpressionSyntax limitExpr,
-        LuaSyntaxToken? comma2, ExpressionSyntax? step)
-        : base(greenNode)
-    {
-        For = @for;
-        IteratorName = iteratorName;
-        Assign = assign;
-        InitExpr = initExpr;
-        Comma1 = comma1;
-        LimitExpr = limitExpr;
-        Comma2 = comma2;
-        Step = step;
-    }
-}
-
-public class LuaForEachStatementSyntax : LuaStatementSyntax
-{
-    public LuaForEachStatementSyntax(GreenNode greenNode)
-        : base(greenNode)
+    public LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
     {
     }
 }
 
-public class LuaRepeatStatementSyntax : LuaStatementSyntax
+public class LuaAssignmentStatSyntax : LuaStatSyntax
 {
-    public LuaRepeatStatementSyntax(GreenNode greenNode)
-        : base(greenNode)
+    public IEnumerable<LuaVarDefSyntax> VarList => ChildNodes<LuaVarDefSyntax>();
+
+    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
+
+    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+
+    public LuaAssignmentStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
     {
     }
 }
 
-public class LuaFunctionCallStatementSyntax : LuaStatementSyntax
+public class LuaFunctionStatSyntax : LuaStatSyntax
 {
-    public LuaFunctionCallStatementSyntax(GreenNode greenNode)
-        : base(greenNode)
+    public LuaSyntaxToken Local => FirstChildToken(LuaTokenKind.TkLocal)!;
+
+    public LuaSyntaxToken Function => FirstChildToken(LuaTokenKind.TkFunction)!;
+
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaParamListSyntax? ParamNameList => FirstChild<LuaParamListSyntax>();
+
+    public LuaBlockSyntax? BlockSyntax => FirstChild<LuaBlockSyntax>();
+
+    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+
+    public LuaFunctionStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
     {
     }
 }
 
+public class LuaLabelStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaGotoStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken Goto => FirstChildToken(LuaTokenKind.TkGoto)!;
+
+    public LuaSyntaxToken? LabelName => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaGotoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaBreakStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken Break => FirstChildToken(LuaTokenKind.TkBreak)!;
+
+    public LuaBreakStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaReturnStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken Return => FirstChildToken(LuaTokenKind.TkReturn)!;
+
+    public IEnumerable<LuaExprSyntax>? ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
+
+    public LuaReturnStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaIfStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken If => FirstChildToken(LuaTokenKind.TkIf)!;
+
+    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+
+    public LuaSyntaxToken? Then => FirstChildToken(LuaTokenKind.TkThen);
+
+    public LuaBlockSyntax? ThenBlock => FirstChild<LuaBlockSyntax>();
+
+    public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList => ChildNodes<LuaIfClauseStatSyntax>();
+
+    public LuaSyntaxToken End => FirstChildToken(LuaTokenKind.TkEnd)!;
+
+    public LuaIfStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaIfClauseStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken? ElseIf => FirstChildToken(LuaTokenKind.TkElseIf);
+
+    public LuaSyntaxToken? Else => FirstChildToken(LuaTokenKind.TkElse);
+
+    public bool IsElseIf => ElseIf != null;
+
+    public bool IsElse => Else != null;
+
+    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+
+    public LuaSyntaxToken? Then => FirstChildToken(LuaTokenKind.TkThen);
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaIfClauseStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaWhileStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken While => FirstChildToken(LuaTokenKind.TkWhile)!;
+
+    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+
+    public LuaSyntaxToken? Do => FirstChildToken(LuaTokenKind.TkDo);
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+
+    public LuaWhileStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaDoStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken Do => FirstChildToken(LuaTokenKind.TkDo)!;
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+
+    public LuaDoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaForStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken For => FirstChildToken(LuaTokenKind.TkFor)!;
+
+    public LuaNameSyntax? IteratorName => FirstChild<LuaNameSyntax>();
+
+    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+
+    public LuaExprSyntax? InitExpr => FirstChild<LuaExprSyntax>();
+
+    public LuaExprSyntax? LimitExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
+
+    public LuaExprSyntax? Step => ChildNodes<LuaExprSyntax>().Skip(2).FirstOrDefault();
+
+    public LuaForStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaForRangeStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken For => FirstChildToken(LuaTokenKind.TkFor)!;
+
+    public IEnumerable<LuaSyntaxToken> IteratorNames => ChildTokens(LuaTokenKind.TkName);
+
+    public LuaSyntaxToken? In => FirstChildToken(LuaTokenKind.TkIn);
+
+    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
+
+    public LuaSyntaxToken? Do => FirstChildToken(LuaTokenKind.TkDo);
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+
+    public LuaForRangeStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaRepeatStatSyntax : LuaStatSyntax
+{
+    public LuaSyntaxToken Repeat => FirstChildToken(LuaTokenKind.TkRepeat)!;
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaSyntaxToken? Until => FirstChildToken(LuaTokenKind.TkUntil);
+
+    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+
+    public LuaRepeatStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaCallStatSyntax : LuaStatSyntax
+{
+    public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
+
+    public LuaCallStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaEmptyStatSyntax : LuaStatSyntax
+{
+    public LuaEmptyStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaUnknownStatSyntax : LuaStatSyntax
+{
+    public LuaUnknownStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}

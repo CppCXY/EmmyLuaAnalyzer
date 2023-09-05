@@ -60,6 +60,7 @@ public static class StatementParser
                     p.Bump();
                     cm = m.Fail(p, LuaSyntaxKind.UnknownStat, $"unexpected symbol {token}");
                 }
+
                 return cm;
             }
         }
@@ -252,42 +253,58 @@ public static class StatementParser
         }
     }
 
-    public static void FunctionBody(LuaParser p)
+    private static CompleteMarker ParamList(LuaParser p)
     {
-        p.Expect(LuaTokenKind.TkLeftParen);
-        if (p.Current is LuaTokenKind.TkName)
+        var m = p.Marker();
+        try
         {
-            p.Bump();
-            while (p.Current is LuaTokenKind.TkComma)
+            p.Expect(LuaTokenKind.TkLeftParen);
+            if (p.Current is LuaTokenKind.TkName)
             {
                 p.Bump();
-                if (p.Current == LuaTokenKind.TkName)
+                while (p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
-                }
-                else
-                {
-                    p.Expect(LuaTokenKind.TkDots);
-                    break;
+                    if (p.Current == LuaTokenKind.TkName)
+                    {
+                        p.Bump();
+                    }
+                    else
+                    {
+                        p.Expect(LuaTokenKind.TkDots);
+                        break;
+                    }
                 }
             }
-        }
-        else if (p.Current is LuaTokenKind.TkDots)
-        {
-            p.Bump();
-        }
-        else if (p.Current is LuaTokenKind.TkRightParen)
-        {
-            // ignore
-        }
-        else
-        {
-            throw new UnexpectedTokenException("expected name or '...' in paramList");
-        }
+            else if (p.Current is LuaTokenKind.TkDots)
+            {
+                p.Bump();
+            }
+            else if (p.Current is LuaTokenKind.TkRightParen)
+            {
+                // ignore
+            }
+            else
+            {
+                throw new UnexpectedTokenException("expected name or '...' in paramList");
+            }
 
-        p.Expect(LuaTokenKind.TkRightParen);
-        BlockParser.Block(p);
-        p.Expect(LuaTokenKind.TkEnd);
+            p.Expect(LuaTokenKind.TkRightParen);
+            return m.Complete(p, LuaSyntaxKind.ParamList);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.ParamList, e.Message);
+        }
+    }
+
+    public static void FunctionBody(LuaParser p)
+    {
+        if (ParamList(p).IsComplete)
+        {
+            BlockParser.Block(p);
+            p.Expect(LuaTokenKind.TkEnd);
+        }
     }
 
     private static CompleteMarker LocalStatement(LuaParser p)

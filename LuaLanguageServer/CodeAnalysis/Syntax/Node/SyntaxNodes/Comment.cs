@@ -1,6 +1,15 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
-public class Comment
+namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
+public class Comment : LuaSyntaxNode
 {
-    
+    public Comment(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+
+    public bool IsDeprecated => FirstChildToken(LuaTokenKind.TkTagDeprecated) != null;
 }
