@@ -131,12 +131,14 @@ public class LuaDocParser : IParser
 
     public struct RollbackPoint
     {
-        public int EventPosition { get; set; }
-        public int OriginTokenIndex { get; set; }
-        public int LexerPosition { get; set; }
-        public LuaDocLexerState LexerState { get; set; }
-        public LuaTokenData Current { get; set; }
-        public bool Invalid { get; set; }
+        public int EventPosition { get; init; }
+        public int OriginTokenIndex { get; init; }
+        public int LexerPosition { get; init; }
+        public LuaDocLexerState LexerState { get; init; }
+        public LuaTokenData Current { get; init; }
+        public bool Invalid { get; init; }
+
+        public bool ReaderIsEof { get; init; }
     }
 
     public RollbackPoint GetRollbackPoint()
@@ -148,7 +150,8 @@ public class LuaDocParser : IParser
             LexerPosition = Lexer.Reader.CurrentPosition,
             LexerState = Lexer.State,
             Current = _current,
-            Invalid = _invalid
+            Invalid = _invalid,
+            ReaderIsEof = Lexer.Reader.IsEof
         };
     }
 
@@ -163,5 +166,6 @@ public class LuaDocParser : IParser
         Lexer.State = rollbackPoint.LexerState;
         _current = rollbackPoint.Current;
         _invalid = rollbackPoint.Invalid;
+        Lexer.Reader.IsEof = rollbackPoint.ReaderIsEof;
     }
 }

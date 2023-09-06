@@ -30,7 +30,7 @@ public class SourceReader
     public void Bump()
     {
         Save();
-        if (CurrentPosition < ValidRange.Length)
+        if (CurrentPosition + 1 < ValidRange.Length)
         {
             ++CurrentPosition;
         }
