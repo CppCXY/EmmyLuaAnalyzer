@@ -143,7 +143,20 @@ public static class TypesParser
                 case LuaTokenKind.TkLeftBracket:
                 {
                     p.Bump();
-                    Type(p);
+                    switch (p.Current)
+                    {
+                        case LuaTokenKind.TkString or LuaTokenKind.TkInt:
+                        {
+                            p.Bump();
+                            break;
+                        }
+                        default:
+                        {
+                            Type(p);
+                            break;
+                        }
+                    }
+
                     p.Expect(LuaTokenKind.TkRightBracket);
                     break;
                 }

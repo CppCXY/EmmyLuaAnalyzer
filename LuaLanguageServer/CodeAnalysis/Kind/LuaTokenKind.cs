@@ -94,6 +94,7 @@ public enum LuaTokenKind : ushort
     TkTagEnum, // enum
     TkTagInterface, // interface
     TkTagAlias, // alias
+    TkTagModule, // module
 
     TkTagField, // field
     TkTagType, // type

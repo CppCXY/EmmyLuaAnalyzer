@@ -93,6 +93,10 @@ public static class TagParser
             {
                 return TagOperator(p);
             }
+            case LuaTokenKind.TkTagModule:
+            {
+                return TagModule(p);
+            }
             case LuaTokenKind.TkTagOther:
             {
                 return SimpleTag(p, LuaSyntaxKind.DocOther);
@@ -121,9 +125,16 @@ public static class TagParser
     {
         p.SetState(LuaDocLexerState.Normal);
         var m = p.Marker();
-        TypesParser.Type(p);
-        p.Accept(LuaTokenKind.TkDocDescription);
-        return m.Complete(p, LuaSyntaxKind.DocEnumField);
+        try
+        {
+            p.Expect(LuaTokenKind.TkString);
+            p.Accept(LuaTokenKind.TkDocDescription);
+            return m.Complete(p, LuaSyntaxKind.DocEnumField);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DocEnumField, e.Message);
+        }
     }
 
     private static CompleteMarker TagClass(LuaDocParser p)
@@ -573,6 +584,7 @@ public static class TagParser
                     p.Bump();
                     cm = TypesParser.Type(p);
                 }
+
                 p.Expect(LuaTokenKind.TkRightParen);
             }
 
@@ -584,6 +596,23 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocOperator, e.Message);
+        }
+    }
+
+    private static CompleteMarker TagModule(LuaDocParser p)
+    {
+        p.SetState(LuaDocLexerState.Normal);
+        var m = p.Marker();
+        p.Bump();
+        try
+        {
+            p.Expect(LuaTokenKind.TkString);
+            p.Accept(LuaTokenKind.TkDocDescription);
+            return m.Complete(p, LuaSyntaxKind.DocModule);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DocModule, e.Message);
         }
     }
 }

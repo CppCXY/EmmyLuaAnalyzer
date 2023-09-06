@@ -71,6 +71,7 @@ public enum LuaSyntaxKind : ushort
     DocAs,
     DocNodiscard,
     DocOperator,
+    DocModule,
 
     // Type
     TypeArray,

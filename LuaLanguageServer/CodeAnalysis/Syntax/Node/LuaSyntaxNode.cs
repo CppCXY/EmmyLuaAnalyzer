@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
+using System.Text;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -250,6 +251,87 @@ public abstract class LuaSyntaxNode
         }
     }
 
+    public IEnumerable<T> ChildNodesBeforeToken<T>(LuaTokenKind kind) where T : LuaSyntaxNode
+    {
+        if (!_lazyInit)
+        {
+            LazyInit();
+        }
+
+        if (_childrenOrToken == null)
+        {
+            yield break;
+        }
+
+        foreach (var child in _childrenOrToken)
+        {
+            switch (child)
+            {
+                case { IsToken: true, Token: { } tk } when tk.Kind == kind:
+                    yield break;
+                case { IsNode: true, Node: T node }:
+                    yield return node;
+                    break;
+            }
+        }
+    }
+
+    public IEnumerable<T> ChildNodesAfterToken<T>(LuaTokenKind kind) where T : LuaSyntaxNode
+    {
+        if (!_lazyInit)
+        {
+            LazyInit();
+        }
+
+        if (_childrenOrToken == null)
+        {
+            yield break;
+        }
+
+        var afterToken = false;
+        foreach (var child in _childrenOrToken)
+        {
+            if (afterToken && child is { IsNode: true, Node: T node })
+            {
+                yield return node;
+            }
+
+            if (child is { IsToken: true, Token: { } tk } && tk.Kind == kind)
+            {
+                afterToken = true;
+            }
+        }
+    }
+
+    public T? ChildNodeAfterToken<T>(LuaTokenKind kind) where T : LuaSyntaxNode
+    {
+        if (!_lazyInit)
+        {
+            LazyInit();
+        }
+
+        if (_childrenOrToken == null)
+        {
+            return null!;
+        }
+
+        var afterToken = false;
+        foreach (var child in _childrenOrToken)
+        {
+            if (afterToken && child is { IsNode: true, Node: T node })
+            {
+                return node;
+            }
+
+            if (child is { IsToken: true, Token: { } tk } && tk.Kind == kind)
+            {
+                afterToken = true;
+            }
+        }
+
+        return null;
+    }
+
     public IEnumerable<LuaSyntaxToken> ChildTokens(LuaTokenKind kind)
     {
         if (!_lazyInit)
@@ -269,5 +351,42 @@ public abstract class LuaSyntaxNode
                 yield return tk;
             }
         }
+    }
+
+    public string DebugInspect()
+    {
+        var sb = new StringBuilder();
+        var stack = new Stack<(LuaSyntaxNodeOrToken node, int level)>();
+
+        stack.Push((new LuaSyntaxNodeOrToken(this), 0));
+        while (stack.Count > 0)
+        {
+            var (nodeOrToken, level) = stack.Pop();
+            sb.Append(' ', level * 2);
+            if (nodeOrToken.IsNode)
+            {
+                var node = nodeOrToken.Node!;
+                sb.AppendLine(
+                    $"{node.Kind}@{node.GreenNode.Range.StartOffset}..{node.GreenNode.Range.StartOffset + node.GreenNode.Range.Length}");
+                foreach (var child in node.ChildrenWithTokens.Reverse())
+                {
+                    stack.Push((child, level + 1));
+                }
+            }
+            else
+            {
+                var token = nodeOrToken.Token!;
+                var detail = token.Kind switch
+                {
+                    LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine or LuaTokenKind.TkDocTrivia => "",
+                    _ => $"\"{token.Text}\""
+                };
+
+                sb.AppendLine(
+                    $"{token.Kind}@{token.GreenNode.Range.StartOffset}..{token.GreenNode.Range.StartOffset + token.GreenNode.Range.Length} {detail}");
+            }
+        }
+
+        return sb.ToString();
     }
 }

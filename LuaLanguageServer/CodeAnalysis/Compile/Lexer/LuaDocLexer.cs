@@ -35,6 +35,7 @@ public class LuaDocLexer
             "interface" => LuaTokenKind.TkTagInterface,
             "alias" => LuaTokenKind.TkTagAlias,
 
+            "module" => LuaTokenKind.TkTagModule,
             "field" => LuaTokenKind.TkTagField,
             "type" => LuaTokenKind.TkTagType,
             "param" => LuaTokenKind.TkTagParam,
