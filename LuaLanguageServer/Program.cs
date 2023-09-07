@@ -18,7 +18,7 @@ Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
 // 计算执行时间
 // var sw = new Stopwatch();
 // sw.Start();
-// var w = LuaWorkspace.Create("C:\\Users\\zc\\Desktop\\N3_server\\gameserver\\script");
+// var w = LuaWorkspace.Create("");
 //
 // sw.Stop();
 // Console.WriteLine($"耗时: {sw.ElapsedMilliseconds} ms");
