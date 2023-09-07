@@ -14,7 +14,7 @@ public class LuaSyntaxTree
 
     public GreenNode GreenRoot { get; }
 
-    public List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> Diagnostics { get; }
+    public List<Diagnostic.Diagnostic> Diagnostics { get; }
 
     private LuaSourceSyntax? _root;
 

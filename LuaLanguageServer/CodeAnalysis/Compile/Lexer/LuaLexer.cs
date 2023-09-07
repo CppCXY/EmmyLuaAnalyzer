@@ -246,9 +246,9 @@ public class LuaLexer
                 Reader.Bump();
                 if (Reader.CurrentChar != '.') return LuaTokenKind.TkDot;
                 Reader.Bump();
-                if (Reader.CurrentChar != '.') return LuaTokenKind.TkDots;
+                if (Reader.CurrentChar != '.') return LuaTokenKind.TkConcat;
                 Reader.Bump();
-                return LuaTokenKind.TkConcat;
+                return LuaTokenKind.TkDots;
             }
             case >= '0' and <= '9':
             {

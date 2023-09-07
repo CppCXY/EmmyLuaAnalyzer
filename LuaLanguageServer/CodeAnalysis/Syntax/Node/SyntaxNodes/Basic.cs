@@ -16,7 +16,7 @@ public class LuaSourceSyntax : LuaSyntaxNode
 
 public class LuaBlockSyntax : LuaSyntaxNode
 {
-    public IEnumerable<LuaStatSyntax> StatementSyntaxList => ChildNodes<LuaStatSyntax>();
+    public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
 
     public LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)

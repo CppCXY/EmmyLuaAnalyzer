@@ -3,18 +3,22 @@
 // var server = new LanguageServer();
 // await server.StartAsync(args);
 
+using System.Diagnostics;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
+using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---@class t
-    local t = 123
-    print(1231,242,24,123)
-
-    ---@param a number
-    ---@return number
-    function ff(a)
-    end
+    ---@param enumDefineTable T 提供枚举值的表
+    ---@return T
     """);
 
-Console.Write(tree.SyntaxRoot.DebugInspect());
+Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+//
+// 计算执行时间
+// var sw = new Stopwatch();
+// sw.Start();
+// var w = LuaWorkspace.Create("C:\\Users\\zc\\Desktop\\N3_server\\gameserver\\script");
+//
+// sw.Stop();
+// Console.WriteLine($"耗时: {sw.ElapsedMilliseconds} ms");

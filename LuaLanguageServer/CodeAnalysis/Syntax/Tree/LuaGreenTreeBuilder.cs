@@ -13,7 +13,7 @@ public class LuaGreenTreeBuilder
 
     private GreenNodeBuilder NodeBuilder { get; }
 
-    private List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> Diagnostics { get; } = new();
+    private List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
 
     public LuaGreenTreeBuilder(LuaParser parser)
     {
@@ -22,7 +22,7 @@ public class LuaGreenTreeBuilder
     }
 
     // 多返回值
-    public (GreenNode, List<CodeAnalysis.Syntax.Diagnostic.Diagnostic>) Build()
+    public (GreenNode, List<Diagnostic.Diagnostic>) Build()
     {
         var tree = BuildTree();
         return (tree, Diagnostics);
@@ -49,8 +49,9 @@ public class LuaGreenTreeBuilder
                         if (Parser.Events[pPosition] is MarkEvent.NodeStart pEvent)
                         {
                             parents.Add(pEvent.Kind);
+                            // 顺序不要反了
+                            Parser.Events[pPosition] = pEvent with { Kind = LuaSyntaxKind.None, Parent = 0 };
                             pPosition = pEvent.Parent;
-                            Parser.Events[pPosition] = pEvent with { Kind = LuaSyntaxKind.None };
                         }
                         else
                         {
@@ -83,11 +84,11 @@ public class LuaGreenTreeBuilder
                             MarkEvent.EatToken(var tkRange, _) => tkRange,
                             _ => throw new UnreachableException(),
                         };
-                        Diagnostics.Add(new CodeAnalysis.Syntax.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
                     }
                     else
                     {
-                        Diagnostics.Add(new CodeAnalysis.Syntax.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
+                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
                             Parser.Lexer.Source.Text.Length
                         )));
                     }

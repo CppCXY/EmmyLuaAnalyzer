@@ -353,7 +353,7 @@ public abstract class LuaSyntaxNode
         }
     }
 
-    public string DebugInspect()
+    public string DebugSyntaxInspect()
     {
         var sb = new StringBuilder();
         var stack = new Stack<(LuaSyntaxNodeOrToken node, int level)>();
@@ -367,7 +367,7 @@ public abstract class LuaSyntaxNode
             {
                 var node = nodeOrToken.Node!;
                 sb.AppendLine(
-                    $"{node.Kind}@{node.GreenNode.Range.StartOffset}..{node.GreenNode.Range.StartOffset + node.GreenNode.Range.Length}");
+                    $"{node.GetType().Name}@[{node.GreenNode.Range.StartOffset}..{node.GreenNode.Range.StartOffset + node.GreenNode.Range.Length})");
                 foreach (var child in node.ChildrenWithTokens.Reverse())
                 {
                     stack.Push((child, level + 1));
@@ -383,7 +383,44 @@ public abstract class LuaSyntaxNode
                 };
 
                 sb.AppendLine(
-                    $"{token.Kind}@{token.GreenNode.Range.StartOffset}..{token.GreenNode.Range.StartOffset + token.GreenNode.Range.Length} {detail}");
+                    $"{token.Kind}@[{token.GreenNode.Range.StartOffset}..{token.GreenNode.Range.StartOffset + token.GreenNode.Range.Length}) {detail}");
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    public string DebugGreenInspect()
+    {
+        var sb = new StringBuilder();
+        var stack = new Stack<(LuaSyntaxNodeOrToken node, int level)>();
+
+        stack.Push((new LuaSyntaxNodeOrToken(this), 0));
+        while (stack.Count > 0)
+        {
+            var (nodeOrToken, level) = stack.Pop();
+            sb.Append(' ', level * 2);
+            if (nodeOrToken.IsNode)
+            {
+                var node = nodeOrToken.Node!;
+                sb.AppendLine(
+                    $"{node.Kind}@[{node.GreenNode.Range.StartOffset}..{node.GreenNode.Range.StartOffset + node.GreenNode.Range.Length})");
+                foreach (var child in node.ChildrenWithTokens.Reverse())
+                {
+                    stack.Push((child, level + 1));
+                }
+            }
+            else
+            {
+                var token = nodeOrToken.Token!;
+                var detail = token.Kind switch
+                {
+                    LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine or LuaTokenKind.TkDocTrivia => "",
+                    _ => $"\"{token.Text}\""
+                };
+
+                sb.AppendLine(
+                    $"{token.Kind}@[{token.GreenNode.Range.StartOffset}..{token.GreenNode.Range.StartOffset + token.GreenNode.Range.Length}) {detail}");
             }
         }
 

@@ -151,7 +151,6 @@ public class LuaDocLexer
                         }
                         else
                         {
-                            Reader.Bump();
                             return LuaTokenKind.TkNormalStart;
                         }
                     }

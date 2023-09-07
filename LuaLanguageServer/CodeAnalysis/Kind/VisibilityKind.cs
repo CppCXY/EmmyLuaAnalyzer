@@ -10,7 +10,7 @@ public enum VisibilityKind
     Package,
 }
 
-public class VisibilityKindHelper
+public static class VisibilityKindHelper
 {
     public static VisibilityKind ToVisibilityKind(ReadOnlySpan<char> visibility)
     {

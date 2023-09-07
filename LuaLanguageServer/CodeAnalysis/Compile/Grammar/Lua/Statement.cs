@@ -7,10 +7,17 @@ public static class StatementParser
 {
     public static void Statements(LuaParser p)
     {
+        var consumeCount = p.CurrentIndex;
         while (!BlockFollow(p))
         {
             Statement(p);
         }
+
+        if (p.CurrentIndex != consumeCount) return;
+        var m = p.Marker();
+        var token = p.Current;
+        p.Bump();
+        m.Fail(p, LuaSyntaxKind.UnknownStat, $"unexpected symbol {token}");
     }
 
     private static bool BlockFollow(LuaParser p)
@@ -96,7 +103,6 @@ public static class StatementParser
     private static CompleteMarker IfClause(LuaParser p)
     {
         var m = p.Marker();
-        p.Bump();
         try
         {
             if (p.Current is LuaTokenKind.TkElseIf)

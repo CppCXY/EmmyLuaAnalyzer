@@ -30,7 +30,7 @@ public class LuaLocalStatSyntax : LuaStatSyntax
     }
 }
 
-public class LuaAssignmentStatSyntax : LuaStatSyntax
+public class LuaAssignStatSyntax : LuaStatSyntax
 {
     public IEnumerable<LuaVarDefSyntax> VarList => ChildNodes<LuaVarDefSyntax>();
 
@@ -38,13 +38,13 @@ public class LuaAssignmentStatSyntax : LuaStatSyntax
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
-    public LuaAssignmentStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaAssignStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
     {
     }
 }
 
-public class LuaFunctionStatSyntax : LuaStatSyntax
+public class LuaFuncStatSyntax : LuaStatSyntax
 {
     public LuaSyntaxToken Local => FirstChildToken(LuaTokenKind.TkLocal)!;
 
@@ -58,7 +58,7 @@ public class LuaFunctionStatSyntax : LuaStatSyntax
 
     public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
 
-    public LuaFunctionStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
     {
     }
