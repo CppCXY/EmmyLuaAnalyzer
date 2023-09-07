@@ -9,8 +9,11 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---@param enumDefineTable T 提供枚举值的表
-    ---@return T
+    ---@enum b  you baby
+    ---| "hhello" #hiljioio
+    ---@class A #gvoejg
+    ---@class B 哈哈哈
+    ---@param b number number
     """);
 
 Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());

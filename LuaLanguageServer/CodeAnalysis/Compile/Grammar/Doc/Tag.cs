@@ -128,7 +128,7 @@ public static class TagParser
         try
         {
             p.Expect(LuaTokenKind.TkString);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocEnumField);
         }
         catch (UnexpectedTokenException e)
@@ -249,6 +249,23 @@ public static class TagParser
         }
     }
 
+    private static void AcceptDescription(LuaDocParser p)
+    {
+        var rollbackPoint = p.GetRollbackPoint();
+        if (p.Current is LuaTokenKind.TkDocDescription)
+        {
+            p.Bump();
+            return;
+        }
+        else if (p.Current is LuaTokenKind.TkEof or LuaTokenKind.TkEndOfLine)
+        {
+            return;
+        }
+        p.Rollback(rollbackPoint);
+        p.SetState(LuaDocLexerState.Description);
+        p.Accept(LuaTokenKind.TkDocDescription);
+    }
+
     private static CompleteMarker TagEnum(LuaDocParser p)
     {
         p.SetState(LuaDocLexerState.Normal);
@@ -263,7 +280,7 @@ public static class TagParser
                 TypesParser.Type(p);
             }
 
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocEnum);
         }
         catch (UnexpectedTokenException e)
@@ -307,7 +324,7 @@ public static class TagParser
                 TypesParser.Type(p);
             }
 
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocAlias);
         }
         catch (UnexpectedTokenException e)
@@ -347,7 +364,7 @@ public static class TagParser
 
             p.Accept(LuaTokenKind.TkNullable);
             TypesParser.Type(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocField);
         }
         catch (UnexpectedTokenException e)
@@ -364,7 +381,7 @@ public static class TagParser
         try
         {
             TypesParser.TypeList(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocType);
         }
         catch (UnexpectedTokenException e)
@@ -391,7 +408,7 @@ public static class TagParser
 
             p.Accept(LuaTokenKind.TkNullable);
             TypesParser.Type(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocParam);
         }
         catch (UnexpectedTokenException e)
@@ -408,7 +425,7 @@ public static class TagParser
         try
         {
             TypesParser.TypeList(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocReturn);
         }
         catch (UnexpectedTokenException e)
@@ -431,7 +448,7 @@ public static class TagParser
                 cm = TypesParser.TypedParameter(p);
             }
 
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocGeneric);
         }
         catch (UnexpectedTokenException e)
@@ -470,7 +487,7 @@ public static class TagParser
 
             TypesParser.FunType(p);
 
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocOverload);
         }
         catch (UnexpectedTokenException e)
@@ -489,7 +506,7 @@ public static class TagParser
             p.Expect(LuaTokenKind.TkName);
 
             TypesParser.Type(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocCast);
         }
         catch (UnexpectedTokenException e)
@@ -502,8 +519,7 @@ public static class TagParser
     {
         var m = p.Marker();
         p.Bump();
-        p.SetState(LuaDocLexerState.Description);
-        p.Accept(LuaTokenKind.TkDocDescription);
+        AcceptDescription(p);
         return m.Complete(p, kind);
     }
 
@@ -549,7 +565,7 @@ public static class TagParser
                 p.Expect(LuaTokenKind.TkName);
             }
 
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocVersion);
         }
         catch (UnexpectedTokenException e)
@@ -564,7 +580,7 @@ public static class TagParser
         var m = p.Marker();
         p.Bump();
         TypesParser.Type(p);
-        p.Accept(LuaTokenKind.TkDocDescription);
+        AcceptDescription(p);
         return m.Complete(p, LuaSyntaxKind.DocAs);
     }
 
@@ -590,7 +606,7 @@ public static class TagParser
 
             p.Expect(LuaTokenKind.TkColon);
             TypesParser.Type(p);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocOperator);
         }
         catch (UnexpectedTokenException e)
@@ -607,7 +623,7 @@ public static class TagParser
         try
         {
             p.Expect(LuaTokenKind.TkString);
-            p.Accept(LuaTokenKind.TkDocDescription);
+            AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocModule);
         }
         catch (UnexpectedTokenException e)

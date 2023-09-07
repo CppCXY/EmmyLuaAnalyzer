@@ -295,7 +295,13 @@ public class LuaDocLexer
             }
             case var del and ('"' or '\''):
             {
+                Reader.Bump();
                 Reader.EatWhen(ch => ch != del);
+                if (Reader.CurrentChar == del)
+                {
+                    Reader.Bump();
+                }
+
                 return LuaTokenKind.TkString;
             }
             case var ch when LuaLexer.IsNameStart(ch):
