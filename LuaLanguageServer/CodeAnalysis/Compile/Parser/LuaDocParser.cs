@@ -110,7 +110,7 @@ public class LuaDocParser : IParser
             if (_invalid)
             {
                 _current = LexToken();
-                if (Lexer.State == LuaDocLexerState.Normal)
+                if (Lexer.State is LuaDocLexerState.Normal or LuaDocLexerState.FieldStart)
                 {
                     while (_current.Kind is LuaTokenKind.TkWhitespace)
                     {

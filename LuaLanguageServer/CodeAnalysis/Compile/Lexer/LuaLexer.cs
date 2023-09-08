@@ -204,14 +204,50 @@ public class LuaLexer
                 Reader.Bump();
                 return LuaTokenKind.TkDbColon;
             }
-            case '"' or '\'':
+            case var quote and ('"' or '\''):
             {
-                var quote = Reader.CurrentChar;
                 Reader.Bump();
-                Reader.EatWhen(ch =>
+                // Reader.EatWhen(ch =>
+                // {
+                //     if (ch == quote || ch is '\n' or '\r') return false;
+                //     if (ch != '\\') return true;
+                //     Reader.Bump();
+                //     switch (Reader.CurrentChar)
+                //     {
+                //         // \z will ignore the following whitespace
+                //         case 'z':
+                //         {
+                //             Reader.Bump();
+                //             Reader.EatWhen(c => c is ' ' or '\t' or '\f' or '\v' or '\r' or '\n');
+                //             break;
+                //         }
+                //         // after \ will ignore the following \n
+                //         case '\r' or '\n':
+                //         {
+                //             LexNewLine();
+                //             break;
+                //         }
+                //         default:
+                //         {
+                //             Reader.Bump();
+                //             break;
+                //         }
+                //     }
+                //
+                //     return true;
+                // });
+                while (!Reader.IsEof)
                 {
-                    if (ch == quote || ch is '\n' or '\r') return false;
-                    if (ch != '\\') return true;
+                    var ch = Reader.CurrentChar;
+                    if(ch == quote || ch is '\n' or '\r')
+                    {
+                        break;
+                    }
+                    else if (ch != '\\')
+                    {
+                        Reader.Bump();
+                        continue;
+                    }
                     Reader.Bump();
                     switch (Reader.CurrentChar)
                     {
@@ -234,9 +270,7 @@ public class LuaLexer
                             break;
                         }
                     }
-
-                    return true;
-                });
+                }
                 if (Reader.CurrentChar != quote) return LuaTokenKind.TkUnFinishedString;
                 Reader.Bump();
                 return LuaTokenKind.TkString;
@@ -380,14 +414,24 @@ public class LuaLexer
 
     private LuaTokenKind LexLongString(int skipSep)
     {
-        Reader.EatWhen(ch =>
+        while (!Reader.IsEof)
         {
-            if (ch != ']') return true;
-            var sep = SkipSep();
-            if (sep != skipSep || Reader.CurrentChar != ']') return true;
+            if (Reader.CurrentChar != ']')
+            {
+                Reader.Bump();
+                continue;
+            }
+
             Reader.Bump();
-            return false;
-        });
+            var sep = SkipSep();
+            if (sep != skipSep || Reader.CurrentChar != ']')
+            {
+                continue;
+            }
+
+            Reader.Bump();
+            break;
+        }
 
         return LuaTokenKind.TkLongString;
     }

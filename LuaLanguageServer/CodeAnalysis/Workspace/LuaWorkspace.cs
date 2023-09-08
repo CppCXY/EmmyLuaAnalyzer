@@ -43,14 +43,14 @@ public class LuaWorkspace
         var files = Directory.GetFiles(WorkspacePath, Features.Extensions, SearchOption.AllDirectories);
 
         var documents =
-            new List<LuaDocument>(files.Select(file => LuaDocument.OpenDocument(file, Features.Language)));
+            new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));
 
         _documents = documents.ToDictionary(it => it.Id, it => it);
 
         _urlToDocument = documents.ToDictionary(it => it.Id.Url, it => it.Id);
 
         _compilation = _compilation.AddSyntaxTrees(
-            documents.Select(document => LuaSyntaxTree.Create(document.Source)));
+            documents.AsParallel().Select(document => LuaSyntaxTree.Create(document.Source)));
     }
 
     public LuaDocument? GetDocument(DocumentId id)

@@ -1,4 +1,6 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
+﻿using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
+using LuaLanguageServer.CodeAnalysis.Syntax.Location;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation;
@@ -27,4 +29,10 @@ public class LuaCompilation
     {
         throw new NotImplementedException();
     }
+
+    public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(
+        tree => tree.Diagnostics.Select(it => it.WithLocation(
+            it.Range.ToLocation(tree, baseLine)
+        ))
+    );
 }

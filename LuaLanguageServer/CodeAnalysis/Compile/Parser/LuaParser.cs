@@ -67,8 +67,12 @@ public class LuaParser : IParser
     public void Bump()
     {
         var kind = Current;
-        var range = Tokens[_tokenIndex].Range;
-        Events.Add(new MarkEvent.EatToken(range, kind));
+        if (_tokenIndex < Tokens.Count)
+        {
+            var range = Tokens[_tokenIndex].Range;
+            Events.Add(new MarkEvent.EatToken(range, kind));
+        }
+
         _tokenIndex++;
         _invalid = true;
     }

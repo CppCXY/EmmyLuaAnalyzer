@@ -12,4 +12,9 @@ public struct SourceRange
         StartOffset = startOffset;
         Length = length;
     }
+
+    public override string ToString()
+    {
+        return $"[{StartOffset}, {EndOffset})";
+    }
 }

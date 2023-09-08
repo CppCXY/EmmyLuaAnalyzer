@@ -16,7 +16,7 @@ public enum LuaDocLexerState
 
 public class LuaDocLexer
 {
-    private LuaSource Source { get; }
+    public LuaSource Source { get; }
 
     internal SourceReader Reader { get; }
 

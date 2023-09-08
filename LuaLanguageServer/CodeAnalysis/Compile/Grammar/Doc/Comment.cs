@@ -63,6 +63,8 @@ public static class CommentParser
             // ReSharper disable once InvertIf
             if (!p.Lexer.Reader.IsEof)
             {
+                var rollback = p.GetRollbackPoint();
+                p.Rollback(rollback);
                 p.SetState(LuaDocLexerState.Trivia);
                 p.Accept(LuaTokenKind.TkDocTrivia);
             }

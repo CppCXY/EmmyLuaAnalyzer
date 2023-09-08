@@ -20,6 +20,11 @@ public abstract class LuaLocation
         SourceTree = tree;
         Range = range;
     }
+
+    public override string ToString()
+    {
+        return $"{Kind} {Range}";
+    }
 }
 
 public sealed class LuaSourceLocation : LuaLocation
@@ -39,9 +44,32 @@ public sealed class LuaSourceLocation : LuaLocation
         }
     }
 
+    public int BaseLine { get;} = 0;
+
     public string FilePath => SourceFile?.FilePath ?? string.Empty;
 
-    public LuaSourceLocation(LuaSyntaxTree tree, SourceRange range) : base(LuaLocationKind.SourceFile, tree, range)
+    public LuaSourceLocation(LuaSyntaxTree tree, SourceRange range, int baseLine = 0) : base(LuaLocationKind.SourceFile, tree, range)
     {
+        BaseLine = baseLine;
+    }
+
+    public override string ToString()
+    {
+        var sourceFile = SourceTree.Source;
+        var startLine = sourceFile.GetLine(Range.StartOffset) + BaseLine;
+        var startCol = sourceFile.GetCol(Range.StartOffset);
+
+        var endLine = sourceFile.GetLine(Range.EndOffset) + BaseLine;
+        var endCol = sourceFile.GetCol(Range.EndOffset);
+        return $"{Kind} {FilePath} [{startLine}:{startCol} - {endLine}:{endCol}]";
+    }
+}
+
+// 扩展方法Range to Location
+public static class SourceRangeExtensions
+{
+    public static LuaLocation ToLocation(this SourceRange range, LuaSyntaxTree tree, int baseLine = 0)
+    {
+        return new LuaSourceLocation(tree, range, baseLine);
     }
 }

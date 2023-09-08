@@ -9,15 +9,15 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---@enum b  you baby
-    ---| "hhello" #hiljioio
-    ---@class A #gvoejg
-    ---@class B 哈哈哈
-    ---@param b number number
+    return "\n";
     """);
 
-Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
-//
+// Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+foreach(var diagnostic in tree.Diagnostics)
+{
+    Console.WriteLine(diagnostic);
+}
+
 // 计算执行时间
 // var sw = new Stopwatch();
 // sw.Start();
@@ -25,3 +25,9 @@ Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
 //
 // sw.Stop();
 // Console.WriteLine($"耗时: {sw.ElapsedMilliseconds} ms");
+//
+// var compilation = w.Compilation;
+// foreach(var diagnostic in compilation.GetDiagnostics(1))
+// {
+//     Console.WriteLine(diagnostic);
+// }

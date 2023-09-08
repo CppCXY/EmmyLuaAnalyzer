@@ -13,6 +13,11 @@ public static class StatementParser
             Statement(p);
         }
 
+        if (p.Current is LuaTokenKind.TkEof)
+        {
+            return;
+        }
+
         if (p.CurrentIndex != consumeCount) return;
         var m = p.Marker();
         var token = p.Current;
@@ -23,7 +28,7 @@ public static class StatementParser
     private static bool BlockFollow(LuaParser p)
     {
         return p.Current is LuaTokenKind.TkElse or LuaTokenKind.TkElseIf or LuaTokenKind.TkEnd
-            or LuaTokenKind.TkEof or LuaTokenKind.TkUntil;
+            or LuaTokenKind.TkEof or LuaTokenKind.TkUntil or LuaTokenKind.TkEof;
     }
 
     private static CompleteMarker Statement(LuaParser p)
@@ -348,13 +353,12 @@ public static class StatementParser
                 if (p.Current == LuaTokenKind.TkAssign)
                 {
                     p.Bump();
-                }
-
-                ExpressionParser.Expression(p);
-                while (p.Current is LuaTokenKind.TkComma)
-                {
-                    p.Bump();
                     ExpressionParser.Expression(p);
+                    while (p.Current is LuaTokenKind.TkComma)
+                    {
+                        p.Bump();
+                        ExpressionParser.Expression(p);
+                    }
                 }
             }
 
@@ -427,7 +431,7 @@ public static class StatementParser
         p.Bump();
         try
         {
-            if (!BlockFollow(p) || p.Current is not LuaTokenKind.TkSemicolon)
+            if (p.Current is not LuaTokenKind.TkSemicolon && !BlockFollow(p))
             {
                 ExpressionParser.Expression(p);
                 while (p.Current is LuaTokenKind.TkComma)
