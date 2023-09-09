@@ -27,12 +27,47 @@ public class GreenNodeBuilder
         Parents.Push(new ParentInfo(position, kind));
     }
 
+    private static bool IsTrivia(GreenNode greenNode)
+    {
+        if (greenNode.IsSyntaxNode)
+        {
+            return greenNode.SyntaxKind is LuaSyntaxKind.Comment;
+        }
+        else
+        {
+            return greenNode.TokenKind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine;
+        }
+    }
+
     public void FinishNode()
     {
         var parentInfo = Parents.Pop();
         var nodeChildren = new List<GreenNode>();
         var nodeRange = new SourceRange();
-        for (var i = parentInfo.FirstChild; i < Children.Count; i++)
+        var childStart = parentInfo.FirstChild;
+        var childEnd = Children.Count - 1;
+        var childCount = Children.Count;
+        // skip trivia
+        if (parentInfo.Kind is not (LuaSyntaxKind.Block or LuaSyntaxKind.Source))
+        {
+            for (; childStart < Children.Count; childStart++)
+            {
+                if (!IsTrivia(Children[childStart]))
+                {
+                    break;
+                }
+            }
+
+            for (; childEnd >= childStart; childEnd--)
+            {
+                if (!IsTrivia(Children[childEnd]))
+                {
+                    break;
+                }
+            }
+        }
+
+        for (var i = childStart; i <= childEnd; i++)
         {
             if (i == parentInfo.FirstChild)
             {
@@ -48,9 +83,17 @@ public class GreenNodeBuilder
             nodeChildren.Add(Children[i]);
         }
 
-        Children.RemoveRange(parentInfo.FirstChild, Children.Count - parentInfo.FirstChild);
 
-        Children.Add(new GreenNode(parentInfo.Kind, nodeRange, nodeChildren));
+        Children.RemoveRange(childStart, childEnd - childStart + 1);
+        var green = new GreenNode(parentInfo.Kind, nodeRange, nodeChildren);
+        if (childEnd + 1 < childCount)
+        {
+            Children.Insert(childStart, green);
+        }
+        else
+        {
+            Children.Add(green);
+        }
     }
 
     public void EatToken(LuaTokenKind kind, SourceRange range)

@@ -11,19 +11,24 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 var tree = LuaSyntaxTree.ParseText(
     """
     local t = 123
+    --正确的
 
-    print(123) ---okoko
+    local tt = 12313
+    --错误的
+
+    --确实啊
+    hhh = 123
     """);
 
-// Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
-var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
-if (block != null)
-{
-    foreach (var commentSyntax in block.Comments)
-    {
-        Console.WriteLine(commentSyntax);
-    }
-}
+Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+// var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
+// if (block != null)
+// {
+//     foreach (var commentSyntax in block.Comments)
+//     {
+//         Console.WriteLine(commentSyntax);
+//     }
+// }
 
 // 计算执行时间
 // var sw = new Stopwatch();

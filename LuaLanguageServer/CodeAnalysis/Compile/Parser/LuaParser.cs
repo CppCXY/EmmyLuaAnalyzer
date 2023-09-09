@@ -78,6 +78,7 @@ public class LuaParser : IParser
     }
 
     // 分析连续的空白/注释
+    // 此时注释可能会处于错误的父节点中, 在后续的treeBuilder 再做调整
     private void ParseTrivia(ref int index)
     {
         var lineCount = 0;
