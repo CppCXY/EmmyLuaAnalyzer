@@ -16,4 +16,6 @@ public class LuaCommentSyntax : LuaSyntaxNode
         : base(greenNode, tree, parent)
     {
     }
+
+    public LuaSyntaxNodeOrToken? Owner => Tree.BinderData?.CommentOwner(this);
 }

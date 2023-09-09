@@ -18,14 +18,12 @@ public class LuaCompilation
         _workspace = workspace;
     }
 
-    public LuaCompilation AddSyntaxTrees(IEnumerable<LuaSyntaxTree> syntaxTrees)
+    public void AddSyntaxTrees(IEnumerable<LuaSyntaxTree> syntaxTrees)
     {
-        var compilation = new LuaCompilation(_workspace);
-        compilation._syntaxTrees.AddRange(syntaxTrees);
-        return compilation;
+        _syntaxTrees.AddRange(syntaxTrees);
     }
 
-    public LuaCompilation AddSyntaxTree(LuaSyntaxTree syntaxTree)
+    public void AddSyntaxTree(LuaSyntaxTree syntaxTree)
     {
         throw new NotImplementedException();
     }

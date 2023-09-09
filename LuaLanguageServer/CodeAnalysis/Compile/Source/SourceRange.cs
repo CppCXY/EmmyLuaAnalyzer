@@ -17,4 +17,9 @@ public struct SourceRange
     {
         return $"[{StartOffset}, {EndOffset})";
     }
+
+    public bool Contain(int offset)
+    {
+        return offset >= StartOffset && offset < EndOffset;
+    }
 }

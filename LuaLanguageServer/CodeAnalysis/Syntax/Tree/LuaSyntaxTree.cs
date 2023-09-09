@@ -2,6 +2,7 @@
 using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 using LuaLanguageServer.CodeAnalysis.Compile.Parser;
 using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Syntax.Binder;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -17,6 +18,8 @@ public class LuaSyntaxTree
     public List<Diagnostic.Diagnostic> Diagnostics { get; }
 
     private LuaSourceSyntax? _root;
+
+    public BinderData? BinderData { get; private set; }
 
     public static LuaSyntaxTree ParseText(string text, LuaLanguage language)
     {
@@ -39,7 +42,7 @@ public class LuaSyntaxTree
         return new LuaSyntaxTree(source, root, diagnostics);
     }
 
-    private LuaSyntaxTree(LuaSource source, GreenNode root, List<CodeAnalysis.Syntax.Diagnostic.Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaSource source, GreenNode root, List<Diagnostic.Diagnostic> diagnostics)
     {
         Source = source;
         GreenRoot = root;
@@ -53,7 +56,12 @@ public class LuaSyntaxTree
             // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
             if (_root is null)
             {
-                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null).Node as LuaSourceSyntax;
+                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null) switch
+                {
+                    LuaSyntaxNodeOrToken.Node node => node.SyntaxNode as LuaSourceSyntax,
+                    _ => throw new InvalidOperationException()
+                };
+                BinderData = BinderAnalysis.Analysis(_root!);
             }
 
             return _root!;

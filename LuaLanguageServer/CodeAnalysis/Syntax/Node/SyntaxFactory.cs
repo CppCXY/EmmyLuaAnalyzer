@@ -11,7 +11,7 @@ public static class SyntaxFactory
     {
         if (greenNode.IsSyntaxNode)
         {
-            return new LuaSyntaxNodeOrToken(greenNode.SyntaxKind switch
+            return new LuaSyntaxNodeOrToken.Node(greenNode.SyntaxKind switch
             {
                 LuaSyntaxKind.Source => new LuaSourceSyntax(greenNode, tree),
                 LuaSyntaxKind.Block => new LuaBlockSyntax(greenNode, tree, parent),
@@ -88,7 +88,7 @@ public static class SyntaxFactory
         }
         else
         {
-            return new LuaSyntaxNodeOrToken(new LuaSyntaxToken(greenNode, tree, parent));
+            return new LuaSyntaxNodeOrToken.Token(new LuaSyntaxToken(greenNode, tree, parent));
         }
     }
 }

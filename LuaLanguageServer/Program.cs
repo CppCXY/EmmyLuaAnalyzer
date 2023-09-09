@@ -4,18 +4,26 @@
 // await server.StartAsync(args);
 
 using System.Diagnostics;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    return "\n";
+    ---hello world
+    local t = 123
+
+    ---okoko
     """);
 
 // Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
-foreach(var diagnostic in tree.Diagnostics)
+var localStat = tree.SyntaxRoot.Descendants().OfType<LuaLocalStatSyntax>().FirstOrDefault();
+if (localStat != null)
 {
-    Console.WriteLine(diagnostic);
+    foreach (var commentSyntax in localStat.GetComments())
+    {
+        Console.WriteLine(commentSyntax);
+    }
 }
 
 // 计算执行时间

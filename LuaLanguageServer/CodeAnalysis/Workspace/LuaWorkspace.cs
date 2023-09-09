@@ -49,7 +49,7 @@ public class LuaWorkspace
 
         _urlToDocument = documents.ToDictionary(it => it.Id.Url, it => it.Id);
 
-        _compilation = _compilation.AddSyntaxTrees(
+        _compilation.AddSyntaxTrees(
             documents.AsParallel().Select(document => LuaSyntaxTree.Create(document.Source)));
     }
 

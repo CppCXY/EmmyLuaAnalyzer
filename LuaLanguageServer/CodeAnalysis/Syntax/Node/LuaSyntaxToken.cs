@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
@@ -34,4 +35,10 @@ public class LuaSyntaxToken
     }
 
     public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(GreenNode.Range.StartOffset, GreenNode.Range.Length);
+
+    public IEnumerable<LuaCommentSyntax> GetComments()
+    {
+        var binderData = Tree.BinderData;
+        return binderData?.GetComments(new LuaSyntaxNodeOrToken.Token(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+    }
 }
