@@ -11,7 +11,7 @@ public static class BinderAnalysis
         Dictionary<LuaCommentSyntax, LuaSyntaxNodeOrToken> commentOwners = new();
         Dictionary<LuaSyntaxNodeOrToken, List<LuaCommentSyntax>> comments = new();
 
-        foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens())
+        foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
         {
             if (nodeOrToken is LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax commentSyntax })
             {

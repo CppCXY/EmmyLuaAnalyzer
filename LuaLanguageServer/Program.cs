@@ -10,17 +10,16 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---hello world
     local t = 123
 
-    ---okoko
+    print(123) ---okoko
     """);
 
 // Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
-var localStat = tree.SyntaxRoot.Descendants().OfType<LuaLocalStatSyntax>().FirstOrDefault();
-if (localStat != null)
+var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
+if (block != null)
 {
-    foreach (var commentSyntax in localStat.GetComments())
+    foreach (var commentSyntax in block.Comments)
     {
         Console.WriteLine(commentSyntax);
     }

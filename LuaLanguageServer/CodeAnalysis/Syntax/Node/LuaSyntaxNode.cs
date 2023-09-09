@@ -74,69 +74,22 @@ public abstract class LuaSyntaxNode
     }
 
     // 遍历所有后代, 包括自己
-    public IEnumerable<LuaSyntaxNode> DescendantsAndSelf()
+    public IEnumerable<LuaSyntaxNode> DescendantsAndSelf
     {
-        if (!_lazyInit)
+        get
         {
-            LazyInit();
-        }
-
-        var stack = new Stack<LuaSyntaxNode>();
-        stack.Push(this);
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            yield return node;
-            foreach (var child in node.Children)
+            if (!_lazyInit)
             {
-                stack.Push(child);
+                LazyInit();
             }
-        }
-    }
 
-    // 不包括自己
-    public IEnumerable<LuaSyntaxNode> Descendants()
-    {
-        if (!_lazyInit)
-        {
-            LazyInit();
-        }
-
-        var stack = new Stack<LuaSyntaxNode>();
-        foreach (var child in Children)
-        {
-            stack.Push(child);
-        }
-
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            yield return node;
-            foreach (var child in node.Children)
+            var stack = new Stack<LuaSyntaxNode>();
+            stack.Push(this);
+            while (stack.Count > 0)
             {
-                stack.Push(child);
-            }
-        }
-    }
-
-    // 遍历所有后代和token, 包括自己
-    public IEnumerable<LuaSyntaxNodeOrToken> DescendantsAndSelfWithTokens()
-    {
-        if (!_lazyInit)
-        {
-            LazyInit();
-        }
-
-        var stack = new Stack<LuaSyntaxNodeOrToken>();
-        stack.Push(new LuaSyntaxNodeOrToken.Node(this));
-        while (stack.Count > 0)
-        {
-            var node = stack.Pop();
-            yield return node;
-            // ReSharper disable once InvertIf
-            if (node is LuaSyntaxNodeOrToken.Node n)
-            {
-                foreach (var child in n.SyntaxNode.ChildrenWithTokens)
+                var node = stack.Pop();
+                yield return node;
+                foreach (var child in node.Children)
                 {
                     stack.Push(child);
                 }
@@ -144,25 +97,119 @@ public abstract class LuaSyntaxNode
         }
     }
 
-    // 访问祖先节点
-    public IEnumerable<LuaSyntaxNode> Ancestors()
+    // 不包括自己
+    public IEnumerable<LuaSyntaxNode> Descendants
     {
-        var parent = Parent;
-        while (parent != null)
+        get
         {
-            yield return parent;
-            parent = parent.Parent;
+            if (!_lazyInit)
+            {
+                LazyInit();
+            }
+
+            var stack = new Stack<LuaSyntaxNode>();
+            foreach (var child in Children)
+            {
+                stack.Push(child);
+            }
+
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                yield return node;
+                foreach (var child in node.Children)
+                {
+                    stack.Push(child);
+                }
+            }
+        }
+    }
+
+    public IEnumerable<LuaSyntaxNodeOrToken> DescendantsWithToken
+    {
+        get
+        {
+            if (!_lazyInit)
+            {
+                LazyInit();
+            }
+
+            var stack = new Stack<LuaSyntaxNodeOrToken>();
+
+            foreach (var child in ChildrenWithTokens)
+            {
+                stack.Push(child);
+            }
+
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                yield return node;
+                // ReSharper disable once InvertIf
+                if (node is LuaSyntaxNodeOrToken.Node n)
+                {
+                    foreach (var child in n.SyntaxNode.ChildrenWithTokens)
+                    {
+                        stack.Push(child);
+                    }
+                }
+            }
+        }
+    }
+
+    // 遍历所有后代和token, 包括自己
+    public IEnumerable<LuaSyntaxNodeOrToken> DescendantsAndSelfWithTokens
+    {
+        get
+        {
+            if (!_lazyInit)
+            {
+                LazyInit();
+            }
+
+            var stack = new Stack<LuaSyntaxNodeOrToken>();
+            stack.Push(new LuaSyntaxNodeOrToken.Node(this));
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                yield return node;
+                // ReSharper disable once InvertIf
+                if (node is LuaSyntaxNodeOrToken.Node n)
+                {
+                    foreach (var child in n.SyntaxNode.ChildrenWithTokens)
+                    {
+                        stack.Push(child);
+                    }
+                }
+            }
+        }
+    }
+
+    // 访问祖先节点
+    public IEnumerable<LuaSyntaxNode> Ancestors
+    {
+        get
+        {
+            var parent = Parent;
+            while (parent != null)
+            {
+                yield return parent;
+                parent = parent.Parent;
+            }
         }
     }
 
     // 访问祖先节点, 包括自己
-    public IEnumerable<LuaSyntaxNode> AncestorsAndSelf()
+    public IEnumerable<LuaSyntaxNode> AncestorsAndSelf
     {
-        var node = this;
-        while (node != null)
+        get
         {
-            yield return node;
-            node = node.Parent;
+            var node = this;
+            while (node != null)
+            {
+                yield return node;
+                node = node.Parent;
+            }
         }
     }
 
@@ -446,7 +493,7 @@ public abstract class LuaSyntaxNode
     public LuaSyntaxNodeOrToken? GetPrevSibling(int prev = 1) =>
         Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition - prev);
 
-    public IEnumerable<LuaCommentSyntax> GetComments() =>
+    public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
 
     public LuaSourceLocation Location => new LuaSourceLocation(Tree, GreenNode.Range);
@@ -462,7 +509,7 @@ public abstract class LuaSyntaxNode
                 LuaSyntaxNodeOrToken.Token t => t.SyntaxToken.GreenNode.Range.Contain(offset),
                 _ => throw new UnreachableException()
             });
-            if (nodeOrToken is LuaSyntaxNodeOrToken.Token { SyntaxToken: {} token})
+            if (nodeOrToken is LuaSyntaxNodeOrToken.Token { SyntaxToken: { } token })
             {
                 return token;
             }
@@ -481,5 +528,15 @@ public abstract class LuaSyntaxNode
     {
         var offset = Tree.Source.GetOffset(line, col);
         return TokenAt(offset);
+    }
+
+    public override int GetHashCode()
+    {
+        return GreenNode.GetHashCode();
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is LuaSyntaxNode other && GreenNode.Equals(other.GreenNode);
     }
 }

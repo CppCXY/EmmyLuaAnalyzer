@@ -24,21 +24,31 @@ public class LuaSyntaxToken
     }
 
     // 遍历所有祖先
-    public IEnumerable<LuaSyntaxNode> Ancestors()
+    public IEnumerable<LuaSyntaxNode> Ancestors
     {
-        var node = Parent;
-        while (node != null)
+        get
         {
-            yield return node;
-            node = node.Parent;
+            var node = Parent;
+            while (node != null)
+            {
+                yield return node;
+                node = node.Parent;
+            }
         }
     }
 
     public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(GreenNode.Range.StartOffset, GreenNode.Range.Length);
 
-    public IEnumerable<LuaCommentSyntax> GetComments()
+    public IEnumerable<LuaCommentSyntax> Comments =>
+        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Token(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+
+    public override int GetHashCode()
     {
-        var binderData = Tree.BinderData;
-        return binderData?.GetComments(new LuaSyntaxNodeOrToken.Token(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+        return GreenNode.GetHashCode();
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is LuaSyntaxToken token && GreenNode.Equals(token.GreenNode);
     }
 }
