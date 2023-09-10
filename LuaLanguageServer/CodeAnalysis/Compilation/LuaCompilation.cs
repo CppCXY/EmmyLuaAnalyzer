@@ -25,8 +25,18 @@ public class LuaCompilation
 
     public void AddSyntaxTree(LuaSyntaxTree syntaxTree)
     {
-        throw new NotImplementedException();
+        _syntaxTrees.Add(syntaxTree);
     }
+
+    // public SemanticModel GetSemanticModel(LuaSyntaxTree tree)
+    // {
+    //     return new SemanticModel(_workspace, this);
+    // }
+    //
+    // public SemanticModel GetSemanticModel(string url)
+    // {
+    //     return GetSemanticModel(_syntaxTrees.First(it => it.Source.Url == url));
+    // }
 
     public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(
         tree => tree.Diagnostics.Select(it => it.WithLocation(

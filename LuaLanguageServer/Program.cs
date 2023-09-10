@@ -20,7 +20,7 @@ var tree = LuaSyntaxTree.ParseText(
     hhh = 123
     """);
 
-Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+Console.Write(tree.SyntaxRoot.Descendants.OfType<LuaAssignStatSyntax>().FirstOrDefault()?.Location);
 // var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
 // if (block != null)
 // {

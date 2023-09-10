@@ -7,6 +7,8 @@ public class LuaWorkspace
 {
     public string WorkspacePath { get; }
 
+    public List<string> ExternalWorkspace { get; }
+
     public LuaFeatures Features { get; }
 
     private Dictionary<DocumentId, LuaDocument> _documents;
@@ -25,7 +27,7 @@ public class LuaWorkspace
     public static LuaWorkspace Create(string workspacePath, LuaFeatures features)
     {
         var workspace = new LuaWorkspace(workspacePath, features);
-        workspace.LoadWorkspace();
+        workspace.LoadWorkspace(workspacePath);
         return workspace;
     }
 
@@ -33,22 +35,32 @@ public class LuaWorkspace
     {
         WorkspacePath = workspacePath;
         Features = features;
+        ExternalWorkspace = new List<string>();
         _documents = new Dictionary<DocumentId, LuaDocument>();
         _urlToDocument = new Dictionary<string, DocumentId>();
         _compilation = new LuaCompilation(this);
     }
 
-    private void LoadWorkspace()
+    public void AddExternalWorkspace(string workspacePath)
     {
-        var files = Directory.GetFiles(WorkspacePath, Features.Extensions, SearchOption.AllDirectories);
+        ExternalWorkspace.Add(workspacePath);
+        LoadWorkspace(workspacePath);
+    }
+
+    private void LoadWorkspace(string workspace)
+    {
+        var files = Directory.GetFiles(workspace, Features.Extensions, SearchOption.AllDirectories)
+            .Where(file => !Features.ExcludeFolders.Any(file.Contains));
 
         var documents =
             new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));
 
-        _documents = documents.ToDictionary(it => it.Id, it => it);
+        _documents = _documents.Concat(documents.ToDictionary(it => it.Id, it => it))
+            .ToDictionary(it => it.Key, it => it.Value);
 
-        _urlToDocument = documents.ToDictionary(it => it.Id.Url, it => it.Id);
-
+        _urlToDocument = _urlToDocument.Concat(documents.ToDictionary(it => it.Id.Url, it => it.Id))
+            .ToDictionary(it => it.Key, it => it.Value);
+        ;
         _compilation.AddSyntaxTrees(
             documents.AsParallel().Select(document => LuaSyntaxTree.Create(document.Source)));
     }
