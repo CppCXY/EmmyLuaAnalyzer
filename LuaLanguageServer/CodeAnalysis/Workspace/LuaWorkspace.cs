@@ -61,8 +61,7 @@ public class LuaWorkspace
         _urlToDocument = _urlToDocument.Concat(documents.ToDictionary(it => it.Id.Url, it => it.Id))
             .ToDictionary(it => it.Key, it => it.Value);
         ;
-        _compilation.AddSyntaxTrees(
-            documents.AsParallel().Select(document => LuaSyntaxTree.Create(document.Source)));
+        _compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
     }
 
     public LuaDocument? GetDocument(DocumentId id)

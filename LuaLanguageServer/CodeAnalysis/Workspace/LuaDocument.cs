@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compile;
 using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Workspace;
 
@@ -21,6 +22,8 @@ public class LuaDocument
     public LuaSource Source { get; }
 
     public DocumentId Id { get; }
+
+    private LuaSyntaxTree? _syntaxTree;
 
     public static LuaDocument OpenDocument(string path, LuaLanguage language)
     {
@@ -47,4 +50,6 @@ public class LuaDocument
     {
         return Source.Text;
     }
+
+    public LuaSyntaxTree SyntaxTree => _syntaxTree ??= LuaSyntaxTree.Create(Source);
 }
