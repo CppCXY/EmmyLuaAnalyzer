@@ -10,24 +10,45 @@ public static class Index
     {
         foreach (var node in tree.SyntaxRoot.Descendants)
         {
-            // switch (node)
-            // {
-            //     case LuaDocClassSyntax luaDocClassSyntax:
-            //         stubIndexImpl.ClassIndex.AddStub(documentId, luaDocClassSyntax.Name.Text, luaDocClassSyntax);
-            //         break;
-            //     case LuaDocEnumSyntax luaDocEnumSyntax:
-            //         stubIndexImpl.EnumIndex.AddStub(documentId, luaDocEnumSyntax.Name.Text, luaDocEnumSyntax);
-            //         break;
-            //     case LuaDocAliasSyntax luaDocAliasSyntax:
-            //         stubIndexImpl.AliasIndex.AddStub(documentId, luaDocAliasSyntax.Name.Text, luaDocAliasSyntax);
-            //         break;
-            //     case LuaDocTypeSyntax luaDocTypeSyntax:
-            //         stubIndexImpl.SuperIndex.AddStub(documentId, luaDocTypeSyntax.Name.Text, luaDocTypeSyntax);
-            //         break;
-            //     case LuaDocClassMemberSyntax luaDocClassMemberSyntax:
-            //         stubIndexImpl.ClassMemberIndex.AddStub(documentId, luaDocClassMemberSyntax.Name.Text, luaDocClassMemberSyntax);
-            //         break;
-            // }
+            switch (node)
+            {
+                case LuaDocClassSyntax luaDocClassSyntax:
+                {
+                    if (luaDocClassSyntax.Name == null)
+                    {
+                        break;
+                    }
+
+                    var name = luaDocClassSyntax.Name.Text.ToString();
+                    stubIndexImpl.ClassIndex.AddStub(documentId, name, luaDocClassSyntax);
+                    break;
+                }
+                case LuaDocEnumSyntax luaDocEnumSyntax:
+                {
+                    if (luaDocEnumSyntax.Name == null)
+                    {
+                        break;
+                    }
+
+                    var name = luaDocEnumSyntax.Name.Text.ToString();
+                    stubIndexImpl.EnumIndex.AddStub(documentId, name, luaDocEnumSyntax);
+                    break;
+                }
+                case LuaDocAliasSyntax luaDocAliasSyntax:
+                {
+                    if (luaDocAliasSyntax.Name == null)
+                    {
+                        break;
+                    }
+
+                    var name = luaDocAliasSyntax.Name.Text.ToString();
+
+                    break;
+                }
+                case LuaDocTypeSyntax luaDocTypeSyntax:
+                    stubIndexImpl.SuperIndex.AddStub(documentId, luaDocTypeSyntax.Name.Text, luaDocTypeSyntax);
+                    break;
+            }
         }
     }
 
