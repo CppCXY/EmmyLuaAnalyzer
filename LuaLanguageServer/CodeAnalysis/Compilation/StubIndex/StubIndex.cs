@@ -3,24 +3,24 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 
-public class StubIndex<Key, Syntax>
-    where Key : notnull
-    where Syntax : LuaSyntaxNode
+public class StubIndex<TKey, TSyntax>
+    where TKey : notnull
+    where TSyntax : LuaSyntaxNode
 {
-    class StubFile
+    private class StubFile
     {
-        public List<Syntax> Elements { get; set; }
+        public List<TSyntax> Elements { get; set; } = new();
     }
 
-    class StubEntry
+    private class StubEntry
     {
-        public Key Key { get; set; }
+        public TKey Key { get; set; }
         public Dictionary<DocumentId, StubFile> Files { get; set; } = new();
     }
 
-    private readonly Dictionary<Key, StubEntry> _indexMap = new();
+    private readonly Dictionary<TKey, StubEntry> _indexMap = new();
 
-    public void AddStub(DocumentId documentId, Key key, Syntax syntax)
+    public void AddStub(DocumentId documentId, TKey key, TSyntax syntax)
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {
@@ -33,10 +33,7 @@ public class StubIndex<Key, Syntax>
 
         if (!entry.Files.TryGetValue(documentId, out var file))
         {
-            file = new StubFile()
-            {
-                Elements = new List<Syntax>()
-            };
+            file = new StubFile();
             entry.Files.Add(documentId, file);
         }
 
@@ -45,7 +42,7 @@ public class StubIndex<Key, Syntax>
 
     public void RemoveStub(DocumentId documentId)
     {
-        var waitRemove = new List<Key>();
+        var waitRemove = new List<TKey>();
         foreach (var (key, entry) in _indexMap)
         {
             entry.Files.Remove(documentId);
@@ -61,10 +58,10 @@ public class StubIndex<Key, Syntax>
         }
     }
 
-    public IEnumerable<Syntax> Get(Key key)
+    public IEnumerable<TSyntax> Get(TKey key)
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it.Elements)
-            : Enumerable.Empty<Syntax>();
+            : Enumerable.Empty<TSyntax>();
     }
 }

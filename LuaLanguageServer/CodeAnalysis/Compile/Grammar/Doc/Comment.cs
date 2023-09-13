@@ -20,8 +20,6 @@ public static class CommentParser
     {
         while (p.Current is not LuaTokenKind.TkEof)
         {
-            p.SetState(LuaDocLexerState.Init);
-
             switch (p.Current)
             {
                 case LuaTokenKind.TkDocStart:
@@ -68,6 +66,8 @@ public static class CommentParser
                 p.SetState(LuaDocLexerState.Trivia);
                 p.Accept(LuaTokenKind.TkDocTrivia);
             }
+
+            p.SetState(LuaDocLexerState.Init);
         }
     }
 }

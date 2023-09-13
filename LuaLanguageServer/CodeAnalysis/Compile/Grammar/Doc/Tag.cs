@@ -216,6 +216,11 @@ public static class TagParser
                 state = ClassSuffixState.Finish;
                 break;
             }
+            case LuaTokenKind.TkEof:
+            {
+                state = ClassSuffixState.Finish;
+                break;
+            }
             default:
             {
                 p.Rollback(rollbackPoint);

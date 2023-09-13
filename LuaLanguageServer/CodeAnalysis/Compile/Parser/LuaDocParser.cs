@@ -110,7 +110,17 @@ public class LuaDocParser : IParser
             if (_invalid)
             {
                 _current = LexToken();
-                if (Lexer.State is LuaDocLexerState.Normal or LuaDocLexerState.FieldStart)
+                // ReSharper disable once ConvertIfStatementToSwitchStatement
+                if (Lexer.State == LuaDocLexerState.Normal)
+                {
+                    while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
+                           or LuaTokenKind.TkDocContinue)
+                    {
+                        Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                        _current = LexToken();
+                    }
+                }
+                else if (Lexer.State == LuaDocLexerState.FieldStart)
                 {
                     while (_current.Kind is LuaTokenKind.TkWhitespace)
                     {

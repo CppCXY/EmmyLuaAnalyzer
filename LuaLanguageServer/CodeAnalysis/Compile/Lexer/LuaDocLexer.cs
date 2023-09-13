@@ -139,19 +139,16 @@ public class LuaDocLexer
                     case 3:
                     {
                         Reader.EatWhen(IsDocWhitespace);
-                        if (Reader.CurrentChar is '@')
+                        switch (Reader.CurrentChar)
                         {
-                            Reader.Bump();
-                            return LuaTokenKind.TkDocStart;
-                        }
-                        else if (Reader.CurrentChar is '|')
-                        {
-                            Reader.Bump();
-                            return LuaTokenKind.TkDocEnumField;
-                        }
-                        else
-                        {
-                            return LuaTokenKind.TkNormalStart;
+                            case '@':
+                                Reader.Bump();
+                                return LuaTokenKind.TkDocStart;
+                            case '|':
+                                Reader.Bump();
+                                return LuaTokenKind.TkDocEnumField;
+                            default:
+                                return LuaTokenKind.TkNormalStart;
                         }
                     }
                     default:
@@ -276,12 +273,21 @@ public class LuaDocLexer
             case '-':
             {
                 var count = Reader.EatWhen('-');
-                return count switch
+                switch (count)
                 {
-                    1 => LuaTokenKind.TkMinus,
-                    3 => LuaTokenKind.TkDocContinue,
-                    _ => LuaTokenKind.TkDocTrivia
-                };
+                    case 1:
+                    {
+                        return LuaTokenKind.TkMinus;
+                    }
+                    case 3:
+                    {
+                        return Reader.CurrentChar is '@' ? LuaTokenKind.TkDocStart : LuaTokenKind.TkDocContinue;
+                    }
+                    default:
+                    {
+                        return LuaTokenKind.TkDocTrivia;
+                    }
+                }
             }
             case '#' or '@':
             {

@@ -81,7 +81,7 @@ public enum LuaTokenKind : ushort
     TkUnFinishedString, // string
 
     // doc
-    TkNormalStart, // --
+    TkNormalStart, // -- or ---
     TkLongCommentStart, // --[[
     TkDocLongStart, // --[[@
     TkDocStart, // ---@
