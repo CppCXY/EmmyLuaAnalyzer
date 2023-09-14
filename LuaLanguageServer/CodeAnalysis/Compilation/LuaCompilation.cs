@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
+using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -37,15 +38,16 @@ public class LuaCompilation
         Index.BuildIndex(StubIndexImpl, documentId, syntaxTree);
     }
 
-    // public SemanticModel GetSemanticModel(LuaSyntaxTree tree)
-    // {
-    //     return new SemanticModel(_workspace, this);
-    // }
-    //
-    // public SemanticModel GetSemanticModel(string url)
-    // {
-    //     return GetSemanticModel(_syntaxTrees.First(it => it.Source.Url == url));
-    // }
+    public SemanticModel GetSemanticModel(LuaSyntaxTree tree)
+    {
+        return new SemanticModel(this, tree);
+    }
+
+    public SemanticModel? GetSemanticModel(string url)
+    {
+        var document = _workspace.GetDocument(url);
+        return document == null ? null : GetSemanticModel(document.SyntaxTree);
+    }
 
     public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(
         tree => tree.Diagnostics.Select(it => it.WithLocation(

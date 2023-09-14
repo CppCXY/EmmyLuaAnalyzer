@@ -12,48 +12,28 @@ public static class Index
         {
             switch (node)
             {
-                case LuaDocClassSyntax luaDocClassSyntax:
+                case LuaDocClassSyntax { Name: { } name } luaDocClassSyntax:
                 {
-                    if (luaDocClassSyntax.Name == null)
-                    {
-                        break;
-                    }
-
-                    var name = luaDocClassSyntax.Name.Text.ToString();
-                    stubIndexImpl.ClassIndex.AddStub(documentId, name, luaDocClassSyntax);
+                    var nameText = name.Text.ToString();
+                    stubIndexImpl.ClassIndex.AddStub(documentId, nameText, luaDocClassSyntax);
                     break;
                 }
-                case LuaDocEnumSyntax luaDocEnumSyntax:
+                case LuaDocEnumSyntax { Name: { } name } luaDocEnumSyntax:
                 {
-                    if (luaDocEnumSyntax.Name == null)
-                    {
-                        break;
-                    }
-
-                    var name = luaDocEnumSyntax.Name.Text.ToString();
-                    stubIndexImpl.EnumIndex.AddStub(documentId, name, luaDocEnumSyntax);
+                    var nameText = name.Text.ToString();
+                    stubIndexImpl.EnumIndex.AddStub(documentId, nameText, luaDocEnumSyntax);
                     break;
                 }
-                case LuaDocAliasSyntax luaDocAliasSyntax:
+                case LuaDocAliasSyntax { Name: { } name } luaDocAliasSyntax:
                 {
-                    if (luaDocAliasSyntax.Name == null)
-                    {
-                        break;
-                    }
-
-                    var name = luaDocAliasSyntax.Name.Text.ToString();
-                    stubIndexImpl.AliasIndex.AddStub(documentId, name, luaDocAliasSyntax);
+                    var nameText = name.Text.ToString();
+                    stubIndexImpl.AliasIndex.AddStub(documentId, nameText, luaDocAliasSyntax);
                     break;
                 }
-                case LuaDocInterfaceSyntax luaDocInterfaceSyntax:
+                case LuaDocInterfaceSyntax { Name: { } name } luaDocInterfaceSyntax:
                 {
-                    if (luaDocInterfaceSyntax.Name == null)
-                    {
-                        break;
-                    }
-
-                    var name = luaDocInterfaceSyntax.Name.Text.ToString();
-                    stubIndexImpl.InterfaceIndex.AddStub(documentId, name, luaDocInterfaceSyntax);
+                    var nameText = name.Text.ToString();
+                    stubIndexImpl.InterfaceIndex.AddStub(documentId, nameText, luaDocInterfaceSyntax);
                     break;
                 }
             }
@@ -62,5 +42,9 @@ public static class Index
 
     public static void RemoveIndex(StubIndexImpl stubIndexImpl, DocumentId documentId, LuaSyntaxTree tree)
     {
+        stubIndexImpl.ClassIndex.RemoveStub(documentId);
+        stubIndexImpl.AliasIndex.RemoveStub(documentId);
+        stubIndexImpl.EnumIndex.RemoveStub(documentId);
+        stubIndexImpl.InterfaceIndex.RemoveStub(documentId);
     }
 }
