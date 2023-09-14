@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
@@ -70,6 +71,19 @@ public abstract class LuaSyntaxNode
             }
 
             return _childrenOrToken ?? Enumerable.Empty<LuaSyntaxNodeOrToken>();
+        }
+    }
+
+    private ImmutableArray<LuaSyntaxNodeOrToken> ChildrenWithTokenArray
+    {
+        get
+        {
+            if (!_lazyInit)
+            {
+                LazyInit();
+            }
+
+            return _childrenOrToken ?? throw new UnreachableException();
         }
     }
 
@@ -495,6 +509,26 @@ public abstract class LuaSyntaxNode
 
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+
+    // 从自身向前迭代, 直到找到一个类型为T的节点
+    public T? PrevOfType<T>()
+        where T : LuaSyntaxNode
+    {
+        if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
+        {
+            var selfPosition = GreenNode.ChildPosition;
+            for (var i = selfPosition - 1; i >= 0; i--)
+            {
+                var nodeOrToken = childrenWithTokenArray[i];
+                if (nodeOrToken is LuaSyntaxNodeOrToken.Node { SyntaxNode: T node })
+                {
+                    return node;
+                }
+            }
+        }
+
+        return null;
+    }
 
     public LuaSourceLocation Location => new LuaSourceLocation(Tree, GreenNode.Range);
 

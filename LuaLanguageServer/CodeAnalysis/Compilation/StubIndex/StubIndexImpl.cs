@@ -12,5 +12,5 @@ public class StubIndexImpl
 
     public StubIndex<string, LuaDocInterfaceSyntax> InterfaceIndex { get; set; } = new();
 
-    public StubIndex<string, LuaDocTypeSyntax> SuperIndex { get; set; } = new();
+    public StubIndex<LuaDocClassSyntax, LuaDocFieldSyntax> ClassField { get; set; } = new();
 }

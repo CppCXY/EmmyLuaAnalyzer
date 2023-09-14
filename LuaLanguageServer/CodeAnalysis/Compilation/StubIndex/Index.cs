@@ -36,6 +36,15 @@ public static class Index
                     stubIndexImpl.InterfaceIndex.AddStub(documentId, nameText, luaDocInterfaceSyntax);
                     break;
                 }
+                case LuaDocFieldSyntax luaDocFieldSyntax:
+                {
+                    if (luaDocFieldSyntax.PrevOfType<LuaDocClassSyntax>() is { } luaDocClassSyntax)
+                    {
+                        stubIndexImpl.ClassField.AddStub(documentId, luaDocClassSyntax, luaDocFieldSyntax);
+                    }
+
+                    break;
+                }
             }
         }
     }
@@ -46,5 +55,6 @@ public static class Index
         stubIndexImpl.AliasIndex.RemoveStub(documentId);
         stubIndexImpl.EnumIndex.RemoveStub(documentId);
         stubIndexImpl.InterfaceIndex.RemoveStub(documentId);
+        stubIndexImpl.ClassField.RemoveStub(documentId);
     }
 }
