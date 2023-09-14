@@ -42,12 +42,20 @@ public static class Index
                     }
 
                     var name = luaDocAliasSyntax.Name.Text.ToString();
-
+                    stubIndexImpl.AliasIndex.AddStub(documentId, name, luaDocAliasSyntax);
                     break;
                 }
-                case LuaDocTypeSyntax luaDocTypeSyntax:
-                    stubIndexImpl.SuperIndex.AddStub(documentId, luaDocTypeSyntax.Name.Text, luaDocTypeSyntax);
+                case LuaDocInterfaceSyntax luaDocInterfaceSyntax:
+                {
+                    if (luaDocInterfaceSyntax.Name == null)
+                    {
+                        break;
+                    }
+
+                    var name = luaDocInterfaceSyntax.Name.Text.ToString();
+                    stubIndexImpl.InterfaceIndex.AddStub(documentId, name, luaDocInterfaceSyntax);
                     break;
+                }
             }
         }
     }

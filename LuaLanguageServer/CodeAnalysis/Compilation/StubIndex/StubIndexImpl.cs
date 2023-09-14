@@ -9,5 +9,8 @@ public class StubIndexImpl
     public StubIndex<string, LuaDocClassSyntax> ClassIndex { get; set; } = new();
     public StubIndex<string, LuaDocEnumSyntax> EnumIndex { get; set; } = new();
     public StubIndex<string, LuaDocAliasSyntax> AliasIndex { get; set; } = new();
+
+    public StubIndex<string, LuaDocInterfaceSyntax> InterfaceIndex { get; set; } = new();
+
     public StubIndex<string, LuaDocTypeSyntax> SuperIndex { get; set; } = new();
 }
