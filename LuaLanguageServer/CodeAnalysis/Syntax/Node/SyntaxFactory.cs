@@ -26,6 +26,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.ForRangeStat => new LuaForRangeStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.RepeatStat => new LuaRepeatStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.FuncStat => new LuaFuncStatSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.MethodName => new LuaMethodNameSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LabelStat => new LuaLabelStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.BreakStat => new LuaBreakStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ReturnStat => new LuaReturnStatSyntax(greenNode, tree, parent),

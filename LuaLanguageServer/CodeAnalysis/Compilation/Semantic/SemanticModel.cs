@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -18,7 +19,7 @@ public class SemanticModel
         _tree = tree;
     }
 
-    public Symbol.Symbol GetSymbol(LuaSyntaxNodeOrToken nodeOrToken)
+    public ILuaSymbol GetSymbol(LuaSyntaxNodeOrToken nodeOrToken)
     {
         return nodeOrToken switch
         {
@@ -28,7 +29,7 @@ public class SemanticModel
         };
     }
 
-    public Symbol.Symbol GetSymbol(LuaSyntaxNode node)
+    public ILuaSymbol GetSymbol(LuaSyntaxNode node)
     {
         switch (node)
         {
@@ -49,7 +50,7 @@ public class SemanticModel
         throw new NotImplementedException();
     }
 
-    public Symbol.Symbol GetSymbol(LuaSyntaxToken token)
+    public ILuaSymbol GetSymbol(LuaSyntaxToken token)
     {
         switch (token.Kind)
         {

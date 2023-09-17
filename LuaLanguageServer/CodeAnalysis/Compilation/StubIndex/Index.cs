@@ -14,33 +14,82 @@ public static class Index
             {
                 case LuaDocClassSyntax { Name: { } name } luaDocClassSyntax:
                 {
-                    var nameText = name.Text.ToString();
-                    stubIndexImpl.ClassIndex.AddStub(documentId, nameText, luaDocClassSyntax);
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, name.RepresentText, new LuaShortName.Class(luaDocClassSyntax));
                     break;
                 }
                 case LuaDocEnumSyntax { Name: { } name } luaDocEnumSyntax:
                 {
-                    var nameText = name.Text.ToString();
-                    stubIndexImpl.EnumIndex.AddStub(documentId, nameText, luaDocEnumSyntax);
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, name.RepresentText, new LuaShortName.Enum(luaDocEnumSyntax));
                     break;
                 }
                 case LuaDocAliasSyntax { Name: { } name } luaDocAliasSyntax:
                 {
-                    var nameText = name.Text.ToString();
-                    stubIndexImpl.AliasIndex.AddStub(documentId, nameText, luaDocAliasSyntax);
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, name.RepresentText, new LuaShortName.Alias(luaDocAliasSyntax));
                     break;
                 }
                 case LuaDocInterfaceSyntax { Name: { } name } luaDocInterfaceSyntax:
                 {
-                    var nameText = name.Text.ToString();
-                    stubIndexImpl.InterfaceIndex.AddStub(documentId, nameText, luaDocInterfaceSyntax);
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, name.RepresentText, new LuaShortName.Interface(luaDocInterfaceSyntax));
                     break;
                 }
                 case LuaDocFieldSyntax luaDocFieldSyntax:
                 {
+                    switch (luaDocFieldSyntax)
+                    {
+                        case { NameField: { } nameField }:
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, nameField.RepresentText, new LuaShortName.Field(luaDocFieldSyntax));
+                            break;
+                        }
+                        case { IntegerField: { } integerField }:
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, integerField.RepresentText, new LuaShortName.Field(luaDocFieldSyntax));
+                            break;
+                        }
+                        case { StringField: { } stringField }:
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, stringField.RepresentText, new LuaShortName.Field(luaDocFieldSyntax));
+                            break;
+                        }
+                    }
+
                     if (luaDocFieldSyntax.PrevOfType<LuaDocClassSyntax>() is { } luaDocClassSyntax)
                     {
-                        stubIndexImpl.ClassField.AddStub(documentId, luaDocClassSyntax, luaDocFieldSyntax);
+                        stubIndexImpl.Members.AddStub(
+                            documentId, luaDocClassSyntax, new LuaMember.ClassDocField(luaDocFieldSyntax));
+                    }
+
+                    break;
+                }
+                case LuaDocEnumFieldSyntax luaDocEnumFieldSyntax:
+                {
+                    if (luaDocEnumFieldSyntax is { Literal: { } literal })
+                    {
+                        stubIndexImpl.ShortNameIndex.AddStub(
+                            documentId, literal.RepresentText, new LuaShortName.EnumField(luaDocEnumFieldSyntax));
+                    }
+
+                    if (luaDocEnumFieldSyntax.PrevOfType<LuaDocEnumSyntax>() is { } luaDocEnumSyntax)
+                    {
+                        stubIndexImpl.Members.AddStub(
+                            documentId, luaDocEnumSyntax, new LuaMember.EnumDocField(luaDocEnumFieldSyntax));
+                    }
+
+                    break;
+                }
+                case LuaFuncStatSyntax luaFuncStatSyntax:
+                {
+                    if (luaFuncStatSyntax.Name is { } name)
+                    {
+                        stubIndexImpl.ShortNameIndex.AddStub(
+                            documentId, name.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
                     }
 
                     break;
@@ -51,10 +100,7 @@ public static class Index
 
     public static void RemoveIndex(StubIndexImpl stubIndexImpl, DocumentId documentId, LuaSyntaxTree tree)
     {
-        stubIndexImpl.ClassIndex.RemoveStub(documentId);
-        stubIndexImpl.AliasIndex.RemoveStub(documentId);
-        stubIndexImpl.EnumIndex.RemoveStub(documentId);
-        stubIndexImpl.InterfaceIndex.RemoveStub(documentId);
-        stubIndexImpl.ClassField.RemoveStub(documentId);
+        stubIndexImpl.ShortNameIndex.RemoveStub(documentId);
+        stubIndexImpl.Members.RemoveStub(documentId);
     }
 }

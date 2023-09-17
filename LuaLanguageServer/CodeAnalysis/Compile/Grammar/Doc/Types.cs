@@ -306,7 +306,7 @@ public static class TypesParser
 
             return m.Complete(p, LuaSyntaxKind.TypedParameter);
         }
-        catch (Exception)
+        catch (UnexpectedTokenException)
         {
             return m.Fail(p, LuaSyntaxKind.TypedParameter, "expect typed parameter");
         }

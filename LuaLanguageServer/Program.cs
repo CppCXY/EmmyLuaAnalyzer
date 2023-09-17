@@ -10,16 +10,15 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---如来
-    ---如来他来了吗
-    ---@class A {
-    ---     a: number
-    --- } # 如来他来了吗
-    ---@field a
-    --- number # 好的呢
+    function a.bb.ccc:dddd()
+    end
     """);
 
 Console.Write(tree.SyntaxRoot.DebugGreenInspect());
+foreach (var diagnostic in tree.Diagnostics)
+{
+    Console.WriteLine(diagnostic);
+}
 // var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
 // if (block != null)
 // {

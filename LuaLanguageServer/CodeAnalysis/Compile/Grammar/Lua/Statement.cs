@@ -240,6 +240,24 @@ public static class StatementParser
         }
     }
 
+    private static void MethodName(LuaParser p)
+    {
+        while (p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
+        {
+            var m = p.Marker();
+            try
+            {
+                p.Bump();
+                p.Expect(LuaTokenKind.TkName);
+                m.Complete(p, LuaSyntaxKind.MethodName);
+            }
+            catch( UnexpectedTokenException e)
+            {
+                m.Fail(p, LuaSyntaxKind.MethodName, e.Message);
+            }
+        }
+    }
+
     private static CompleteMarker FunctionStatement(LuaParser p)
     {
         var m = p.Marker();
@@ -247,12 +265,7 @@ public static class StatementParser
         try
         {
             p.Expect(LuaTokenKind.TkName);
-            while (p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
-            {
-                p.Bump();
-                p.Expect(LuaTokenKind.TkName);
-            }
-
+            MethodName(p);
             FunctionBody(p);
             p.Accept(LuaTokenKind.TkSemicolon);
 

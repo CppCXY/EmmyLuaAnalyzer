@@ -3,13 +3,12 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 
-public class StubIndex<TKey, TSyntax>
+public class StubIndex<TKey, TStubElement>
     where TKey : notnull
-    where TSyntax : LuaSyntaxNode
 {
     private class StubFile
     {
-        public List<TSyntax> Elements { get; set; } = new();
+        public List<TStubElement> Elements { get; set; } = new();
     }
 
     private class StubEntry
@@ -20,7 +19,7 @@ public class StubIndex<TKey, TSyntax>
 
     private readonly Dictionary<TKey, StubEntry> _indexMap = new();
 
-    public void AddStub(DocumentId documentId, TKey key, TSyntax syntax)
+    public void AddStub(DocumentId documentId, TKey key, TStubElement syntax)
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {
@@ -58,10 +57,10 @@ public class StubIndex<TKey, TSyntax>
         }
     }
 
-    public IEnumerable<TSyntax> Get(TKey key)
+    public IEnumerable<TStubElement> Get(TKey key)
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it.Elements)
-            : Enumerable.Empty<TSyntax>();
+            : Enumerable.Empty<TStubElement>();
     }
 }
