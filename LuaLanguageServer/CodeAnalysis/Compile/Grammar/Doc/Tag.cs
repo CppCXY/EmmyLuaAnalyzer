@@ -121,22 +121,6 @@ public static class TagParser
         return Tag(p);
     }
 
-    public static CompleteMarker EnumField(LuaDocParser p)
-    {
-        p.SetState(LuaDocLexerState.Normal);
-        var m = p.Marker();
-        try
-        {
-            p.Expect(LuaTokenKind.TkString);
-            AcceptDescription(p);
-            return m.Complete(p, LuaSyntaxKind.DocEnumField);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.DocEnumField, e.Message);
-        }
-    }
-
     private static CompleteMarker TagClass(LuaDocParser p)
     {
         p.SetState(LuaDocLexerState.Normal);
@@ -271,6 +255,38 @@ public static class TagParser
         p.Accept(LuaTokenKind.TkDocDescription);
     }
 
+    private static void EnumFields(LuaDocParser p)
+    {
+        if (p.Current is not LuaTokenKind.TkDocOr)
+        {
+            return;
+        }
+        var m = p.Marker();
+        p.Bump();
+
+        var cm2 = EnumField(p);
+        while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
+        {
+            p.Bump();
+            cm2 = EnumField(p);
+        }
+
+    }
+
+    public static CompleteMarker EnumField(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Expect(LuaTokenKind.TkName);
+            return m.Complete(p, LuaSyntaxKind.DocEnumField);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DocEnumField, e.Message);
+        }
+    }
+
     private static CompleteMarker TagEnum(LuaDocParser p)
     {
         p.SetState(LuaDocLexerState.Normal);
@@ -284,6 +300,8 @@ public static class TagParser
                 p.Bump();
                 TypesParser.Type(p);
             }
+
+            EnumFields(p);
 
             AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocEnum);
@@ -324,11 +342,7 @@ public static class TagParser
         {
             p.Expect(LuaTokenKind.TkName);
 
-            if (p.Current is not (LuaTokenKind.TkDocDescription or LuaTokenKind.TkEndOfLine))
-            {
-                TypesParser.Type(p);
-            }
-
+            TypesParser.AliasType(p);
             AcceptDescription(p);
             return m.Complete(p, LuaSyntaxKind.DocAlias);
         }

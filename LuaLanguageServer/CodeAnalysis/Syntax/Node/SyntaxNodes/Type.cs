@@ -7,6 +7,8 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaDocTypeSyntax : LuaSyntaxNode
 {
+    public LuaSyntaxToken? Description => FirstChildToken(LuaTokenKind.TkDocDescription);
+
     public LuaDocTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
     {

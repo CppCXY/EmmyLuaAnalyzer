@@ -114,7 +114,7 @@ public class LuaDocParser : IParser
                 if (Lexer.State == LuaDocLexerState.Normal)
                 {
                     while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
-                           or LuaTokenKind.TkDocContinue)
+                           or LuaTokenKind.TkDocContinue or LuaTokenKind.TkDocDescription)
                     {
                         Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
                         _current = LexToken();

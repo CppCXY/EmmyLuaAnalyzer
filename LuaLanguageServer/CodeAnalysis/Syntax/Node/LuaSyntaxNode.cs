@@ -507,9 +507,6 @@ public abstract class LuaSyntaxNode
     public LuaSyntaxNodeOrToken? GetPrevSibling(int prev = 1) =>
         Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition - prev);
 
-    public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
-
     // 从自身向前迭代, 直到找到一个类型为T的节点
     public T? PrevOfType<T>()
         where T : LuaSyntaxNode

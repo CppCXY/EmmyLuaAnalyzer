@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Immutable;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -7,7 +8,8 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaDocSyntax : LuaSyntaxNode
 {
-    public LuaSyntaxToken? Description => FirstChildToken(LuaTokenKind.TkDocDescription);
+    public IEnumerable<LuaSyntaxToken> Descriptions => ImmutableArray<LuaSyntaxToken>.Empty;
+        // Tree.BinderData?.GetDescriptions(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
 
     public LuaDocSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -48,6 +50,8 @@ public class LuaDocEnumSyntax : LuaDocSyntax
     public bool HasBaseType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
     public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+
+    public IEnumerable<LuaDocEnumFieldSyntax> FieldList => ChildNodes<LuaDocEnumFieldSyntax>();
 
     public LuaDocEnumSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -157,7 +161,7 @@ public class LuaDocParamSyntax : LuaDocSyntax
 
 public class LuaDocEnumFieldSyntax : LuaDocSyntax
 {
-    public LuaDocLiteralTypeSyntax? Literal => FirstChild<LuaDocLiteralTypeSyntax>();
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
 
     public LuaDocEnumFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)

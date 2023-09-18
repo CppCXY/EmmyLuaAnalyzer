@@ -10,8 +10,10 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    function a.bb.ccc:dddd()
-    end
+    ---@enum ys
+    ---| 你说的对 # The left side of the device
+    ---| 但是 # The right side of the device
+    ---| ys # The top side of the device
     """);
 
 Console.Write(tree.SyntaxRoot.DebugGreenInspect());

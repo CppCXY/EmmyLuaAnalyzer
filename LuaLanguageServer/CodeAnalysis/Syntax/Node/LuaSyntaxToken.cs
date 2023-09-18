@@ -88,6 +88,12 @@ public class LuaSyntaxToken
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Token(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
 
+    public LuaSyntaxNodeOrToken? GetNextSibling(int next = 1) =>
+        Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition + next);
+
+    public LuaSyntaxNodeOrToken? GetPrevSibling(int prev = 1) =>
+        Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition - prev);
+
     public override int GetHashCode()
     {
         return GreenNode.GetHashCode();

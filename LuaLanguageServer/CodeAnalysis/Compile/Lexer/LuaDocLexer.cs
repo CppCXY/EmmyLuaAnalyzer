@@ -273,21 +273,12 @@ public class LuaDocLexer
             case '-':
             {
                 var count = Reader.EatWhen('-');
-                switch (count)
+                return count switch
                 {
-                    case 1:
-                    {
-                        return LuaTokenKind.TkMinus;
-                    }
-                    case 3:
-                    {
-                        return Reader.CurrentChar is '@' ? LuaTokenKind.TkDocStart : LuaTokenKind.TkDocContinue;
-                    }
-                    default:
-                    {
-                        return LuaTokenKind.TkDocTrivia;
-                    }
-                }
+                    1 => LuaTokenKind.TkMinus,
+                    3 => Reader.CurrentChar is '@' ? LuaTokenKind.TkDocStart : LuaTokenKind.TkDocContinue,
+                    _ => LuaTokenKind.TkDocTrivia
+                };
             }
             case '#' or '@':
             {
@@ -325,8 +316,24 @@ public class LuaDocLexer
 
     private LuaTokenKind LexDescription()
     {
-        Reader.EatWhen(_ => true);
-        return LuaTokenKind.TkDocDescription;
+        if (Reader.IsEof)
+        {
+            return LuaTokenKind.TkEof;
+        }
+
+        switch (Reader.CurrentChar)
+        {
+            case var ch when IsDocWhitespace(ch):
+            {
+                Reader.EatWhen(IsDocWhitespace);
+                return LuaTokenKind.TkWhitespace;
+            }
+            default:
+            {
+                Reader.EatWhen(_ => true);
+                return LuaTokenKind.TkDocDescription;
+            }
+        }
     }
 
     private LuaTokenKind LexTrivia()

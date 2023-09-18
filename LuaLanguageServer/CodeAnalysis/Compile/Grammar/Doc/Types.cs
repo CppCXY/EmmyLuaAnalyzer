@@ -44,6 +44,25 @@ public static class TypesParser
         return cm;
     }
 
+    public static CompleteMarker AliasType(LuaDocParser p)
+    {
+        if (p.Current is not LuaTokenKind.TkDocOr)
+        {
+            return Type(p);
+        }
+        var m = p.Marker();
+        p.Bump();
+
+        var cm2 = Type(p, false);
+        while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
+        {
+            p.Bump();
+            cm2 = Type(p, false);
+        }
+
+        return m.Complete(p, LuaSyntaxKind.TypeUnion);
+    }
+
     private static void SuffixType(LuaDocParser p, ref CompleteMarker pcm)
     {
         bool continueArray = false;

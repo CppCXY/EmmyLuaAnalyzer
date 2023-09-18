@@ -10,6 +10,7 @@ public static class BinderAnalysis
     {
         Dictionary<LuaCommentSyntax, LuaSyntaxNodeOrToken> commentOwners = new();
         Dictionary<LuaSyntaxNodeOrToken, List<LuaCommentSyntax>> comments = new();
+        Dictionary<LuaSyntaxNode, List<LuaSyntaxToken>> docDescriptions = new();
 
         foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
         {
@@ -24,6 +25,7 @@ public static class BinderAnalysis
                         commentList = new List<LuaCommentSyntax>();
                         comments.Add(inlineNodeOrToken, commentList);
                     }
+
                     commentList.Add(commentSyntax);
                 }
                 else
@@ -38,13 +40,23 @@ public static class BinderAnalysis
                             commentList = new List<LuaCommentSyntax>();
                             comments.Add(attachedNodeOrToken, commentList);
                         }
+
                         commentList.Add(commentSyntax);
                     }
                 }
             }
+            else if (nodeOrToken is LuaSyntaxNodeOrToken.Token
+                     {
+                         SyntaxToken.Kind: LuaTokenKind.TkDocDescription
+                     } token)
+            {
+                var description = token.SyntaxToken;
+
+
+            }
         }
 
-        return new BinderData(commentOwners, comments);
+        return new BinderData(commentOwners, comments, docDescriptions);
     }
 
     // 通过向前查找, 获取注释的所有者, 会忽略空白/逗号/分号
@@ -103,6 +115,34 @@ public static class BinderAnalysis
                 }
                 default:
                     return nextSibling;
+            }
+        }
+    }
+
+    public static LuaSyntaxNodeOrToken? GetInlineDocNode(LuaSyntaxToken descriptionToken)
+    {
+        for (var i = 1;; i++)
+        {
+            var prevSibling = descriptionToken.GetPrevSibling(i);
+            switch (prevSibling)
+            {
+                case LuaSyntaxNodeOrToken.Token
+                {
+                    SyntaxToken.Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocContinue,
+                }:
+                {
+                    continue;
+                }
+                case null
+                    or LuaSyntaxNodeOrToken.Token
+                    {
+                        SyntaxToken.Kind: LuaTokenKind.TkEndOfLine or LuaTokenKind.TkNormalStart
+                    }:
+                {
+                    return null;
+                }
+                default:
+                    return prevSibling;
             }
         }
     }

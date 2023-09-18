@@ -18,6 +18,9 @@ public class LuaBlockSyntax : LuaSyntaxNode
 {
     public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
 
+    public IEnumerable<LuaCommentSyntax> Comments =>
+        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+
     public LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
     {

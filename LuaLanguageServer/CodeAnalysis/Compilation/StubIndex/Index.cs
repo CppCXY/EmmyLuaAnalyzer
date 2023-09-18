@@ -22,6 +22,16 @@ public static class Index
                 {
                     stubIndexImpl.ShortNameIndex.AddStub(
                         documentId, name.RepresentText, new LuaShortName.Enum(luaDocEnumSyntax));
+
+                    foreach (var fieldSyntax in luaDocEnumSyntax.FieldList)
+                    {
+                        if (fieldSyntax is { Name: { } fieldName })
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, fieldName.RepresentText, new LuaShortName.EnumField(fieldSyntax));
+                        }
+                    }
+
                     break;
                 }
                 case LuaDocAliasSyntax { Name: { } name } luaDocAliasSyntax:
@@ -64,22 +74,6 @@ public static class Index
                     {
                         stubIndexImpl.Members.AddStub(
                             documentId, luaDocClassSyntax, new LuaMember.ClassDocField(luaDocFieldSyntax));
-                    }
-
-                    break;
-                }
-                case LuaDocEnumFieldSyntax luaDocEnumFieldSyntax:
-                {
-                    if (luaDocEnumFieldSyntax is { Literal: { } literal })
-                    {
-                        stubIndexImpl.ShortNameIndex.AddStub(
-                            documentId, literal.RepresentText, new LuaShortName.EnumField(luaDocEnumFieldSyntax));
-                    }
-
-                    if (luaDocEnumFieldSyntax.PrevOfType<LuaDocEnumSyntax>() is { } luaDocEnumSyntax)
-                    {
-                        stubIndexImpl.Members.AddStub(
-                            documentId, luaDocEnumSyntax, new LuaMember.EnumDocField(luaDocEnumFieldSyntax));
                     }
 
                     break;

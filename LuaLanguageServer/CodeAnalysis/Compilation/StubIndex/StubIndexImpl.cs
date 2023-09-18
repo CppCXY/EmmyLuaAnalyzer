@@ -45,8 +45,6 @@ public abstract record LuaMember
 
     public record EnumTableField(LuaTableFieldSyntax EnumTableFieldSyntax) : LuaMember;
 
-    public record AliasField(LuaDocEnumFieldSyntax AliasSyntax) : LuaMember;
-
     public record InterfaceField(LuaDocFieldSyntax FieldSyntax) : LuaMember;
 
     public record TableField(LuaTableFieldSyntax LocalTableFieldSyntax) : LuaMember;
