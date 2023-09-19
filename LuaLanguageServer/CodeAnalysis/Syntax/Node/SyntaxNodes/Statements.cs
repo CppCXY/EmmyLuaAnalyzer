@@ -47,11 +47,11 @@ public class LuaAssignStatSyntax : LuaStatSyntax
 
 public class LuaMethodNameSyntax : LuaSyntaxNode
 {
-    public bool IsDot => FirstChildToken(LuaTokenKind.TkDot) != null;
+    public bool IsMethod => FirstChildToken(LuaTokenKind.TkColon) != null;
 
-    public bool IsColon => FirstChildToken(LuaTokenKind.TkColon) != null;
+    public IEnumerable<LuaSyntaxToken> Names => ChildTokens(LuaTokenKind.TkName);
 
-    public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
+    public LuaSyntaxToken? LastName => Names.LastOrDefault();
 
     public LuaMethodNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)

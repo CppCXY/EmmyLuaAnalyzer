@@ -28,7 +28,7 @@ public abstract record LuaShortName
 
     public record Param(LuaSyntaxToken ParamName) : LuaShortName;
 
-    public record TableFieldIndex(LuaTableFieldSyntax TableFieldSyntax) : LuaShortName;
+    public record TableField(LuaTableFieldSyntax TableFieldSyntax) : LuaShortName;
 
     public record Label(LuaLabelStatSyntax LabelStatSyntax) : LuaShortName;
 
