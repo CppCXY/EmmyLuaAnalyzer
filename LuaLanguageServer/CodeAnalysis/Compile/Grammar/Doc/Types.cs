@@ -149,7 +149,6 @@ public static class TypesParser
     private static CompleteMarker TypedField(LuaDocParser p)
     {
         var m = p.Marker();
-        p.Bump();
         try
         {
             switch (p.Current)

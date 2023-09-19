@@ -220,6 +220,11 @@ public class LuaDocLexer
                 Reader.Bump();
                 return LuaTokenKind.TkComma;
             }
+            case ';':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkSemicolon;
+            }
             case '(':
             {
                 Reader.Bump();

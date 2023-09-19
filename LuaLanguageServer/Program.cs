@@ -14,6 +14,11 @@ var tree = LuaSyntaxTree.ParseText(
     ---| 你说的对 # The left side of the device
     ---| 但是 # The right side of the device
     ---| ys # The top side of the device
+
+    ---@class XXXX {
+    ---AAAAAA: number;
+    ---bbb: string
+    ---}
     """);
 
 Console.Write(tree.SyntaxRoot.DebugGreenInspect());
