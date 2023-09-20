@@ -21,7 +21,6 @@ public class UnexpectedTokenException : ApplicationException
 
     public UnexpectedTokenException(string message, LuaTokenKind token) : this(message)
     {
-
         Token = token;
     }
 }

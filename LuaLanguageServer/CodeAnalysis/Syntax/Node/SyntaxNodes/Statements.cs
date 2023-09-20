@@ -47,11 +47,14 @@ public class LuaAssignStatSyntax : LuaStatSyntax
 
 public class LuaMethodNameSyntax : LuaSyntaxNode
 {
-    public bool IsMethod => FirstChildToken(LuaTokenKind.TkColon) != null;
+    public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
 
-    public IEnumerable<LuaSyntaxToken> Names => ChildTokens(LuaTokenKind.TkName);
+    public bool IsColonDefine => ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.IsColonIndex == true;
 
-    public LuaSyntaxToken? LastName => Names.LastOrDefault();
+    public LuaSyntaxToken? Name =>
+        IsMethod
+            ? ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.DotOrColonIndexName
+            : FirstChildToken(LuaTokenKind.TkName);
 
     public LuaMethodNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -65,15 +68,13 @@ public class LuaFuncStatSyntax : LuaStatSyntax
 
     public bool IsLocal => Local != null;
 
-    public bool IsGlobal => !IsLocal && FirstChild<LuaMethodNameSyntax>() == null;
-
     public bool IsMethod => FirstChild<LuaMethodNameSyntax>() != null;
 
     public LuaSyntaxToken Function => FirstChildToken(LuaTokenKind.TkFunction)!;
 
-    public LuaSyntaxToken? Name => IsLocal ? FirstChildToken(LuaTokenKind.TkName) : null;
-
-    public IEnumerable<LuaMethodNameSyntax> MethodNames => ChildNodes<LuaMethodNameSyntax>();
+    public LuaSyntaxToken? Name => MethodName?.Name;
+    
+    public LuaMethodNameSyntax? MethodName => FirstChild<LuaMethodNameSyntax>();
 
     public LuaParamListSyntax? ParamNameList => FirstChild<LuaParamListSyntax>();
 

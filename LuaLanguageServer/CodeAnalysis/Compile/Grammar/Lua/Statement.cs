@@ -247,18 +247,18 @@ public static class StatementParser
         {
             p.Expect(LuaTokenKind.TkName);
 
-            if (suffix)
+            // ReSharper disable once InvertIf
+            if (suffix && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
             {
-                while (p.Current is LuaTokenKind.TkDot)
+                var cm = ExpressionParser.IndexExpr(p);
+                while (cm.IsComplete && p.Current is LuaTokenKind.TkDot)
                 {
-                    p.Bump();
-                    p.Expect(LuaTokenKind.TkName);
+                    cm = ExpressionParser.IndexExpr(p);
                 }
 
                 if (p.Current is LuaTokenKind.TkColon)
                 {
-                    p.Bump();
-                    p.Expect(LuaTokenKind.TkName);
+                    ExpressionParser.IndexExpr(p);
                 }
             }
 
