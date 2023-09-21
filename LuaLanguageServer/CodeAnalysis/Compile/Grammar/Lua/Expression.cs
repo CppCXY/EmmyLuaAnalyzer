@@ -193,7 +193,7 @@ public static class ExpressionParser
         }
     }
 
-    private static CompleteMarker PrimaryExpression(LuaParser p)
+    public static CompleteMarker PrimaryExpression(LuaParser p)
     {
         var m = p.Marker();
         try

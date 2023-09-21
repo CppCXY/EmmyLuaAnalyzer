@@ -19,11 +19,13 @@ public class LuaLocalStatSyntax : LuaStatSyntax
 {
     public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
 
-    public IEnumerable<LuaNameSyntax> NameSyntaxList => ChildNodes<LuaNameSyntax>();
+    public bool IsLocalDeclare => Assign != null;
+
+    public IEnumerable<LuaLocalNameSyntax> NameList => ChildNodes<LuaLocalNameSyntax>();
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
-    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExpressionList => ChildNodes<LuaExprSyntax>();
 
     public LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -54,7 +56,12 @@ public class LuaMethodNameSyntax : LuaSyntaxNode
     public LuaSyntaxToken? Name =>
         IsMethod
             ? ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.DotOrColonIndexName
-            : FirstChildToken(LuaTokenKind.TkName);
+            : FirstChild<LuaNameSyntax>()?.Name;
+
+    public LuaExprSyntax? ParentExpr =>
+        IsMethod
+            ? ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.ParentExpr
+            : null;
 
     public LuaMethodNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -73,7 +80,9 @@ public class LuaFuncStatSyntax : LuaStatSyntax
     public LuaSyntaxToken Function => FirstChildToken(LuaTokenKind.TkFunction)!;
 
     public LuaSyntaxToken? Name => MethodName?.Name;
-    
+
+    public LuaExprSyntax? ParentExpr => MethodName?.ParentExpr;
+
     public LuaMethodNameSyntax? MethodName => FirstChild<LuaMethodNameSyntax>();
 
     public LuaParamListSyntax? ParamNameList => FirstChild<LuaParamListSyntax>();
@@ -210,7 +219,7 @@ public class LuaForStatSyntax : LuaStatSyntax
 {
     public LuaSyntaxToken For => FirstChildToken(LuaTokenKind.TkFor)!;
 
-    public LuaNameSyntax? IteratorName => FirstChild<LuaNameSyntax>();
+    public LuaSyntaxToken? IteratorName => FirstChildToken(LuaTokenKind.TkName);
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 

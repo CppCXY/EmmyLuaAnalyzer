@@ -75,3 +75,14 @@ public class LuaAttributeSyntax : LuaSyntaxNode
     }
 }
 
+public class LuaLocalNameSyntax : LuaSyntaxNode
+{
+    public LuaAttributeSyntax? Attribute => FirstChild<LuaAttributeSyntax>();
+
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}

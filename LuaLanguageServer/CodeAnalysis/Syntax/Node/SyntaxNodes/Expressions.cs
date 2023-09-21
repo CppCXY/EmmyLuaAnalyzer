@@ -134,7 +134,6 @@ public class LuaClosureExprSyntax : LuaExprSyntax
     }
 }
 
-
 public class LuaLiteralExprSyntax : LuaExprSyntax
 {
     public LuaSyntaxToken Literal => FirstChildToken()!;
@@ -171,11 +170,30 @@ public class LuaIndexExprSyntax : LuaExprSyntax
 
     public LuaExprSyntax? IndexKeyExpr => FirstChild<LuaExprSyntax>();
 
+    public LuaExprSyntax? ParentExpr
+    {
+        get
+        {
+            for (var i = 1;; i++)
+            {
+                var prev = GetPrevSibling(i);
+                switch (prev)
+                {
+                    case LuaSyntaxNodeOrToken.Token or LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax }:
+                        continue;
+                    case LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaExprSyntax { } expr }:
+                        return expr;
+                    default:
+                        return null;
+                }
+            }
+        }
+    }
+
     public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
     {
     }
-
 }
 
 public class LuaSuffixExprSyntax : LuaExprSyntax
@@ -194,5 +212,4 @@ public class LuaSuffixExprSyntax : LuaExprSyntax
         : base(greenNode, tree, parent)
     {
     }
-
 }

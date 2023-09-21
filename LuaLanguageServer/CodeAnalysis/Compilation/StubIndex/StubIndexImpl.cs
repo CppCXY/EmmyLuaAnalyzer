@@ -24,13 +24,15 @@ public abstract record LuaShortName
 
     public record EnumField(LuaDocEnumFieldSyntax EnumFieldSyntax) : LuaShortName;
 
-    public record Local(LuaSyntaxToken LocalSName) : LuaShortName;
+    public record Local(LuaLocalNameSyntax LocalSName, LuaExprSyntax Expr) : LuaShortName;
 
     public record Param(LuaSyntaxToken ParamName) : LuaShortName;
 
     public record TableField(LuaTableFieldSyntax TableFieldSyntax) : LuaShortName;
 
     public record Label(LuaLabelStatSyntax LabelStatSyntax) : LuaShortName;
+
+    public record Goto(LuaGotoStatSyntax GotoStatSyntax) : LuaShortName;
 
     public record Function(LuaFuncStatSyntax FuncStatSyntax) : LuaShortName;
 }
@@ -48,4 +50,8 @@ public abstract record LuaMember
     public record InterfaceField(LuaDocFieldSyntax FieldSyntax) : LuaMember;
 
     public record TableField(LuaTableFieldSyntax LocalTableFieldSyntax) : LuaMember;
+
+    public record Function(LuaFuncStatSyntax FuncStatSyntax) : LuaMember;
+
+    public record Index(LuaIndexExprSyntax IndexExprSyntax) : LuaMember;
 }

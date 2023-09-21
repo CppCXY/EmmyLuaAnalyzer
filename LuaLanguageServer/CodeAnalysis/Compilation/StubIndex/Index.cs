@@ -42,6 +42,31 @@ public static class Index
                     FunctionIndex(stubIndexImpl, documentId, luaFuncStatSyntax);
                     break;
                 }
+                case LuaLabelStatSyntax luaLabelStatSyntax:
+                {
+                    LabelIndex(stubIndexImpl, documentId, luaLabelStatSyntax);
+                    break;
+                }
+                case LuaGotoStatSyntax luaGotoStatSyntax:
+                {
+                    GotoIndex(stubIndexImpl, documentId, luaGotoStatSyntax);
+                    break;
+                }
+                case LuaForStatSyntax luaForStatSyntax:
+                {
+                    ForIndex(stubIndexImpl, documentId, luaForStatSyntax);
+                    break;
+                }
+                case LuaForRangeStatSyntax luaForRangeStatSyntax:
+                {
+                    ForRangeIndex(stubIndexImpl, documentId, luaForRangeStatSyntax);
+                    break;
+                }
+                case LuaLocalStatSyntax luaLocalStatSyntax:
+                {
+                    LocalIndex(stubIndexImpl, documentId, luaLocalStatSyntax);
+                    break;
+                }
             }
         }
     }
@@ -130,19 +155,90 @@ public static class Index
     private static void FunctionIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaFuncStatSyntax luaFuncStatSyntax)
     {
-        if (luaFuncStatSyntax is { IsMethod: false, Name: { } name })
+        switch (luaFuncStatSyntax)
+        {
+            case { IsMethod: false, Name: { } name }:
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, name.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
+                break;
+            }
+            case { IsMethod: true, Name: { } name2, ParentExpr: { } parentExpr }:
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, name2.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
+
+                stubIndexImpl.Members.AddStub(
+                    documentId, parentExpr, new LuaMember.Function(luaFuncStatSyntax));
+
+                while (parentExpr is LuaIndexExprSyntax indexExpr)
+                {
+                    parentExpr = indexExpr.ParentExpr;
+                    if (parentExpr is not null)
+                    {
+                        stubIndexImpl.Members.AddStub(
+                            documentId, parentExpr, new LuaMember.Index(indexExpr));
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    private static void LabelIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaLabelStatSyntax luaLabelStatSyntax)
+    {
+        if (luaLabelStatSyntax.Name is { } name)
         {
             stubIndexImpl.ShortNameIndex.AddStub(
-                documentId, name.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
+                documentId, name.RepresentText, new LuaShortName.Label(luaLabelStatSyntax));
         }
-        else
+    }
+
+    private static void GotoIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaGotoStatSyntax luaGotoStatSyntax)
+    {
+        if (luaGotoStatSyntax.LabelName is { } name)
         {
-            // foreach (var methodName in luaFuncStatSyntax.MethodNames)
-            // {
-            //     stubIndexImpl.ShortNameIndex.AddStub(
-            //         documentId, methodName.Name.RepresentText,
-            //         new LuaShortName.Function(luaFuncStatSyntax));
-            // }
+            stubIndexImpl.ShortNameIndex.AddStub(
+                documentId, name.RepresentText, new LuaShortName.Goto(luaGotoStatSyntax));
+        }
+    }
+
+    private static void ForIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaForStatSyntax luaForStatSyntax)
+    {
+        if (luaForStatSyntax.IteratorName is { } name)
+        {
+            stubIndexImpl.ShortNameIndex.AddStub(
+                documentId, name.RepresentText, new LuaShortName.Param(name));
+        }
+    }
+
+    private static void ForRangeIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaForRangeStatSyntax luaForRangeStatSyntax)
+    {
+        foreach (var name in luaForRangeStatSyntax.IteratorNames)
+        {
+            stubIndexImpl.ShortNameIndex.AddStub(
+                documentId, name.RepresentText, new LuaShortName.Param(name));
+        }
+    }
+
+    private static void LocalIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaLocalStatSyntax luaLocalStatSyntax)
+    {
+        foreach (var (localName, expr) in
+                 luaLocalStatSyntax.NameList.Zip(luaLocalStatSyntax.ExpressionList,
+                     (n, e) => (n, e)
+                 ))
+        {
+            if (localName is { Name: { } name })
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, name.RepresentText, new LuaShortName.Local(localName, expr));
+            }
         }
     }
 

@@ -245,7 +245,14 @@ public static class StatementParser
         var m = p.Marker();
         try
         {
-            p.Expect(LuaTokenKind.TkName);
+            if (p.Current is LuaTokenKind.TkName)
+            {
+                ExpressionParser.PrimaryExpression(p);
+            }
+            else
+            {
+                throw new UnexpectedTokenException("expected name in methodName");
+            }
 
             // ReSharper disable once InvertIf
             if (suffix && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
@@ -342,6 +349,25 @@ public static class StatementParser
         }
     }
 
+    private static CompleteMarker LocalName(LuaParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Expect(LuaTokenKind.TkName);
+            if (p.Current is LuaTokenKind.TkLt)
+            {
+                LocalAttribute(p);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.LocalName);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.LocalName, e.Message);
+        }
+    }
+
     private static CompleteMarker LocalStatement(LuaParser p)
     {
         var m = p.Marker();
@@ -358,30 +384,22 @@ public static class StatementParser
             }
             else
             {
-                p.Expect(LuaTokenKind.TkName);
-                if (p.Current is LuaTokenKind.TkLt)
-                {
-                    LocalAttribute(p);
-                }
+                var cm = LocalName(p);
 
-                while (p.Current is LuaTokenKind.TkComma)
+                while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
-                    p.Expect(LuaTokenKind.TkName);
-                    if (p.Current is LuaTokenKind.TkLt)
-                    {
-                        LocalAttribute(p);
-                    }
+                    cm = LocalName(p);
                 }
 
                 if (p.Current == LuaTokenKind.TkAssign)
                 {
                     p.Bump();
-                    ExpressionParser.Expression(p);
-                    while (p.Current is LuaTokenKind.TkComma)
+                    cm = ExpressionParser.Expression(p);
+                    while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                     {
                         p.Bump();
-                        ExpressionParser.Expression(p);
+                        cm = ExpressionParser.Expression(p);
                     }
                 }
             }
