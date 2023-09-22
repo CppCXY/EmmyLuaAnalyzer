@@ -29,7 +29,7 @@ public class LuaBlockSyntax : LuaSyntaxNode
 
 public class LuaParamListSyntax : LuaSyntaxNode
 {
-    public IEnumerable<LuaSyntaxToken> NameList => ChildTokens(LuaTokenKind.TkName);
+    public IEnumerable<LuaSyntaxToken> Params => ChildTokens(LuaTokenKind.TkName);
 
     public bool HasVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
 

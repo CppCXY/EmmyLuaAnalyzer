@@ -27,7 +27,21 @@ public class LuaNameSyntax : LuaExprSyntax
 
 public class LuaVarDefSyntax : LuaExprSyntax
 {
-    public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
+    public LuaSuffixExprSyntax? Expression => FirstChild<LuaSuffixExprSyntax>();
+
+    public LuaSyntaxToken? Name
+    {
+        get
+        {
+            var expr = Expression;
+            if (expr is null)
+            {
+                return null;
+            }
+
+            return expr.ChildNodes<LuaNameSyntax>().LastOrDefault()?.Name;
+        }
+    }
 
     public LuaVarDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)
@@ -102,13 +116,23 @@ public class LuaTableExprSyntax : LuaExprSyntax
 
 public class LuaTableFieldSyntax : LuaSyntaxNode
 {
-    public bool IsKeyValueField => FirstChildToken(LuaTokenKind.TkAssign) != null;
+    public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
 
-    public bool IsValueField => !IsKeyValueField;
+    public bool IsNameKey => FirstChildToken(LuaTokenKind.TkName) != null;
 
-    public LuaExprSyntax? ValueExpr => FirstChild<LuaExprSyntax>();
+    public bool IsNumberKey => FirstChildToken(LuaTokenKind.TkNumber) != null;
 
-    public LuaExprSyntax? Key => FirstChild<LuaExprSyntax>();
+    public bool IsStringKey => FirstChildToken(LuaTokenKind.TkString) != null;
+
+    public bool IsValue => FirstChildToken(LuaTokenKind.TkAssign) == null;
+
+    public LuaExprSyntax? ExprKey => FirstChild<LuaExprSyntax>();
+
+    public LuaSyntaxToken? NameKey => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaSyntaxToken? NumberKey => FirstChildToken(LuaTokenKind.TkNumber);
+
+    public LuaSyntaxToken? StringKey => FirstChildToken(LuaTokenKind.TkString);
 
     public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 

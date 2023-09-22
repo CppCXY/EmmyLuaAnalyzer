@@ -37,7 +37,7 @@ public class LuaAssignStatSyntax : LuaStatSyntax
 {
     public IEnumerable<LuaVarDefSyntax> VarList => ChildNodes<LuaVarDefSyntax>();
 
-    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExpressionList => ChildNodes<LuaExprSyntax>();
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 

@@ -126,8 +126,8 @@ public static class ExpressionParser
 
     private static void FieldList(LuaParser p)
     {
-        Field(p);
-        while (p.Current is LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon)
+        var cm = Field(p);
+        while (cm.IsComplete && p.Current is LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon)
         {
             p.Bump();
             if (p.Current is LuaTokenKind.TkRightBrace)
@@ -135,7 +135,7 @@ public static class ExpressionParser
                 break;
             }
 
-            Field(p);
+            cm = Field(p);
         }
     }
 
@@ -149,7 +149,14 @@ public static class ExpressionParser
                 case LuaTokenKind.TkLeftBracket:
                 {
                     p.Bump();
-                    Expression(p);
+                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkNumber)
+                    {
+                        p.Bump();
+                    }
+                    else
+                    {
+                        Expression(p);
+                    }
                     p.Expect(LuaTokenKind.TkRightBracket);
                     p.Expect(LuaTokenKind.TkAssign);
                     Expression(p);

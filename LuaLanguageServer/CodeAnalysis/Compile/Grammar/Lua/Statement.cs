@@ -527,20 +527,20 @@ public static class StatementParser
             }
 
             var m1 = cm.Precede(p);
-            m1.Complete(p, LuaSyntaxKind.VarDef);
-            while (p.Current is LuaTokenKind.TkComma)
+            var cm1 = m1.Complete(p, LuaSyntaxKind.VarDef);
+            while (cm1.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                ExpressionParser.VarDefinition(p);
+                cm1 = ExpressionParser.VarDefinition(p);
             }
 
             p.Expect(LuaTokenKind.TkAssign);
 
-            ExpressionParser.Expression(p);
-            while (p.Current is LuaTokenKind.TkComma)
+            var cm2 = ExpressionParser.Expression(p);
+            while (cm2.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                ExpressionParser.Expression(p);
+                cm2 = ExpressionParser.Expression(p);
             }
 
             p.Accept(LuaTokenKind.TkSemicolon);

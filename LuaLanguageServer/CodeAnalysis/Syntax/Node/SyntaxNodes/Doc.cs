@@ -211,7 +211,7 @@ public class LuaDocTypedParamSyntax : LuaDocSyntax
 {
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
-    public LuaSyntaxToken? Param => FirstChildToken(LuaTokenKind.TkName);
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
 
     public LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
         : base(greenNode, tree, parent)

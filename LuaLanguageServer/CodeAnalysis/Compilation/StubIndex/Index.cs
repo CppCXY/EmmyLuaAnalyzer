@@ -67,6 +67,31 @@ public static class Index
                     LocalIndex(stubIndexImpl, documentId, luaLocalStatSyntax);
                     break;
                 }
+                case LuaAssignStatSyntax luaAssignStatSyntax:
+                {
+                    AssignIndex(stubIndexImpl, documentId, luaAssignStatSyntax);
+                    break;
+                }
+                case LuaIndexExprSyntax luaIndexExprSyntax:
+                {
+                    IndexExprIndex(stubIndexImpl, documentId, luaIndexExprSyntax);
+                    break;
+                }
+                case LuaTableFieldSyntax luaTableFieldSyntax:
+                {
+                    TableFieldIndex(stubIndexImpl, documentId, luaTableFieldSyntax);
+                    break;
+                }
+                case LuaParamListSyntax luaParamListSyntax:
+                {
+                    ParamIndex(stubIndexImpl, documentId, luaParamListSyntax);
+                    break;
+                }
+                case LuaDocGenericSyntax luaDocGenericSyntax:
+                {
+                    GenericDocIndex(stubIndexImpl, documentId, luaDocGenericSyntax);
+                    break;
+                }
             }
         }
     }
@@ -163,23 +188,10 @@ public static class Index
                     documentId, name.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
                 break;
             }
-            case { IsMethod: true, Name: { } name2, ParentExpr: { } parentExpr }:
+            case { IsMethod: true, Name: { } name2 }:
             {
                 stubIndexImpl.ShortNameIndex.AddStub(
                     documentId, name2.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
-
-                stubIndexImpl.Members.AddStub(
-                    documentId, parentExpr, new LuaMember.Function(luaFuncStatSyntax));
-
-                while (parentExpr is LuaIndexExprSyntax indexExpr)
-                {
-                    parentExpr = indexExpr.ParentExpr;
-                    if (parentExpr is not null)
-                    {
-                        stubIndexImpl.Members.AddStub(
-                            documentId, parentExpr, new LuaMember.Index(indexExpr));
-                    }
-                }
 
                 break;
             }
@@ -229,15 +241,118 @@ public static class Index
     private static void LocalIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaLocalStatSyntax luaLocalStatSyntax)
     {
-        foreach (var (localName, expr) in
-                 luaLocalStatSyntax.NameList.Zip(luaLocalStatSyntax.ExpressionList,
-                     (n, e) => (n, e)
-                 ))
+        var count = luaLocalStatSyntax.NameList.Count();
+        var lastValidExprId = -1;
+        LuaExprSyntax? lastValidExpr = null;
+        for (var i = 0; i < count; i++)
         {
+            var localName = luaLocalStatSyntax.NameList.ElementAt(i);
+            var expr = luaLocalStatSyntax.ExpressionList.ElementAtOrDefault(i);
+            if (expr is not null)
+            {
+                lastValidExpr = expr;
+                lastValidExprId = i;
+            }
+
             if (localName is { Name: { } name })
             {
                 stubIndexImpl.ShortNameIndex.AddStub(
-                    documentId, name.RepresentText, new LuaShortName.Local(localName, expr));
+                    documentId, name.RepresentText,
+                    lastValidExprId == -1
+                        ? new LuaShortName.Local(localName, null, -1)
+                        : new LuaShortName.Local(localName, lastValidExpr, i - lastValidExprId));
+            }
+        }
+    }
+
+    private static void AssignIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaAssignStatSyntax luaAssignStatSyntax)
+    {
+        var count = luaAssignStatSyntax.VarList.Count();
+        var lastValidExprId = -1;
+        LuaExprSyntax? lastValidExpr = null;
+        for (var i = 0; i < count; i++)
+        {
+            var varName = luaAssignStatSyntax.VarList.ElementAt(i);
+            var expr = luaAssignStatSyntax.ExpressionList.ElementAtOrDefault(i);
+            if (expr is not null)
+            {
+                lastValidExpr = expr;
+                lastValidExprId = i;
+            }
+
+            if (varName is { Name: { } name })
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, name.RepresentText,
+                    lastValidExprId == -1
+                        ? new LuaShortName.VarDef(varName, null, -1)
+                        : new LuaShortName.VarDef(varName, lastValidExpr, i - lastValidExprId));
+            }
+        }
+    }
+
+    private static void IndexExprIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaIndexExprSyntax luaIndexExprSyntax)
+    {
+        if (luaIndexExprSyntax.ParentExpr is { } parentExpr)
+        {
+            stubIndexImpl.Members.AddStub(
+                documentId, parentExpr, new LuaMember.Index(luaIndexExprSyntax));
+        }
+    }
+
+    private static void TableFieldIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaTableFieldSyntax luaTableFieldSyntax)
+    {
+        switch (luaTableFieldSyntax)
+        {
+            case { NameKey: { } nameKey }:
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, nameKey.RepresentText, new LuaShortName.TableField(luaTableFieldSyntax));
+                break;
+            }
+            case { StringKey: { } stringKey }:
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, stringKey.RepresentText, new LuaShortName.TableField(luaTableFieldSyntax));
+                break;
+            }
+            case { NumberKey: { } numberKey }:
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, numberKey.RepresentText, new LuaShortName.TableField(luaTableFieldSyntax));
+                break;
+            }
+        }
+
+        if (luaTableFieldSyntax.Parent is { } parentExpr)
+        {
+            stubIndexImpl.Members.AddStub(
+                documentId, parentExpr, new LuaMember.TableField(luaTableFieldSyntax));
+        }
+    }
+
+    private static void ParamIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaParamListSyntax luaParamListSyntax)
+    {
+        foreach (var param in luaParamListSyntax.Params)
+        {
+            stubIndexImpl.ShortNameIndex.AddStub(
+                documentId, param.RepresentText, new LuaShortName.Param(param));
+        }
+    }
+
+    private static void GenericDocIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
+        LuaDocGenericSyntax luaDocGenericSyntax)
+    {
+        foreach (var genericParam in luaDocGenericSyntax.ParamList)
+        {
+            if (genericParam is { Name: { } name })
+            {
+                stubIndexImpl.ShortNameIndex.AddStub(
+                    documentId, name.RepresentText, new LuaShortName.Generic(genericParam));
             }
         }
     }
