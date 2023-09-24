@@ -7,11 +7,11 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 public static class SyntaxFactory
 {
-    public static LuaSyntaxNodeOrToken CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public static LuaSyntaxElement CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
         if (greenNode.IsSyntaxNode)
         {
-            return new LuaSyntaxNodeOrToken.Node(greenNode.SyntaxKind switch
+            return greenNode.SyntaxKind switch
             {
                 LuaSyntaxKind.Source => new LuaSourceSyntax(greenNode, tree),
                 LuaSyntaxKind.Block => new LuaBlockSyntax(greenNode, tree, parent),
@@ -87,11 +87,11 @@ public static class SyntaxFactory
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent),
                 // LuaSyntaxKind.DocModule => expr,
                 _ => throw new Exception("Unexpected SyntaxKind")
-            });
+            };
         }
         else
         {
-            return new LuaSyntaxNodeOrToken.Token(new LuaSyntaxToken(greenNode, tree, parent));
+            return new LuaSyntaxToken(greenNode, tree, parent);
         }
     }
 }

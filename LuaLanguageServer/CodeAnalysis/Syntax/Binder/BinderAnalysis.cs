@@ -6,15 +6,15 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Binder;
 
 public static class BinderAnalysis
 {
-    public static BinderData Analysis(LuaSyntaxNode root)
+    public static BinderData Analysis(LuaSyntaxElement root)
     {
-        Dictionary<LuaCommentSyntax, LuaSyntaxNodeOrToken> commentOwners = new();
-        Dictionary<LuaSyntaxNodeOrToken, List<LuaCommentSyntax>> comments = new();
-        Dictionary<LuaSyntaxNode, List<LuaSyntaxToken>> docDescriptions = new();
+        Dictionary<LuaCommentSyntax, LuaSyntaxElement> commentOwners = new();
+        Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments = new();
+        Dictionary<LuaSyntaxElement, List<LuaSyntaxToken>> docDescriptions = new();
 
         foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
         {
-            if (nodeOrToken is LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax commentSyntax })
+            if (nodeOrToken is LuaCommentSyntax commentSyntax)
             {
                 var inlineNodeOrToken = GetInlineNodeOrToken(commentSyntax);
                 if (inlineNodeOrToken != null)
@@ -45,14 +45,12 @@ public static class BinderAnalysis
                     }
                 }
             }
-            else if (nodeOrToken is LuaSyntaxNodeOrToken.Token
+            else if (nodeOrToken is LuaSyntaxToken
                      {
-                         SyntaxToken.Kind: LuaTokenKind.TkDocDescription
+                         Kind: LuaTokenKind.TkDocDescription
                      } token)
             {
-                var description = token.SyntaxToken;
-
-
+                // var description = token.SyntaxToken;
             }
         }
 
@@ -60,29 +58,29 @@ public static class BinderAnalysis
     }
 
     // 通过向前查找, 获取注释的所有者, 会忽略空白/逗号/分号
-    private static LuaSyntaxNodeOrToken? GetInlineNodeOrToken(LuaCommentSyntax commentSyntax)
+    private static LuaSyntaxElement? GetInlineNodeOrToken(LuaCommentSyntax commentSyntax)
     {
         for (var i = 1;; i++)
         {
             var prevSibling = commentSyntax.GetPrevSibling(i);
             switch (prevSibling)
             {
-                case LuaSyntaxNodeOrToken.Token
+                case LuaSyntaxToken
                 {
-                    SyntaxToken.Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon,
+                    Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon,
                 }:
                 {
                     continue;
                 }
                 case null
-                    or LuaSyntaxNodeOrToken.Token { SyntaxToken.Kind: LuaTokenKind.TkEndOfLine }
-                    or LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax }:
+                    or LuaSyntaxToken { Kind: LuaTokenKind.TkEndOfLine }
+                    or LuaCommentSyntax:
                 {
                     return null;
                 }
-                case LuaSyntaxNodeOrToken.Token { SyntaxToken.Kind: not LuaTokenKind.TkName }:
+                case LuaSyntaxToken { Kind: not LuaTokenKind.TkName }:
                 {
-                    return commentSyntax.Parent != null ? new LuaSyntaxNodeOrToken.Node(commentSyntax.Parent) : null;
+                    return commentSyntax.Parent;
                 }
                 default:
                     return prevSibling;
@@ -91,7 +89,7 @@ public static class BinderAnalysis
     }
 
     // 通过向后查找, 获取注释的所有者, 会忽略空白/至多一个行尾
-    private static LuaSyntaxNodeOrToken? GetAttachedNodeOrToken(LuaCommentSyntax commentSyntax)
+    private static LuaSyntaxElement? GetAttachedNodeOrToken(LuaCommentSyntax commentSyntax)
     {
         var meetEndOfLine = false;
         for (var i = 1;; i++)
@@ -99,17 +97,17 @@ public static class BinderAnalysis
             var nextSibling = commentSyntax.GetNextSibling(i);
             switch (nextSibling)
             {
-                case LuaSyntaxNodeOrToken.Token { SyntaxToken.Kind: LuaTokenKind.TkWhitespace }:
+                case LuaSyntaxToken { Kind: LuaTokenKind.TkWhitespace }:
                 {
                     continue;
                 }
-                case LuaSyntaxNodeOrToken.Token { SyntaxToken.Kind: LuaTokenKind.TkEndOfLine }:
+                case LuaSyntaxToken { Kind: LuaTokenKind.TkEndOfLine }:
                 {
                     if (meetEndOfLine) return null;
                     meetEndOfLine = true;
                     continue;
                 }
-                case null or LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax }:
+                case null or LuaCommentSyntax:
                 {
                     return null;
                 }
@@ -119,24 +117,24 @@ public static class BinderAnalysis
         }
     }
 
-    public static LuaSyntaxNodeOrToken? GetInlineDocNode(LuaSyntaxToken descriptionToken)
+    public static LuaSyntaxElement? GetInlineDocNode(LuaSyntaxToken descriptionToken)
     {
         for (var i = 1;; i++)
         {
             var prevSibling = descriptionToken.GetPrevSibling(i);
             switch (prevSibling)
             {
-                case LuaSyntaxNodeOrToken.Token
+                case LuaSyntaxToken
                 {
-                    SyntaxToken.Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocContinue,
+                    Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocContinue,
                 }:
                 {
                     continue;
                 }
                 case null
-                    or LuaSyntaxNodeOrToken.Token
+                    or LuaSyntaxToken
                     {
-                        SyntaxToken.Kind: LuaTokenKind.TkEndOfLine or LuaTokenKind.TkNormalStart
+                        Kind: LuaTokenKind.TkEndOfLine or LuaTokenKind.TkNormalStart
                     }:
                 {
                     return null;

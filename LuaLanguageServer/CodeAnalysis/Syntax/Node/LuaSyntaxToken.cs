@@ -5,39 +5,16 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-public class LuaSyntaxToken
+public class LuaSyntaxToken : LuaSyntaxElement
 {
-    public LuaTokenKind Kind { get; }
-
-    public GreenNode GreenNode { get; }
-
-    public LuaSyntaxNode? Parent { get; }
-
-    public LuaSyntaxTree Tree { get; }
-
-    public LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+        : base(greenNode, tree, parent)
     {
-        Kind = greenNode.IsToken ? greenNode.TokenKind : LuaTokenKind.None;
-        GreenNode = greenNode;
-        Parent = parent;
-        Tree = tree;
     }
 
-    // 遍历所有祖先
-    public IEnumerable<LuaSyntaxNode> Ancestors
-    {
-        get
-        {
-            var node = Parent;
-            while (node != null)
-            {
-                yield return node;
-                node = node.Parent;
-            }
-        }
-    }
+    public LuaTokenKind Kind => Green.TokenKind;
 
-    public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(GreenNode.Range.StartOffset, GreenNode.Range.Length);
+    public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(Green.Range.StartOffset, Green.Range.Length);
 
     public string RepresentText
     {
@@ -85,22 +62,4 @@ public class LuaSyntaxToken
         }
     }
 
-    public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Token(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
-
-    public LuaSyntaxNodeOrToken? GetNextSibling(int next = 1) =>
-        Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition + next);
-
-    public LuaSyntaxNodeOrToken? GetPrevSibling(int prev = 1) =>
-        Parent?.ChildrenWithTokens.ElementAtOrDefault(GreenNode.ChildPosition - prev);
-
-    public override int GetHashCode()
-    {
-        return GreenNode.GetHashCode();
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is LuaSyntaxToken token && GreenNode.Equals(token.GreenNode);
-    }
 }

@@ -12,10 +12,10 @@ public class LuaCommentSyntax : LuaSyntaxNode
 
     public IEnumerable<LuaSyntaxToken> Descriptions => ChildTokens(LuaTokenKind.TkDocDescription);
 
-    public LuaCommentSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaCommentSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
 
-    public LuaSyntaxNodeOrToken? Owner => Tree.BinderData?.CommentOwner(this);
+    public LuaSyntaxElement? Owner => Tree.BinderData?.CommentOwner(this);
 }

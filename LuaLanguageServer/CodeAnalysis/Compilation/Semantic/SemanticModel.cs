@@ -19,55 +19,14 @@ public class SemanticModel
         _tree = tree;
     }
 
-    public ILuaSymbol GetSymbol(LuaSyntaxNodeOrToken nodeOrToken)
+    public ILuaSymbol GetSymbol(LuaSyntaxElement element)
     {
-        return nodeOrToken switch
-        {
-            LuaSyntaxNodeOrToken.Node node => GetSymbol(node),
-            LuaSyntaxNodeOrToken.Token token => GetSymbol(token),
-            _ => throw new UnreachableException()
-        };
-    }
-
-    public ILuaSymbol GetSymbol(LuaSyntaxNode node)
-    {
-        switch (node)
-        {
-            case LuaIndexExprSyntax indexExprSyntax:
-            {
-                break;
-            }
-            case LuaNameSyntax nameSyntax:
-            {
-                break;
-            }
-            default:
-            {
-                break;
-            }
-        }
-
-        throw new NotImplementedException();
-    }
-
-    public ILuaSymbol GetSymbol(LuaSyntaxToken token)
-    {
-        switch (token.Kind)
-        {
-            case LuaTokenKind.TkName:
-            {
-                break;
-            }
-            case LuaTokenKind.TkString:
-            {
-                break;
-            }
-            default:
-            {
-                break;
-            }
-        }
-
+        // return nodeOrToken switch
+        // {
+        //     LuaSyntaxNodeOrToken.Node node => GetSymbol(node),
+        //     LuaSyntaxNodeOrToken.Token token => GetSymbol(token),
+        //     _ => throw new UnreachableException()
+        // };
         throw new NotImplementedException();
     }
 }

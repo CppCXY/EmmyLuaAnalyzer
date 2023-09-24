@@ -7,7 +7,7 @@ public class StubIndexImpl
 {
     public StubIndex<string, LuaShortName> ShortNameIndex { get; set; } = new();
 
-    public StubIndex<LuaSyntaxNode, LuaMember> Members { get; set; } = new();
+    public StubIndex<LuaSyntaxElement, LuaMember> Members { get; set; } = new();
 }
 
 public abstract record LuaShortName

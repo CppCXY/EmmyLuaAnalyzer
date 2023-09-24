@@ -7,9 +7,9 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 public class LuaExprSyntax : LuaSyntaxNode
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+        Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
 
-    public LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -19,7 +19,7 @@ public class LuaNameSyntax : LuaExprSyntax
 {
     public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
 
-    public LuaNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -43,7 +43,7 @@ public class LuaVarDefSyntax : LuaExprSyntax
         }
     }
 
-    public LuaVarDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaVarDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -57,7 +57,7 @@ public class LuaCallExprSyntax : LuaExprSyntax
 
     public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
 
-    public LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -79,7 +79,7 @@ public class LuaBinaryExprSyntax : LuaExprSyntax
 
     public LuaExprSyntax? RightExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
-    public LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -98,7 +98,7 @@ public class LuaUnaryExprSyntax : LuaExprSyntax
 
     public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
 
-    public LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -108,13 +108,13 @@ public class LuaTableExprSyntax : LuaExprSyntax
 {
     public IEnumerable<LuaTableFieldSyntax> FieldList => ChildNodes<LuaTableFieldSyntax>();
 
-    public LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
 }
 
-public class LuaTableFieldSyntax : LuaSyntaxNode
+public class LuaTableFieldSyntax : LuaSyntaxElement
 {
     public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
 
@@ -136,7 +136,7 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
 
     public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
-    public LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -152,7 +152,7 @@ public class LuaClosureExprSyntax : LuaExprSyntax
 
     public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
 
-    public LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -162,7 +162,7 @@ public class LuaLiteralExprSyntax : LuaExprSyntax
 {
     public LuaSyntaxToken Literal => FirstChildToken()!;
 
-    public LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -176,7 +176,7 @@ public class LuaParenExprSyntax : LuaExprSyntax
 
     public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
 
-    public LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -203,9 +203,9 @@ public class LuaIndexExprSyntax : LuaExprSyntax
                 var prev = GetPrevSibling(i);
                 switch (prev)
                 {
-                    case LuaSyntaxNodeOrToken.Token or LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaCommentSyntax }:
+                    case LuaSyntaxToken or LuaCommentSyntax:
                         continue;
-                    case LuaSyntaxNodeOrToken.Node { SyntaxNode: LuaExprSyntax { } expr }:
+                    case LuaExprSyntax expr:
                         return expr;
                     default:
                         return null;
@@ -214,7 +214,7 @@ public class LuaIndexExprSyntax : LuaExprSyntax
         }
     }
 
-    public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -232,7 +232,7 @@ public class LuaSuffixExprSyntax : LuaExprSyntax
 
     public LuaIndexExprSyntax? Index => FirstChild<LuaIndexExprSyntax>();
 
-    public LuaSuffixExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaSuffixExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }

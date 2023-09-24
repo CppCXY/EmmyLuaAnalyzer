@@ -6,7 +6,7 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaSourceSyntax : LuaSyntaxNode
 {
-    public LuaBlockSyntax? BlockSyntax => FirstChild<LuaBlockSyntax>();
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 
     public LuaSourceSyntax(GreenNode greenNode, LuaSyntaxTree tree)
         : base(greenNode, tree, null)
@@ -19,9 +19,9 @@ public class LuaBlockSyntax : LuaSyntaxNode
     public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
 
     public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+        Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
 
-    public LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -33,7 +33,7 @@ public class LuaParamListSyntax : LuaSyntaxNode
 
     public bool HasVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
 
-    public LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -69,7 +69,7 @@ public class LuaAttributeSyntax : LuaSyntaxNode
         }
     }
 
-    public LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -81,7 +81,7 @@ public class LuaLocalNameSyntax : LuaSyntaxNode
 
     public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
 
-    public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxNode? parent)
+    public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }

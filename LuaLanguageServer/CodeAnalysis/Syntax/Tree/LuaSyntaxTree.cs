@@ -56,11 +56,7 @@ public class LuaSyntaxTree
             // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
             if (_root is null)
             {
-                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null) switch
-                {
-                    LuaSyntaxNodeOrToken.Node node => node.SyntaxNode as LuaSourceSyntax,
-                    _ => throw new InvalidOperationException()
-                };
+                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null) as LuaSourceSyntax;
                 BinderData = BinderAnalysis.Analysis(_root!);
             }
 
