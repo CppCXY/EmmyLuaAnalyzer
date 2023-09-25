@@ -50,7 +50,18 @@ public static class BinderAnalysis
                          Kind: LuaTokenKind.TkDocDescription
                      } token)
             {
-                // var description = token.SyntaxToken;
+                var element = GetInlineDocNode(token);
+                // ReSharper disable once InvertIf
+                if (element != null)
+                {
+                    if (!docDescriptions.TryGetValue(element, out var tokenList))
+                    {
+                        tokenList = new List<LuaSyntaxToken>();
+                        docDescriptions.Add(element, tokenList);
+                    }
+
+                    tokenList.Add(token);
+                }
             }
         }
 
@@ -117,7 +128,7 @@ public static class BinderAnalysis
         }
     }
 
-    public static LuaSyntaxElement? GetInlineDocNode(LuaSyntaxToken descriptionToken)
+    private static LuaSyntaxElement? GetInlineDocNode(LuaSyntaxToken descriptionToken)
     {
         for (var i = 1;; i++)
         {
