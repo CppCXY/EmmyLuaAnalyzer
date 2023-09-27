@@ -47,7 +47,7 @@ public class LuaAssignStatSyntax : LuaStatSyntax
     }
 }
 
-public class LuaMethodNameSyntax : LuaSyntaxElement
+public class LuaMethodNameSyntax : LuaSyntaxNode
 {
     public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
 
@@ -71,25 +71,22 @@ public class LuaMethodNameSyntax : LuaSyntaxElement
 
 public class LuaFuncStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
-
-    public bool IsLocal => Local != null;
+    public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
 
     public bool IsMethod => FirstChild<LuaMethodNameSyntax>() != null;
 
-    public LuaSyntaxToken Function => FirstChildToken(LuaTokenKind.TkFunction)!;
-
-    public LuaSyntaxToken? Name => MethodName?.Name;
+    public LuaSyntaxToken? Name =>
+        IsLocal ? (LocalName?.Name) : (MethodName?.Name);
 
     public LuaExprSyntax? ParentExpr => MethodName?.ParentExpr;
 
     public LuaMethodNameSyntax? MethodName => FirstChild<LuaMethodNameSyntax>();
 
+    public LuaLocalNameSyntax? LocalName => FirstChild<LuaLocalNameSyntax>();
+
     public LuaParamListSyntax? ParamNameList => FirstChild<LuaParamListSyntax>();
 
-    public LuaBlockSyntax? BlockSyntax => FirstChild<LuaBlockSyntax>();
-
-    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 
     public LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

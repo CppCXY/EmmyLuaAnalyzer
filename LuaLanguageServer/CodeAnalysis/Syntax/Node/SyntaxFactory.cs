@@ -85,7 +85,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypedField => new LuaDocTypedFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent),
-                // LuaSyntaxKind.DocModule => expr,
+                LuaSyntaxKind.RequireExpr => new LuaRequireExprSyntax(greenNode, tree, parent),
                 _ => throw new Exception("Unexpected SyntaxKind")
             };
         }

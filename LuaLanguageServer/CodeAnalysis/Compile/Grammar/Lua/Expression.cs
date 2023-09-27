@@ -157,6 +157,7 @@ public static class ExpressionParser
                     {
                         Expression(p);
                     }
+
                     p.Expect(LuaTokenKind.TkRightBracket);
                     p.Expect(LuaTokenKind.TkAssign);
                     Expression(p);
@@ -209,7 +210,16 @@ public static class ExpressionParser
             {
                 case LuaTokenKind.TkName:
                 {
+                    var requireLike = p.Lexer.Source.Language.IsRequireLike(p.CurrentName);
                     p.Bump();
+                    // ReSharper disable once InvertIf
+                    if (requireLike && p.Current is LuaTokenKind.TkString or LuaTokenKind.TkLongString
+                            or LuaTokenKind.TkLeftParen)
+                    {
+                        CallExpr(p);
+                        return m.Complete(p, LuaSyntaxKind.RequireExpr);
+                    }
+
                     return m.Complete(p, LuaSyntaxKind.NameExpr);
                 }
                 case LuaTokenKind.TkLeftParen:
@@ -365,6 +375,8 @@ public static class ExpressionParser
     {
         var cm = SuffixExpression(p);
         var m = cm.Precede(p);
-        return !cm.IsComplete ? m.Fail(p, LuaSyntaxKind.VarDef, "expected a variable name") : m.Complete(p, LuaSyntaxKind.VarDef);
+        return !cm.IsComplete
+            ? m.Fail(p, LuaSyntaxKind.VarDef, "expected a variable name")
+            : m.Complete(p, LuaSyntaxKind.VarDef);
     }
 }

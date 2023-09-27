@@ -428,9 +428,9 @@ public abstract class LuaSyntaxElement
         stack.Push((this, 0));
         while (stack.Count > 0)
         {
-            var (nodeOrToken, level) = stack.Pop();
+            var (luaSyntaxElement, level) = stack.Pop();
             sb.Append(' ', level * 2);
-            switch (nodeOrToken)
+            switch (luaSyntaxElement)
             {
                 case LuaSyntaxNode node:
                 {

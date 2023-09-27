@@ -20,8 +20,8 @@ public class LuaLanguage
         LanguageLevel = languageLevel;
     }
 
-    public bool IsRequireLike(string methodName)
+    public bool IsRequireLike(ReadOnlySpan<char> methodName)
     {
-        return methodName == "require";
+        return methodName is "require";
     }
 }

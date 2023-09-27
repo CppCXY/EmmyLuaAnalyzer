@@ -37,6 +37,7 @@ public enum LuaSyntaxKind : ushort
     CallExpr,
     IndexExpr,
     NameExpr,
+    RequireExpr,
 
     LocalName,
     MethodName,

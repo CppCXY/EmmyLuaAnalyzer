@@ -349,13 +349,13 @@ public static class StatementParser
         }
     }
 
-    private static CompleteMarker LocalName(LuaParser p)
+    private static CompleteMarker LocalName(LuaParser p, bool allowAttribute = true)
     {
         var m = p.Marker();
         try
         {
             p.Expect(LuaTokenKind.TkName);
-            if (p.Current is LuaTokenKind.TkLt)
+            if (allowAttribute && p.Current is LuaTokenKind.TkLt)
             {
                 LocalAttribute(p);
             }
@@ -379,27 +379,37 @@ public static class StatementParser
             {
                 kind = LuaSyntaxKind.LocalFuncStat;
                 p.Bump();
-                MethodName(p, false);
+                LocalName(p, false);
                 FunctionBody(p);
             }
             else
             {
                 var cm = LocalName(p);
-
+                var nameCount = 1;
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
                     cm = LocalName(p);
+                    nameCount++;
                 }
 
                 if (p.Current == LuaTokenKind.TkAssign)
                 {
                     p.Bump();
-                    cm = ExpressionParser.Expression(p);
-                    while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
+                    if (nameCount == 1 && p.Current is LuaTokenKind.TkFunction)
                     {
+                        kind = LuaSyntaxKind.LocalFuncStat;
                         p.Bump();
+                        FunctionBody(p);
+                    }
+                    else
+                    {
                         cm = ExpressionParser.Expression(p);
+                        while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
+                        {
+                            p.Bump();
+                            cm = ExpressionParser.Expression(p);
+                        }
                     }
                 }
             }

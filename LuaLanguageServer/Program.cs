@@ -10,18 +10,10 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    ---@enum ys
-    ---| 你说的对 # The left side of the device
-    ---| 但是 # The right side of the device
-    ---| ys # The top side of the device
-
-    ---@class XXXX {
-    ---AAAAAA: number;
-    ---bbb: string
-    ---}
+    local a = require "aaaaaaa"
     """);
 
-Console.Write(tree.SyntaxRoot.DebugGreenInspect());
+Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
 foreach (var diagnostic in tree.Diagnostics)
 {
     Console.WriteLine(diagnostic);
