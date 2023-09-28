@@ -21,6 +21,8 @@ public class Declaration : DeclarationNode
 
     private Dictionary<string, Declaration> _fields = new();
 
+    public Declaration? PrevDeclaration { get; set; }
+
     public bool IsLocal => (_flag & DeclarationFlag.Local) != 0;
 
     public bool IsFunction => (_flag & DeclarationFlag.Function) != 0;
@@ -29,12 +31,13 @@ public class Declaration : DeclarationNode
 
     public bool IsGlobal => (_flag & DeclarationFlag.Global) != 0;
 
-    public Declaration(string name, int position, LuaSyntaxElement syntaxElement, DeclarationFlag flag)
+    public Declaration(string name, int position, LuaSyntaxElement syntaxElement, DeclarationFlag flag, Declaration? prev)
         : base(position, null)
     {
         Name = name;
         SyntaxElement = syntaxElement;
         _flag = flag;
+        PrevDeclaration = prev;
     }
 
     public Declaration? FindField(string name)
@@ -46,4 +49,6 @@ public class Declaration : DeclarationNode
     {
         _fields.Add(child.Name, child);
     }
+
+    public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 }

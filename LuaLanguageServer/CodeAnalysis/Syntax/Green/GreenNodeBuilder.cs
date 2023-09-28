@@ -17,9 +17,9 @@ public class GreenNodeBuilder
         }
     }
 
-    private Stack<ParentInfo> Parents { get; } = new Stack<ParentInfo>();
+    private Stack<ParentInfo> Parents { get; } = new();
 
-    private List<GreenNode> Children { get; } = new List<GreenNode>();
+    private List<GreenNode> Children { get; } = new();
 
     public void StartNode(LuaSyntaxKind kind)
     {
