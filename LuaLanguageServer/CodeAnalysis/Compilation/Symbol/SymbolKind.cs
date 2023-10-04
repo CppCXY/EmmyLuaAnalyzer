@@ -2,6 +2,12 @@
 
 public enum SymbolKind
 {
+    Unknown,
+    Nil,
+    Void,
+    Primitive,
+    Union,
+    Func,
     Alias,
     Class,
     Enum,
@@ -12,4 +18,16 @@ public enum SymbolKind
     Method,
     Module,
     Parameter,
+}
+
+public enum PrimitiveTypeKind
+{
+    Unknown,
+    Boolean,
+    Integer,
+    Number,
+    String,
+    Table,
+    Void,
+    Function,
 }

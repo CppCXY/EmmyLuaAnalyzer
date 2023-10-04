@@ -176,8 +176,8 @@ public static class StatementParser
         var kind = LuaSyntaxKind.ForStat;
         try
         {
-            p.Expect(LuaTokenKind.TkName);
-            if (p.Current == LuaTokenKind.TkAssign)
+            var cm = ParamDef(p, false);
+            if (cm.IsComplete && p.Current == LuaTokenKind.TkAssign)
             {
                 p.Bump();
                 ExpressionParser.Expression(p);
@@ -192,10 +192,10 @@ public static class StatementParser
             else
             {
                 kind = LuaSyntaxKind.ForRangeStat;
-                while (p.Current is LuaTokenKind.TkComma)
+                while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
-                    p.Expect(LuaTokenKind.TkName);
+                    cm = ParamDef(p, false);
                 }
 
                 p.Expect(LuaTokenKind.TkIn);
@@ -245,9 +245,11 @@ public static class StatementParser
         var m = p.Marker();
         try
         {
+            CompleteMarker cm;
             if (p.Current is LuaTokenKind.TkName)
             {
-                ExpressionParser.PrimaryExpression(p);
+                p.Bump();
+                cm = m.Complete(p, LuaSyntaxKind.NameExpr);
             }
             else
             {
@@ -255,17 +257,23 @@ public static class StatementParser
             }
 
             // ReSharper disable once InvertIf
-            if (suffix && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
+            if (suffix && cm.IsComplete && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
             {
-                var cm = ExpressionParser.IndexExpr(p);
+                var m1 = cm.Precede(p);
+                ExpressionParser.IndexStruct(p);
+                cm = m1.Complete(p, LuaSyntaxKind.IndexExpr);
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkDot)
                 {
-                    cm = ExpressionParser.IndexExpr(p);
+                    var m2 = cm.Precede(p);
+                    ExpressionParser.IndexStruct(p);
+                    cm = m2.Complete(p, LuaSyntaxKind.IndexExpr);
                 }
 
-                if (p.Current is LuaTokenKind.TkColon)
+                if (cm.IsComplete && p.Current is LuaTokenKind.TkColon)
                 {
-                    ExpressionParser.IndexExpr(p);
+                    var m3 = cm.Precede(p);
+                    ExpressionParser.IndexStruct(p);
+                    cm = m3.Complete(p, LuaSyntaxKind.IndexExpr);
                 }
             }
 
@@ -295,40 +303,49 @@ public static class StatementParser
         }
     }
 
+    private static CompleteMarker ParamDef(LuaParser p, bool allowDots = true)
+    {
+        var m = p.Marker();
+        try
+        {
+            if (allowDots)
+            {
+                if (p.Current is LuaTokenKind.TkName or LuaTokenKind.TkDots)
+                {
+                    p.Bump();
+                }
+                else
+                {
+                    throw new UnexpectedTokenException("expected name or '...'");
+                }
+            }
+            else
+            {
+                p.Expect(LuaTokenKind.TkName);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.ParamName);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.ParamName, e.Message);
+        }
+    }
+
     private static CompleteMarker ParamList(LuaParser p)
     {
         var m = p.Marker();
         try
         {
             p.Expect(LuaTokenKind.TkLeftParen);
-            if (p.Current is LuaTokenKind.TkName)
+            if (p.Current is not LuaTokenKind.TkRightParen)
             {
-                p.Bump();
-                while (p.Current is LuaTokenKind.TkComma)
+                var cm = ParamDef(p);
+                while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
-                    if (p.Current == LuaTokenKind.TkName)
-                    {
-                        p.Bump();
-                    }
-                    else
-                    {
-                        p.Expect(LuaTokenKind.TkDots);
-                        break;
-                    }
+                    cm = ParamDef(p);
                 }
-            }
-            else if (p.Current is LuaTokenKind.TkDots)
-            {
-                p.Bump();
-            }
-            else if (p.Current is LuaTokenKind.TkRightParen)
-            {
-                // ignore
-            }
-            else
-            {
-                throw new UnexpectedTokenException("expected name or '...' in paramList");
             }
 
             p.Expect(LuaTokenKind.TkRightParen);
@@ -536,12 +553,10 @@ public static class StatementParser
                 return m.Complete(p, LuaSyntaxKind.ExprStat);
             }
 
-            var m1 = cm.Precede(p);
-            var cm1 = m1.Complete(p, LuaSyntaxKind.VarDef);
-            while (cm1.IsComplete && p.Current is LuaTokenKind.TkComma)
+            while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                cm1 = ExpressionParser.VarDefinition(p);
+                cm = ExpressionParser.SuffixExpression(p);
             }
 
             p.Expect(LuaTokenKind.TkAssign);

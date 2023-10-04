@@ -1,5 +1,8 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
 using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -14,9 +17,14 @@ public class LuaCompilation
 
     private List<LuaSyntaxTree> _syntaxTrees = new();
 
+    private Dictionary<LuaSyntaxTree, DeclarationTree> _declarationTrees = new();
+
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees;
 
+    internal Builtin Builtin { get; } = new();
     public StubIndexImpl StubIndexImpl { get; }
+
+    public SearchContext SearchContext => new(this);
 
     public LuaCompilation(LuaWorkspace workspace)
     {
@@ -47,6 +55,13 @@ public class LuaCompilation
     {
         var document = _workspace.GetDocument(url);
         return document == null ? null : GetSemanticModel(document.SyntaxTree);
+    }
+
+    public DeclarationTree GetDeclarationTree(LuaSyntaxTree tree)
+    {
+        return _declarationTrees.TryGetValue(tree, out var declarationTree)
+            ? declarationTree
+            : _declarationTrees[tree] = DeclarationTree.From(tree);
     }
 
     public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(

@@ -15,35 +15,11 @@ public class LuaExprSyntax : LuaSyntaxNode
     }
 }
 
-public class LuaNameSyntax : LuaExprSyntax
+public class LuaNameExprSyntax : LuaExprSyntax
 {
     public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
 
-    public LuaNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
-
-public class LuaVarDefSyntax : LuaExprSyntax
-{
-    public LuaSuffixExprSyntax? Expression => FirstChild<LuaSuffixExprSyntax>();
-
-    public LuaSyntaxToken? Name
-    {
-        get
-        {
-            var expr = Expression;
-            if (expr is null)
-            {
-                return null;
-            }
-
-            return expr.ChildNodes<LuaNameSyntax>().LastOrDefault()?.Name;
-        }
-    }
-
-    public LuaVarDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    public LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -51,13 +27,9 @@ public class LuaVarDefSyntax : LuaExprSyntax
 
 public class LuaCallExprSyntax : LuaExprSyntax
 {
-    public bool IsSingleArgCall => FirstChildToken(LuaTokenKind.TkLeftParen) != null;
+    public LuaCallArgListSyntax? ArgList => FirstChild<LuaCallArgListSyntax>();
 
-    public LuaExprSyntax? SingleArg => FirstChild<LuaExprSyntax>();
-
-    public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
-
-    public LuaExprSyntax? ParentExpr => PrevOfType<LuaExprSyntax>();
+    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
 
     public LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -146,13 +118,9 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
 
 public class LuaClosureExprSyntax : LuaExprSyntax
 {
-    public LuaSyntaxToken Function => FirstChildToken(LuaTokenKind.TkFunction)!;
-
     public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
 
     public LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -194,9 +162,9 @@ public class LuaIndexExprSyntax : LuaExprSyntax
 
     public LuaSyntaxToken? DotOrColonIndexName => FirstChildToken(LuaTokenKind.TkName);
 
-    public LuaExprSyntax? IndexKeyExpr => FirstChild<LuaExprSyntax>();
+    public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
 
-    public LuaExprSyntax? ParentExpr => PrevOfType<LuaExprSyntax>();
+    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
 
     public LuaSyntaxToken? Name
     {
@@ -208,7 +176,7 @@ public class LuaIndexExprSyntax : LuaExprSyntax
             }
             else if (IndexKeyExpr is LuaLiteralExprSyntax
                      {
-                         Literal: { Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString }
+                         Literal: {Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString}
                      } literalExpr)
             {
                 return literalExpr.Literal;
@@ -226,24 +194,6 @@ public class LuaIndexExprSyntax : LuaExprSyntax
     }
 }
 
-public class LuaSuffixExprSyntax : LuaExprSyntax
-{
-    public LuaExprSyntax? Prefix => FirstChild<LuaExprSyntax>();
-
-    public LuaSyntaxToken Dot => FirstChildToken(LuaTokenKind.TkDot)!;
-
-    public LuaNameSyntax? Name => FirstChild<LuaNameSyntax>();
-
-    public LuaCallExprSyntax? Call => FirstChild<LuaCallExprSyntax>();
-
-    public LuaIndexExprSyntax? Index => FirstChild<LuaIndexExprSyntax>();
-
-    public LuaSuffixExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
-
 public class LuaRequireExprSyntax : LuaExprSyntax
 {
     public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
@@ -252,31 +202,21 @@ public class LuaRequireExprSyntax : LuaExprSyntax
     {
         get
         {
-            var callExpr = FirstChild<LuaCallExprSyntax>();
-            if (callExpr is null)
+            var argList = FirstChild<LuaCallArgListSyntax>();
+            if (argList is null)
             {
                 return string.Empty;
             }
 
-            if (callExpr.IsSingleArgCall)
-            {
-                var path = callExpr.SingleArg?.FirstChildToken();
-                if (path != null)
+            var firstArg = argList.ArgList.FirstOrDefault();
+            if (firstArg is LuaLiteralExprSyntax
                 {
-                    return path.RepresentText;
-                }
-            }
-            else
+                    Literal.Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString
+                } literalExpr)
             {
-                var firstExpr = callExpr.ArgList.FirstOrDefault();
-                if (firstExpr is LuaLiteralExprSyntax
-                    {
-                        Literal.Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString
-                    } literalExpr)
-                {
-                    return literalExpr.Literal.RepresentText;
-                }
+                return literalExpr.Literal.RepresentText;
             }
+
 
             return string.Empty;
         }

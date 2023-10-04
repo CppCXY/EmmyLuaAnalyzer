@@ -2,47 +2,6 @@
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 
-public class DeclarationNode
-{
-    public DeclarationNode? Prev => Parent?.Children.ElementAtOrDefault(Position - 1);
-
-    public DeclarationNode? Next => Parent?.Children.ElementAtOrDefault(Position + 1);
-
-    public DeclarationNodeContainer? Parent { get; set; }
-
-    public int Position { get; }
-
-    public DeclarationNode(int position, DeclarationNodeContainer? parent)
-    {
-        Position = position;
-        Parent = parent;
-    }
-}
-
-public abstract class DeclarationNodeContainer : DeclarationNode
-{
-    public List<DeclarationNode> Children { get; } = new();
-
-    public DeclarationNodeContainer(int position, DeclarationNodeContainer? parent)
-        : base(position, parent)
-    {
-    }
-
-    public void Add(DeclarationNode node)
-    {
-        node.Parent = this;
-        Children.Add(node);
-    }
-
-    public DeclarationNode? FirstChild => Children.FirstOrDefault();
-
-    public DeclarationNode? LastChild => Children.LastOrDefault();
-
-    public DeclarationNode? FindFirstChild(Func<DeclarationNode, bool> predicate) => Children.FirstOrDefault(predicate);
-
-    public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
-}
-
 public class DeclarationScope : DeclarationNodeContainer
 {
     public DeclarationTree Tree { get; }
@@ -61,7 +20,7 @@ public class DeclarationScope : DeclarationNodeContainer
         return true;
     }
 
-    public void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public virtual void WalkUp(int position, int level, Func<Declaration, bool> process)
     {
         var cur = FindLastChild(it => it.Position < position);
         while (cur != null)
@@ -80,19 +39,15 @@ public class DeclarationScope : DeclarationNodeContainer
         Parent?.WalkUp(position, level + 1, process);
     }
 
-    private Declaration? Find(LuaNameSyntax nameSyntax)
+    private Declaration? Find(LuaNameExprSyntax nameExpr)
     {
-        var name = nameSyntax.Name.RepresentText;
+        var name = nameExpr.Name.RepresentText;
         Declaration? result = null;
-        WalkUp(Tree.GetPosition(nameSyntax), 0, declaration =>
+        WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
         {
-            if (declaration.Name == name)
-            {
-                result = declaration;
-                return false;
-            }
-
-            return true;
+            if (declaration.Name != name) return true;
+            result = declaration;
+            return false;
         });
         return result;
     }
@@ -101,7 +56,7 @@ public class DeclarationScope : DeclarationNodeContainer
     {
         switch (expr)
         {
-            case LuaNameSyntax nameSyntax:
+            case LuaNameExprSyntax nameSyntax:
                 return Find(nameSyntax);
             case LuaIndexExprSyntax indexExprSyntax:
             {
@@ -111,11 +66,69 @@ public class DeclarationScope : DeclarationNodeContainer
                     return null;
                 }
 
-                var declaration = Find(indexExprSyntax.ParentExpr);
+                var declaration = Find(indexExprSyntax.PrefixExpr);
                 return declaration?.FindField(name);
             }
             default:
                 return null;
+        }
+    }
+}
+
+public class LocalStatDeclarationScope : DeclarationScope
+{
+    public LocalStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
+        : base(tree, position, parent)
+    {
+    }
+
+    public override bool WalkOver(Func<Declaration, bool> process)
+    {
+        return ProcessNode(process);
+    }
+
+    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    {
+        Parent?.WalkUp(Position, level, process);
+    }
+}
+
+public class RepeatStatDeclarationScope : DeclarationScope
+{
+    public RepeatStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
+        : base(tree, position, parent)
+    {
+    }
+
+    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    {
+        if (Children.FirstOrDefault() is DeclarationScope scope && level == 0)
+        {
+            scope.WalkUp(position, level, process);
+        }
+        else
+        {
+            base.WalkUp(position, level, process);
+        }
+    }
+}
+
+public class ForRangeStatDeclarationScope : DeclarationScope
+{
+    public ForRangeStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
+        : base(tree, position, parent)
+    {
+    }
+
+    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    {
+        if (level == 0)
+        {
+            Parent?.WalkUp(position, level, process);
+        }
+        else
+        {
+            base.WalkUp(position, level, process);
         }
     }
 }

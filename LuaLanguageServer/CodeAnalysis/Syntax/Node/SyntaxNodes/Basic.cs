@@ -27,11 +27,23 @@ public class LuaBlockSyntax : LuaSyntaxNode
     }
 }
 
+public class LuaParamDef : LuaSyntaxNode
+{
+    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+
+    public bool IsVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
+
+    public LuaParamDef(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
 public class LuaParamListSyntax : LuaSyntaxNode
 {
-    public IEnumerable<LuaSyntaxToken> Params => ChildTokens(LuaTokenKind.TkName);
+    public IEnumerable<LuaParamDef> Params => ChildNodes<LuaParamDef>();
 
-    public bool HasVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
+    public bool HasVarArgs => Params.LastOrDefault()?.IsVarArgs == true;
 
     public LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -82,6 +94,20 @@ public class LuaLocalNameSyntax : LuaSyntaxNode
     public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
 
     public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public class LuaCallArgListSyntax : LuaSyntaxNode
+{
+    public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
+
+    public bool IsSingleArgCall => FirstChildToken(LuaTokenKind.TkLeftParen) != null;
+
+    public LuaExprSyntax? SingleArg => FirstChild<LuaExprSyntax>();
+
+    public LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }

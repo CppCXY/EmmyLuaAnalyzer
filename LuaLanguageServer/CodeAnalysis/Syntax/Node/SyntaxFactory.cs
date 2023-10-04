@@ -34,7 +34,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.ExprStat => new LuaCallStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.AssignStat => new LuaAssignStatSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.UnknownStat => new LuaUnknownStatSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.SuffixExpr => new LuaSuffixExprSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.CallArgList => new LuaCallArgListSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ParenExpr => new LuaParenExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LiteralExpr => new LuaLiteralExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ClosureExpr => new LuaClosureExprSyntax(greenNode, tree, parent),
@@ -43,8 +43,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TableExpr => new LuaTableExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.CallExpr => new LuaCallExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.IndexExpr => new LuaIndexExprSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.NameExpr => new LuaNameSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.VarDef => new LuaVarDefSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.NameExpr => new LuaNameExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TableFieldAssign => new LuaTableFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TableFieldValue => new LuaTableFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.Attribute => new LuaAttributeSyntax(greenNode, tree, parent),
@@ -86,6 +85,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypedField => new LuaDocTypedFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.RequireExpr => new LuaRequireExprSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.ParamName => new LuaParamDef(greenNode, tree, parent),
                 _ => throw new Exception("Unexpected SyntaxKind")
             };
         }

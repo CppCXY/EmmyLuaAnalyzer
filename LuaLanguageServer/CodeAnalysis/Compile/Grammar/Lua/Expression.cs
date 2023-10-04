@@ -32,11 +32,11 @@ public static class ExpressionParser
             }
 
             var op = OperatorKind.ToBinaryOperator(p.Current);
-            while (op != OperatorKind.BinaryOperator.OpNop && OperatorKind.Priority[(int)op].Left > limit)
+            while (op != OperatorKind.BinaryOperator.OpNop && OperatorKind.Priority[(int) op].Left > limit)
             {
                 m = cm.Precede(p);
                 p.Bump();
-                if (!SubExpression(p, OperatorKind.Priority[(int)op].Right).IsComplete)
+                if (!SubExpression(p, OperatorKind.Priority[(int) op].Right).IsComplete)
                 {
                     return m.Fail(p, LuaSyntaxKind.BinaryExpr, "binary operator not followed by expression");
                 }
@@ -216,7 +216,7 @@ public static class ExpressionParser
                     if (requireLike && p.Current is LuaTokenKind.TkString or LuaTokenKind.TkLongString
                             or LuaTokenKind.TkLeftParen)
                     {
-                        CallExpr(p);
+                        CallArgList(p);
                         return m.Complete(p, LuaSyntaxKind.RequireExpr);
                     }
 
@@ -241,74 +241,66 @@ public static class ExpressionParser
         }
     }
 
-    public static CompleteMarker IndexExpr(LuaParser p)
+    public static void IndexStruct(LuaParser p)
     {
-        var m = p.Marker();
-        try
+        switch (p.Current)
         {
-            switch (p.Current)
+            case LuaTokenKind.TkLeftBracket:
             {
-                case LuaTokenKind.TkLeftBracket:
-                {
-                    p.Bump();
-                    Expression(p);
-                    p.Expect(LuaTokenKind.TkRightBracket);
-                    break;
-                }
-                case LuaTokenKind.TkDot:
-                {
-                    p.Bump();
-                    if (p.Current is not LuaTokenKind.TkName)
-                    {
-                        return m.Fail(p, LuaSyntaxKind.IndexExpr, "expected a name after '.'");
-                    }
-
-                    p.Bump();
-                    break;
-                }
-                case LuaTokenKind.TkColon:
-                {
-                    p.Bump();
-                    if (p.Current is not LuaTokenKind.TkName)
-                    {
-                        return m.Fail(p, LuaSyntaxKind.IndexExpr, "expected a name after ':'");
-                    }
-
-                    p.Bump();
-                    break;
-                }
-                default:
-                {
-                    throw new UnexpectedTokenException($"unexpected symbol {p.Current}", p.Current);
-                }
+                p.Bump();
+                Expression(p);
+                p.Expect(LuaTokenKind.TkRightBracket);
+                break;
             }
+            case LuaTokenKind.TkDot:
+            {
+                p.Bump();
+                if (p.Current is not LuaTokenKind.TkName)
+                {
+                    throw new UnexpectedTokenException("expected a name after '.'");
+                }
 
-            return m.Complete(p, LuaSyntaxKind.IndexExpr);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.IndexExpr, e.Message);
+                p.Bump();
+                break;
+            }
+            case LuaTokenKind.TkColon:
+            {
+                p.Bump();
+                if (p.Current is not LuaTokenKind.TkName)
+                {
+                    throw new UnexpectedTokenException("expected a name after ':'");
+                }
+
+                p.Bump();
+                break;
+            }
+            default:
+            {
+                throw new UnexpectedTokenException($"unexpected symbol {p.Current}", p.Current);
+            }
         }
     }
 
     public static CompleteMarker SuffixExpression(LuaParser p)
     {
-        var m = p.Marker();
         var cm = PrimaryExpression(p);
-        var suffix = false;
         while (true)
         {
             switch (p.Current)
             {
                 case LuaTokenKind.TkDot or LuaTokenKind.TkColon or LuaTokenKind.TkLeftBracket:
                 {
-                    IndexExpr(p);
+                    var m1 = cm.Precede(p);
+                    IndexStruct(p);
+                    cm = m1.Complete(p, LuaSyntaxKind.IndexExpr);
                     break;
                 }
                 case LuaTokenKind.TkString or LuaTokenKind.TkLongString or LuaTokenKind.TkLeftParen
                     or LuaTokenKind.TkLeftBrace:
                 {
-                    CallExpr(p);
+                    var m1 = cm.Precede(p);
+                    CallArgList(p);
+                    cm = m1.Complete(p, LuaSyntaxKind.CallExpr);
                     break;
                 }
                 default:
@@ -316,15 +308,13 @@ public static class ExpressionParser
                     goto endLoop;
                 }
             }
-
-            suffix = true;
         }
 
         endLoop:
-        return suffix ? m.Complete(p, LuaSyntaxKind.SuffixExpr) : cm;
+        return cm;
     }
 
-    private static CompleteMarker CallExpr(LuaParser p)
+    private static CompleteMarker CallArgList(LuaParser p)
     {
         var m = p.Marker();
         try
@@ -333,7 +323,9 @@ public static class ExpressionParser
             {
                 case LuaTokenKind.TkString or LuaTokenKind.TkLongString:
                 {
+                    var m1 = p.Marker();
                     p.Bump();
+                    m1.Complete(p, LuaSyntaxKind.LiteralExpr);
                     break;
                 }
                 case LuaTokenKind.TkLeftParen:
@@ -363,20 +355,11 @@ public static class ExpressionParser
                 }
             }
 
-            return m.Complete(p, LuaSyntaxKind.CallExpr);
+            return m.Complete(p, LuaSyntaxKind.CallArgList);
         }
         catch (UnexpectedTokenException e)
         {
-            return m.Fail(p, LuaSyntaxKind.CallExpr, e.Message);
+            return m.Fail(p, LuaSyntaxKind.CallArgList, e.Message);
         }
-    }
-
-    public static CompleteMarker VarDefinition(LuaParser p)
-    {
-        var cm = SuffixExpression(p);
-        var m = cm.Precede(p);
-        return !cm.IsComplete
-            ? m.Fail(p, LuaSyntaxKind.VarDef, "expected a variable name")
-            : m.Complete(p, LuaSyntaxKind.VarDef);
     }
 }

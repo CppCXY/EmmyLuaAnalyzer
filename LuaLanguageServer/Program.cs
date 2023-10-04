@@ -10,7 +10,7 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    local a = require "aaaaaaa"
+    aaaaaa.bbbbb().aaaa = aaa + bb.ccc
     """);
 
 Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());

@@ -27,7 +27,6 @@ public enum LuaSyntaxKind : ushort
     UnknownStat,
 
     // expressions
-    SuffixExpr,
     ParenExpr,
     LiteralExpr,
     ClosureExpr,
@@ -40,9 +39,10 @@ public enum LuaSyntaxKind : ushort
     RequireExpr,
 
     LocalName,
+    ParamName,
     MethodName,
-    VarDef,
     ParamList,
+    CallArgList,
     TableFieldAssign,
     TableFieldValue,
     Attribute,

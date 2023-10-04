@@ -14,23 +14,14 @@ public class SemanticModel
 
     private LuaSyntaxTree _tree;
 
-    private DeclarationTree _declarationTree;
-
     public SemanticModel(LuaCompilation compilation, LuaSyntaxTree tree)
     {
         _compilation = compilation;
         _tree = tree;
-        _declarationTree = DeclarationTree.From(tree);
     }
 
     public ILuaSymbol GetSymbol(LuaSyntaxElement element)
     {
-        // return nodeOrToken switch
-        // {
-        //     LuaSyntaxNodeOrToken.Node node => GetSymbol(node),
-        //     LuaSyntaxNodeOrToken.Token token => GetSymbol(token),
-        //     _ => throw new UnreachableException()
-        // };
-        throw new NotImplementedException();
+        return _compilation.SearchContext.Infer(element);
     }
 }

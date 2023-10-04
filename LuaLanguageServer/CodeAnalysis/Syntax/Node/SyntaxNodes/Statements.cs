@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Kind;
+﻿using System.Diagnostics;
+using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -35,9 +36,9 @@ public class LuaLocalStatSyntax : LuaStatSyntax
 
 public class LuaAssignStatSyntax : LuaStatSyntax
 {
-    public IEnumerable<LuaVarDefSyntax> VarList => ChildNodes<LuaVarDefSyntax>();
+    public IEnumerable<LuaExprSyntax> VarList => ChildNodesBeforeToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
 
-    public IEnumerable<LuaExprSyntax> ExpressionList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExprList => ChildNodesAfterToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
@@ -51,17 +52,23 @@ public class LuaMethodNameSyntax : LuaSyntaxNode
 {
     public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
 
-    public bool IsColonDefine => ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.IsColonIndex == true;
+    public bool IsColonDefine => FirstChild<LuaIndexExprSyntax>()?.IsColonIndex == true;
 
-    public LuaSyntaxToken? Name =>
-        IsMethod
-            ? ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.DotOrColonIndexName
-            : FirstChild<LuaNameSyntax>()?.Name;
+    public bool IsDotDefine => FirstChild<LuaIndexExprSyntax>()?.IsDotIndex == true;
 
-    public LuaExprSyntax? ParentExpr =>
-        IsMethod
-            ? ChildNodes<LuaIndexExprSyntax>().LastOrDefault()?.ParentExpr
-            : null;
+    public LuaSyntaxToken? Name => FirstChild<LuaExprSyntax>() switch
+    {
+        LuaNameExprSyntax nameExprSyntax => nameExprSyntax.Name,
+        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.Name,
+        _ => throw new UnreachableException()
+    };
+
+    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>() switch
+    {
+        LuaNameExprSyntax => null,
+        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.PrefixExpr,
+        _ => throw new UnreachableException()
+    };
 
     public LuaMethodNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -78,7 +85,7 @@ public class LuaFuncStatSyntax : LuaStatSyntax
     public LuaSyntaxToken? Name =>
         IsLocal ? (LocalName?.Name) : (MethodName?.Name);
 
-    public LuaExprSyntax? ParentExpr => MethodName?.ParentExpr;
+    public LuaExprSyntax? PrefixExpr => MethodName?.PrefixExpr;
 
     public LuaMethodNameSyntax? MethodName => FirstChild<LuaMethodNameSyntax>();
 
@@ -214,11 +221,7 @@ public class LuaDoStatSyntax : LuaStatSyntax
 
 public class LuaForStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken For => FirstChildToken(LuaTokenKind.TkFor)!;
-
-    public LuaSyntaxToken? IteratorName => FirstChildToken(LuaTokenKind.TkName);
-
-    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+    public LuaParamDef? IteratorName => FirstChild<LuaParamDef>();
 
     public LuaExprSyntax? InitExpr => FirstChild<LuaExprSyntax>();
 
@@ -234,19 +237,11 @@ public class LuaForStatSyntax : LuaStatSyntax
 
 public class LuaForRangeStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken For => FirstChildToken(LuaTokenKind.TkFor)!;
+    public IEnumerable<LuaParamDef> IteratorNames =>ChildNodes<LuaParamDef>();
 
-    public IEnumerable<LuaSyntaxToken> IteratorNames => ChildTokens(LuaTokenKind.TkName);
-
-    public LuaSyntaxToken? In => FirstChildToken(LuaTokenKind.TkIn);
-
-    public IEnumerable<LuaExprSyntax> ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
-
-    public LuaSyntaxToken? Do => FirstChildToken(LuaTokenKind.TkDo);
+    public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
 
     public LuaForRangeStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

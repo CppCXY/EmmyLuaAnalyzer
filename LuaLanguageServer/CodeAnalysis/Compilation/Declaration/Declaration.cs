@@ -1,6 +1,61 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+
+public class DeclarationNode
+{
+    public DeclarationNode? Prev => Parent?.Children.ElementAtOrDefault(Position - 1);
+
+    public DeclarationNode? Next => Parent?.Children.ElementAtOrDefault(Position + 1);
+
+    public DeclarationNodeContainer? Parent { get; set; }
+
+    public int Position { get; }
+
+    public DeclarationNode(int position, DeclarationNodeContainer? parent)
+    {
+        Position = position;
+        Parent = parent;
+    }
+}
+
+public abstract class DeclarationNodeContainer : DeclarationNode
+{
+    public List<DeclarationNode> Children { get; } = new();
+
+    public DeclarationNodeContainer(int position, DeclarationNodeContainer? parent)
+        : base(position, parent)
+    {
+    }
+
+    public void Add(DeclarationNode node)
+    {
+        node.Parent = this;
+        Children.Add(node);
+    }
+
+    public bool ProcessNode<T>(Func<T, bool> process)
+    {
+        foreach (var child in Children)
+        {
+            if (child is T t && !process(t))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public DeclarationNode? FirstChild => Children.FirstOrDefault();
+
+    public DeclarationNode? LastChild => Children.LastOrDefault();
+
+    public DeclarationNode? FindFirstChild(Func<DeclarationNode, bool> predicate) => Children.FirstOrDefault(predicate);
+
+    public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
+}
 
 [Flags]
 public enum DeclarationFlag : ushort
@@ -17,26 +72,28 @@ public class Declaration : DeclarationNode
 
     public LuaSyntaxElement SyntaxElement { get; }
 
-    private DeclarationFlag _flag;
+    public DeclarationFlag Flags { get; set; }
 
     private Dictionary<string, Declaration> _fields = new();
 
     public Declaration? PrevDeclaration { get; set; }
 
-    public bool IsLocal => (_flag & DeclarationFlag.Local) != 0;
+    public bool IsLocal => (Flags & DeclarationFlag.Local) != 0;
 
-    public bool IsFunction => (_flag & DeclarationFlag.Function) != 0;
+    public bool IsFunction => (Flags & DeclarationFlag.Function) != 0;
 
-    public bool IsClassMember => (_flag & DeclarationFlag.ClassMember) != 0;
+    public bool IsClassMember => (Flags & DeclarationFlag.ClassMember) != 0;
 
-    public bool IsGlobal => (_flag & DeclarationFlag.Global) != 0;
+    public bool IsGlobal => (Flags & DeclarationFlag.Global) != 0;
 
-    public Declaration(string name, int position, LuaSyntaxElement syntaxElement, DeclarationFlag flag, Declaration? prev)
-        : base(position, null)
+    public Declaration(
+        string name, int position, LuaSyntaxElement syntaxElement, DeclarationFlag flag,
+        DeclarationNodeContainer? parent, Declaration? prev)
+        : base(position, parent)
     {
         Name = name;
         SyntaxElement = syntaxElement;
-        _flag = flag;
+        Flags = flag;
         PrevDeclaration = prev;
     }
 

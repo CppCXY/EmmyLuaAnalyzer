@@ -10,6 +10,7 @@ public class LuaSyntaxToken : LuaSyntaxElement
     public LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
+        _lazyInit = true;
     }
 
     public LuaTokenKind Kind => Green.TokenKind;

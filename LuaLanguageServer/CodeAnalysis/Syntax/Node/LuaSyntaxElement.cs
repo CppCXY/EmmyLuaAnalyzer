@@ -8,6 +8,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
+using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
@@ -21,7 +22,7 @@ public abstract class LuaSyntaxElement
 
     private ImmutableArray<LuaSyntaxElement>? _childrenElements;
 
-    private bool _lazyInit;
+    protected bool _lazyInit;
 
     public LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
@@ -164,6 +165,31 @@ public abstract class LuaSyntaxElement
                 }
             }
         }
+    }
+
+    public void Accept(ILuaNodeWalker walker)
+    {
+        if (this is LuaSyntaxNode node)
+        {
+            walker.WalkIn(node);
+            foreach (var child in Children)
+            {
+                child.Accept(walker);
+            }
+
+            walker.WalkOut(node);
+        }
+    }
+
+    public void Accept(ILuaElementWalker walker)
+    {
+        walker.WalkIn(this);
+        foreach (var child in Children)
+        {
+            child.Accept(walker);
+        }
+
+        walker.WalkOut(this);
     }
 
     // 遍历所有后代和token, 包括自己
