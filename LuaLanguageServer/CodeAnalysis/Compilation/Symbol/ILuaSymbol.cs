@@ -14,5 +14,9 @@ public interface ILuaSymbol
     IEnumerable<LuaLocation> Locations { get; }
 
     public bool SubTypeOf(ILuaSymbol symbol, SearchContext context);
+
+    public string DisplayName { get; }
+
+    public IEnumerable<ILuaSymbol> Members { get; }
 }
 

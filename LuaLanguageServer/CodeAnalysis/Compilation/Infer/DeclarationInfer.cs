@@ -13,4 +13,22 @@ public static class DeclarationInfer
             _ => throw new NotImplementedException()
         };
     }
+
+    public static ILuaSymbol InferSource(LuaSourceSyntax source, SearchContext context)
+    {
+        return source switch
+        {
+            // LuaChunkSyntax chunk => InferChunk(chunk, context),
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public static ILuaSymbol InferParam(LuaParamDefSyntax paramDef, SearchContext context)
+    {
+        return paramDef switch
+        {
+            // LuaIdentifierParamDefSyntax identifierParamDef => InferIdentifierParamDef(identifierParamDef),
+            _ => throw new NotImplementedException()
+        };
+    }
 }

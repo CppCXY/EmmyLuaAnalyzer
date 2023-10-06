@@ -8,6 +8,7 @@ public enum SymbolKind
     Primitive,
     Union,
     Func,
+    Array,
     Alias,
     Class,
     Enum,

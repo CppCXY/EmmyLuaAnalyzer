@@ -221,7 +221,7 @@ public class LuaDoStatSyntax : LuaStatSyntax
 
 public class LuaForStatSyntax : LuaStatSyntax
 {
-    public LuaParamDef? IteratorName => FirstChild<LuaParamDef>();
+    public LuaParamDefSyntax? IteratorName => FirstChild<LuaParamDefSyntax>();
 
     public LuaExprSyntax? InitExpr => FirstChild<LuaExprSyntax>();
 
@@ -237,7 +237,7 @@ public class LuaForStatSyntax : LuaStatSyntax
 
 public class LuaForRangeStatSyntax : LuaStatSyntax
 {
-    public IEnumerable<LuaParamDef> IteratorNames =>ChildNodes<LuaParamDef>();
+    public IEnumerable<LuaParamDefSyntax> IteratorNames =>ChildNodes<LuaParamDefSyntax>();
 
     public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
 

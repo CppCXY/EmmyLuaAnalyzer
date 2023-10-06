@@ -27,13 +27,13 @@ public class LuaBlockSyntax : LuaSyntaxNode
     }
 }
 
-public class LuaParamDef : LuaSyntaxNode
+public class LuaParamDefSyntax : LuaSyntaxNode
 {
     public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
 
     public bool IsVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
 
-    public LuaParamDef(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    public LuaParamDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }
@@ -41,7 +41,7 @@ public class LuaParamDef : LuaSyntaxNode
 
 public class LuaParamListSyntax : LuaSyntaxNode
 {
-    public IEnumerable<LuaParamDef> Params => ChildNodes<LuaParamDef>();
+    public IEnumerable<LuaParamDefSyntax> Params => ChildNodes<LuaParamDefSyntax>();
 
     public bool HasVarArgs => Params.LastOrDefault()?.IsVarArgs == true;
 

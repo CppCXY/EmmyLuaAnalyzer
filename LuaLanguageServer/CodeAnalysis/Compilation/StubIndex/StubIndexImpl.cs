@@ -28,7 +28,7 @@ public abstract record LuaShortName
 
     public record VarDef(LuaExprSyntax Var, LuaExprSyntax? Expr, int ReturnId) : LuaShortName;
 
-    public record Param(LuaParamDef ParamDef) : LuaShortName;
+    public record Param(LuaParamDefSyntax ParamDef) : LuaShortName;
 
     public record TableField(LuaTableFieldSyntax TableFieldSyntax) : LuaShortName;
 

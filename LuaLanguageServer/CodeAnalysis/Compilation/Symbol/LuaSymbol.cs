@@ -14,7 +14,7 @@ public class LuaSymbol : ILuaSymbol
 
     public SymbolKind Kind { get; }
 
-    public virtual string Name => string.Empty;
+    public virtual string Name { get; }
 
     public virtual IEnumerable<LuaLocation> Locations => throw new NotImplementedException();
 
@@ -28,4 +28,8 @@ public class LuaSymbol : ILuaSymbol
         // Classes are equal
         return this == symbol;
     }
+
+    public virtual string DisplayName => Name;
+
+    public virtual IEnumerable<ILuaSymbol> Members => Enumerable.Empty<ILuaSymbol>();
 }

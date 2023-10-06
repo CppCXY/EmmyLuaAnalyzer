@@ -35,6 +35,7 @@ public static class ExpressionInfer
             LuaIndexExprSyntax indexExpr => InferIndexExpr(indexExpr, context),
             LuaLiteralExprSyntax literalExpr => InferLiteralExpr(literalExpr, context),
             LuaNameExprSyntax nameExpr => InferNameExpr(nameExpr, context),
+            LuaRequireExprSyntax requireExpr => InferRequireExpr(requireExpr, context),
             _ => throw new NotImplementedException()
         };
     }
@@ -207,6 +208,7 @@ public static class ExpressionInfer
 
     private static ILuaSymbol InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
+        // TODO: infer index type
         return context.Compilation.Builtin.Unknown;
     }
 
@@ -251,5 +253,13 @@ public static class ExpressionInfer
         // }
 
         return context.Compilation.Builtin.Unknown;
+    }
+
+    private static ILuaSymbol InferRequireExpr(LuaRequireExprSyntax requireExpr, SearchContext context)
+    {
+        // var path = requireExpr.ModulePath;
+        // var source = context.Compilation.Resolve.ModelPath(path);
+        // return context.Infer(source);
+        throw new NotImplementedException();
     }
 }

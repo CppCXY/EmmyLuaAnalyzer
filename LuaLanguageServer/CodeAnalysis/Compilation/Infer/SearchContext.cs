@@ -32,7 +32,9 @@ public class SearchContext
         {
             LuaExprSyntax expr => ExpressionInfer.InferExpr(expr, this),
             LuaLocalNameSyntax localName => DeclarationInfer.InferLocalName(localName, this),
+            LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
             LuaFuncStatSyntax funcStat => throw new NotImplementedException(),
+            LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
             _ => Compilation.Builtin.Unknown
         };
     }

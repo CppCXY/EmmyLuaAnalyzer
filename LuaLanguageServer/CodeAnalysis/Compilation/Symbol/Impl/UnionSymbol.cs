@@ -93,4 +93,26 @@ public class UnionSymbol : LuaSymbol
         return base.SubTypeOf(symbol, context)
                || _childSymbols.Any(childSymbol => childSymbol.SubTypeOf(symbol, context));
     }
+
+    public override IEnumerable<ILuaSymbol> Members
+    {
+        get
+        {
+            foreach (var childSymbol in _childSymbols)
+            {
+                foreach (var member in childSymbol.Members)
+                {
+                    yield return member;
+                }
+            }
+        }
+    }
+}
+
+public static class UnionSymbolExtensions
+{
+    public static ILuaSymbol Union(this ILuaSymbol a, ILuaSymbol b)
+    {
+        return UnionSymbol.Union(a, b);
+    }
 }
