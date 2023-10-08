@@ -15,7 +15,7 @@ public class ClassSymbol : LuaSymbol
 
     protected string _name;
 
-    public ClassSymbol(string name, SearchContext context) : base(SymbolKind.Class)
+    public ClassSymbol(string name, SearchContext context, SymbolKind kind = SymbolKind.Class) : base(kind)
     {
         _name = name;
         _context = context;

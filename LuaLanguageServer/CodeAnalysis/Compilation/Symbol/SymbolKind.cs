@@ -9,6 +9,7 @@ public enum SymbolKind
     Union,
     Func,
     Array,
+    Tuple,
     Alias,
     Class,
     Enum,

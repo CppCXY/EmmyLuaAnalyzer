@@ -5,7 +5,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
 
 public class InterfaceSymbol : ClassSymbol
 {
-     public InterfaceSymbol(string name, SearchContext context) : base(name, context)
+     public InterfaceSymbol(string name, SearchContext context) : base(name, context, SymbolKind.Interface)
      {
      }
 
