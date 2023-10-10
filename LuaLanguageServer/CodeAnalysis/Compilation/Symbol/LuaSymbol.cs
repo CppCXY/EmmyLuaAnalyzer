@@ -6,15 +6,22 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 public class LuaSymbol : ILuaSymbol
 {
     public LuaSymbol(SymbolKind kind)
+        : this(string.Empty, kind)
+    {
+    }
+
+    public LuaSymbol(string name, SymbolKind kind)
     {
         Kind = kind;
+        Name = name;
     }
+
 
     public ILuaSymbol? ContainingSymbol { get; set; } = null;
 
     public SymbolKind Kind { get; }
 
-    public virtual string Name { get; }
+    public string Name { get; protected set; }
 
     public virtual IEnumerable<LuaLocation> Locations => throw new NotImplementedException();
 

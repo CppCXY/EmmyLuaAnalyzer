@@ -1,14 +1,12 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl.Primitive;
 
 public class VoidSymbol : LuaSymbol
 {
-    public VoidSymbol() : base(SymbolKind.Void)
+    public VoidSymbol() : base("void", SymbolKind.Void)
     {
     }
-
-    public override string Name => "void";
 
     public override bool SubTypeOf(ILuaSymbol symbol, SearchContext context)
         => false;

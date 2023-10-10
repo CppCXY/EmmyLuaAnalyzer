@@ -13,19 +13,14 @@ public class EnumSymbol : LuaSymbol
 
     private List<ILuaSymbol>? _members = null;
 
-    protected string _name;
-
-    public EnumSymbol(string name, SearchContext context) : base(SymbolKind.Enum)
+    public EnumSymbol(string name, SearchContext context) : base(name, SymbolKind.Enum)
     {
-        _name = name;
         _context = context;
     }
 
-    public override string Name => _name;
-
     protected virtual void LazyInit()
     {
-        var enumSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(_name)
+        var enumSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(Name)
             .FirstOrDefault(it => it is LuaShortName.Enum) as LuaShortName.Enum)?.EnumSyntax;
         if (enumSyntax is not null)
         {

@@ -9,8 +9,6 @@ public class InterfaceSymbol : ClassSymbol
      {
      }
 
-     public override string Name => _name;
-
      // protected override void LazyInit()
      // {
      //      var classSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(_name)

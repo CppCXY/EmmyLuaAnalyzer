@@ -13,19 +13,14 @@ public class ClassSymbol : LuaSymbol
 
     private List<ILuaSymbol>? _members = null;
 
-    protected string _name;
-
-    public ClassSymbol(string name, SearchContext context, SymbolKind kind = SymbolKind.Class) : base(kind)
+    public ClassSymbol(string name, SearchContext context, SymbolKind kind = SymbolKind.Class) : base(name, kind)
     {
-        _name = name;
         _context = context;
     }
 
-    public override string Name => _name;
-
     protected virtual void LazyInit()
     {
-        var classSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(_name)
+        var classSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(Name)
             .FirstOrDefault(it => it is LuaShortName.Class) as LuaShortName.Class)?.ClassSyntax;
         if (classSyntax is not null)
         {

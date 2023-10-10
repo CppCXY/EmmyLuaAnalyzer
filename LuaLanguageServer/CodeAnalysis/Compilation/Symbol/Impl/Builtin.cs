@@ -1,4 +1,6 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl.Primitive;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
 
 public class Builtin
 {
