@@ -7,7 +7,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 /// <summary>
 /// looking ahead parser
 /// </summary>
-public class LuaParser : IParser
+public class LuaParser : IMarkerEventContainer
 {
     public LuaLexer Lexer { get; }
     private List<LuaTokenData> Tokens { get; set; }

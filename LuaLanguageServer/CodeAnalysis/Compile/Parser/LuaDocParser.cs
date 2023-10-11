@@ -8,7 +8,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 /// <summary>
 /// backtracking parser
 /// </summary>
-public class LuaDocParser : IParser
+public class LuaDocParser : IMarkerEventContainer
 {
     private LuaParser OwnerParser { get; }
 

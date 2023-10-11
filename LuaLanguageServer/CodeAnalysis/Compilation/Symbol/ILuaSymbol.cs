@@ -3,20 +3,12 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public interface ILuaSymbol
+public interface ILuaSymbol : IEquatable<ILuaSymbol?>
 {
     public ILuaSymbol? ContainingSymbol { get; }
 
     public SymbolKind Kind { get; }
 
-    public string Name { get; }
-
     IEnumerable<LuaLocation> Locations { get; }
-
-    public bool SubTypeOf(ILuaSymbol symbol, SearchContext context);
-
-    public string DisplayName { get; }
-
-    public IEnumerable<ILuaSymbol> Members { get; }
 }
 
