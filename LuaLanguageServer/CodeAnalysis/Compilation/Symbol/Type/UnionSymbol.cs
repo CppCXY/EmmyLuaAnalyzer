@@ -1,8 +1,8 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Type;
 
-public class UnionSymbol : LuaSymbol
+public class UnionSymbol : TypeSymbol
 {
     private HashSet<ILuaSymbol> _childSymbols = new();
 

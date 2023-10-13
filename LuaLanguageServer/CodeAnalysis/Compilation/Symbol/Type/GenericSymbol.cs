@@ -1,13 +1,8 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Type;
 
-public class GenericSymbol : LuaSymbol
+public class GenericSymbol : TypeSymbol
 {
-    public ILuaSymbol BaseSymbol { get; }
-
-    public GenericSymbol(ILuaSymbol baseSymbol) : base(SymbolKind.Generic)
+    public GenericSymbol() : base(TypeKind.Generic)
     {
-        BaseSymbol = baseSymbol;
     }
-
-    public IEnumerable<string> GenericParams { get; }
 }

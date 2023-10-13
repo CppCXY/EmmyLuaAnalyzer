@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Type;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl.Primitive;
 

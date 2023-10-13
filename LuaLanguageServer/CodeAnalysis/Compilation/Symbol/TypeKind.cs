@@ -9,5 +9,6 @@ public enum TypeKind
     Class,
     Enum,
     Interface,
+    Generic,
     Table,
 }

@@ -10,5 +10,7 @@ public interface ILuaSymbol : IEquatable<ILuaSymbol?>
     public SymbolKind Kind { get; }
 
     IEnumerable<LuaLocation> Locations { get; }
+
+    public string DisplayName { get; }
 }
 

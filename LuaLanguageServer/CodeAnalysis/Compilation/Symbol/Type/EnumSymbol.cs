@@ -1,64 +1,15 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Type;
 
-public class EnumSymbol : LuaSymbol
+public class EnumSymbol : TypeSymbol, ILuaNamedTypeSymbol
 {
-    private bool _lazyInit = false;
-
-    private SearchContext _context;
-
-    private ILuaSymbol _base = null;
-
-    private List<ILuaSymbol>? _members = null;
-
-    public EnumSymbol(string name, SearchContext context) : base(name, SymbolKind.Enum)
+    public EnumSymbol() : base(TypeKind.Enum)
     {
-        _context = context;
     }
 
-    protected virtual void LazyInit()
-    {
-        var enumSyntax = (_context.Compilation.StubIndexImpl.ShortNameIndex.Get(Name)
-            .FirstOrDefault(it => it is LuaShortName.Enum) as LuaShortName.Enum)?.EnumSyntax;
-        if (enumSyntax is not null)
-        {
-            _base = _context.Infer(enumSyntax.BaseType);
-            // todo: members
-            // _members = _context.Compilation.StubIndexImpl.Members.Get(classSyntax)
-            //     .Where(it=> it )
-            //     .Select(it => _context.Infer(it))
-            //     .ToList();
-        }
-    }
+    public IEnumerable<string> MemberNames { get; }
 
-    public ILuaSymbol? Base
-    {
-        get
-        {
-            if (!_lazyInit)
-            {
-                _lazyInit = true;
-                LazyInit();
-            }
-
-            return _base;
-        }
-    }
-
-    // TODO: members
-    public override IEnumerable<ILuaSymbol> Members
-    {
-        get
-        {
-            if (!_lazyInit)
-            {
-                _lazyInit = true;
-                LazyInit();
-            }
-
-            return _members ?? Enumerable.Empty<ILuaSymbol>();
-        }
-    }
+    public string Name { get; }
 }

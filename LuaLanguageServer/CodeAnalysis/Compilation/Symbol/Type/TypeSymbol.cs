@@ -13,7 +13,6 @@ public class TypeSymbol : ILuaTypeSymbol
     public bool Equals(ILuaSymbol? other)
     {
         return other is TypeSymbol symbol &&
-               Name == symbol.Name &&
                TypeKind == symbol.TypeKind;
     }
 
@@ -23,9 +22,9 @@ public class TypeSymbol : ILuaTypeSymbol
 
     public SymbolKind Kind => SymbolKind.Type;
 
-    public string Name { get; }
-
     public IEnumerable<LuaLocation> Locations { get; }
+
+    public string DisplayName { get; }
 
     public virtual bool SubTypeOf(ILuaTypeSymbol other, SearchContext context)
     {
@@ -59,8 +58,4 @@ public class TypeSymbol : ILuaTypeSymbol
     public IEnumerable<ILuaNamedTypeSymbol> Interfaces => Enumerable.Empty<ILuaNamedTypeSymbol>();
 
     public IEnumerable<ILuaNamedTypeSymbol> AllInterface { get; }
-
-    public bool IsAnonymousType { get; }
-
-    public bool IsTupleType { get; }
 }
