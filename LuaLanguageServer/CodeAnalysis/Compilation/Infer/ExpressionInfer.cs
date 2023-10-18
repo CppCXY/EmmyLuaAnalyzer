@@ -1,6 +1,4 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -8,7 +6,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 
 public static class ExpressionInfer
 {
-    public static ILuaSymbol InferExpr(LuaExprSyntax expr, SearchContext context)
+    public static ILuaType InferExpr(LuaExprSyntax expr, SearchContext context)
     {
         if (expr is LuaIndexExprSyntax or LuaNameExprSyntax)
         {
@@ -23,7 +21,7 @@ public static class ExpressionInfer
         return InferExprInner(expr, context);
     }
 
-    private static ILuaSymbol InferExprInner(LuaExprSyntax expr, SearchContext context)
+    private static ILuaType InferExprInner(LuaExprSyntax expr, SearchContext context)
     {
         return expr switch
         {
@@ -41,7 +39,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaSymbol InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
+    private static ILuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
         return unaryExpr.Operator switch
         {
@@ -52,7 +50,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaSymbol InferBinaryExpr(LuaBinaryExprSyntax binaryExpr, SearchContext context)
+    private static ILuaType InferBinaryExpr(LuaBinaryExprSyntax binaryExpr, SearchContext context)
     {
         var op = binaryExpr.Operator;
         return op switch
@@ -81,7 +79,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaSymbol GuessAndOrType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
+    private static ILuaType GuessAndOrType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
         var rhs = binaryExpr.RightExpr;
@@ -95,10 +93,10 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var symbol = context.Infer(lhs);
-        return rhs != null ? UnionSymbol.Union(symbol, context.Infer(rhs)) : symbol;
+        return rhs != null ? Union.UnionType(symbol, context.Infer(rhs)) : symbol;
     }
 
-    private static ILuaSymbol GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
+    private static ILuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
         var lhs = binaryExpr.LeftExpr;
@@ -109,16 +107,16 @@ public static class ExpressionInfer
         return lhsSymbol;
     }
 
-    private static ILuaSymbol InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
+    private static ILuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
     {
-        ILuaSymbol ret = context.Compilation.Builtin.Unknown;
+        ILuaType ret = context.Compilation.Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var symbol = context.Infer(prefixExpr);
-        UnionSymbol.Each(symbol, s =>
+        Union.Each(symbol, s =>
         {
             switch (s)
             {
-                case FuncSymbol func:
+                case FuncType func:
                 {
                     var args = callExpr.ArgList?.ArgList;
                     if (args == null) return;
@@ -126,7 +124,7 @@ public static class ExpressionInfer
                     var perfectSig = func.FindPerfectSignature(argSymbols, context);
                     if (perfectSig.ReturnType is { } retTy)
                     {
-                        ret = UnionSymbol.Union(ret, retTy);
+                        ret = Union.UnionType(ret, retTy);
                     }
 
                     break;
@@ -147,50 +145,50 @@ public static class ExpressionInfer
         return ret;
     }
 
-    private static ILuaSymbol InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
+    private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
         // TODO: infer table type
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaSymbol InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
+    private static ILuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        ILuaSymbol keyType = context.Compilation.Builtin.Unknown;
-        ILuaSymbol elementType = context.Compilation.Builtin.Unknown;
+        ILuaType keyType = context.Compilation.Builtin.Unknown;
+        ILuaType elementType = context.Compilation.Builtin.Unknown;
         foreach (var field in tableExpr.FieldList)
         {
             if (field.IsValue)
             {
-                elementType = UnionSymbol.Union(elementType, context.Infer(field.Value));
+                elementType = Union.UnionType(elementType, context.Infer(field.Value));
             }
             else
             {
                 if (field.IsNameKey || field.IsStringKey)
                 {
-                    keyType = UnionSymbol.Union(keyType, context.Compilation.Builtin.String);
+                    keyType = Union.UnionType(keyType, context.Compilation.Builtin.String);
                 }
                 else if(field.IsNumberKey)
                 {
-                    keyType = UnionSymbol.Union(keyType, context.Compilation.Builtin.Number);
+                    keyType = Union.UnionType(keyType, context.Compilation.Builtin.Number);
                 }
                 else
                 {
-                    keyType = UnionSymbol.Union(keyType, context.Infer(field.ExprKey));
+                    keyType = Union.UnionType(keyType, context.Infer(field.ExprKey));
                 }
 
-                elementType = UnionSymbol.Union(elementType, context.Infer(field.Value));
+                elementType = Union.UnionType(elementType, context.Infer(field.Value));
             }
         }
 
         switch ((keyType, elementType))
         {
             // TODO create for empty table
-            case (UnknownSymbol, UnknownSymbol):
+            case (Unknown, Unknown):
             {
                 return context.Compilation.Builtin.Unknown;
             }
             // TODO create for array table
-            case (UnknownSymbol, _):
+            case (Unknown, _):
             {
                 return context.Compilation.Builtin.Unknown;
             }
@@ -202,18 +200,18 @@ public static class ExpressionInfer
         }
     }
 
-    private static ILuaSymbol InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
+    private static ILuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
     {
         return context.Infer(parenExpr.Inner);
     }
 
-    private static ILuaSymbol InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
+    private static ILuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
         // TODO: infer index type
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaSymbol InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
+    private static ILuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
     {
         return literalExpr.Literal.Kind switch
         {
@@ -225,7 +223,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaSymbol InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
+    private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
         // var name = nameExpr.Name;
         // if (nameExpr.Prev is not null)
@@ -256,7 +254,7 @@ public static class ExpressionInfer
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaSymbol InferRequireExpr(LuaRequireExprSyntax requireExpr, SearchContext context)
+    private static ILuaType InferRequireExpr(LuaRequireExprSyntax requireExpr, SearchContext context)
     {
         // var path = requireExpr.ModulePath;
         // var source = context.Compilation.Resolve.ModelPath(path);

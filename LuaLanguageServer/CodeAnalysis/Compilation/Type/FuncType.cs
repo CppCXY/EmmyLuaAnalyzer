@@ -1,9 +1,8 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
-using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class FuncSymbol : LuaSymbol
+public class FuncType : LuaType
 {
     public IFuncSignature MainSignature { get; private set; }
 
@@ -11,7 +10,7 @@ public class FuncSymbol : LuaSymbol
 
     public bool IsColonCall { get; private set; }
 
-    public FuncSymbol(IFuncSignature mainSignature) : base(SymbolKind.Func)
+    public FuncType(IFuncSignature mainSignature) : base(TypeKind.Func)
     {
         MainSignature = mainSignature;
     }
@@ -30,7 +29,7 @@ public class FuncSymbol : LuaSymbol
         }
     }
 
-    public IFuncSignature FindPerfectSignature(IEnumerable<ILuaSymbol> arguments, SearchContext context)
+    public IFuncSignature FindPerfectSignature(IEnumerable<ILuaType> arguments, SearchContext context)
     {
         var perfectSignature = MainSignature;
         var perfectCount = 0;
@@ -55,15 +54,15 @@ public interface IFuncSignature
 {
     public bool ColonCall { get; }
 
-    public ILuaSymbol? ReturnType { get; }
+    public ILuaType? ReturnType { get; }
 
-    public IEnumerable<ILuaSymbol> Parameters { get; }
+    public IEnumerable<string> Parameters { get; }
 
     public string DisplayName { get; }
 
     public string ParamSignature { get; }
 
-    public ILuaSymbol? Variadic { get; }
+    public ILuaType? Variadic { get; }
 
-    public int Match(IEnumerable<ILuaSymbol> arguments, SearchContext context);
+    public int Match(IEnumerable<ILuaType> arguments, SearchContext context);
 }

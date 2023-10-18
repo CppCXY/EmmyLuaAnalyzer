@@ -1,4 +1,4 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -9,14 +9,14 @@ public class SearchContext
 {
     public LuaCompilation Compilation { get; }
 
-    private Dictionary<LuaSyntaxElement, ILuaSymbol> _caches = new();
+    private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
 
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;
     }
 
-    public ILuaSymbol Infer(LuaSyntaxElement? element)
+    public ILuaType Infer(LuaSyntaxElement? element)
     {
         if (element is null)
         {
@@ -26,7 +26,7 @@ public class SearchContext
         return _caches.TryGetValue(element, out var symbol) ? symbol : _caches[element] = InferCore(element);
     }
 
-    private ILuaSymbol InferCore(LuaSyntaxElement element)
+    private ILuaType InferCore(LuaSyntaxElement element)
     {
         return element switch
         {

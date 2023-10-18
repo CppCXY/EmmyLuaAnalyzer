@@ -2,7 +2,7 @@
 using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol.Impl;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;

@@ -1,11 +1,11 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 
 public static class DeclarationInfer
 {
-    public static ILuaSymbol InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
+    public static ILuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
     {
         return localName switch
         {
@@ -14,7 +14,7 @@ public static class DeclarationInfer
         };
     }
 
-    public static ILuaSymbol InferSource(LuaSourceSyntax source, SearchContext context)
+    public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
         return source switch
         {
@@ -23,7 +23,7 @@ public static class DeclarationInfer
         };
     }
 
-    public static ILuaSymbol InferParam(LuaParamDefSyntax paramDef, SearchContext context)
+    public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
     {
         return paramDef switch
         {
