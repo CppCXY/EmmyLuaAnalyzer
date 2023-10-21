@@ -86,6 +86,7 @@ public enum LuaSyntaxKind : ushort
     TypeParen,
     TypeLiteral,
     TypeName,
+    TypeBody,
 
     // parameter
     TypedParameter,

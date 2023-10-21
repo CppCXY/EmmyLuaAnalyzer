@@ -1,12 +1,35 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Enum : LuaType, ILuaNamedType
 {
-    public Enum() : base(TypeKind.Enum)
+    public string Name { get; }
+
+    public Enum(string name) : base(TypeKind.Enum)
     {
+        Name = name;
     }
 
-    public IEnumerable<string> MemberNames { get; }
+    public override IEnumerable<EnumField> GetMembers(SearchContext context)
+    {
+        var syntaxElement = context.Compilation
+            .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Enum>(Name).FirstOrDefault()?.EnumSyntax;
+        if (syntaxElement is null)
+        {
+            yield break;
+        }
 
-    public string Name { get; }
+        foreach (var field in syntaxElement.FieldList)
+        {
+            if (field.Name?.RepresentText is { } name)
+            {
+                yield return new EnumField(name, this);
+            }
+        }
+
+        // var memberIndex = context.Compilation.StubIndexImpl.Members;
+        // TODO attach variable
+    }
 }

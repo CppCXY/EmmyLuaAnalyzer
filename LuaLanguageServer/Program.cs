@@ -18,6 +18,8 @@ foreach (var diagnostic in tree.Diagnostics)
 {
     Console.WriteLine(diagnostic);
 }
+
+
 // var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
 // if (block != null)
 // {

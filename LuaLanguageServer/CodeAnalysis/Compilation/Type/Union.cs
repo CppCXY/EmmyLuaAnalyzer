@@ -1,4 +1,6 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Union : LuaType
 {
@@ -86,19 +88,10 @@ public class Union : LuaType
         return this;
     }
 
-    // public override IEnumerable<ILuaSymbol> Members
-    // {
-    //     get
-    //     {
-    //         foreach (var childSymbol in _childSymbols)
-    //         {
-    //             foreach (var member in childSymbol.Members)
-    //             {
-    //                 yield return member;
-    //             }
-    //         }
-    //     }
-    // }
+    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    {
+        return _childTypes.SelectMany(x => x.GetMembers(context));
+    }
 }
 
 public static class UnionTypeExtensions

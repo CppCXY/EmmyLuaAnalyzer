@@ -48,4 +48,6 @@ public abstract record LuaMember
     public record TableField(LuaTableFieldSyntax LocalTableFieldSyntax) : LuaMember;
 
     public record Index(LuaIndexExprSyntax IndexExprSyntax) : LuaMember;
+
+    public record InterfaceDocField(LuaDocFieldSyntax Field) : LuaMember;
 }

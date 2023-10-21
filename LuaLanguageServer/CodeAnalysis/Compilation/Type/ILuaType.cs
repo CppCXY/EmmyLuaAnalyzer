@@ -6,18 +6,18 @@ public interface ILuaType
 {
     public IEnumerable<ILuaType> GetMembers(SearchContext context);
 
-    public IEnumerable<ILuaNamedType> GetTypeMembers(SearchContext context);
+    public IEnumerable<ILuaNamedType> GetNamedMembers(SearchContext context);
 
-    public IEnumerable<ILuaNamedType> GetTypeMembers(string name);
+    public IEnumerable<ILuaNamedType> GetNamedMembers(string name, SearchContext context);
 
     public TypeKind Kind { get; }
 
-    public ILuaNamedType? BaseType { get; }
+    public ILuaNamedType? GetBaseType(SearchContext context);
 
-    public IEnumerable<ILuaNamedType> Interfaces { get; }
+    public IEnumerable<ILuaNamedType> GetInterfaces(SearchContext context);
 
     /// <summary>
     /// contains all interfaces
     /// </summary>
-    public IEnumerable<ILuaNamedType> AllInterface { get; }
+    public IEnumerable<ILuaNamedType> GetAllInterface(SearchContext context);
 }

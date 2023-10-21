@@ -1,4 +1,6 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Tuple : LuaType
 {
@@ -9,7 +11,10 @@ public class Tuple : LuaType
         _types.AddRange(symbols);
     }
 
-    public IEnumerable<ILuaType> Members => _types;
-
     public ILuaType? Get(int index) => index < _types.Count ? _types[index] : null;
+
+    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    {
+        return _types;
+    }
 }

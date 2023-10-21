@@ -146,7 +146,7 @@ public static class TypesParser
         }
     }
 
-    private static CompleteMarker TypedField(LuaDocParser p)
+    public static CompleteMarker TypedField(LuaDocParser p)
     {
         var m = p.Marker();
         try

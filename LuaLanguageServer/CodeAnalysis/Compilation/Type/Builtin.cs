@@ -1,4 +1,6 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Builtin
 {
@@ -38,6 +40,8 @@ public class Primitive : LuaType, ILuaNamedType
     public IEnumerable<string> MemberNames => Enumerable.Empty<string>();
 
     public string Name { get; }
+
+    public override IEnumerable<ILuaType> GetMembers(SearchContext context) => Enumerable.Empty<ILuaType>();
 }
 
 public class Unknown : Primitive

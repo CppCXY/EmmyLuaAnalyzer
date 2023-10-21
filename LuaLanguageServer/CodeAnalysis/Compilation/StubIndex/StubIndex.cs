@@ -63,4 +63,8 @@ public class StubIndex<TKey, TStubElement>
             ? entry.Files.Values.SelectMany(it => it.Elements)
             : Enumerable.Empty<TStubElement>();
     }
+
+    public IEnumerable<TValue> Get<TValue>(TKey key)
+        where TValue : TStubElement
+        => Get(key).OfType<TValue>();
 }

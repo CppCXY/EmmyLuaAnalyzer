@@ -3,49 +3,30 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaType : ILuaType
+public abstract class LuaType : ILuaType
 {
     public LuaType(TypeKind kind)
     {
         Kind = kind;
     }
 
-    public ILuaType ContainingType => throw new NotImplementedException();
+    public abstract IEnumerable<ILuaType> GetMembers(SearchContext context);
 
-    public IEnumerable<LuaLocation> Locations { get; }
-
-    public string DisplayName { get; }
-
-    public virtual bool SubTypeOf(ILuaType other, SearchContext context)
+    public IEnumerable<ILuaNamedType> GetNamedMembers(SearchContext context)
     {
-        throw new NotImplementedException();
+        return GetMembers(context).OfType<ILuaNamedType>();
     }
 
-    public IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public IEnumerable<ILuaNamedType> GetNamedMembers(string name, SearchContext context)
     {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<ILuaNamedType> GetMembers(string name)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<ILuaNamedType> GetTypeMembers(SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<ILuaNamedType> GetTypeMembers(string name)
-    {
-        throw new NotImplementedException();
+        return GetNamedMembers(context).Where(x => x.Name == name);
     }
 
     public TypeKind Kind { get; }
 
-    public ILuaNamedType? BaseType => null;
+    public ILuaNamedType? GetBaseType(SearchContext context) => null;
 
-    public IEnumerable<ILuaNamedType> Interfaces => Enumerable.Empty<ILuaNamedType>();
+    public IEnumerable<ILuaNamedType> GetInterfaces(SearchContext context) => Enumerable.Empty<ILuaNamedType>();
 
-    public IEnumerable<ILuaNamedType> AllInterface { get; }
+    public IEnumerable<ILuaNamedType> GetAllInterface(SearchContext context) => Enumerable.Empty<ILuaNamedType>();
 }

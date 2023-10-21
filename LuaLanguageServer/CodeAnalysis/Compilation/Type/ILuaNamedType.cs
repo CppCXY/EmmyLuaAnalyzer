@@ -2,7 +2,5 @@
 
 public interface ILuaNamedType : ILuaType
 {
-    public IEnumerable<string> MemberNames { get; }
-
     public string Name { get; }
 }

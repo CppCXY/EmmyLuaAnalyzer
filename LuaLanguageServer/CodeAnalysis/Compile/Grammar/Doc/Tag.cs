@@ -147,7 +147,8 @@ public static class TagParser
     {
         Start,
         Generic,
-        ExpectDescription,
+        Extend,
+        Body,
         Finish
     }
 
@@ -155,54 +156,63 @@ public static class TagParser
     {
         var rollbackPoint = p.GetRollbackPoint();
 
-        switch (p.Current)
+        switch (state)
         {
-            // generic
-            case LuaTokenKind.TkLt:
+            case ClassSuffixState.Start:
             {
-                if (state is not ClassSuffixState.Start)
+                if (p.Current is LuaTokenKind.TkLt)
+                {
+                    GenericDeclareList(p);
+                    state = ClassSuffixState.Generic;
+                }
+                else if (p.Current is LuaTokenKind.TkColon)
+                {
+                    ExtensionTypeList(p);
+                    state = ClassSuffixState.Extend;
+                }
+                else if (p.Current is LuaTokenKind.TkLeftBrace)
+                {
+                    DefineBody(p);
+                    state = ClassSuffixState.Body;
+                }
+                else
                 {
                     goto default;
                 }
 
-                GenericDeclareList(p);
-                state = ClassSuffixState.Generic;
                 break;
             }
-            // extends
-            case LuaTokenKind.TkColon:
+            case ClassSuffixState.Generic:
             {
-                if (state >= ClassSuffixState.ExpectDescription)
+                if (p.Current is LuaTokenKind.TkColon)
+                {
+                    ExtensionTypeList(p);
+                    state = ClassSuffixState.Extend;
+                }
+                else if (p.Current is LuaTokenKind.TkLeftBrace)
+                {
+                    DefineBody(p);
+                    state = ClassSuffixState.Body;
+                }
+                else
                 {
                     goto default;
                 }
 
-                p.Bump();
-                TypesParser.TypeList(p);
-                state = ClassSuffixState.ExpectDescription;
                 break;
             }
-            // class table define
-            case LuaTokenKind.TkLeftBrace:
+            case ClassSuffixState.Extend:
             {
-                if (state >= ClassSuffixState.ExpectDescription)
+                if (p.Current is LuaTokenKind.TkLeftBrace)
+                {
+                    DefineBody(p);
+                    state = ClassSuffixState.Body;
+                }
+                else
                 {
                     goto default;
                 }
 
-                TypesParser.TableType(p);
-                state = ClassSuffixState.ExpectDescription;
-                break;
-            }
-            case LuaTokenKind.TkDocDescription:
-            {
-                p.Bump();
-                state = ClassSuffixState.Finish;
-                break;
-            }
-            case LuaTokenKind.TkEof:
-            {
-                state = ClassSuffixState.Finish;
                 break;
             }
             default:
@@ -648,6 +658,46 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocModule, e.Message);
+        }
+    }
+
+    private static CompleteMarker DefineBody(LuaDocParser p)
+    {
+        var m = p.Marker();
+        p.Bump();
+
+        try
+        {
+            if (p.Current is LuaTokenKind.TkRightBrace)
+            {
+                p.Bump();
+                return m.Complete(p, LuaSyntaxKind.TypeBody);
+            }
+
+            var cm = TypesParser.TypedField(p);
+            while (cm.IsComplete && (p.Current is LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon))
+            {
+                p.Bump();
+                cm = TypesParser.TypedField(p);
+            }
+
+            p.Expect(LuaTokenKind.TkRightBrace);
+
+            return m.Complete(p, LuaSyntaxKind.TypeBody);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.TypeBody, e.Message);
+        }
+    }
+
+    private static void ExtensionTypeList(LuaDocParser p)
+    {
+        var cm = TypesParser.Type(p);
+        while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
+        {
+            p.Bump();
+            cm = TypesParser.Type(p);
         }
     }
 }

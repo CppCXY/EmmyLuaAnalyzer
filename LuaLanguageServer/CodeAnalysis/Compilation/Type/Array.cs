@@ -1,4 +1,6 @@
-﻿namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Array : LuaType
 {
@@ -8,4 +10,6 @@ public class Array : LuaType
     {
         BaseSymbol = baseSymbol;
     }
+
+    public override IEnumerable<ILuaType> GetMembers(SearchContext context) => Enumerable.Empty<ILuaType>();
 }
