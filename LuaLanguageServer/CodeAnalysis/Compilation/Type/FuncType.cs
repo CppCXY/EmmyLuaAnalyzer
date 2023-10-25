@@ -49,7 +49,7 @@ public class FuncType : LuaType
         return perfectSignature;
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<InterfaceMember?> GetMembers(SearchContext context)
     {
         throw new NotImplementedException();
     }

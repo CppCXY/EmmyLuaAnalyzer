@@ -8,7 +8,7 @@ public class Generic : LuaType
     {
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<InterfaceMember?> GetMembers(SearchContext context)
     {
         throw new NotImplementedException();
     }

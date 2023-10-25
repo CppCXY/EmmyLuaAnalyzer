@@ -13,12 +13,3 @@ public class LuaSyntaxNode : LuaSyntaxElement
 
     public LuaSyntaxKind Kind => Green.SyntaxKind;
 }
-
-public class LuaSyntaxDocNode : LuaSyntaxNode
-{
-    public LuaSyntaxDocNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(green, tree, parent)
-    {
-    }
-
-}

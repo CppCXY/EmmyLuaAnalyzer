@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -10,14 +11,36 @@ public interface ILuaType
 
     public IEnumerable<ILuaNamedType> GetNamedMembers(string name, SearchContext context);
 
+    public IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context);
+
     public TypeKind Kind { get; }
 
     public ILuaNamedType? GetBaseType(SearchContext context);
 
-    public IEnumerable<ILuaNamedType> GetInterfaces(SearchContext context);
+    public IEnumerable<Interface> GetInterfaces(SearchContext context);
 
     /// <summary>
     /// contains all interfaces
     /// </summary>
-    public IEnumerable<ILuaNamedType> GetAllInterface(SearchContext context);
+    public IEnumerable<Interface> GetAllInterface(SearchContext context);
 }
+
+public abstract record IndexKey
+{
+    public record Integer(long Value) : IndexKey;
+
+    public record String(string Value) : IndexKey;
+
+    public record Ty(ILuaType Value) : IndexKey;
+}
+
+public interface ILuaNamedType : ILuaType
+{
+    public string Name { get; }
+}
+
+public interface ILuaIndexedType : ILuaType
+{
+    public IndexKey Key { get; }
+}
+

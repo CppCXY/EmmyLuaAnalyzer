@@ -207,35 +207,6 @@ public class LuaLexer
             case var quote and ('"' or '\''):
             {
                 Reader.Bump();
-                // Reader.EatWhen(ch =>
-                // {
-                //     if (ch == quote || ch is '\n' or '\r') return false;
-                //     if (ch != '\\') return true;
-                //     Reader.Bump();
-                //     switch (Reader.CurrentChar)
-                //     {
-                //         // \z will ignore the following whitespace
-                //         case 'z':
-                //         {
-                //             Reader.Bump();
-                //             Reader.EatWhen(c => c is ' ' or '\t' or '\f' or '\v' or '\r' or '\n');
-                //             break;
-                //         }
-                //         // after \ will ignore the following \n
-                //         case '\r' or '\n':
-                //         {
-                //             LexNewLine();
-                //             break;
-                //         }
-                //         default:
-                //         {
-                //             Reader.Bump();
-                //             break;
-                //         }
-                //     }
-                //
-                //     return true;
-                // });
                 while (!Reader.IsEof)
                 {
                     var ch = Reader.CurrentChar;

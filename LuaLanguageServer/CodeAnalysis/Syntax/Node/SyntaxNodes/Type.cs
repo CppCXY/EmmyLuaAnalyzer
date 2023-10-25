@@ -68,6 +68,8 @@ public class LuaDocArrayTypeSyntax : LuaDocTypeSyntax
 
 public class LuaDocTableTypeSyntax : LuaDocTypeSyntax
 {
+    public IEnumerable<LuaDocTypedFieldSyntax> FieldList => ChildNodes<LuaDocTypedFieldSyntax>();
+
     public LuaDocTableTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {

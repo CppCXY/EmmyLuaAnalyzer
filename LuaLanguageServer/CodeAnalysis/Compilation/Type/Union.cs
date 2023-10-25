@@ -92,6 +92,11 @@ public class Union : LuaType
     {
         return _childTypes.SelectMany(x => x.GetMembers(context));
     }
+
+    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    {
+        return _childTypes.SelectMany(x => x.IndexMember(key, context));
+    }
 }
 
 public static class UnionTypeExtensions

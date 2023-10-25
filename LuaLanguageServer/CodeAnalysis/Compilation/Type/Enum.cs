@@ -12,7 +12,7 @@ public class Enum : LuaType, ILuaNamedType
         Name = name;
     }
 
-    public override IEnumerable<EnumField> GetMembers(SearchContext context)
+    public override IEnumerable<EnumMember> GetMembers(SearchContext context)
     {
         var syntaxElement = context.Compilation
             .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Enum>(Name).FirstOrDefault()?.EnumSyntax;
@@ -25,7 +25,7 @@ public class Enum : LuaType, ILuaNamedType
         {
             if (field.Name?.RepresentText is { } name)
             {
-                yield return new EnumField(name, this);
+                yield return new EnumMember(name, this);
             }
         }
 

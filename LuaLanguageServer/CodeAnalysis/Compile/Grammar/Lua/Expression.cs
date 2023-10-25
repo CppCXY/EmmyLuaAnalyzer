@@ -32,11 +32,11 @@ public static class ExpressionParser
             }
 
             var op = OperatorKind.ToBinaryOperator(p.Current);
-            while (op != OperatorKind.BinaryOperator.OpNop && OperatorKind.Priority[(int) op].Left > limit)
+            while (op != OperatorKind.BinaryOperator.OpNop && OperatorKind.Priority[(int)op].Left > limit)
             {
                 m = cm.Precede(p);
                 p.Bump();
-                if (!SubExpression(p, OperatorKind.Priority[(int) op].Right).IsComplete)
+                if (!SubExpression(p, OperatorKind.Priority[(int)op].Right).IsComplete)
                 {
                     return m.Fail(p, LuaSyntaxKind.BinaryExpr, "binary operator not followed by expression");
                 }
@@ -59,6 +59,7 @@ public static class ExpressionParser
         {
             case LuaTokenKind.TkNumber:
             case LuaTokenKind.TkInt:
+            case LuaTokenKind.TkComplex:
             case LuaTokenKind.TkNil:
             case LuaTokenKind.TkTrue:
             case LuaTokenKind.TkFalse:

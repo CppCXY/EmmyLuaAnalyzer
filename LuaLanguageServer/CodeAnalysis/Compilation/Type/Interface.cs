@@ -13,16 +13,25 @@ public class Interface : LuaType, ILuaNamedType
         Name = name;
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<InterfaceMember> GetMembers(SearchContext context)
     {
         var syntaxElement = context.Compilation
             .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
         if (syntaxElement is null)
         {
-            return Enumerable.Empty<ILuaType>();
+            yield break;
         }
 
-        return context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement)
-            .Select(it => context.Infer(it.Field));
+        var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
+        foreach (var field in fields)
+        {
+
+        }
+    }
+
+    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    {
+        throw new NotImplementedException();
+        // return GetMembers(context)
     }
 }

@@ -17,50 +17,5 @@ public class LuaSyntaxToken : LuaSyntaxElement
 
     public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(Green.Range.StartOffset, Green.Range.Length);
 
-    public string RepresentText
-    {
-        get
-        {
-            switch (Kind)
-            {
-                // remove \' or \"
-                case LuaTokenKind.TkString:
-                {
-                    var text = Text;
-                    return text.Length > 2 ? text[1..^1].ToString() : text.ToString();
-                }
-                // skip [====[
-                case LuaTokenKind.TkLongString:
-                {
-                    var text = Text;
-                    var prefixCount = 0;
-                    foreach (var t in text)
-                    {
-                        if ((t == '[' && prefixCount == 0) || t == '=')
-                        {
-                            prefixCount++;
-                        }
-                        else if (t == '[')
-                        {
-                            prefixCount++;
-                            break;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    return text.Length > (prefixCount * 2)
-                        ? text[prefixCount..^prefixCount].ToString()
-                        : text.ToString();
-                }
-                default:
-                {
-                    return Text.ToString();
-                }
-            }
-        }
-    }
-
+    public string RepresentText => Text.ToString();
 }

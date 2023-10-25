@@ -1,5 +1,7 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -22,11 +24,26 @@ public abstract class LuaType : ILuaType
         return GetNamedMembers(context).Where(x => x.Name == name);
     }
 
+    public virtual IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    {
+        switch (key)
+        {
+            case IndexKey.String str:
+            {
+                return GetNamedMembers(str.Value, context);
+            }
+            default:
+            {
+                return Enumerable.Empty<ILuaType>();
+            }
+        }
+    }
+
     public TypeKind Kind { get; }
 
     public ILuaNamedType? GetBaseType(SearchContext context) => null;
 
-    public IEnumerable<ILuaNamedType> GetInterfaces(SearchContext context) => Enumerable.Empty<ILuaNamedType>();
+    public IEnumerable<Interface> GetInterfaces(SearchContext context) => Enumerable.Empty<Interface>();
 
-    public IEnumerable<ILuaNamedType> GetAllInterface(SearchContext context) => Enumerable.Empty<ILuaNamedType>();
+    public IEnumerable<Interface> GetAllInterface(SearchContext context) => Enumerable.Empty<Interface>();
 }
