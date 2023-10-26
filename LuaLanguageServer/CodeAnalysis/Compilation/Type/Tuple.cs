@@ -11,23 +11,31 @@ public class Tuple : LuaType
         _types.AddRange(symbols);
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<TupleMember> GetMembers(SearchContext context)
     {
-        return _types;
+        return _types.Select((it, i) => new TupleMember(i, it, this));
+    }
+}
+
+public class TupleMember : LuaTypeMember
+{
+    private long _index;
+
+    private ILuaType _ty;
+
+    public TupleMember(long index, ILuaType ty, ILuaType? containingType) : base(containingType)
+    {
+        _index = index;
+        _ty = ty;
     }
 
-    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    public override ILuaType GetType(SearchContext context)
     {
-        switch (key)
-        {
-            case IndexKey.Integer integer:
-            {
-                if (integer.Value >= 1 && integer.Value <= _types.Count)
-                {
-                    yield return _types[(int) integer.Value - 1];
-                }
-                break;
-            }
-        }
+        return _ty;
+    }
+
+    public override bool MatchKey(IndexKey key, SearchContext context)
+    {
+        return key is IndexKey.Integer { Value: { } index } && index == _index;
     }
 }

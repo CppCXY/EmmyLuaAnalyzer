@@ -41,7 +41,12 @@ public class Primitive : LuaType, ILuaNamedType
 
     public string Name { get; }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context) => Enumerable.Empty<ILuaType>();
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
+
+    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class Unknown : Primitive

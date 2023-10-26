@@ -1,5 +1,4 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -12,15 +11,15 @@ public class Array : LuaType
         Base = baseTy;
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context) => Enumerable.Empty<ILuaType>();
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
 
-    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
     {
         switch (key)
         {
             case IndexKey.Integer:
             {
-                yield return Base;
+                yield return new LuaArrayMember(Base, this);
                 break;
             }
             case IndexKey.Ty ty:
@@ -28,15 +27,37 @@ public class Array : LuaType
                 if (ty.Value == context.Compilation.Builtin.Integer
                     || ty.Value == context.Compilation.Builtin.Number)
                 {
-                    yield return Base;
+                    yield return new LuaArrayMember(Base, this);
                 }
 
                 break;
             }
-            default:
-            {
-                break;
-            }
         }
+    }
+}
+
+public class LuaArrayMember : LuaTypeMember
+{
+    private readonly ILuaType _type;
+
+    public LuaArrayMember(ILuaType ty, ILuaType? containingType) : base(containingType)
+    {
+        _type = ty;
+    }
+
+    public override ILuaType GetType(SearchContext context)
+    {
+        return _type;
+    }
+
+    public override bool MatchKey(IndexKey key, SearchContext context)
+    {
+        return key switch
+        {
+            IndexKey.Integer => true,
+            IndexKey.Ty ty => ty.Value == context.Compilation.Builtin.Integer ||
+                              ty.Value == context.Compilation.Builtin.Number,
+            _ => false
+        };
     }
 }

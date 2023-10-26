@@ -33,3 +33,23 @@ public class Enum : LuaType, ILuaNamedType
         // TODO attach variable
     }
 }
+
+public class EnumMember : LuaTypeMember
+{
+    public string Name { get; }
+
+    public EnumMember(string name, Enum containingType) : base(containingType)
+    {
+        Name = name;
+    }
+
+    public override ILuaType GetType(SearchContext context)
+    {
+        return (ContainingType as Enum)?.GetBaseType(context) ?? context.Compilation.Builtin.Unknown;
+    }
+
+    public override bool MatchKey(IndexKey key, SearchContext context)
+    {
+        return key is IndexKey.String { Value: {} name} && name == Name;
+    }
+}

@@ -49,10 +49,7 @@ public class FuncType : LuaType
         return perfectSignature;
     }
 
-    public override IEnumerable<InterfaceMember?> GetMembers(SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
 }
 
 public interface IFuncSignature

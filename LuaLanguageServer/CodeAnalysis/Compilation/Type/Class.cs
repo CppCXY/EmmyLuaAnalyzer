@@ -31,35 +31,38 @@ public class Class : LuaType, ILuaNamedType
 
         // TODO attach variable
     }
+}
 
-    public IEnumerable<ILuaType> IndexInteger(long key, SearchContext context)
+public class ClassMember : LuaTypeMember
+{
+    public IndexKey Key { get; }
+
+    public LuaSyntaxElement SyntaxElement { get; }
+
+    public ClassMember(IndexKey key, LuaSyntaxElement syntaxElement, Class containingType) : base(containingType)
     {
-        throw new NotImplementedException();
+        Key = key;
+        SyntaxElement = syntaxElement;
     }
 
-    public IEnumerable<ILuaType> IndexMap(ILuaType key, SearchContext context)
+    public override ILuaType? GetType(SearchContext context)
     {
-        throw new NotImplementedException();
-    }
-
-    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
-    {
-        switch (key)
+        return SyntaxElement switch
         {
-            case IndexKey.String str:
-            {
-                return GetNamedMembers(str.Value, context);
-            }
-            case IndexKey.Integer integer:
-            {
-                return IndexInteger(integer.Value, context);
-            }
-            case IndexKey.Ty ty:
-            {
-                return IndexMap(ty.Value, context);
-            }
-        }
+            LuaDocTypedFieldSyntax typeField => context.Infer(typeField.Type),
+            LuaDocFieldSyntax field => context.Infer(field.Type),
+            _ => null
+        };
+    }
 
-        return Enumerable.Empty<ILuaType>();
+    public override bool MatchKey(IndexKey key, SearchContext context)
+    {
+        return (key, Key) switch
+        {
+            (IndexKey.Integer i1, IndexKey.Integer i2) => i1.Value == i2.Value,
+            (IndexKey.String s1, IndexKey.String s2) => s1.Value == s2.Value,
+            (IndexKey.Ty t1, IndexKey.Ty t2) => t1.Value == t2.Value,
+            _ => false
+        };
     }
 }

@@ -14,6 +14,5 @@ public enum TypeKind
     Field,
     Table,
     Func,
-    Literal,
     Primitive
 }

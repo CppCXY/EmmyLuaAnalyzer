@@ -14,17 +14,17 @@ public class Alias : LuaType, ILuaNamedType
         Name = name;
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
     {
         var syntaxElement = context.Compilation
             .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Alias>(Name).FirstOrDefault()?.AliasSyntax;
-        return syntaxElement is null ? Enumerable.Empty<ILuaType>() : context.Infer(syntaxElement.Type).GetMembers(context);
+        return syntaxElement is null ? Enumerable.Empty<LuaTypeMember>() : context.Infer(syntaxElement.Type).GetMembers(context);
     }
 
-    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
     {
         var syntaxElement = context.Compilation
             .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Alias>(Name).FirstOrDefault()?.AliasSyntax;
-        return syntaxElement is null ? Enumerable.Empty<ILuaType>() : context.Infer(syntaxElement.Type).IndexMember(key, context);
+        return syntaxElement is null ? Enumerable.Empty<LuaTypeMember>() : context.Infer(syntaxElement.Type).IndexMember(key, context);
     }
 }

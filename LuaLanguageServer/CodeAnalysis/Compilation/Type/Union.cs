@@ -88,14 +88,9 @@ public class Union : LuaType
         return this;
     }
 
-    public override IEnumerable<ILuaType> GetMembers(SearchContext context)
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
     {
-        return _childTypes.SelectMany(x => x.GetMembers(context));
-    }
-
-    public override IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context)
-    {
-        return _childTypes.SelectMany(x => x.IndexMember(key, context));
+        return _childTypes.SelectMany(it=> it.GetMembers(context));
     }
 }
 

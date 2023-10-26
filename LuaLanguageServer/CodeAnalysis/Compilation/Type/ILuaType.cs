@@ -5,13 +5,9 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public interface ILuaType
 {
-    public IEnumerable<ILuaType> GetMembers(SearchContext context);
+    public IEnumerable<LuaTypeMember> GetMembers(SearchContext context);
 
-    public IEnumerable<ILuaNamedType> GetNamedMembers(SearchContext context);
-
-    public IEnumerable<ILuaNamedType> GetNamedMembers(string name, SearchContext context);
-
-    public IEnumerable<ILuaType> IndexMember(IndexKey key, SearchContext context);
+    public IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context);
 
     public TypeKind Kind { get; }
 
@@ -39,8 +35,4 @@ public interface ILuaNamedType : ILuaType
     public string Name { get; }
 }
 
-public interface ILuaIndexedType : ILuaType
-{
-    public IndexKey Key { get; }
-}
 
