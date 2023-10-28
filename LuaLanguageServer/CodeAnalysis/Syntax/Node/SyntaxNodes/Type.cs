@@ -21,24 +21,9 @@ public class LuaDocLiteralTypeSyntax : LuaDocTypeSyntax
 
     public bool IsString => FirstChildToken(LuaTokenKind.TkString) != null;
 
-    public string RepresentText
-    {
-        get
-        {
-            if (IsInteger)
-            {
-                return FirstChildToken(LuaTokenKind.TkInt)!.RepresentText;
-            }
-            else if (IsString)
-            {
-                return FirstChildToken(LuaTokenKind.TkString)!.RepresentText;
-            }
-            else
-            {
-                return "";
-            }
-        }
-    }
+    public LuaNumberToken? Integer => FirstChild<LuaNumberToken>();
+
+    public LuaStringToken? String => FirstChild<LuaStringToken>();
 
     public LuaDocLiteralTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -48,7 +33,7 @@ public class LuaDocLiteralTypeSyntax : LuaDocTypeSyntax
 
 public class LuaDocNameTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocNameTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

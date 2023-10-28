@@ -292,7 +292,7 @@ public static class Index
                         ? new LuaShortName.VarDef(varName, null, -1)
                         : new LuaShortName.VarDef(varName, lastValidExpr, i - lastValidExprId));
             }
-            else if (varName is LuaIndexExprSyntax {Name : { } name} indexExpr)
+            else if (varName is LuaIndexExprSyntax { DotOrColonIndexName: { } name })
             {
                 stubIndexImpl.ShortNameIndex.AddStub(
                     documentId, name.RepresentText,

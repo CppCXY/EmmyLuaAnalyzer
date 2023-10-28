@@ -53,7 +53,7 @@ public class LuaParamListSyntax : LuaSyntaxNode
 
 public class LuaAttributeSyntax : LuaSyntaxNode
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public bool IsConst
     {
@@ -64,7 +64,7 @@ public class LuaAttributeSyntax : LuaSyntaxNode
                 return false;
             }
 
-            return Name.Text == "const";
+            return Name.Text is "const";
         }
     }
 
@@ -77,7 +77,7 @@ public class LuaAttributeSyntax : LuaSyntaxNode
                 return false;
             }
 
-            return Name.Text == "close";
+            return Name.Text is "close";
         }
     }
 
@@ -91,7 +91,7 @@ public class LuaLocalNameSyntax : LuaSyntaxNode
 {
     public LuaAttributeSyntax? Attribute => FirstChild<LuaAttributeSyntax>();
 
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

@@ -28,7 +28,7 @@ public class LuaDocBodySyntax : LuaDocSyntax
 
 public class LuaDocClassSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
 
@@ -46,7 +46,7 @@ public class LuaDocClassSyntax : LuaDocSyntax
 
 public class LuaDocGenericDeclareListSyntax : LuaDocSyntax
 {
-    public IEnumerable<LuaSyntaxToken> NameList => ChildTokens(LuaTokenKind.TkName);
+    public IEnumerable<LuaNameToken> NameList => ChildNodes<LuaNameToken>();
 
     public LuaDocGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -56,7 +56,7 @@ public class LuaDocGenericDeclareListSyntax : LuaDocSyntax
 
 public class LuaDocEnumSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public bool HasBaseType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
@@ -72,7 +72,7 @@ public class LuaDocEnumSyntax : LuaDocSyntax
 
 public class LuaDocInterfaceSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
 
@@ -90,7 +90,7 @@ public class LuaDocInterfaceSyntax : LuaDocSyntax
 
 public class LuaDocAliasSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
@@ -125,11 +125,11 @@ public class LuaDocFieldSyntax : LuaDocSyntax
     public bool IsTypeField =>
         ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault() != null;
 
-    public LuaSyntaxToken? NameField => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? NameField => FirstChild<LuaNameToken>();
 
-    public LuaSyntaxToken? StringField => FirstChildToken(LuaTokenKind.TkString);
+    public LuaStringToken? StringField =>  FirstChild<LuaStringToken>();
 
-    public LuaSyntaxToken? IntegerField => FirstChildToken(LuaTokenKind.TkInt);
+    public LuaNumberToken? IntegerField => FirstChild<LuaNumberToken>();
 
     public LuaDocTypeSyntax? TypeField =>
         ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault();
@@ -148,7 +148,7 @@ public class LuaDocFieldSyntax : LuaDocSyntax
 
 public class LuaDocParamSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public bool IsVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
 
@@ -164,7 +164,7 @@ public class LuaDocParamSyntax : LuaDocSyntax
 
 public class LuaDocEnumFieldSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocEnumFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -212,9 +212,9 @@ public class LuaDocDeprecatedSyntax : LuaDocSyntax
 
 public class LuaDocTypedParamSyntax : LuaDocSyntax
 {
-    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
     public LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -290,7 +290,7 @@ public class LuaDocAsSyntax : LuaDocSyntax
 
 public class LuaDocVersionSyntax : LuaDocSyntax
 {
-    public IEnumerable<LuaSyntaxToken> Versions => ChildTokens(LuaTokenKind.TkName);
+    public IEnumerable<LuaNameToken> Versions => ChildNodes<LuaNameToken>();
 
     public LuaDocVersionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -300,9 +300,9 @@ public class LuaDocVersionSyntax : LuaDocSyntax
 
 public class LuaDocDiagnosticSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? State => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? State => FirstChild<LuaNameToken>();
 
-    public IEnumerable<LuaSyntaxToken> Diagnostics => ChildTokens(LuaTokenKind.TkName).Skip(1);
+    public IEnumerable<LuaNameToken> Diagnostics => ChildNodes<LuaNameToken>().Skip(1);
 
     public LuaDocDiagnosticSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -312,7 +312,7 @@ public class LuaDocDiagnosticSyntax : LuaDocSyntax
 
 public class LuaDocOperatorSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Operator => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Operator => FirstChild<LuaNameToken>();
 
     public IEnumerable<LuaDocTypeSyntax> Types => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon);
 
@@ -326,7 +326,7 @@ public class LuaDocOperatorSyntax : LuaDocSyntax
 
 public class LuaDocModuleSyntax : LuaDocSyntax
 {
-    public LuaSyntaxToken? Module => FirstChildToken(LuaTokenKind.TkString);
+    public LuaStringToken? Module => FirstChild<LuaStringToken>();
 
     public LuaDocModuleSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

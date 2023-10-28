@@ -56,10 +56,10 @@ public class LuaMethodNameSyntax : LuaSyntaxNode
 
     public bool IsDotDefine => FirstChild<LuaIndexExprSyntax>()?.IsDotIndex == true;
 
-    public LuaSyntaxToken? Name => FirstChild<LuaExprSyntax>() switch
+    public LuaNameToken? Name => FirstChild<LuaExprSyntax>() switch
     {
         LuaNameExprSyntax nameExprSyntax => nameExprSyntax.Name,
-        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.Name,
+        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.DotOrColonIndexName,
         _ => throw new UnreachableException()
     };
 
@@ -82,7 +82,7 @@ public class LuaFuncStatSyntax : LuaStatSyntax
 
     public bool IsMethod => FirstChild<LuaMethodNameSyntax>() != null;
 
-    public LuaSyntaxToken? Name =>
+    public LuaNameToken? Name =>
         IsLocal ? (LocalName?.Name) : (MethodName?.Name);
 
     public LuaExprSyntax? PrefixExpr => MethodName?.PrefixExpr;
@@ -103,7 +103,7 @@ public class LuaFuncStatSyntax : LuaStatSyntax
 
 public class LuaLabelStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -113,9 +113,9 @@ public class LuaLabelStatSyntax : LuaStatSyntax
 
 public class LuaGotoStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken Goto => FirstChildToken(LuaTokenKind.TkGoto)!;
+    public LuaSyntaxToken? Goto => FirstChildToken(LuaTokenKind.TkGoto);
 
-    public LuaSyntaxToken? LabelName => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? LabelName => FirstChild<LuaNameToken>();
 
     public LuaGotoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

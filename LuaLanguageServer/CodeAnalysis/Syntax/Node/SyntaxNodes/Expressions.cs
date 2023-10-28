@@ -17,7 +17,7 @@ public class LuaExprSyntax : LuaSyntaxNode
 
 public class LuaNameExprSyntax : LuaExprSyntax
 {
-    public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -102,11 +102,11 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
 
     public LuaExprSyntax? ExprKey => FirstChild<LuaExprSyntax>();
 
-    public LuaSyntaxToken? NameKey => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? NameKey => FirstChild<LuaNameToken>();
 
-    public LuaSyntaxToken? NumberKey => FirstChildToken(LuaTokenKind.TkNumber);
+    public LuaNumberToken? NumberKey => FirstChild<LuaNumberToken>();
 
-    public LuaSyntaxToken? StringKey => FirstChildToken(LuaTokenKind.TkString);
+    public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
     public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
@@ -160,33 +160,11 @@ public class LuaIndexExprSyntax : LuaExprSyntax
 
     public bool IsKeyIndex => FirstChildToken(LuaTokenKind.TkLeftBracket) != null;
 
-    public LuaSyntaxToken? DotOrColonIndexName => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? DotOrColonIndexName => FirstChild<LuaNameToken>();
 
     public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
-
-    public LuaSyntaxToken? Name
-    {
-        get
-        {
-            if (IsDotIndex && IsColonIndex)
-            {
-                return DotOrColonIndexName;
-            }
-            else if (IndexKeyExpr is LuaLiteralExprSyntax
-                     {
-                         Literal: {Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString}
-                     } literalExpr)
-            {
-                return literalExpr.Literal;
-            }
-            else
-            {
-                return null;
-            }
-        }
-    }
 
     public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -196,7 +174,7 @@ public class LuaIndexExprSyntax : LuaExprSyntax
 
 public class LuaRequireExprSyntax : LuaExprSyntax
 {
-    public LuaSyntaxToken Name => FirstChildToken(LuaTokenKind.TkName)!;
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public string ModulePath
     {
@@ -209,16 +187,10 @@ public class LuaRequireExprSyntax : LuaExprSyntax
             }
 
             var firstArg = argList.ArgList.FirstOrDefault();
-            if (firstArg is LuaLiteralExprSyntax
-                {
-                    Literal.Kind: LuaTokenKind.TkString or LuaTokenKind.TkLongString
-                } literalExpr)
+            return firstArg is LuaLiteralExprSyntax
             {
-                return literalExpr.Literal.RepresentText;
-            }
-
-
-            return string.Empty;
+                Literal: LuaStringToken path
+            } ? path.InnerString : string.Empty;
         }
     }
 

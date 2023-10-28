@@ -7,15 +7,15 @@ public class GenericImpl : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
-    public List<ILuaType> GenericImplParameters { get; }
+    public Dictionary<string, ILuaType> GenericImplParameters { get; }
 
-    public GenericImpl(string name, List<ILuaType> genericImplParameters) : base(TypeKind.Generic)
+    public GenericImpl(string name, Dictionary<string, ILuaType> genericImplParameters) : base(TypeKind.Generic)
     {
         GenericImplParameters = genericImplParameters;
         Name = name;
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<GenericImplMember> GetMembers(SearchContext context)
     {
         // throw new NotImplementedException();
         // 找到name的class或者接口 wrapper其成员

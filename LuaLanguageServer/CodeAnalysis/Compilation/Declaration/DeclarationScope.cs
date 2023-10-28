@@ -60,14 +60,15 @@ public class DeclarationScope : DeclarationNodeContainer
                 return Find(nameSyntax);
             case LuaIndexExprSyntax indexExprSyntax:
             {
-                var name = indexExprSyntax.Name?.RepresentText;
-                if (name == null)
-                {
-                    return null;
-                }
-
-                var declaration = Find(indexExprSyntax.PrefixExpr);
-                return declaration?.FindField(name);
+                // var name = indexExprSyntax.Name?.RepresentText;
+                // if (name == null)
+                // {
+                //     return null;
+                // }
+                //
+                // var declaration = Find(indexExprSyntax.PrefixExpr);
+                // return declaration?.FindField(name);
+                return null;
             }
             default:
                 return null;

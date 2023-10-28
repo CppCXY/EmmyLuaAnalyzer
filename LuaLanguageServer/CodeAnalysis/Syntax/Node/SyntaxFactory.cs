@@ -87,6 +87,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.RequireExpr => new LuaRequireExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeBody => new LuaDocBodySyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocModule => new LuaDocModuleSyntax(greenNode, tree, parent),
                 _ => throw new Exception("Unexpected SyntaxKind")
             };
         }
@@ -95,8 +96,8 @@ public static class SyntaxFactory
             return greenNode.TokenKind switch
             {
                 LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(greenNode, tree, parent),
-                LuaTokenKind.TkInt or LuaTokenKind.TkNumber or LuaTokenKind.TkComplex => new LuaNumberToken(greenNode,
-                    tree, parent),
+                LuaTokenKind.TkInt or LuaTokenKind.TkNumber or LuaTokenKind.TkComplex =>
+                    new LuaNumberToken(greenNode, tree, parent),
                 LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => new LuaBoolToken(greenNode, tree, parent),
                 LuaTokenKind.TkNil => new LuaNilToken(greenNode, tree, parent),
                 LuaTokenKind.TkDots => new LuaDotsToken(greenNode, tree, parent),

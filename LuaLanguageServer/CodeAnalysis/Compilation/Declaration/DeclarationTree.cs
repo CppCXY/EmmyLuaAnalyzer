@@ -206,13 +206,13 @@ public class DeclarationTree : ILuaNodeWalker
                         }
                         case LuaIndexExprSyntax indexExpr:
                         {
-                            if (indexExpr.Name is { } name)
-                            {
-                                var declaration = _curScope?.Find(indexExpr.PrefixExpr);
-                                declaration?.AddField(
-                                    CreateDeclaration(name.RepresentText, indexExpr, DeclarationFlag.ClassMember)
-                                );
-                            }
+                            // if (indexExpr.Name is { } name)
+                            // {
+                            //     var declaration = _curScope?.Find(indexExpr.PrefixExpr);
+                            //     declaration?.AddField(
+                            //         CreateDeclaration(name.RepresentText, indexExpr, DeclarationFlag.ClassMember)
+                            //     );
+                            // }
 
                             break;
                         }
