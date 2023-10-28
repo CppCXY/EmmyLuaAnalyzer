@@ -4,48 +4,52 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Builtin
 {
-    public readonly Primitive Unknown = new Unknown();
-    public readonly Primitive Void =new Primitive("void");
+    public readonly Unknown Unknown = new Unknown();
+    public readonly Primitive Void = new Primitive("void");
     public readonly Primitive Nil = new Primitive("nil");
     public readonly Primitive Number = new Primitive("number");
     public readonly Primitive Integer = new Primitive("integer");
-    public readonly Primitive String = new Primitive("string");
+    public readonly PrimitiveClass String = new PrimitiveClass("string");
     public readonly Primitive Boolean = new Primitive("boolean");
     public readonly Primitive Userdata = new Primitive("userdata");
-    public readonly Primitive Io = new Primitive("io");
-    public readonly Primitive Table = new Primitive("table");
+    public readonly PrimitiveClass Io = new PrimitiveClass("io");
+    public readonly PrimitiveClass Table = new PrimitiveClass("table");
 
     public ILuaType? FromName(string name)
     {
         return name switch
         {
-            "nil" => Nil,
+            "unknown" => Unknown,
             "void" => Void,
+            "nil" => Nil,
             "number" => Number,
             "integer" => Integer,
             "string" => String,
             "boolean" => Boolean,
+            "userdata" => Userdata,
+            "io" => Io,
+            "table" => Table,
             _ => null
         };
     }
 }
 
-public class Primitive : LuaType, ILuaNamedType
+public class Primitive : Class
 {
-    public Primitive(string name) : base(TypeKind.Primitive)
+    public Primitive(string name) : base(name)
     {
-        Name = name;
     }
 
-    public IEnumerable<string> MemberNames => Enumerable.Empty<string>();
+    public override IEnumerable<ClassMember> GetMembers(SearchContext context) => Enumerable.Empty<ClassMember>();
 
-    public string Name { get; }
+    public override IEnumerable<ClassMember> IndexMember(IndexKey key, SearchContext context) =>
+        Enumerable.Empty<ClassMember>();
+}
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
-
-    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+public class PrimitiveClass : Class
+{
+    public PrimitiveClass(string name) : base(name)
     {
-        throw new NotImplementedException();
     }
 }
 

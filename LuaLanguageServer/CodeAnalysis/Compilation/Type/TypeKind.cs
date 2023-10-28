@@ -11,8 +11,6 @@ public enum TypeKind
     Enum,
     Interface,
     Generic,
-    Field,
     Table,
-    Func,
-    Primitive
+    Func
 }

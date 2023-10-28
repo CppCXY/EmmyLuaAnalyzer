@@ -2,7 +2,7 @@
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class FuncType : LuaType
+public class Func : LuaType
 {
     public IFuncSignature MainSignature { get; private set; }
 
@@ -10,7 +10,7 @@ public class FuncType : LuaType
 
     public bool IsColonCall { get; private set; }
 
-    public FuncType(IFuncSignature mainSignature) : base(TypeKind.Func)
+    public Func(IFuncSignature mainSignature) : base(TypeKind.Func)
     {
         MainSignature = mainSignature;
     }

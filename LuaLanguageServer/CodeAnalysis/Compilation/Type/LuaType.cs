@@ -16,10 +16,4 @@ public abstract class LuaType : ILuaType
         GetMembers(context).Where(it => it.MatchKey(key, context));
 
     public TypeKind Kind { get; }
-
-    public ILuaNamedType? GetBaseType(SearchContext context) => null;
-
-    public IEnumerable<Interface> GetInterfaces(SearchContext context) => Enumerable.Empty<Interface>();
-
-    public IEnumerable<Interface> GetAllInterface(SearchContext context) => Enumerable.Empty<Interface>();
 }

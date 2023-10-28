@@ -116,7 +116,7 @@ public static class ExpressionInfer
         {
             switch (s)
             {
-                case FuncType func:
+                case Func func:
                 {
                     var args = callExpr.ArgList?.ArgList;
                     if (args == null) return;

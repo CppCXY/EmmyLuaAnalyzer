@@ -32,6 +32,11 @@ public class Enum : LuaType, ILuaNamedType
         // var memberIndex = context.Compilation.StubIndexImpl.Members;
         // TODO attach variable
     }
+
+    public ILuaType GetBaseType(SearchContext context)
+    {
+        return context.Compilation.Builtin.Integer;
+    }
 }
 
 public class EnumMember : LuaTypeMember

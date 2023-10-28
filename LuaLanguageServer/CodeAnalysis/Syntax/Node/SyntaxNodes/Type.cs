@@ -128,11 +128,11 @@ public class LuaDocTypedFieldSyntax : LuaDocSyntax
 
     public bool IsTypeKey => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault() != null;
 
-    public LuaSyntaxToken? NameKey => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? NameKey => FirstChild<LuaNameToken>();
 
-    public LuaSyntaxToken? StringKey => FirstChildToken(LuaTokenKind.TkString);
+    public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
-    public LuaSyntaxToken? IntegerKey => FirstChildToken(LuaTokenKind.TkInt);
+    public LuaNumberToken? IntegerKey => FirstChild<LuaNumberToken>();
 
     public LuaDocTypeSyntax? TypeKey => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
 

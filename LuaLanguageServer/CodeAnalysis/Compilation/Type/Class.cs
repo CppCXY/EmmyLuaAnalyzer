@@ -31,6 +31,24 @@ public class Class : LuaType, ILuaNamedType
 
         // TODO attach variable
     }
+
+    public ILuaType GetSuper(SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerable<Interface> GetInterfaces(SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// contains all interfaces
+    /// </summary>
+    public IEnumerable<Interface> GetAllInterface(SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class ClassMember : LuaTypeMember

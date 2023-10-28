@@ -10,15 +10,6 @@ public interface ILuaType
     public IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context);
 
     public TypeKind Kind { get; }
-
-    public ILuaNamedType? GetBaseType(SearchContext context);
-
-    public IEnumerable<Interface> GetInterfaces(SearchContext context);
-
-    /// <summary>
-    /// contains all interfaces
-    /// </summary>
-    public IEnumerable<Interface> GetAllInterface(SearchContext context);
 }
 
 public abstract record IndexKey
