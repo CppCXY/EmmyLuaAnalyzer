@@ -26,10 +26,40 @@ public class Class : LuaType, ILuaNamedType
         var memberIndex = context.Compilation.StubIndexImpl.Members;
         foreach (var classField in memberIndex.Get<LuaMember.ClassDocField>(syntaxElement))
         {
-            // yield return context.Infer(classField.ClassDocFieldSyntax);
+            var member = context.InferMember(classField.ClassDocFieldSyntax, () =>
+            {
+                var field = classField.ClassDocFieldSyntax;
+                return field switch
+                {
+                    { IsIntegerField: true, IntegerField: { } integerField } => new ClassMember(
+                        new IndexKey.Integer(integerField.IntegerValue), field, this),
+                    { IsStringField: true, StringField: { } stringField } => new ClassMember(
+                        new IndexKey.String(stringField.InnerString), field, this),
+                    { IsNameField: true, NameField: { } nameField } => new ClassMember(
+                        new IndexKey.String(nameField.RepresentText), field, this),
+                    { IsTypeField: true, TypeField: { } typeField } => new ClassMember(
+                        new IndexKey.Ty(context.Infer(typeField)), field, this),
+                    _ => null
+                };
+            });
+
+            if (member is not null)
+            {
+                yield return member;
+            }
         }
 
-        // TODO attach variable
+        // TODO attached node
+        // if (syntaxElement.Parent is LuaCommentSyntax { Owner: { } attached })
+        // {
+        //     foreach (var attachField in memberIndex.Get<LuaMember.TableField>(attached))
+        //     {
+        //     }
+        //
+        //     foreach (var indexField in memberIndex.Get<LuaMember.Index>(attached))
+        //     {
+        //     }
+        // }
     }
 
     public ILuaType GetSuper(SearchContext context)

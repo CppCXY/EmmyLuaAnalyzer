@@ -25,7 +25,11 @@ public class Enum : LuaType, ILuaNamedType
         {
             if (field.Name?.RepresentText is { } name)
             {
-                yield return new EnumMember(name, this);
+                var member = context.InferMember(field, () => new EnumMember(name, this));
+                if (member is not null)
+                {
+                    yield return member;
+                }
             }
         }
 
@@ -55,6 +59,6 @@ public class EnumMember : LuaTypeMember
 
     public override bool MatchKey(IndexKey key, SearchContext context)
     {
-        return key is IndexKey.String { Value: {} name} && name == Name;
+        return key is IndexKey.String { Value: { } name } && name == Name;
     }
 }

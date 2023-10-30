@@ -5,9 +5,9 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 
 public class StubIndexImpl
 {
-    public StubIndex<string, LuaShortName> ShortNameIndex { get; set; } = new();
+    public StubIndex<string, LuaShortName> ShortNameIndex { get;} = new();
 
-    public StubIndex<LuaSyntaxElement, LuaMember> Members { get; set; } = new();
+    public StubIndex<LuaSyntaxElement, LuaMember> Members { get; } = new();
 }
 
 public abstract record LuaShortName
@@ -21,6 +21,8 @@ public abstract record LuaShortName
     public record Interface(LuaDocInterfaceSyntax InterfaceSyntax) : LuaShortName;
 
     public record Field(LuaDocFieldSyntax FieldSyntax) : LuaShortName;
+
+    public record ClassField(LuaDocTypedFieldSyntax FieldSyntax) : LuaShortName;
 
     public record EnumField(LuaDocEnumFieldSyntax EnumFieldSyntax) : LuaShortName;
 

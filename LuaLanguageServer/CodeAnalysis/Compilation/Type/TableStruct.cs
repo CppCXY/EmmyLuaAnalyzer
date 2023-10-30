@@ -16,25 +16,25 @@ public class TableStruct : LuaType
     {
         foreach (var field in Table.FieldList)
         {
-            if (field.IsIntegerKey)
+            var member = context.InferMember(field, () =>
             {
-                yield return new TableStructMember(
-                    new IndexKey.Integer(field.IntegerKey!.IntegerValue), field, this);
-            }
-            else if (field.IsStringKey)
+                return field switch
+                {
+                    { IsIntegerKey: true, IntegerKey: { } integerKey } => new TableStructMember(
+                        new IndexKey.Integer(integerKey.IntegerValue), field, this),
+                    { IsStringKey: true, StringKey: { } stringKey } => new TableStructMember(
+                        new IndexKey.String(stringKey.InnerString), field, this),
+                    { IsTypeKey: true, TypeKey: { } typeKey } => new TableStructMember(
+                        new IndexKey.Ty(context.Infer(typeKey)), field, this),
+                    { IsNameKey: true, NameKey: { } nameKey } => new TableStructMember(
+                        new IndexKey.String(nameKey.RepresentText), field, this),
+                    _ => null
+                };
+            });
+
+            if (member is not null)
             {
-                yield return new TableStructMember(
-                    new IndexKey.String(field.StringKey!.InnerString), field, this);
-            }
-            else if (field.IsTypeKey)
-            {
-                yield return new TableStructMember(
-                    new IndexKey.Ty(context.Infer(field.TypeKey)), field, this);
-            }
-            else if (field.IsNameKey)
-            {
-                yield return new TableStructMember(
-                    new IndexKey.String(field.NameKey!.RepresentText), field, this);
+                yield return member;
             }
         }
     }

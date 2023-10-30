@@ -103,6 +103,16 @@ public static class Index
         {
             stubIndexImpl.ShortNameIndex.AddStub(
                 documentId, name.RepresentText, new LuaShortName.Class(luaDocClassSyntax));
+
+            if (luaDocClassSyntax.Body is { } body)
+            {
+                foreach (var field in body.FieldList)
+                {
+                    // stubIndexImpl.ShortNameIndex.AddStub(
+                    //     documentId, field.RepresentText, new LuaShortName.ClassField(field));
+                }
+            }
+
         }
     }
 
@@ -114,12 +124,12 @@ public static class Index
             stubIndexImpl.ShortNameIndex.AddStub(
                 documentId, name.RepresentText, new LuaShortName.Enum(luaDocEnumSyntax));
 
-            foreach (var fieldSyntax in luaDocEnumSyntax.FieldList)
+            foreach (var field in luaDocEnumSyntax.FieldList)
             {
-                if (fieldSyntax is {Name: { } fieldName})
+                if (field is {Name: { } fieldName})
                 {
                     stubIndexImpl.ShortNameIndex.AddStub(
-                        documentId, fieldName.RepresentText, new LuaShortName.EnumField(fieldSyntax));
+                        documentId, fieldName.RepresentText, new LuaShortName.EnumField(field));
                 }
             }
         }

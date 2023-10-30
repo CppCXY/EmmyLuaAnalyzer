@@ -11,6 +11,8 @@ public class SearchContext
 
     private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
 
+    private Dictionary<LuaSyntaxElement, LuaTypeMember> _memberCaches = new();
+
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;
@@ -37,5 +39,22 @@ public class SearchContext
             LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
             _ => Compilation.Builtin.Unknown
         };
+    }
+
+    public TMember? InferMember<TMember>(LuaSyntaxElement element, Func<TMember?> factory)
+        where TMember : LuaTypeMember
+    {
+        if (_memberCaches.TryGetValue(element, out var member))
+        {
+            return member as TMember;
+        }
+
+        var result = factory();
+        if (result is not null)
+        {
+            _memberCaches[element] = result;
+        }
+
+        return result;
     }
 }
