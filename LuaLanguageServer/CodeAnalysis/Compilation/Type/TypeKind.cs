@@ -11,6 +11,7 @@ public enum TypeKind
     Enum,
     Interface,
     Generic,
+    GenericParam,
     Table,
     Func
 }

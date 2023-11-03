@@ -13,7 +13,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation;
 
 public class LuaCompilation
 {
-    private LuaWorkspace _workspace;
+    public LuaWorkspace Workspace { get; }
 
     private List<LuaSyntaxTree> _syntaxTrees = new();
 
@@ -22,13 +22,14 @@ public class LuaCompilation
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees;
 
     internal Builtin Builtin { get; } = new();
+
     public StubIndexImpl StubIndexImpl { get; }
 
     public SearchContext SearchContext => new(this);
 
     public LuaCompilation(LuaWorkspace workspace)
     {
-        _workspace = workspace;
+        Workspace = workspace;
         StubIndexImpl = new StubIndexImpl();
     }
 
@@ -53,7 +54,7 @@ public class LuaCompilation
 
     public SemanticModel? GetSemanticModel(string url)
     {
-        var document = _workspace.GetDocument(url);
+        var document = Workspace.GetDocument(url);
         return document == null ? null : GetSemanticModel(document.SyntaxTree);
     }
 

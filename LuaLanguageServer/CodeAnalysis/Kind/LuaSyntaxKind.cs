@@ -36,7 +36,6 @@ public enum LuaSyntaxKind : ushort
     CallExpr,
     IndexExpr,
     NameExpr,
-    RequireExpr,
 
     LocalName,
     ParamName,
@@ -90,10 +89,11 @@ public enum LuaSyntaxKind : ushort
 
     // parameter
     TypedParameter,
+    GenericParameter,
 
     // a: number
     TypedField,
 
     // docOther
-    DocGenericDeclareList
+    GenericDeclareList
 }

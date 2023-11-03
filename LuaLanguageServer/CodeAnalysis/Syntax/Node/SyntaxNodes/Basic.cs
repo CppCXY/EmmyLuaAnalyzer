@@ -29,9 +29,9 @@ public class LuaBlockSyntax : LuaSyntaxNode
 
 public class LuaParamDefSyntax : LuaSyntaxNode
 {
-    public LuaSyntaxToken? Name => FirstChildToken(LuaTokenKind.TkName);
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public bool IsVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
+    public bool IsVarArgs => FirstChild<LuaDotsToken>() != null;
 
     public LuaParamDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -111,4 +111,21 @@ public class LuaCallArgListSyntax : LuaSyntaxNode
         : base(greenNode, tree, parent)
     {
     }
+}
+
+public class LuaFuncBodySyntax : LuaSyntaxNode
+{
+    public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+
+    public LuaFuncBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
+public interface IFuncBodyOwner
+{
+    public LuaFuncBodySyntax? FuncBody { get; }
 }

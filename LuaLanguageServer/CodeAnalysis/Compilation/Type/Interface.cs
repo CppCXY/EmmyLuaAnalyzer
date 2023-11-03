@@ -9,6 +9,9 @@ public class Interface : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
+        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
+
     public Interface(string name) : base(TypeKind.Interface)
     {
         Name = name;
@@ -16,8 +19,7 @@ public class Interface : LuaType, ILuaNamedType
 
     public override IEnumerable<InterfaceMember> GetMembers(SearchContext context)
     {
-        var syntaxElement = context.Compilation
-            .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
+        var syntaxElement = GetSyntaxElement(context);
         if (syntaxElement is null)
         {
             yield break;
@@ -26,7 +28,6 @@ public class Interface : LuaType, ILuaNamedType
         var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
         foreach (var field in fields)
         {
-
         }
     }
 }

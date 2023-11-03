@@ -211,16 +211,7 @@ public static class ExpressionParser
             {
                 case LuaTokenKind.TkName:
                 {
-                    var requireLike = p.Lexer.Source.Language.IsRequireLike(p.CurrentName);
                     p.Bump();
-                    // ReSharper disable once InvertIf
-                    if (requireLike && p.Current is LuaTokenKind.TkString or LuaTokenKind.TkLongString
-                            or LuaTokenKind.TkLeftParen)
-                    {
-                        CallArgList(p);
-                        return m.Complete(p, LuaSyntaxKind.RequireExpr);
-                    }
-
                     return m.Complete(p, LuaSyntaxKind.NameExpr);
                 }
                 case LuaTokenKind.TkLeftParen:

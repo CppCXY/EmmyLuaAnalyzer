@@ -16,4 +16,9 @@ public class LuaFeatures
         ".vs",
         ".vscode"
     };
+
+    public List<string> RequirePattern = new List<string>()
+    {
+        "./?.lua"
+    };
 }

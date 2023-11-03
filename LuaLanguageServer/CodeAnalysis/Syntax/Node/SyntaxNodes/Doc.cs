@@ -9,7 +9,7 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 public class LuaDocSyntax : LuaSyntaxElement
 {
     public IEnumerable<LuaSyntaxToken> Descriptions => ImmutableArray<LuaSyntaxToken>.Empty;
-        // Tree.BinderData?.GetDescriptions(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+    // Tree.BinderData?.GetDescriptions(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
 
     public LuaDocSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -21,7 +21,8 @@ public class LuaDocBodySyntax : LuaDocSyntax
 {
     public IEnumerable<LuaDocTypedFieldSyntax> FieldList => ChildNodes<LuaDocTypedFieldSyntax>();
 
-    public LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 }
@@ -44,9 +45,21 @@ public class LuaDocClassSyntax : LuaDocSyntax
     }
 }
 
+public class LuaDocGenericParamSyntax : LuaDocSyntax
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+
+    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+        : base(greenNode, tree, parent)
+    {
+    }
+}
+
 public class LuaDocGenericDeclareListSyntax : LuaDocSyntax
 {
-    public IEnumerable<LuaNameToken> NameList => ChildNodes<LuaNameToken>();
+    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
 
     public LuaDocGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -127,7 +140,7 @@ public class LuaDocFieldSyntax : LuaDocSyntax
 
     public LuaNameToken? NameField => FirstChild<LuaNameToken>();
 
-    public LuaStringToken? StringField =>  FirstChild<LuaStringToken>();
+    public LuaStringToken? StringField => FirstChild<LuaStringToken>();
 
     public LuaNumberToken? IntegerField => FirstChild<LuaNumberToken>();
 

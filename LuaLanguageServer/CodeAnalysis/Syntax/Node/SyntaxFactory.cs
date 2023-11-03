@@ -71,7 +71,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocAs => new LuaDocAsSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.DocNodiscard => new LuaDocNodiscardSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.DocOperator => new LuaDocOperatorSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocGenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(greenNode, tree, parent),
@@ -84,11 +84,11 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypedField => new LuaDocTypedFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.RequireExpr => new LuaRequireExprSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeBody => new LuaDocBodySyntax(greenNode, tree, parent),
                 LuaSyntaxKind.DocModule => new LuaDocModuleSyntax(greenNode, tree, parent),
-                _ => throw new Exception("Unexpected SyntaxKind")
+                LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent),
+                _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }
         else

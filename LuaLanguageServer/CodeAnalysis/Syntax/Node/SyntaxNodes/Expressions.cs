@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Kind;
+﻿using System.Text;
+using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -8,6 +9,55 @@ public class LuaExprSyntax : LuaSyntaxNode
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
+
+    private string? _accessPath = null;
+
+    public string AccessPath
+    {
+        get
+        {
+            if (_accessPath != null)
+            {
+                return _accessPath;
+            }
+
+            var sb = new StringBuilder();
+            var expr = this;
+            while (true)
+            {
+                switch (expr)
+                {
+                    case LuaIndexExprSyntax indexExpr:
+                    {
+                        if (indexExpr.IsDotIndex || indexExpr.IsColonIndex)
+                        {
+                            sb.Insert(0, '.');
+                            sb.Insert(0, indexExpr.DotOrColonIndexName!.Text);
+                        }
+
+                        expr = indexExpr.PrefixExpr;
+                        break;
+                    }
+                    case LuaCallExprSyntax callExpr:
+                    {
+                        expr = callExpr.PrefixExpr;
+                        break;
+                    }
+                    case LuaNameExprSyntax nameExpr:
+                    {
+                        sb.Insert(0, nameExpr.Name!.Text);
+                        _accessPath = sb.ToString();
+                        return _accessPath;
+                    }
+                    default:
+                    {
+                        _accessPath = sb.ToString();
+                        return _accessPath;
+                    }
+                }
+            }
+        }
+    }
 
     public LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -49,7 +99,6 @@ public class LuaBinaryExprSyntax : LuaExprSyntax
             return tk != null ? OperatorKind.ToBinaryOperator(tk.Kind) : OperatorKind.BinaryOperator.OpNop;
         }
     }
-
 
     public LuaExprSyntax? RightExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
@@ -116,11 +165,9 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
     }
 }
 
-public class LuaClosureExprSyntax : LuaExprSyntax
+public class LuaClosureExprSyntax : LuaExprSyntax, IFuncBodyOwner
 {
-    public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
-
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
 
     public LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -167,34 +214,6 @@ public class LuaIndexExprSyntax : LuaExprSyntax
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
 
     public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
-
-public class LuaRequireExprSyntax : LuaExprSyntax
-{
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
-
-    public string ModulePath
-    {
-        get
-        {
-            var argList = FirstChild<LuaCallArgListSyntax>();
-            if (argList is null)
-            {
-                return string.Empty;
-            }
-
-            var firstArg = argList.ArgList.FirstOrDefault();
-            return firstArg is LuaLiteralExprSyntax
-            {
-                Literal: LuaStringToken path
-            } ? path.InnerString : string.Empty;
-        }
-    }
-
-    public LuaRequireExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }

@@ -1,11 +1,15 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public class Enum : LuaType, ILuaNamedType
 {
     public string Name { get; }
+
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
+        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Enum>(Name).FirstOrDefault()?.EnumSyntax;
 
     public Enum(string name) : base(TypeKind.Enum)
     {

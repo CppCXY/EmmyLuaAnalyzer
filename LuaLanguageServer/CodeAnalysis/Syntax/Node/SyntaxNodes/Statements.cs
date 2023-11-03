@@ -76,7 +76,7 @@ public class LuaMethodNameSyntax : LuaSyntaxNode
     }
 }
 
-public class LuaFuncStatSyntax : LuaStatSyntax
+public class LuaFuncStatSyntax : LuaStatSyntax, IFuncBodyOwner
 {
     public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
 
@@ -91,9 +91,7 @@ public class LuaFuncStatSyntax : LuaStatSyntax
 
     public LuaLocalNameSyntax? LocalName => FirstChild<LuaLocalNameSyntax>();
 
-    public LuaParamListSyntax? ParamNameList => FirstChild<LuaParamListSyntax>();
-
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
 
     public LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -237,7 +235,7 @@ public class LuaForStatSyntax : LuaStatSyntax
 
 public class LuaForRangeStatSyntax : LuaStatSyntax
 {
-    public IEnumerable<LuaParamDefSyntax> IteratorNames =>ChildNodes<LuaParamDefSyntax>();
+    public IEnumerable<LuaParamDefSyntax> IteratorNames => ChildNodes<LuaParamDefSyntax>();
 
     public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
 
@@ -267,7 +265,7 @@ public class LuaRepeatStatSyntax : LuaStatSyntax
 
 public class LuaCallStatSyntax : LuaStatSyntax
 {
-    public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
+    public LuaExprSyntax? Expr => FirstChild<LuaExprSyntax>();
 
     public LuaCallStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)

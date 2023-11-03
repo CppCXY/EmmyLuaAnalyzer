@@ -226,25 +226,45 @@ public static class TagParser
         }
     }
 
+    private static CompleteMarker GenericParam(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Expect(LuaTokenKind.TkName);
+            if (p.Current is LuaTokenKind.TkColon)
+            {
+                p.Bump();
+                TypesParser.Type(p);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.GenericParameter);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.GenericParameter, e.Message);
+        }
+    }
+
     private static CompleteMarker GenericDeclareList(LuaDocParser p)
     {
         var m = p.Marker();
         p.Bump();
         try
         {
-            p.Expect(LuaTokenKind.TkName);
-            while (p.Current is LuaTokenKind.TkComma)
+            var cm = GenericParam(p);
+            while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                p.Expect(LuaTokenKind.TkName);
+                cm = GenericParam(p);
             }
 
             p.Expect(LuaTokenKind.TkGt);
-            return m.Complete(p, LuaSyntaxKind.DocGenericDeclareList);
+            return m.Complete(p, LuaSyntaxKind.GenericDeclareList);
         }
         catch (UnexpectedTokenException e)
         {
-            return m.Fail(p, LuaSyntaxKind.DocGenericDeclareList, e.Message);
+            return m.Fail(p, LuaSyntaxKind.GenericDeclareList, e.Message);
         }
     }
 

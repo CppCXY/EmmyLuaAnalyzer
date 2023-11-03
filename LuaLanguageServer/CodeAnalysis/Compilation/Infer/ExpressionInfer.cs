@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using System.Diagnostics;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -27,15 +28,14 @@ public static class ExpressionInfer
         {
             LuaUnaryExprSyntax unaryExpr => InferUnaryExpr(unaryExpr, context),
             LuaBinaryExprSyntax binaryExpr => InferBinaryExpr(binaryExpr, context),
-            LuaCallExprSyntax callExpr => InferCallExpr(callExpr, context),
+            LuaCallExprSyntax callExpr => context.CallExprInfer.InferCallExpr(callExpr, context),
             LuaClosureExprSyntax closureExpr => InferClosureExpr(closureExpr, context),
             LuaTableExprSyntax tableExpr => InferTableExpr(tableExpr, context),
             LuaParenExprSyntax parenExpr => InferParenExpr(parenExpr, context),
             LuaIndexExprSyntax indexExpr => InferIndexExpr(indexExpr, context),
             LuaLiteralExprSyntax literalExpr => InferLiteralExpr(literalExpr, context),
             LuaNameExprSyntax nameExpr => InferNameExpr(nameExpr, context),
-            LuaRequireExprSyntax requireExpr => InferRequireExpr(requireExpr, context),
-            _ => throw new NotImplementedException()
+            _ => throw new UnreachableException()
         };
     }
 
@@ -105,44 +105,6 @@ public static class ExpressionInfer
         // var rhsSymbol = context.Infer(rhs);
         // TODO: for override
         return lhsSymbol;
-    }
-
-    private static ILuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
-    {
-        ILuaType ret = context.Compilation.Builtin.Unknown;
-        var prefixExpr = callExpr.PrefixExpr;
-        var symbol = context.Infer(prefixExpr);
-        Union.Each(symbol, s =>
-        {
-            switch (s)
-            {
-                case Func func:
-                {
-                    var args = callExpr.ArgList?.ArgList;
-                    if (args == null) return;
-                    var argSymbols = args.Select(context.Infer);
-                    var perfectSig = func.FindPerfectSignature(argSymbols, context);
-                    if (perfectSig.ReturnType is { } retTy)
-                    {
-                        ret = Union.UnionType(ret, retTy);
-                    }
-
-                    break;
-                }
-            }
-        });
-
-        // TODO class.new return self
-        // if (prefixExpr is LuaIndexExprSyntax indexExpr)
-        // {
-        //     var fnName = indexExpr.Name?.RepresentText;
-        //     if (fnName is not null)
-        //     {
-        //         var fnSymbol = context.Compilation.GetSymbol(fnName);
-        //     }
-        // }
-
-        return ret;
     }
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
@@ -254,11 +216,4 @@ public static class ExpressionInfer
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaType InferRequireExpr(LuaRequireExprSyntax requireExpr, SearchContext context)
-    {
-        // var path = requireExpr.ModulePath;
-        // var source = context.Compilation.Resolve.ModelPath(path);
-        // return context.Infer(source);
-        throw new NotImplementedException();
-    }
 }

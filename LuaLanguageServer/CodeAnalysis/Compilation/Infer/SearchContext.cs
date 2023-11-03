@@ -13,6 +13,8 @@ public class SearchContext
 
     private Dictionary<LuaSyntaxElement, LuaTypeMember> _memberCaches = new();
 
+    public CallExprInfer CallExprInfer { get; } = new();
+
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;

@@ -24,6 +24,11 @@ public abstract record IndexKey
 public interface ILuaNamedType : ILuaType
 {
     public string Name { get; }
+
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context);
 }
 
-
+public interface IGeneric : ILuaType
+{
+    public IEnumerable<GenericParam> GetGenericParams(SearchContext context);
+}

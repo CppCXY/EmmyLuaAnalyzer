@@ -7,6 +7,11 @@ public class GenericImpl : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
+
     public Dictionary<string, ILuaType> GenericImplParameters { get; }
 
     public GenericImpl(string name, Dictionary<string, ILuaType> genericImplParameters) : base(TypeKind.Generic)
