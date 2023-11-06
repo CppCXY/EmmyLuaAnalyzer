@@ -101,10 +101,10 @@ public static class ExpressionInfer
     {
         var lhs = binaryExpr.LeftExpr;
         // var rhs = binaryExpr.RightExpr;
-        var lhsSymbol = context.Infer(lhs);
+        var lhsTy = context.Infer(lhs);
         // var rhsSymbol = context.Infer(rhs);
         // TODO: for override
-        return lhsSymbol;
+        return lhsTy;
     }
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
@@ -149,15 +149,14 @@ public static class ExpressionInfer
             {
                 return context.Compilation.Builtin.Unknown;
             }
-            // TODO create for array table
             case (Unknown, _):
             {
-                return context.Compilation.Builtin.Unknown;
+                return new Type.Array(elementType);
             }
             // TODO create for table<key, value>
             default:
             {
-                return context.Compilation.Builtin.Unknown;
+                return context.Compilation.Builtin.Table;
             }
         }
     }

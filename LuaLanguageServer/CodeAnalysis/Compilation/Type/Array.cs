@@ -6,9 +6,12 @@ public class Array : LuaType
 {
     public ILuaType Base { get; }
 
+    public LuaArrayMember MemberType { get; }
+
     public Array(ILuaType baseTy) : base(TypeKind.Array)
     {
         Base = baseTy;
+        MemberType = new LuaArrayMember(baseTy, this);
     }
 
     public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
@@ -19,15 +22,14 @@ public class Array : LuaType
         {
             case IndexKey.Integer:
             {
-                yield return new LuaArrayMember(Base, this);
+                yield return MemberType;
                 break;
             }
             case IndexKey.Ty ty:
             {
-                if (ty.Value == context.Compilation.Builtin.Integer
-                    || ty.Value == context.Compilation.Builtin.Number)
+                if (ty.Value.SubTypeOf(context.Compilation.Builtin.Number, context))
                 {
-                    yield return new LuaArrayMember(Base, this);
+                    yield return MemberType;
                 }
 
                 break;

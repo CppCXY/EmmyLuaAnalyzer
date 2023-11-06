@@ -13,5 +13,6 @@ public enum TypeKind
     Generic,
     GenericParam,
     Table,
+    GenericTable,
     Func
 }

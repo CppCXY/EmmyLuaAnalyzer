@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -12,6 +13,8 @@ public class SearchContext
     private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
 
     private Dictionary<LuaSyntaxElement, LuaTypeMember> _memberCaches = new();
+
+    private Stack<Dictionary<string, ILuaType>> _envStack = new();
 
     public CallExprInfer CallExprInfer { get; } = new();
 
@@ -58,5 +61,44 @@ public class SearchContext
         }
 
         return result;
+    }
+
+    public ILuaType InferTypeName(string name)
+    {
+        foreach (var env in _envStack)
+        {
+            if (env.TryGetValue(name, out var ty))
+            {
+                return ty;
+            }
+        }
+
+        var elements = Compilation.StubIndexImpl.ShortNameIndex.Get(name);
+        foreach (var luaShortName in elements)
+        {
+            switch(luaShortName)
+            {
+                case LuaShortName.Alias alias:
+                    return Infer(alias.AliasSyntax);
+                case LuaShortName.Class clazz:
+                    return Infer(clazz.ClassSyntax);
+                case LuaShortName.Enum enumType:
+                    return Infer(enumType.EnumSyntax);
+                case LuaShortName.Interface interfaceType:
+                    return Infer(interfaceType.InterfaceSyntax);
+            }
+        }
+
+        return Compilation.Builtin.Unknown;
+    }
+
+    public void PushEnv(Dictionary<string, ILuaType> env)
+    {
+        _envStack.Push(env);
+    }
+
+    public void PopEnv()
+    {
+        _envStack.Pop();
     }
 }

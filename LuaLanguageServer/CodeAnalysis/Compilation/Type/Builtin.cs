@@ -59,3 +59,90 @@ public class Unknown : Primitive
     {
     }
 }
+
+public class PrimitiveGenericTable : LuaType, IGeneric
+{
+    public ILuaType KeyType { get; }
+
+    public ILuaType ValueType { get; }
+
+    public PrimitiveGenericTableMember MemberType { get; }
+
+    public PrimitiveGenericTable(ILuaType keyType, ILuaType valueType) : base(TypeKind.GenericTable)
+    {
+        KeyType = keyType;
+        ValueType = valueType;
+        MemberType = new PrimitiveGenericTableMember(valueType, this);
+    }
+
+
+    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    {
+        return Enumerable.Empty<LuaTypeMember>();
+    }
+
+    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    {
+        switch (key)
+        {
+            case IndexKey.Integer:
+            {
+                if (KeyType.SubTypeOf(context.Compilation.Builtin.Number, context))
+                {
+                    yield return MemberType;
+                }
+
+                break;
+            }
+            case IndexKey.String:
+            {
+                if (KeyType.SubTypeOf(context.Compilation.Builtin.String, context))
+                {
+                    yield return MemberType;
+                }
+
+                break;
+            }
+            case IndexKey.Ty ty:
+            {
+                if (ty.Value.SubTypeOf(KeyType, context))
+                {
+                    yield return MemberType;
+                }
+
+                break;
+            }
+        }
+    }
+
+    public ILuaNamedType GetBaseType(SearchContext context)
+    {
+        return context.Compilation.Builtin.Table;
+    }
+
+    public IEnumerable<ILuaType> GetGenericArgs(SearchContext context)
+    {
+        yield return KeyType;
+        yield return ValueType;
+    }
+}
+
+public class PrimitiveGenericTableMember : LuaTypeMember
+{
+    public ILuaType Type { get; }
+
+    public PrimitiveGenericTableMember(ILuaType type, ILuaType? containingType) : base(containingType)
+    {
+        Type = type;
+    }
+
+    public override ILuaType? GetType(SearchContext context)
+    {
+        return Type;
+    }
+
+    public override bool MatchKey(IndexKey key, SearchContext context)
+    {
+        return true;
+    }
+}

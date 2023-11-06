@@ -11,6 +11,11 @@ public class Enum : LuaType, ILuaNamedType
     public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
         .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Enum>(Name).FirstOrDefault()?.EnumSyntax;
 
+    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
+    {
+        return Enumerable.Empty<GenericParam>();
+    }
+
     public Enum(string name) : base(TypeKind.Enum)
     {
         Name = name;

@@ -9,12 +9,26 @@ public class Interface : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
-    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
-        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
-
     public Interface(string name) : base(TypeKind.Interface)
     {
         Name = name;
+    }
+
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
+        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
+
+    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
+    {
+        if (GetSyntaxElement(context) is LuaDocInterfaceSyntax { GenericDeclareList.Params: { } genericParams })
+        {
+            foreach (var genericParam in genericParams)
+            {
+                if (genericParam is { Name: { } name })
+                {
+                    yield return new GenericParam(name.RepresentText, context.Infer(genericParam.Type), genericParam);
+                }
+            }
+        }
     }
 
     public override IEnumerable<InterfaceMember> GetMembers(SearchContext context)

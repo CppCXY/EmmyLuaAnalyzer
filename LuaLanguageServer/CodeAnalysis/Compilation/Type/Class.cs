@@ -5,11 +5,9 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Class : LuaType, ILuaNamedType, IGeneric
+public class Class : LuaType, ILuaNamedType
 {
     public string Name { get; }
-
-    private List<GenericParam>? _genericParams;
 
     public Class(string name) : base(TypeKind.Class)
     {
@@ -18,6 +16,20 @@ public class Class : LuaType, ILuaNamedType, IGeneric
 
     public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
         .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Class>(Name).FirstOrDefault()?.ClassSyntax;
+
+    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
+    {
+        if (GetSyntaxElement(context) is LuaDocClassSyntax { GenericDeclareList.Params: { } genericParams })
+        {
+            foreach (var genericParam in genericParams)
+            {
+                if (genericParam is { Name: { } name })
+                {
+                    yield return new GenericParam(name.RepresentText, context.Infer(genericParam.Type), genericParam);
+                }
+            }
+        }
+    }
 
     public override IEnumerable<ClassMember> GetMembers(SearchContext context)
     {
@@ -83,32 +95,6 @@ public class Class : LuaType, ILuaNamedType, IGeneric
     public IEnumerable<Interface> GetAllInterface(SearchContext context)
     {
         throw new NotImplementedException();
-    }
-
-    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
-    {
-
-        if (_genericParams is not null)
-        {
-            return _genericParams;
-        }
-
-        _genericParams = new List<GenericParam>();
-        var element = GetSyntaxElement(context);
-        if (element is LuaDocClassSyntax classSyntax)
-        {
-            foreach (var param in classSyntax.GenericDeclareList?.Params ?? Enumerable.Empty<LuaDocGenericParamSyntax>())
-            {
-                // ReSharper disable once InvertIf
-                if (param is { Name: { } name })
-                {
-                    var genericParam = new GenericParam(name.RepresentText, context.Infer(param.Type), param);
-                    _genericParams.Add(genericParam);
-                }
-            }
-        }
-
-        return _genericParams;
     }
 }
 

@@ -17,8 +17,13 @@ public class LuaFeatures
         ".vscode"
     };
 
-    public List<string> RequirePattern = new List<string>()
+    public List<string> RequirePattern { get; set; } = new()
     {
         "./?.lua"
+    };
+
+    public Dictionary<string, string> VirtualModule { get; set; } = new()
+    {
+        {"socket.core", "xxx.lua"}
     };
 }

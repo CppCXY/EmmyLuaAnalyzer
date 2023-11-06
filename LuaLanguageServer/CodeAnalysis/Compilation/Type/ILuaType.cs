@@ -9,6 +9,8 @@ public interface ILuaType
 
     public IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context);
 
+    public bool SubTypeOf(ILuaType other, SearchContext context);
+
     public TypeKind Kind { get; }
 }
 
@@ -26,9 +28,13 @@ public interface ILuaNamedType : ILuaType
     public string Name { get; }
 
     public LuaSyntaxElement? GetSyntaxElement(SearchContext context);
+
+    public IEnumerable<GenericParam> GetGenericParams(SearchContext context);
 }
 
 public interface IGeneric : ILuaType
 {
-    public IEnumerable<GenericParam> GetGenericParams(SearchContext context);
+    public ILuaNamedType GetBaseType(SearchContext context);
+
+    public IEnumerable<ILuaType> GetGenericArgs(SearchContext context);
 }
