@@ -15,6 +15,11 @@ public class Builtin
     public readonly PrimitiveClass Io = new PrimitiveClass("io");
     public readonly PrimitiveClass Table = new PrimitiveClass("table");
 
+    public Builtin()
+    {
+        Integer.WithSuper(Number);
+    }
+
     public ILuaType? FromName(string name)
     {
         return name switch
@@ -36,8 +41,21 @@ public class Builtin
 
 public class Primitive : Class
 {
+    public ILuaType? Super { get; private set; }
+
     public Primitive(string name) : base(name)
     {
+    }
+
+    public override ILuaType? GetSuper(SearchContext context)
+    {
+        return Super;
+    }
+
+    public Primitive WithSuper(ILuaType super)
+    {
+        Super = super;
+        return this;
     }
 
     public override IEnumerable<ClassMember> GetMembers(SearchContext context) => Enumerable.Empty<ClassMember>();

@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -7,8 +8,6 @@ public class Func : LuaType
     public IFuncSignature MainSignature { get; private set; }
 
     public List<IFuncSignature> Signatures { get; } = new();
-
-    public bool IsColonCall { get; private set; }
 
     public Func(IFuncSignature mainSignature) : base(TypeKind.Func)
     {
@@ -29,13 +28,14 @@ public class Func : LuaType
         }
     }
 
-    public IFuncSignature FindPerfectSignature(IEnumerable<ILuaType> arguments, SearchContext context)
+    public IFuncSignature FindPerfectSignature(IEnumerable<LuaExprSyntax> arguments, SearchContext context)
     {
         var perfectSignature = MainSignature;
         var perfectCount = 0;
+        var argumentsList = arguments.ToList();
         ProcessSignature(signature =>
         {
-            var count = signature.Match(arguments, context);
+            var count = signature.Match(argumentsList, context);
 
             if (count > perfectCount)
             {
@@ -52,19 +52,87 @@ public class Func : LuaType
     public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
 }
 
+public class FuncTypedParam
+{
+    public string Name { get; }
+
+    public ILuaType? Type { get; }
+
+    public FuncTypedParam(string name, ILuaType? type)
+    {
+        Name = name;
+        Type = type;
+    }
+}
+
 public interface IFuncSignature
 {
     public bool ColonCall { get; }
 
     public ILuaType? ReturnType { get; }
 
-    public IEnumerable<string> Parameters { get; }
-
-    public string DisplayName { get; }
-
-    public string ParamSignature { get; }
+    public List<FuncTypedParam> Parameters { get; }
 
     public ILuaType? Variadic { get; }
 
-    public int Match(IEnumerable<ILuaType> arguments, SearchContext context);
+    public int Match(List<LuaExprSyntax> arguments, SearchContext context);
+}
+
+public class FuncSignature : IFuncSignature
+{
+    public bool ColonCall { get; }
+
+    public ILuaType? ReturnType { get; }
+
+    public List<FuncTypedParam> Parameters { get; }
+
+    public ILuaType? Variadic { get; }
+
+    public FuncSignature(
+        bool colonCall,
+        List<FuncTypedParam> parameters,
+        ILuaType? variadic,
+        ILuaType? returnType)
+    {
+        ColonCall = colonCall;
+        ReturnType = returnType;
+        Parameters = parameters;
+        Variadic = variadic;
+    }
+
+    public int Match(List<LuaExprSyntax> arguments, SearchContext context)
+    {
+        var matched = 0;
+        for(; matched < Parameters.Count; matched++)
+        {
+            if (arguments.Count <= matched)
+            {
+                return matched;
+            }
+
+            var arg = arguments[matched];
+            var param = Parameters[matched];
+            if (param.Type is { } type)
+            {
+                if (!type.AcceptExpr(arg, context))
+                {
+                    return matched;
+                }
+            }
+        }
+
+        if (arguments.Count > matched && Variadic != null)
+        {
+            for (; matched < arguments.Count; matched++)
+            {
+                var arg = arguments[matched];
+                if (!Variadic.AcceptExpr(arg, context))
+                {
+                    return matched;
+                }
+            }
+        }
+
+        return matched;
+    }
 }

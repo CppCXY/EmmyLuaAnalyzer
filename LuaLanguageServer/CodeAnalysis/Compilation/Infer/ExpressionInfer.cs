@@ -109,7 +109,7 @@ public static class ExpressionInfer
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        // TODO: infer table type
+        // TODO: infer func type
         return context.Compilation.Builtin.Unknown;
     }
 
@@ -144,19 +144,17 @@ public static class ExpressionInfer
 
         switch ((keyType, elementType))
         {
-            // TODO create for empty table
             case (Unknown, Unknown):
             {
-                return context.Compilation.Builtin.Unknown;
+                return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, context.Compilation.Builtin.Unknown);
             }
             case (Unknown, _):
             {
                 return new Type.Array(elementType);
             }
-            // TODO create for table<key, value>
             default:
             {
-                return context.Compilation.Builtin.Table;
+                return new PrimitiveGenericTable(keyType, elementType);
             }
         }
     }

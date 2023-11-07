@@ -10,6 +10,7 @@ public class CallExprInfer
     public CallExprInfer()
     {
         CallExprHandles.Add("require", InferRequire);
+        // TODO
         // CallExprHandles.Add("pcall", InferPcall);
         // CallExprHandles.Add("type", InferType);
     }
@@ -33,8 +34,7 @@ public class CallExprInfer
                 {
                     var args = callExpr.ArgList?.ArgList;
                     if (args == null) return;
-                    var argSymbols = args.Select(context.Infer);
-                    var perfectSig = func.FindPerfectSignature(argSymbols, context);
+                    var perfectSig = func.FindPerfectSignature(args, context);
                     if (perfectSig.ReturnType is { } retTy)
                     {
                         ret = Union.UnionType(ret, retTy);

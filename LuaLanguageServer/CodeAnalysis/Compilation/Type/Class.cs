@@ -79,7 +79,7 @@ public class Class : LuaType, ILuaNamedType
         // }
     }
 
-    public ILuaType GetSuper(SearchContext context)
+    public virtual ILuaType? GetSuper(SearchContext context)
     {
         throw new NotImplementedException();
     }

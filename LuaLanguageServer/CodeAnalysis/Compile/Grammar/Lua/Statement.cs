@@ -357,12 +357,22 @@ public static class StatementParser
         }
     }
 
-    public static void FunctionBody(LuaParser p)
+    public static CompleteMarker FunctionBody(LuaParser p)
     {
-        if (ParamList(p).IsComplete)
+        var m = p.Marker();
+        try
         {
-            BlockParser.Block(p);
-            p.Expect(LuaTokenKind.TkEnd);
+            if (ParamList(p).IsComplete)
+            {
+                BlockParser.Block(p);
+                p.Expect(LuaTokenKind.TkEnd);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.FuncBody);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.FuncBody, e.Message);
         }
     }
 

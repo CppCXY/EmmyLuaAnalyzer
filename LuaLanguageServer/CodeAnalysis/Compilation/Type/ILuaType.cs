@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -10,6 +11,8 @@ public interface ILuaType
     public IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context);
 
     public bool SubTypeOf(ILuaType other, SearchContext context);
+
+    public bool AcceptExpr(LuaExprSyntax expr, SearchContext context);
 
     public TypeKind Kind { get; }
 }
