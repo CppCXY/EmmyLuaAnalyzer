@@ -13,17 +13,17 @@ public class Tuple : LuaType
 
     public override IEnumerable<TupleMember> GetMembers(SearchContext context)
     {
-        return _types.Select((it, i) => new TupleMember(i, it, this));
+        return _types.Select((it, i) => new TupleMember((ulong)i, it, this));
     }
 }
 
 public class TupleMember : LuaTypeMember
 {
-    private long _index;
+    private ulong _index;
 
     private ILuaType _ty;
 
-    public TupleMember(long index, ILuaType ty, ILuaType? containingType) : base(containingType)
+    public TupleMember(ulong index, ILuaType ty, ILuaType? containingType) : base(containingType)
     {
         _index = index;
         _ty = ty;
