@@ -17,11 +17,11 @@ public class LuaDocTypeSyntax : LuaSyntaxElement
 
 public class LuaDocLiteralTypeSyntax : LuaDocTypeSyntax
 {
-    public bool IsInteger => FirstChildToken(LuaTokenKind.TkInt) != null;
+    public bool IsInteger => FirstChild<LuaIntegerToken>() != null;
 
-    public bool IsString => FirstChildToken(LuaTokenKind.TkString) != null;
+    public bool IsString => FirstChild<LuaStringToken>() != null;
 
-    public LuaNumberToken? Integer => FirstChild<LuaNumberToken>();
+    public LuaIntegerToken? Integer => FirstChild<LuaIntegerToken>();
 
     public LuaStringToken? String => FirstChild<LuaStringToken>();
 
@@ -105,11 +105,11 @@ public class LuaDocParenTypeSyntax : LuaDocTypeSyntax
 
 public class LuaDocTypedFieldSyntax : LuaDocSyntax
 {
-    public bool IsNameKey => FirstChildToken(LuaTokenKind.TkName) != null;
+    public bool IsNameKey => FirstChild<LuaNameToken>() != null;
 
-    public bool IsStringKey => FirstChildToken(LuaTokenKind.TkString) != null;
+    public bool IsStringKey => FirstChild<LuaStringToken>() != null;
 
-    public bool IsIntegerKey => FirstChildToken(LuaTokenKind.TkInt) != null;
+    public bool IsIntegerKey => FirstChild<LuaIntegerToken>() != null;
 
     public bool IsTypeKey => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault() != null;
 
@@ -117,7 +117,7 @@ public class LuaDocTypedFieldSyntax : LuaDocSyntax
 
     public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
-    public LuaNumberToken? IntegerKey => FirstChild<LuaNumberToken>();
+    public LuaIntegerToken? IntegerKey => FirstChild<LuaIntegerToken>();
 
     public LuaDocTypeSyntax? TypeKey => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
 

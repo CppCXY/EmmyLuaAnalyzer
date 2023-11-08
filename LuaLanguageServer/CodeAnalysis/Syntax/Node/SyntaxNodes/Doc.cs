@@ -142,7 +142,7 @@ public class LuaDocFieldSyntax : LuaDocSyntax
 
     public LuaStringToken? StringField => FirstChild<LuaStringToken>();
 
-    public LuaNumberToken? IntegerField => FirstChild<LuaNumberToken>();
+    public LuaIntegerToken? IntegerField => FirstChild<LuaIntegerToken>();
 
     public LuaDocTypeSyntax? TypeField =>
         ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault();

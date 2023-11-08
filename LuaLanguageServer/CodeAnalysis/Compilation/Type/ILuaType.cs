@@ -19,7 +19,7 @@ public interface ILuaType
 
 public abstract record IndexKey
 {
-    public record Integer(long Value) : IndexKey;
+    public record Integer(ulong Value) : IndexKey;
 
     public record String(string Value) : IndexKey;
 

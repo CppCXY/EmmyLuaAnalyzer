@@ -172,12 +172,12 @@ public static class ExpressionInfer
 
     private static ILuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
     {
-        return literalExpr.Literal.Kind switch
+        return literalExpr.Literal switch
         {
-            LuaTokenKind.TkNumber => context.Compilation.Builtin.Number,
-            LuaTokenKind.TkString or LuaTokenKind.TkLongString => context.Compilation.Builtin.String,
-            LuaTokenKind.TkNil => context.Compilation.Builtin.Nil,
-            LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => context.Compilation.Builtin.Boolean,
+            LuaIntegerToken => context.Compilation.Builtin.Integer,
+            LuaStringToken => context.Compilation.Builtin.String,
+            LuaNilToken => context.Compilation.Builtin.Nil,
+            LuaBoolToken => context.Compilation.Builtin.Boolean,
             _ => context.Compilation.Builtin.Unknown
         };
     }

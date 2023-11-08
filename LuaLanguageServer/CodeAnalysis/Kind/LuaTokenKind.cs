@@ -63,9 +63,10 @@ public enum LuaTokenKind : ushort
     TkRightParen, // )
     TkLeftBrace, // {
     TkRightBrace, // }
-    TkNumber, // number
     TkComplex, // complex
     TkInt, // int
+    TkFloat, // float
+
     TkName, // name
     TkString, // string
     TkLongString, // long string

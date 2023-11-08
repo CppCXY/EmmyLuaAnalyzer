@@ -210,7 +210,7 @@ public class LuaLexer
                 while (!Reader.IsEof)
                 {
                     var ch = Reader.CurrentChar;
-                    if(ch == quote || ch is '\n' or '\r')
+                    if (ch == quote || ch is '\n' or '\r')
                     {
                         break;
                     }
@@ -219,6 +219,7 @@ public class LuaLexer
                         Reader.Bump();
                         continue;
                     }
+
                     Reader.Bump();
                     switch (Reader.CurrentChar)
                     {
@@ -242,6 +243,7 @@ public class LuaLexer
                         }
                     }
                 }
+
                 if (Reader.CurrentChar != quote) return LuaTokenKind.TkUnFinishedString;
                 Reader.Bump();
                 return LuaTokenKind.TkString;
@@ -515,7 +517,6 @@ public class LuaLexer
             }
         });
 
-        // TODO Subdivide the number type
         if (Reader.CurrentChar is 'i')
         {
             Reader.Bump();
@@ -530,6 +531,6 @@ public class LuaLexer
             return LuaTokenKind.TkInt;
         }
 
-        return LuaTokenKind.TkNumber;
+        return LuaTokenKind.TkFloat;
     }
 }

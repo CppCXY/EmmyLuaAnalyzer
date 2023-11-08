@@ -112,13 +112,23 @@ public static class Index
                     switch (field)
                     {
                         case { IsNameKey: true, NameKey: { } nameKey }:
+                        {
                             stubIndexImpl.ShortNameIndex.AddStub(
                                 documentId, nameKey.RepresentText, new LuaShortName.ClassField(field));
                             break;
+                        }
                         case { IsStringKey: true, StringKey: { } stringKey }:
+                        {
                             stubIndexImpl.ShortNameIndex.AddStub(
                                 documentId, stringKey.RepresentText, new LuaShortName.ClassField(field));
                             break;
+                        }
+                        case { IsIntegerKey: true, IntegerKey: { } integerKey }:
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, $"[{integerKey.Value}]", new LuaShortName.ClassField(field));
+                            break;
+                        }
                     }
                 }
             }
@@ -158,13 +168,23 @@ public static class Index
                     switch (field)
                     {
                         case { IsNameKey: true, NameKey: { } nameKey }:
+                        {
                             stubIndexImpl.ShortNameIndex.AddStub(
                                 documentId, nameKey.RepresentText, new LuaShortName.InterfaceField(field));
                             break;
+                        }
                         case { IsStringKey: true, StringKey: { } stringKey }:
+                        {
                             stubIndexImpl.ShortNameIndex.AddStub(
                                 documentId, stringKey.RepresentText, new LuaShortName.InterfaceField(field));
                             break;
+                        }
+                        case { IsIntegerKey: true, IntegerKey: { } integerKey }:
+                        {
+                            stubIndexImpl.ShortNameIndex.AddStub(
+                                documentId, $"[{integerKey.Value}]", new LuaShortName.ClassField(field));
+                            break;
+                        }
                     }
                 }
             }
@@ -195,7 +215,7 @@ public static class Index
             case { IntegerField: { } integerField }:
             {
                 stubIndexImpl.ShortNameIndex.AddStub(
-                    documentId, integerField.RepresentText, new LuaShortName.Field(luaDocFieldSyntax));
+                    documentId, $"[{integerField.Value}]", new LuaShortName.Field(luaDocFieldSyntax));
                 break;
             }
             case { StringField: { } stringField }:
@@ -389,9 +409,18 @@ public static class Index
             }
             case { NumberKey: { } numberKey }:
             {
-                stubIndexImpl.ShortNameIndex.AddStub(
-                    documentId, numberKey.RepresentText, new LuaShortName.TableField(luaTableFieldSyntax));
-                break;
+                if (numberKey is LuaIntegerToken integerToken)
+                {
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, $"[{integerToken.Value}]", new LuaShortName.TableField(luaTableFieldSyntax));
+                    break;
+                }
+                else
+                {
+                    stubIndexImpl.ShortNameIndex.AddStub(
+                        documentId, $"[{numberKey.RepresentText}]", new LuaShortName.TableField(luaTableFieldSyntax));
+                    break;
+                }
             }
         }
 

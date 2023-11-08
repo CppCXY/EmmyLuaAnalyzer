@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Kind;
+﻿using System.Globalization;
+using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -97,13 +98,108 @@ public static class SyntaxFactory
             return greenNode.TokenKind switch
             {
                 LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(greenNode, tree, parent),
-                LuaTokenKind.TkInt or LuaTokenKind.TkNumber or LuaTokenKind.TkComplex =>
-                    new LuaNumberToken(greenNode, tree, parent),
+                LuaTokenKind.TkInt =>
+                    CalculateInt(greenNode, tree, parent),
+                LuaTokenKind.TkFloat =>
+                    CalculateFloat(greenNode, tree, parent),
+                LuaTokenKind.TkComplex =>
+                    CalculateComplex(greenNode, tree, parent),
                 LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => new LuaBoolToken(greenNode, tree, parent),
                 LuaTokenKind.TkNil => new LuaNilToken(greenNode, tree, parent),
                 LuaTokenKind.TkDots => new LuaDotsToken(greenNode, tree, parent),
                 _ => new LuaSyntaxToken(greenNode, tree, parent)
             };
         }
+    }
+
+    private static LuaSyntaxElement CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    {
+        var hex = false;
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            hex = true;
+        }
+
+        var suffix = string.Empty;
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (text[i] is 'u' or 'l' or 'U' or 'L')
+            {
+                suffix = text[i..].ToString();
+                text = text[..i];
+                break;
+            }
+        }
+
+        var value = hex
+            ? Convert.ToUInt64(text.ToString(), 16)
+            : Convert.ToUInt64(text.ToString(), 10);
+        return new LuaIntegerToken(value, suffix, greenNode, tree, parent);
+    }
+
+    private static LuaSyntaxElement CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    {
+        double value = 0;
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        // 支持16进制浮点数, C# 不能原生支持
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            var hexFloatText = text[2..].ToString();
+            var parts = hexFloatText.Split('.');
+            var integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
+            var fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
+            var fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
+            value = integerPart + fractionValue;
+            var exponentPosition = hexFloatText.IndexOf('p', StringComparison.CurrentCultureIgnoreCase);
+            if (exponentPosition != 0)
+            {
+                var exponent = hexFloatText[(exponentPosition + 1)..];
+                if (int.TryParse(exponent, out var exp))
+                {
+                    value *= Math.Pow(2, exp);
+                }
+            }
+        }
+        else
+        {
+            var exponent = string.Empty;
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (text[i] is 'e' or 'E')
+                {
+                    exponent = text[(i + 1)..].ToString();
+                    text = text[..i];
+                    break;
+                }
+            }
+
+            if (double.TryParse(text.ToString(), out value))
+            {
+                if (exponent.Length != 0 && int.TryParse(exponent, out var exp))
+                {
+                    value *= Math.Pow(10, exp);
+                }
+            }
+        }
+
+        return new LuaFloatToken(value, greenNode, tree, parent);
+    }
+
+    // luajit 支持复数干嘛?
+    private static LuaSyntaxElement CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    {
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        // 裁剪掉complex的i
+        text = text[..^1];
+        return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
+    }
+
+    private static LuaSyntaxElement CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    {
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        // 裁剪掉complex的i
+        text = text[..^1];
+        return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
     }
 }

@@ -57,8 +57,8 @@ public static class ExpressionParser
     {
         switch (p.Current)
         {
-            case LuaTokenKind.TkNumber:
             case LuaTokenKind.TkInt:
+            case LuaTokenKind.TkFloat:
             case LuaTokenKind.TkComplex:
             case LuaTokenKind.TkNil:
             case LuaTokenKind.TkTrue:
@@ -150,7 +150,8 @@ public static class ExpressionParser
                 case LuaTokenKind.TkLeftBracket:
                 {
                     p.Bump();
-                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkNumber)
+                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkFloat
+                        or LuaTokenKind.TkComplex)
                     {
                         p.Bump();
                     }

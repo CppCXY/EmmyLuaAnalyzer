@@ -110,7 +110,7 @@ public static class TypesParser
             LuaTokenKind.TkLeftBrace => TableType(p),
             LuaTokenKind.TkLeftParen => ParenType(p),
             LuaTokenKind.TkLeftBracket => TupleType(p),
-            LuaTokenKind.TkString or LuaTokenKind.TkNumber => LiteralType(p),
+            LuaTokenKind.TkString or LuaTokenKind.TkInt => LiteralType(p),
             LuaTokenKind.TkName => OtherType(p),
             _ => CompleteMarker.Empty
         };

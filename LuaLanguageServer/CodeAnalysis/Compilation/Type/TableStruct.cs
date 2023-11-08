@@ -21,7 +21,7 @@ public class TableStruct : LuaType
                 return field switch
                 {
                     { IsIntegerKey: true, IntegerKey: { } integerKey } => new TableStructMember(
-                        new IndexKey.Integer(integerKey.IntegerValue), field, this),
+                        new IndexKey.Integer(integerKey.Value), field, this),
                     { IsStringKey: true, StringKey: { } stringKey } => new TableStructMember(
                         new IndexKey.String(stringKey.InnerString), field, this),
                     { IsTypeKey: true, TypeKey: { } typeKey } => new TableStructMember(

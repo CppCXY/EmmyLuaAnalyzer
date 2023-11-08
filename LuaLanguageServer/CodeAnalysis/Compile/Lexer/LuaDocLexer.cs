@@ -293,7 +293,7 @@ public class LuaDocLexer
             case var ch when char.IsDigit(ch):
             {
                 Reader.EatWhen(char.IsDigit);
-                return LuaTokenKind.TkNumber;
+                return LuaTokenKind.TkInt;
             }
             case var del and ('"' or '\''):
             {

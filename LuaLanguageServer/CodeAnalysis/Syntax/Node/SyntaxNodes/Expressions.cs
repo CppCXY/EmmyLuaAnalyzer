@@ -141,11 +141,11 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
 {
     public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
 
-    public bool IsNameKey => FirstChildToken(LuaTokenKind.TkName) != null;
+    public bool IsNameKey => FirstChild<LuaNameToken>() != null;
 
-    public bool IsNumberKey => FirstChildToken(LuaTokenKind.TkNumber) != null;
+    public bool IsNumberKey => FirstChild<LuaNumberToken>() != null;
 
-    public bool IsStringKey => FirstChildToken(LuaTokenKind.TkString) != null;
+    public bool IsStringKey => FirstChild<LuaStringToken>() != null;
 
     public bool IsValue => FirstChildToken(LuaTokenKind.TkAssign) == null;
 

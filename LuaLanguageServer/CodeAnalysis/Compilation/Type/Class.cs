@@ -49,7 +49,7 @@ public class Class : LuaType, ILuaNamedType
                 return field switch
                 {
                     { IsIntegerField: true, IntegerField: { } integerField } => new ClassMember(
-                        new IndexKey.Integer(integerField.IntegerValue), field, this),
+                        new IndexKey.Integer(integerField.Value), field, this),
                     { IsStringField: true, StringField: { } stringField } => new ClassMember(
                         new IndexKey.String(stringField.InnerString), field, this),
                     { IsNameField: true, NameField: { } nameField } => new ClassMember(

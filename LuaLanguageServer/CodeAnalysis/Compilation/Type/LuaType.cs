@@ -23,7 +23,8 @@ public abstract class LuaType : ILuaType
 
     public virtual bool AcceptExpr(LuaExprSyntax expr, SearchContext context)
     {
-        return false;
+        var ty = context.Infer(expr);
+        return SubTypeOf(ty, context);
     }
 
     public TypeKind Kind { get; }

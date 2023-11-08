@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Kind;
+﻿using System.Globalization;
+using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -6,7 +7,8 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaStringToken : LuaSyntaxToken
 {
-    public LuaStringToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaStringToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 
@@ -56,32 +58,90 @@ public class LuaStringToken : LuaSyntaxToken
 
 public class LuaNumberToken : LuaSyntaxToken
 {
-    public LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 
-    public bool IsInteger => FirstChildToken(LuaTokenKind.TkInt) != null;
+    public bool IsInteger => Kind == LuaTokenKind.TkInt;
 
-    public bool IsComplex => FirstChildToken(LuaTokenKind.TkComplex) != null;
+    public bool IsComplex => Kind == LuaTokenKind.TkComplex;
 
-    public bool IsFloat => FirstChildToken(LuaTokenKind.TkNumber) != null;
+    public bool IsFloat => Kind == LuaTokenKind.TkFloat;
 
-    public long IntegerValue => long.Parse(Text);
+    public override string ToString()
+    {
+        return Text.ToString();
+    }
+}
 
-    public double FloatValue => double.Parse(Text);
+public class LuaIntegerToken : LuaNumberToken
+{
+    public ulong Value { get; }
+
+    public string Suffix { get; }
+
+    public LuaIntegerToken(
+        ulong value,
+        string suffix,
+        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    {
+        Value = value;
+        Suffix = suffix;
+    }
+
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+}
+
+public class LuaFloatToken : LuaNumberToken
+{
+    public double Value { get; }
+
+    public LuaFloatToken(
+        double value,
+        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    {
+        Value = value;
+    }
+
+    public override string ToString()
+    {
+        return Value.ToString(CultureInfo.InvariantCulture);
+    }
+}
+
+public class LuaComplexToken : LuaNumberToken
+{
+    public string Value { get; }
+
+    public LuaComplexToken(
+        string value,
+        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    {
+        Value = value;
+    }
+
+    public override string ToString()
+    {
+        return $"{Value}i";
+    }
 }
 
 public class LuaNilToken : LuaSyntaxToken
 {
-    public LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
-
 }
 
 public class LuaBoolToken : LuaSyntaxToken
 {
-    public LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 
@@ -90,14 +150,16 @@ public class LuaBoolToken : LuaSyntaxToken
 
 public class LuaDotsToken : LuaSyntaxToken
 {
-    public LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 }
 
 public class LuaNameToken : LuaSyntaxToken
 {
-    public LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
+    public LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+        parent)
     {
     }
 }
