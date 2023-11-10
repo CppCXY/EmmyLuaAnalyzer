@@ -102,9 +102,9 @@ public class GenericTypeMember : LuaTypeMember
 
     public override ILuaType? GetType(SearchContext context)
     {
-        context.PushEnv(Parent.GetGenericIml(context));
+        context.EnvSearcher.PushEnv(Parent.GetGenericIml(context));
         var ty =  Member.GetType(context);
-        context.PopEnv();
+        context.EnvSearcher.PopEnv();
         return ty;
     }
 

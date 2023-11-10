@@ -39,10 +39,10 @@ public class Interface : LuaType, ILuaNamedType
             yield break;
         }
 
-        var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
-        foreach (var field in fields)
-        {
-        }
+        // var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
+        // foreach (var field in fields)
+        // {
+        // }
     }
 }
 

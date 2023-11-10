@@ -37,9 +37,10 @@ public abstract class DeclarationNodeContainer : DeclarationNode
 
     public bool ProcessNode<T>(Func<T, bool> process)
     {
-        foreach (var child in Children)
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var child in Children.OfType<T>())
         {
-            if (child is T t && !process(t))
+            if (!process(child))
             {
                 return false;
             }

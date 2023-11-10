@@ -55,8 +55,6 @@ public abstract record LuaMember
 
     public record Index(LuaIndexExprSyntax IndexExprSyntax) : LuaMember;
 
-    public record InterfaceDocField(LuaDocFieldSyntax Field) : LuaMember;
-
     public record Function(LuaFuncStatSyntax FuncStatSyntax) : LuaMember;
 }
 

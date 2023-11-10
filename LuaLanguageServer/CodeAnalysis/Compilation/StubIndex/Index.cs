@@ -486,5 +486,6 @@ public static class Index
     {
         stubIndexImpl.ShortNameIndex.RemoveStub(documentId);
         stubIndexImpl.Members.RemoveStub(documentId);
+        stubIndexImpl.Attached.RemoveStub(documentId);
     }
 }

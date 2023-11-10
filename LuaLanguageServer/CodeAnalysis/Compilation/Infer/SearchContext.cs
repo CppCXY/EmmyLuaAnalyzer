@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
+using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
@@ -14,13 +15,19 @@ public class SearchContext
 
     private Dictionary<LuaSyntaxElement, LuaTypeMember> _memberCaches = new();
 
-    private Stack<Dictionary<string, ILuaType>> _envStack = new();
+    private List<ILuaSearcher> _searchers = new();
 
     public CallExprInfer CallExprInfer { get; } = new();
+
+    public EnvSearcher EnvSearcher { get; } = new();
+
+    public IndexSearcher IndexSearcher { get; } = new();
 
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;
+        _searchers.Add(EnvSearcher);
+        _searchers.Add(IndexSearcher);
     }
 
     public ILuaType Infer(LuaSyntaxElement? element)
@@ -63,42 +70,20 @@ public class SearchContext
         return result;
     }
 
-    public ILuaType InferTypeName(string name)
+    public ILuaType FindLuaType(string name)
     {
-        foreach (var env in _envStack)
+        foreach (var searcher in _searchers)
         {
-            if (env.TryGetValue(name, out var ty))
+            if (searcher.TrySearchType(name, this, out var ty))
             {
                 return ty;
             }
         }
-
-        var elements = Compilation.StubIndexImpl.ShortNameIndex.Get(name);
-        foreach (var luaShortName in elements)
-        {
-            switch(luaShortName)
-            {
-                case LuaShortName.Alias alias:
-                    return Infer(alias.AliasSyntax);
-                case LuaShortName.Class clazz:
-                    return Infer(clazz.ClassSyntax);
-                case LuaShortName.Enum enumType:
-                    return Infer(enumType.EnumSyntax);
-                case LuaShortName.Interface interfaceType:
-                    return Infer(interfaceType.InterfaceSyntax);
-            }
-        }
-
         return Compilation.Builtin.Unknown;
     }
 
-    public void PushEnv(Dictionary<string, ILuaType> env)
+    public IEnumerable<TMember> FindMembers<TMember>(ILuaType type)
     {
-        _envStack.Push(env);
-    }
-
-    public void PopEnv()
-    {
-        _envStack.Pop();
+        return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this).OfType<TMember>());
     }
 }
