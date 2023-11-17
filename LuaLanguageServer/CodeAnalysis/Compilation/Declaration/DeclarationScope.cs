@@ -39,41 +39,46 @@ public class DeclarationScope : DeclarationNodeContainer
         Parent?.WalkUp(position, level + 1, process);
     }
 
-    private Declaration? Find(LuaNameExprSyntax nameExpr)
+    public Declaration? FindNameExpr(LuaNameExprSyntax nameExpr)
     {
-        var name = nameExpr.Name.RepresentText;
-        Declaration? result = null;
-        WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
+        if (nameExpr.Name is { } name)
         {
-            if (declaration.Name != name) return true;
-            result = declaration;
-            return false;
-        });
-        return result;
+            var nameText = name.RepresentText;
+            Declaration? result = null;
+            WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
+            {
+                if (declaration.Name != nameText) return true;
+                result = declaration;
+                return false;
+            });
+            return result;
+        }
+
+        return null;
     }
 
-    public Declaration? Find(LuaExprSyntax? expr)
-    {
-        switch (expr)
-        {
-            case LuaNameExprSyntax nameSyntax:
-                return Find(nameSyntax);
-            case LuaIndexExprSyntax indexExprSyntax:
-            {
-                // var name = indexExprSyntax.Name?.RepresentText;
-                // if (name == null)
-                // {
-                //     return null;
-                // }
-                //
-                // var declaration = Find(indexExprSyntax.PrefixExpr);
-                // return declaration?.FindField(name);
-                return null;
-            }
-            default:
-                return null;
-        }
-    }
+    // public Declaration? Find(LuaExprSyntax? expr)
+    // {
+    //     switch (expr)
+    //     {
+    //         case LuaNameExprSyntax nameSyntax:
+    //             return FindNameExpr(nameSyntax);
+    //         case LuaIndexExprSyntax indexExprSyntax:
+    //         {
+    //             // var name = indexExprSyntax.Name?.RepresentText;
+    //             // if (name == null)
+    //             // {
+    //             //     return null;
+    //             // }
+    //             //
+    //             // var declaration = Find(indexExprSyntax.PrefixExpr);
+    //             // return declaration?.FindField(name);
+    //             return null;
+    //         }
+    //         default:
+    //             return null;
+    //     }
+    // }
 }
 
 public class LocalStatDeclarationScope : DeclarationScope

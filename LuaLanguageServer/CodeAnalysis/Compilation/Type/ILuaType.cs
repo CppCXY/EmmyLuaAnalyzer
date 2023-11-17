@@ -24,6 +24,31 @@ public abstract record IndexKey
     public record String(string Value) : IndexKey;
 
     public record Ty(ILuaType Value) : IndexKey;
+
+    public static IndexKey FromExpr(LuaIndexExprSyntax expr, SearchContext context)
+    {
+        switch (expr)
+        {
+            case { DotOrColonIndexName : { } name }:
+            {
+                return new String(name.RepresentText);
+            }
+            case { IndexKeyExpr: LuaLiteralExprSyntax { Literal: { } literal } }:
+            {
+                switch (literal)
+                {
+                    case LuaStringToken stringToken:
+                        return new String(stringToken.RepresentText);
+                    case LuaIntegerToken integerToken:
+                        return new Integer(integerToken.Value);
+                }
+
+                break;
+            }
+        }
+
+        return new Ty(context.Infer(expr.IndexKeyExpr));
+    }
 }
 
 public interface ILuaNamedType : ILuaType

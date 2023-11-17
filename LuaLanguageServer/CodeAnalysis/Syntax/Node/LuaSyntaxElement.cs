@@ -532,10 +532,17 @@ public abstract class LuaSyntaxElement
         throw new ArgumentOutOfRangeException();
     }
 
+    // 0 based line and col
     public LuaSyntaxToken TokenAt(int line, int col)
     {
         var offset = Tree.Source.GetOffset(line, col);
         return TokenAt(offset);
+    }
+
+    public LuaSyntaxNode NodeAt(int line, int col)
+    {
+        var token = TokenAt(line, col);
+        return (token.Parent as LuaSyntaxNode)!;
     }
 
     public override int GetHashCode()

@@ -236,17 +236,19 @@ public static class Index
     private static void FunctionIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaFuncStatSyntax luaFuncStatSyntax)
     {
-        if (luaFuncStatSyntax is { Name: { } name })
+        if (luaFuncStatSyntax is { IsLocal: true, LocalName.Name: { } name })
         {
+            // stubIndexImpl.ShortNameIndex.AddStub(
+            //     documentId, name.RepresentText, new LuaShortName.LocalFunction(luaFuncStatSyntax));
             stubIndexImpl.ShortNameIndex.AddStub(
                 documentId, name.RepresentText, new LuaShortName.Function(luaFuncStatSyntax));
         }
 
-        if (luaFuncStatSyntax is { PrefixExpr: { } prefixExpr })
-        {
-            stubIndexImpl.Members.AddStub(
-                documentId, prefixExpr, new LuaMember.Function(luaFuncStatSyntax));
-        }
+        // if (luaFuncStatSyntax is { PrefixExpr: { } prefixExpr })
+        // {
+        //     stubIndexImpl.Members.AddStub(
+        //         documentId, prefixExpr, new LuaMember.Function(luaFuncStatSyntax));
+        // }
     }
 
     private static void LabelIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,

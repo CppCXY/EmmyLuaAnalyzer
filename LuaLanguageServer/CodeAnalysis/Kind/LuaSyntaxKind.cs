@@ -39,7 +39,6 @@ public enum LuaSyntaxKind : ushort
 
     LocalName,
     ParamName,
-    MethodName,
     ParamList,
     CallArgList,
     TableFieldAssign,

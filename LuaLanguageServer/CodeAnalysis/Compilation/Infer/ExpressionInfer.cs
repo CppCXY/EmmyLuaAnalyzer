@@ -9,21 +9,6 @@ public static class ExpressionInfer
 {
     public static ILuaType InferExpr(LuaExprSyntax expr, SearchContext context)
     {
-        if (expr is LuaIndexExprSyntax or LuaNameExprSyntax)
-        {
-            var declarationTree = context.Compilation.GetDeclarationTree(expr.Tree);
-            var declaration = declarationTree.Find(expr)?.FirstDeclaration.SyntaxElement;
-            if (declaration is not null && !ReferenceEquals(declaration, expr))
-            {
-                return context.Infer(declaration);
-            }
-        }
-
-        return InferExprInner(expr, context);
-    }
-
-    private static ILuaType InferExprInner(LuaExprSyntax expr, SearchContext context)
-    {
         return expr switch
         {
             LuaUnaryExprSyntax unaryExpr => InferUnaryExpr(unaryExpr, context),
@@ -166,7 +151,17 @@ public static class ExpressionInfer
 
     private static ILuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
-        // TODO: infer index type
+        if (indexExpr.PrefixExpr is { } prefixExpr)
+        {
+            var key = IndexKey.FromExpr(indexExpr, context);
+            var prefixTy = InferExpr(prefixExpr, context);
+            var ty = prefixTy.IndexMember(key, context).FirstOrDefault()?.GetType(context);
+            if (ty is not null)
+            {
+                return ty;
+            }
+        }
+
         return context.Compilation.Builtin.Unknown;
     }
 
@@ -184,33 +179,16 @@ public static class ExpressionInfer
 
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        // var name = nameExpr.Name;
-        // if (nameExpr.Prev is not null)
-        // {
-        //     var prevSymbol = InferExpr(nameExpr.Prev, context);
-        //     if (prevSymbol is not LuaTableSymbol tableSymbol)
-        //     {
-        //         return context.Compilation.Builtin.Unknown;
-        //     }
-        //
-        //     if (tableSymbol.TryGetMember(name, out var member))
-        //     {
-        //         return member;
-        //     }
-        //
-        //     return context.Compilation.Builtin.Unknown;
-        // }
-        //
-        // if (nameExpr.Name is LuaIdentifierNameSyntax identifierName)
-        // {
-        //     var symbol = context.Compilation.GetSymbol(identifierName);
-        //     if (symbol is not null)
-        //     {
-        //         return symbol;
-        //     }
-        // }
-
+        var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree);
+        var declaration = declarationTree.FindDeclaration(nameExpr)?.FirstDeclaration.SyntaxElement;
+        if (declaration is not null && !ReferenceEquals(declaration, nameExpr))
+        {
+            return context.Infer(declaration);
+        }
+        else
+        {
+            // TODO 找到他的表达式对象
+        }
         return context.Compilation.Builtin.Unknown;
     }
-
 }

@@ -44,6 +44,7 @@ public class LuaCompilation
     public void AddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
     {
         _syntaxTrees.Add(syntaxTree);
+        _declarationTrees[syntaxTree] = DeclarationTree.From(syntaxTree);
         Index.BuildIndex(StubIndexImpl, documentId, syntaxTree);
     }
 

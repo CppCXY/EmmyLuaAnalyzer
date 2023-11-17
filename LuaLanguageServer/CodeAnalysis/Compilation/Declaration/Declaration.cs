@@ -5,9 +5,9 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 
 public class DeclarationNode
 {
-    public DeclarationNode? Prev => Parent?.Children.ElementAtOrDefault(Position - 1);
+    public DeclarationNode? Prev { get; set; }
 
-    public DeclarationNode? Next => Parent?.Children.ElementAtOrDefault(Position + 1);
+    public DeclarationNode? Next { get; set; }
 
     public DeclarationNodeContainer? Parent { get; set; }
 
@@ -32,6 +32,13 @@ public abstract class DeclarationNodeContainer : DeclarationNode
     public void Add(DeclarationNode node)
     {
         node.Parent = this;
+        if (Children.Count != 0)
+        {
+            var last = Children.Last();
+            node.Prev = last;
+            last.Next = node;
+        }
+
         Children.Add(node);
     }
 
@@ -75,7 +82,7 @@ public class Declaration : DeclarationNode
 
     public DeclarationFlag Flags { get; set; }
 
-    private Dictionary<string, Declaration> _fields = new();
+    // private Dictionary<string, Declaration> _fields = new();
 
     public Declaration? PrevDeclaration { get; set; }
 
@@ -98,15 +105,20 @@ public class Declaration : DeclarationNode
         PrevDeclaration = prev;
     }
 
-    public Declaration? FindField(string name)
-    {
-        return _fields.TryGetValue(name, out var child) ? child : null;
-    }
-
-    public void AddField(Declaration child)
-    {
-        _fields.Add(child.Name, child);
-    }
+    // public Declaration? FindField(string name)
+    // {
+    //     return _fields.TryGetValue(name, out var child) ? child : null;
+    // }
+    //
+    // public void AddField(Declaration child)
+    // {
+    //     _fields.Add(child.Name, child);
+    // }
 
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
+
+    public override string ToString()
+    {
+        return $"{Flags} {Name}";
+    }
 }

@@ -48,48 +48,19 @@ public class LuaAssignStatSyntax : LuaStatSyntax
     }
 }
 
-public class LuaMethodNameSyntax : LuaSyntaxNode
-{
-    public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
-
-    public bool IsColonDefine => FirstChild<LuaIndexExprSyntax>()?.IsColonIndex == true;
-
-    public bool IsDotDefine => FirstChild<LuaIndexExprSyntax>()?.IsDotIndex == true;
-
-    public LuaNameToken? Name => FirstChild<LuaExprSyntax>() switch
-    {
-        LuaNameExprSyntax nameExprSyntax => nameExprSyntax.Name,
-        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.DotOrColonIndexName,
-        _ => throw new UnreachableException()
-    };
-
-    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>() switch
-    {
-        LuaNameExprSyntax => null,
-        LuaIndexExprSyntax indexExprSyntax => indexExprSyntax.PrefixExpr,
-        _ => throw new UnreachableException()
-    };
-
-    public LuaMethodNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
-
 public class LuaFuncStatSyntax : LuaStatSyntax, IFuncBodyOwner
 {
     public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
 
-    public bool IsMethod => FirstChild<LuaMethodNameSyntax>() != null;
+    public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
 
-    public LuaNameToken? Name =>
-        IsLocal ? (LocalName?.Name) : (MethodName?.Name);
-
-    public LuaExprSyntax? PrefixExpr => MethodName?.PrefixExpr;
-
-    public LuaMethodNameSyntax? MethodName => FirstChild<LuaMethodNameSyntax>();
+    public bool IsColonFunc => IndexExpr?.IsColonIndex == true;
 
     public LuaLocalNameSyntax? LocalName => FirstChild<LuaLocalNameSyntax>();
+
+    public LuaNameExprSyntax? NameExpr => FirstChild<LuaNameExprSyntax>();
+
+    public LuaIndexExprSyntax? IndexExpr => FirstChild<LuaIndexExprSyntax>();
 
     public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
 

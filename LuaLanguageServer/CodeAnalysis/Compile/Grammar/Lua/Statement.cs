@@ -243,45 +243,39 @@ public static class StatementParser
     private static CompleteMarker MethodName(LuaParser p, bool suffix = true)
     {
         var m = p.Marker();
+        var kind = LuaSyntaxKind.NameExpr;
         try
         {
-            CompleteMarker cm;
-            if (p.Current is LuaTokenKind.TkName)
-            {
-                p.Bump();
-                cm = m.Complete(p, LuaSyntaxKind.NameExpr);
-            }
-            else
-            {
-                throw new UnexpectedTokenException("expected name in methodName");
-            }
+            p.Expect(LuaTokenKind.TkName);
+            var cm = m.Complete(p, kind);
 
             // ReSharper disable once InvertIf
             if (suffix && cm.IsComplete && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
             {
+                kind = LuaSyntaxKind.IndexExpr;
                 var m1 = cm.Precede(p);
                 ExpressionParser.IndexStruct(p);
-                cm = m1.Complete(p, LuaSyntaxKind.IndexExpr);
+                cm = m1.Complete(p, kind);
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkDot)
                 {
                     var m2 = cm.Precede(p);
                     ExpressionParser.IndexStruct(p);
-                    cm = m2.Complete(p, LuaSyntaxKind.IndexExpr);
+                    cm = m2.Complete(p, kind);
                 }
 
                 if (cm.IsComplete && p.Current is LuaTokenKind.TkColon)
                 {
                     var m3 = cm.Precede(p);
                     ExpressionParser.IndexStruct(p);
-                    cm = m3.Complete(p, LuaSyntaxKind.IndexExpr);
+                    cm = m3.Complete(p, kind);
                 }
             }
 
-            return m.Complete(p, LuaSyntaxKind.MethodName);
+            return cm;
         }
         catch (UnexpectedTokenException e)
         {
-            return m.Fail(p, LuaSyntaxKind.MethodName, e.Message);
+            return m.Fail(p, kind, e.Message);
         }
     }
 

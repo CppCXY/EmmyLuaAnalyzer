@@ -4,16 +4,27 @@
 // await server.StartAsync(args);
 
 using System.Diagnostics;
+using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    aaaaaa.bbbbb().aaaa = aaa + bb.ccc
+    local t = "123131"
+    function f()
+        print(t)
+    end
     """);
+var dtree = DeclarationTree.From(tree);
+var tk = tree.SyntaxRoot.NodeAt(2, 10);
+if (tk is LuaNameExprSyntax name)
+{
+    var declaration = dtree.FindDeclaration(name);
+    Console.Write(declaration);
+}
 
-Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+// Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
 foreach (var diagnostic in tree.Diagnostics)
 {
     Console.WriteLine(diagnostic);
