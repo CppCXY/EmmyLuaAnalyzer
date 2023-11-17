@@ -11,13 +11,14 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    local t = "123131"
+    local t
+    t = "123131"
     function f()
         print(t)
     end
     """);
 var dtree = DeclarationTree.From(tree);
-var tk = tree.SyntaxRoot.NodeAt(2, 10);
+var tk = tree.SyntaxRoot.NodeAt(1, 0);
 if (tk is LuaNameExprSyntax name)
 {
     var declaration = dtree.FindDeclaration(name);

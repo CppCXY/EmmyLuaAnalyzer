@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
@@ -125,7 +126,10 @@ public class IndexSearcher : ILuaSearcher
         var attachedIndex = stubIndexImpl.Attached;
         var attached = attachedIndex.Get<LuaDocAttached.Class>(luaDocClassSyntax).FirstOrDefault()?.Attached;
         if (attached is null) yield break;
+    }
 
-
+    public IEnumerable<Declaration.Declaration> SearchDeclarations(LuaSyntaxElement element, SearchContext context)
+    {
+        return Enumerable.Empty<Declaration.Declaration>();
     }
 }

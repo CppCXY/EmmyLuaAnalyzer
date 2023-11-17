@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
 
@@ -24,6 +25,11 @@ public class EnvSearcher : ILuaSearcher
     public IEnumerable<LuaTypeMember> SearchMembers(ILuaType type, SearchContext context)
     {
         return Enumerable.Empty<LuaTypeMember>();
+    }
+
+    public IEnumerable<Declaration.Declaration> SearchDeclarations(LuaSyntaxElement element, SearchContext context)
+    {
+        return Enumerable.Empty<Declaration.Declaration>();
     }
 
     public void PushEnv(Dictionary<string, ILuaType> env)

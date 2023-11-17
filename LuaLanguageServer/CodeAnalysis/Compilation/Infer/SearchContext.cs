@@ -86,4 +86,19 @@ public class SearchContext
     {
         return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this).OfType<TMember>());
     }
+
+    public Declaration.Declaration? GetDeclaration(LuaSyntaxElement element)
+    {
+        var declarationTree = Compilation.GetDeclarationTree(element.Tree);
+        if (element is LuaNameExprSyntax nameExpr)
+        {
+            var declaration = declarationTree.FindDeclaration(nameExpr);
+            if (declaration is not null)
+            {
+                return declaration;
+            }
+        }
+
+        return null;
+    }
 }
