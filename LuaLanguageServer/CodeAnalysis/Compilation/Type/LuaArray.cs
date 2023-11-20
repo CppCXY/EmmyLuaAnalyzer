@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -14,9 +15,9 @@ public class Array : LuaType
         MemberType = new LuaArrayMember(baseTy, this);
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
+    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
 
-    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaSymbol> IndexMember(IndexKey key, SearchContext context)
     {
         switch (key)
         {
@@ -38,11 +39,11 @@ public class Array : LuaType
     }
 }
 
-public class LuaArrayMember : LuaTypeMember
+public class LuaArrayMember : LuaSymbol
 {
     private readonly ILuaType _type;
 
-    public LuaArrayMember(ILuaType ty, ILuaType? containingType) : base(containingType)
+    public LuaArrayMember(ILuaType ty, Array containingType) : base(containingType)
     {
         _type = ty;
     }

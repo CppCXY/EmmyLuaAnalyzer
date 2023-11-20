@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -88,7 +89,7 @@ public class Union : LuaType
         return this;
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
     {
         return _childTypes.SelectMany(it=> it.GetMembers(context));
     }

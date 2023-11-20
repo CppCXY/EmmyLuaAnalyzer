@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -17,7 +18,7 @@ public class Tuple : LuaType
     }
 }
 
-public class TupleMember : LuaTypeMember
+public class TupleMember : LuaSymbol
 {
     private ulong _index;
 

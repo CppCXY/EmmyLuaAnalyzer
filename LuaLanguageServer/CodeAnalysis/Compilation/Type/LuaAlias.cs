@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -31,19 +32,19 @@ public class Alias : LuaType, ILuaNamedType
         return Enumerable.Empty<GenericParam>();
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
     {
         return GetSyntaxElement(context) is not LuaDocAliasSyntax syntaxElement
-            ? Enumerable.Empty<LuaTypeMember>()
+            ? Enumerable.Empty<LuaSymbol>()
             : context.Infer(syntaxElement.Type).GetMembers(context);
     }
 
-    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaSymbol> IndexMember(IndexKey key, SearchContext context)
     {
         var syntaxElement = context.Compilation
             .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Alias>(Name).FirstOrDefault()?.AliasSyntax;
         return syntaxElement is null
-            ? Enumerable.Empty<LuaTypeMember>()
+            ? Enumerable.Empty<LuaSymbol>()
             : context.Infer(syntaxElement.Type).IndexMember(key, context);
     }
 }

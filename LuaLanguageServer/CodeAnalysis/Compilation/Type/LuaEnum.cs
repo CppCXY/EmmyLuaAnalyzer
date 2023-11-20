@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -52,7 +53,7 @@ public class Enum : LuaType, ILuaNamedType
     }
 }
 
-public class EnumMember : LuaTypeMember
+public class EnumMember : LuaSymbol
 {
     public string Name { get; }
 

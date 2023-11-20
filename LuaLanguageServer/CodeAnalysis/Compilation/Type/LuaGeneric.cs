@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -27,9 +28,9 @@ public class GenericParam : LuaType, ILuaNamedType
         return Enumerable.Empty<GenericParam>();
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
     {
-        return Type?.GetMembers(context) ?? Enumerable.Empty<LuaTypeMember>();
+        return Type?.GetMembers(context) ?? Enumerable.Empty<LuaSymbol>();
     }
 }
 
@@ -47,12 +48,12 @@ public class Generic : LuaType, IGeneric
         GenericArgs = genericArgs;
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
     {
         return BaseType.GetMembers(context);
     }
 
-    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaSymbol> IndexMember(IndexKey key, SearchContext context)
     {
         return BaseType.IndexMember(key, context);
     }
@@ -88,13 +89,13 @@ public class Generic : LuaType, IGeneric
     }
 }
 
-public class GenericTypeMember : LuaTypeMember
+public class GenericSymbol : LuaSymbol
 {
-    public LuaTypeMember Member { get; }
+    public LuaSymbol Member { get; }
 
     public Generic Parent { get; }
 
-    public GenericTypeMember(LuaTypeMember member, Generic parent) : base(parent)
+    public GenericSymbol(LuaSymbol member, Generic parent) : base(parent)
     {
         Member = member;
         Parent = parent;

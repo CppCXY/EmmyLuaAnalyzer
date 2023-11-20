@@ -1,25 +1,26 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Class : LuaType, ILuaNamedType
+public class Interface : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
-    public Class(string name) : base(TypeKind.Class)
+    public Interface(string name) : base(TypeKind.Interface)
     {
         Name = name;
     }
 
     public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
-        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Class>(Name).FirstOrDefault()?.ClassSyntax;
+        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {
-        if (GetSyntaxElement(context) is LuaDocClassSyntax { GenericDeclareList.Params: { } genericParams })
+        if (GetSyntaxElement(context) is LuaDocInterfaceSyntax { GenericDeclareList.Params: { } genericParams })
         {
             foreach (var genericParam in genericParams)
             {
@@ -31,42 +32,29 @@ public class Class : LuaType, ILuaNamedType
         }
     }
 
-    public IEnumerable<ClassMember> GetRawMembers(SearchContext context)
+    public override IEnumerable<InterfaceMember> GetMembers(SearchContext context)
     {
-        return context.FindMembers<ClassMember>(this);
-    }
+        var syntaxElement = GetSyntaxElement(context);
+        if (syntaxElement is null)
+        {
+            yield break;
+        }
 
-    public override IEnumerable<ClassMember> GetMembers(SearchContext context)
-    {
-        return GetRawMembers(context);
-    }
-
-    public virtual ILuaType? GetSuper(SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<Interface> GetInterfaces(SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// contains all interfaces
-    /// </summary>
-    public IEnumerable<Interface> GetAllInterface(SearchContext context)
-    {
-        throw new NotImplementedException();
+        // var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
+        // foreach (var field in fields)
+        // {
+        // }
     }
 }
 
-public class ClassMember : LuaTypeMember
+public class InterfaceMember : LuaSymbol
 {
     public IndexKey Key { get; }
 
     public LuaSyntaxElement SyntaxElement { get; }
 
-    public ClassMember(IndexKey key, LuaSyntaxElement syntaxElement, Class containingType) : base(containingType)
+    public InterfaceMember(IndexKey key, LuaSyntaxElement syntaxElement, Interface containingType) : base(
+        containingType)
     {
         Key = key;
         SyntaxElement = syntaxElement;
@@ -74,12 +62,12 @@ public class ClassMember : LuaTypeMember
 
     public override ILuaType? GetType(SearchContext context)
     {
-        return SyntaxElement switch
+        if (SyntaxElement is LuaDocTypedFieldSyntax typeField)
         {
-            LuaDocTypedFieldSyntax typeField => context.Infer(typeField.Type),
-            LuaDocFieldSyntax field => context.Infer(field.Type),
-            _ => null
-        };
+            return context.Infer(typeField.Type);
+        }
+
+        return null;
     }
 
     public override bool MatchKey(IndexKey key, SearchContext context)

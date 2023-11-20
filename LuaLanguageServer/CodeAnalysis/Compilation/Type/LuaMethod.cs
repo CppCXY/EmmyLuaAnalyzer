@@ -1,15 +1,16 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Func : LuaType
+public class LuaFunc : LuaType
 {
     public IFuncSignature MainSignature { get; private set; }
 
     public List<IFuncSignature> Signatures { get; } = new();
 
-    public Func(IFuncSignature mainSignature) : base(TypeKind.Func)
+    public LuaFunc(IFuncSignature mainSignature) : base(TypeKind.Func)
     {
         MainSignature = mainSignature;
     }
@@ -49,7 +50,7 @@ public class Func : LuaType
         return perfectSignature;
     }
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context) => Enumerable.Empty<LuaTypeMember>();
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
 }
 
 public class FuncTypedParam
