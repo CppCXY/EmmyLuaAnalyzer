@@ -6,45 +6,30 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Alias : LuaType, ILuaNamedType
+public class LuaAlias : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
-    public Alias(string name) : base(TypeKind.Alias)
+    public ILuaType BaseType { get; }
+
+    public LuaAlias(string name, ILuaType baseType) : base(TypeKind.Alias)
     {
         Name = name;
+        BaseType = baseType;
     }
-
-    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
-        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Alias>(Name).FirstOrDefault()?.AliasSyntax;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {
-        if (GetSyntaxElement(context) is LuaDocAliasSyntax syntaxElement)
+        if (BaseType is ILuaNamedType namedType)
         {
-            var ty = context.Infer(syntaxElement.Type);
-            if (ty is ILuaNamedType namedType)
-            {
-                return namedType.GetGenericParams(context);
-            }
+            return namedType.GetGenericParams(context);
         }
 
         return Enumerable.Empty<GenericParam>();
     }
 
-    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
-        return GetSyntaxElement(context) is not LuaDocAliasSyntax syntaxElement
-            ? Enumerable.Empty<LuaSymbol>()
-            : context.Infer(syntaxElement.Type).GetMembers(context);
-    }
-
-    public override IEnumerable<LuaSymbol> IndexMember(IndexKey key, SearchContext context)
-    {
-        var syntaxElement = context.Compilation
-            .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Alias>(Name).FirstOrDefault()?.AliasSyntax;
-        return syntaxElement is null
-            ? Enumerable.Empty<LuaSymbol>()
-            : context.Infer(syntaxElement.Type).IndexMember(key, context);
+        return context.FindMembers(BaseType);
     }
 }

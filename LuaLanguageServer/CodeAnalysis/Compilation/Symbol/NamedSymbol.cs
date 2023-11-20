@@ -5,7 +5,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class ClassSymbol : LuaSymbol
+public class NamedSymbol : LuaSymbol
 {
     public string Name { get; }
 
@@ -13,8 +13,8 @@ public class ClassSymbol : LuaSymbol
 
     public LuaSyntaxElement Element { get; }
 
-    public ClassSymbol(LuaSyntaxElement element, string name, ILuaType type, ILuaType containingType)
-        : base(SymbolKind.FieldSymbol, containingType)
+    public NamedSymbol(LuaSyntaxElement element, string name, ILuaType type, ILuaType containingType)
+        : base(SymbolKind.NamedSymbol, containingType)
     {
         Name = name;
         Element = element;

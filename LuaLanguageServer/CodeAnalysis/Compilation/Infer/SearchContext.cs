@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
 using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
@@ -13,7 +14,7 @@ public class SearchContext
 
     private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
 
-    private Dictionary<LuaSyntaxElement, LuaTypeMember> _memberCaches = new();
+    private Dictionary<LuaSyntaxElement, LuaSymbol> _memberCaches = new();
 
     private List<ILuaSearcher> _searchers = new();
 
@@ -54,7 +55,7 @@ public class SearchContext
     }
 
     public TMember? InferMember<TMember>(LuaSyntaxElement element, Func<TMember?> factory)
-        where TMember : LuaTypeMember
+        where TMember : LuaSymbol
     {
         if (_memberCaches.TryGetValue(element, out var member))
         {
@@ -70,35 +71,21 @@ public class SearchContext
         return result;
     }
 
-    public ILuaType FindLuaType(string name)
+    public ILuaNamedType FindLuaType(string name)
     {
         foreach (var searcher in _searchers)
         {
-            if (searcher.TrySearchType(name, this, out var ty))
+            if (searcher.TrySearchLuaType(name, this, out var ty) && ty is not null)
             {
                 return ty;
             }
         }
+
         return Compilation.Builtin.Unknown;
     }
 
-    public IEnumerable<TMember> FindMembers<TMember>(ILuaType type)
+    public IEnumerable<ILuaSymbol> FindMembers(ILuaType type)
     {
-        return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this).OfType<TMember>());
-    }
-
-    public Declaration.Declaration? GetDeclaration(LuaSyntaxElement element)
-    {
-        var declarationTree = Compilation.GetDeclarationTree(element.Tree);
-        if (element is LuaNameExprSyntax nameExpr)
-        {
-            var declaration = declarationTree.FindDeclaration(nameExpr);
-            if (declaration is not null)
-            {
-                return declaration;
-            }
-        }
-
-        return null;
+        return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this));
     }
 }

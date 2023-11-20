@@ -1,35 +1,29 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
 
-public class EnvSearcher : ILuaSearcher
+public class EnvSearcher : LuaSearcher
 {
     private Stack<Dictionary<string, ILuaType>> _envStack = new();
 
-    public bool TrySearchType(string name, SearchContext context, out ILuaType type)
+    public bool TrySearchClass(string name, SearchContext context, out LuaClass? type)
     {
         foreach (var env in _envStack)
         {
             if (env.TryGetValue(name, out var ty))
             {
-                type = ty;
-                return true;
+                if (ty is LuaClass luaClass)
+                {
+                    type = luaClass;
+                    return true;
+                }
             }
         }
 
-        type = context.Compilation.Builtin.Unknown;
+        type = null;
         return false;
-    }
-
-    public IEnumerable<LuaTypeMember> SearchMembers(ILuaType type, SearchContext context)
-    {
-        return Enumerable.Empty<LuaTypeMember>();
-    }
-
-    public IEnumerable<Declaration.Declaration> SearchDeclarations(LuaSyntaxElement element, SearchContext context)
-    {
-        return Enumerable.Empty<Declaration.Declaration>();
     }
 
     public void PushEnv(Dictionary<string, ILuaType> env)

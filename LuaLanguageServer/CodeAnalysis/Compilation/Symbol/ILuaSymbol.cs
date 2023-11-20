@@ -1,13 +1,16 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public interface ISymbol
+public interface ILuaSymbol
 {
-    public ILuaType ContainingType { get; }
+    public SymbolKind Kind { get; }
+
+    public ILuaType? ContainingType { get; }
 
     public ILuaType GetType(SearchContext context);
 
-    public bool MatchKey(IndexKey key, SearchContext context);
+    public IEnumerable<LuaLocation> GetLocations(SearchContext context);
 }

@@ -28,13 +28,13 @@ public class GenericParam : LuaType, ILuaNamedType
         return Enumerable.Empty<GenericParam>();
     }
 
-    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
         return Type?.GetMembers(context) ?? Enumerable.Empty<LuaSymbol>();
     }
 }
 
-public class Generic : LuaType, IGeneric
+public class LuaGeneric : LuaType, IGeneric
 {
     public ILuaNamedType BaseType { get; }
 
@@ -42,18 +42,18 @@ public class Generic : LuaType, IGeneric
 
     private Dictionary<string, ILuaType>? _genericImpl;
 
-    public Generic(ILuaNamedType baseType, List<ILuaType> genericArgs) : base(TypeKind.Generic)
+    public LuaGeneric(ILuaNamedType baseType, List<ILuaType> genericArgs) : base(TypeKind.Generic)
     {
         BaseType = baseType;
         GenericArgs = genericArgs;
     }
 
-    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
         return BaseType.GetMembers(context);
     }
 
-    public override IEnumerable<LuaSymbol> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context)
     {
         return BaseType.IndexMember(key, context);
     }
@@ -86,31 +86,5 @@ public class Generic : LuaType, IGeneric
         }
 
         return _genericImpl;
-    }
-}
-
-public class GenericSymbol : LuaSymbol
-{
-    public LuaSymbol Member { get; }
-
-    public Generic Parent { get; }
-
-    public GenericSymbol(LuaSymbol member, Generic parent) : base(parent)
-    {
-        Member = member;
-        Parent = parent;
-    }
-
-    public override ILuaType? GetType(SearchContext context)
-    {
-        context.EnvSearcher.PushEnv(Parent.GetGenericIml(context));
-        var ty =  Member.GetType(context);
-        context.EnvSearcher.PopEnv();
-        return ty;
-    }
-
-    public override bool MatchKey(IndexKey key, SearchContext context)
-    {
-        return Member.MatchKey(key, context);
     }
 }

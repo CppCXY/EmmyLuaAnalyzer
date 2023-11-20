@@ -4,13 +4,13 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaFunc : LuaType
+public class LuaMethod : LuaType
 {
     public IFuncSignature MainSignature { get; private set; }
 
     public List<IFuncSignature> Signatures { get; } = new();
 
-    public LuaFunc(IFuncSignature mainSignature) : base(TypeKind.Func)
+    public LuaMethod(IFuncSignature mainSignature) : base(TypeKind.Func)
     {
         MainSignature = mainSignature;
     }

@@ -26,18 +26,18 @@ public class CallExprInfer
         }
 
         var symbol = context.Infer(prefixExpr);
-        Union.Each(symbol, s =>
+        LuaUnion.Each(symbol, s =>
         {
             switch (s)
             {
-                case Func func:
+                case LuaMethod func:
                 {
                     var args = callExpr.ArgList?.ArgList;
                     if (args == null) return;
                     var perfectSig = func.FindPerfectSignature(args, context);
                     if (perfectSig.ReturnType is { } retTy)
                     {
-                        ret = Union.UnionType(ret, retTy);
+                        ret = LuaUnion.UnionType(ret, retTy);
                     }
 
                     break;

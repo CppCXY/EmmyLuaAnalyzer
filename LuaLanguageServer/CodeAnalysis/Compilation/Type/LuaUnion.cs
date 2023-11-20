@@ -3,7 +3,7 @@ using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Union : LuaType
+public class LuaUnion : LuaType
 {
     private HashSet<ILuaType> _childTypes = new();
 
@@ -22,26 +22,26 @@ public class Union : LuaType
         {
             return a;
         }
-        else if (a is Union unionSymbol)
+        else if (a is LuaUnion unionSymbol)
         {
             unionSymbol._childTypes.Add(b);
             return unionSymbol;
         }
-        else if (b is Union unionSymbol2)
+        else if (b is LuaUnion unionSymbol2)
         {
             unionSymbol2._childTypes.Add(a);
             return unionSymbol2;
         }
         else
         {
-            var union = new Union(a, b);
+            var union = new LuaUnion(a, b);
             return union._childTypes.Count == 1 ? union._childTypes.First() : union;
         }
     }
 
     public static void Process(ILuaType symbol, Func<ILuaType, bool> process)
     {
-        if (symbol is Union unionSymbol)
+        if (symbol is LuaUnion unionSymbol)
         {
             foreach (var childSymbol in unionSymbol._childTypes)
             {
@@ -66,7 +66,7 @@ public class Union : LuaType
         });
     }
 
-    public Union(ILuaType a, ILuaType b) : base(TypeKind.Union)
+    public LuaUnion(ILuaType a, ILuaType b) : base(TypeKind.Union)
     {
         _childTypes.Add(a);
         _childTypes.Add(b);
@@ -74,7 +74,7 @@ public class Union : LuaType
 
     public ILuaType UnionType(ILuaType symbol)
     {
-        if (symbol is Union unionSymbol)
+        if (symbol is LuaUnion unionSymbol)
         {
             foreach (var childSymbol in unionSymbol._childTypes)
             {
@@ -89,7 +89,7 @@ public class Union : LuaType
         return this;
     }
 
-    public override IEnumerable<LuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
         return _childTypes.SelectMany(it=> it.GetMembers(context));
     }
@@ -99,6 +99,6 @@ public static class UnionTypeExtensions
 {
     public static ILuaType Union(this ILuaType a, ILuaType b)
     {
-        return Type.Union.UnionType(a, b);
+        return Type.LuaUnion.UnionType(a, b);
     }
 }

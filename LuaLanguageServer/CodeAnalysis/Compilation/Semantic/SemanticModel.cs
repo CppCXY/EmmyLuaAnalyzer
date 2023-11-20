@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
@@ -20,8 +21,17 @@ public class SemanticModel
         _tree = tree;
     }
 
-    public ILuaType GetLuaType(LuaSyntaxElement element)
+    public ILuaSymbol GetSymbol(LuaSyntaxElement element)
     {
-        return _compilation.SearchContext.Infer(element);
+        // return element switch
+        // {
+        //     LuaLocalNameSyntax localName => GetSymbol(localName),
+        //     LuaParamDefSyntax paramDef => GetSymbol(paramDef),
+        //     LuaFuncStatSyntax funcStat => GetSymbol(funcStat),
+        //     LuaSourceSyntax source => GetSymbol(source),
+        //     _ => throw new NotImplementedException()
+        // };
+
+        throw new NotImplementedException();
     }
 }

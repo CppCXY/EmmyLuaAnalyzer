@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 
@@ -11,10 +12,9 @@ public abstract class LuaType : ILuaType
         Kind = kind;
     }
 
-    public abstract IEnumerable<LuaTypeMember> GetMembers(SearchContext context);
+    public abstract IEnumerable<ILuaSymbol> GetMembers(SearchContext context);
 
-    public virtual IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context) =>
-        GetMembers(context).Where(it => it.MatchKey(key, context));
+    public virtual IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context) => Enumerable.Empty<LuaSymbol>();
 
     public virtual bool SubTypeOf(ILuaType other, SearchContext context)
     {

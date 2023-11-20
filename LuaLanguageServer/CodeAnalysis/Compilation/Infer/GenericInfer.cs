@@ -16,6 +16,6 @@ public static class GenericInfer
                     return new PrimitiveGenericTable(args[0], args[1]);
             }
         }
-        return new Generic(baseType, args);
+        return new LuaGeneric(baseType, args);
     }
 }

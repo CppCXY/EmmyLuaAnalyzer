@@ -6,78 +6,32 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class Interface : LuaType, ILuaNamedType
+public class LuaInterface : LuaType, ILuaNamedType
 {
     public string Name { get; }
 
-    public Interface(string name) : base(TypeKind.Interface)
+    public LuaInterface(string name) : base(TypeKind.Interface)
     {
         Name = name;
     }
 
-    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => context.Compilation
-        .StubIndexImpl.ShortNameIndex.Get<LuaShortName.Interface>(Name).FirstOrDefault()?.InterfaceSyntax;
-
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {
-        if (GetSyntaxElement(context) is LuaDocInterfaceSyntax { GenericDeclareList.Params: { } genericParams })
-        {
-            foreach (var genericParam in genericParams)
-            {
-                if (genericParam is { Name: { } name })
-                {
-                    yield return new GenericParam(name.RepresentText, context.Infer(genericParam.Type), genericParam);
-                }
-            }
-        }
-    }
-
-    public override IEnumerable<InterfaceMember> GetMembers(SearchContext context)
-    {
-        var syntaxElement = GetSyntaxElement(context);
-        if (syntaxElement is null)
-        {
-            yield break;
-        }
-
-        // var fields = context.Compilation.StubIndexImpl.Members.Get<LuaMember.InterfaceDocField>(syntaxElement);
-        // foreach (var field in fields)
+        // if (GetSyntaxElement(context) is LuaDocInterfaceSyntax { GenericDeclareList.Params: { } genericParams })
         // {
+        //     foreach (var genericParam in genericParams)
+        //     {
+        //         if (genericParam is { Name: { } name })
+        //         {
+        //             yield return new GenericParam(name.RepresentText, context.Infer(genericParam.Type), genericParam);
+        //         }
+        //     }
         // }
-    }
-}
-
-public class InterfaceMember : LuaSymbol
-{
-    public IndexKey Key { get; }
-
-    public LuaSyntaxElement SyntaxElement { get; }
-
-    public InterfaceMember(IndexKey key, LuaSyntaxElement syntaxElement, Interface containingType) : base(
-        containingType)
-    {
-        Key = key;
-        SyntaxElement = syntaxElement;
+        throw new NotImplementedException();
     }
 
-    public override ILuaType? GetType(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
-        if (SyntaxElement is LuaDocTypedFieldSyntax typeField)
-        {
-            return context.Infer(typeField.Type);
-        }
-
-        return null;
-    }
-
-    public override bool MatchKey(IndexKey key, SearchContext context)
-    {
-        return (key, Key) switch
-        {
-            (IndexKey.Integer i1, IndexKey.Integer i2) => i1.Value == i2.Value,
-            (IndexKey.String s1, IndexKey.String s2) => s1.Value == s2.Value,
-            (IndexKey.Ty t1, IndexKey.Ty t2) => t1.Value == t2.Value,
-            _ => false
-        };
+        return context.FindMembers(this);
     }
 }

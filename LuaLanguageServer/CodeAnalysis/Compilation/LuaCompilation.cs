@@ -30,7 +30,7 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        StubIndexImpl = new StubIndexImpl();
+        StubIndexImpl = new StubIndexImpl(this);
     }
 
     public void AddSyntaxTrees(IEnumerable<(DocumentId, LuaSyntaxTree)> syntaxTrees)

@@ -78,7 +78,7 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var symbol = context.Infer(lhs);
-        return rhs != null ? Union.UnionType(symbol, context.Infer(rhs)) : symbol;
+        return rhs != null ? LuaUnion.UnionType(symbol, context.Infer(rhs)) : symbol;
     }
 
     private static ILuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
@@ -106,24 +106,24 @@ public static class ExpressionInfer
         {
             if (field.IsValue)
             {
-                elementType = Union.UnionType(elementType, context.Infer(field.Value));
+                elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
             }
             else
             {
                 if (field.IsNameKey || field.IsStringKey)
                 {
-                    keyType = Union.UnionType(keyType, context.Compilation.Builtin.String);
+                    keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.String);
                 }
                 else if(field.IsNumberKey)
                 {
-                    keyType = Union.UnionType(keyType, context.Compilation.Builtin.Number);
+                    keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.Number);
                 }
                 else
                 {
-                    keyType = Union.UnionType(keyType, context.Infer(field.ExprKey));
+                    keyType = LuaUnion.UnionType(keyType, context.Infer(field.ExprKey));
                 }
 
-                elementType = Union.UnionType(elementType, context.Infer(field.Value));
+                elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
             }
         }
 
@@ -135,7 +135,7 @@ public static class ExpressionInfer
             }
             case (Unknown, _):
             {
-                return new Type.Array(elementType);
+                return new Type.LuaArray(elementType);
             }
             default:
             {

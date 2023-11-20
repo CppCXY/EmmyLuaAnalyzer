@@ -1,4 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -9,11 +11,12 @@ public class Builtin
     public readonly Primitive Nil = new Primitive("nil");
     public readonly Primitive Number = new Primitive("number");
     public readonly Primitive Integer = new Primitive("integer");
-    public readonly PrimitiveClass String = new PrimitiveClass("string");
+    public readonly PrimitiveLuaClass String = new PrimitiveLuaClass("string");
     public readonly Primitive Boolean = new Primitive("boolean");
     public readonly Primitive Userdata = new Primitive("userdata");
-    public readonly PrimitiveClass Io = new PrimitiveClass("io");
-    public readonly PrimitiveClass Table = new PrimitiveClass("table");
+    public readonly PrimitiveLuaClass Io = new PrimitiveLuaClass("io");
+    public readonly PrimitiveLuaClass Table = new PrimitiveLuaClass("table");
+    public readonly PrimitiveLuaClass Global = new PrimitiveLuaClass("global");
 
     public Builtin()
     {
@@ -34,12 +37,13 @@ public class Builtin
             "userdata" => Userdata,
             "io" => Io,
             "table" => Table,
+            "_G" => Global,
             _ => null
         };
     }
 }
 
-public class Primitive : Class
+public class Primitive : LuaClass
 {
     public ILuaType? Super { get; private set; }
 
@@ -58,15 +62,15 @@ public class Primitive : Class
         return this;
     }
 
-    public override IEnumerable<ClassMember> GetMembers(SearchContext context) => Enumerable.Empty<ClassMember>();
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
 
-    public override IEnumerable<ClassMember> IndexMember(IndexKey key, SearchContext context) =>
-        Enumerable.Empty<ClassMember>();
+    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context) =>
+        Enumerable.Empty<LuaSymbol>();
 }
 
-public class PrimitiveClass : Class
+public class PrimitiveLuaClass : LuaClass
 {
-    public PrimitiveClass(string name) : base(name)
+    public PrimitiveLuaClass(string name) : base(name)
     {
     }
 }
@@ -94,12 +98,12 @@ public class PrimitiveGenericTable : LuaType, IGeneric
     }
 
 
-    public override IEnumerable<LuaTypeMember> GetMembers(SearchContext context)
+    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
-        return Enumerable.Empty<LuaTypeMember>();
+        return Enumerable.Empty<LuaSymbol>();
     }
 
-    public override IEnumerable<LuaTypeMember> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context)
     {
         switch (key)
         {
@@ -145,7 +149,7 @@ public class PrimitiveGenericTable : LuaType, IGeneric
     }
 }
 
-public class PrimitiveGenericTableMember : LuaTypeMember
+public class PrimitiveGenericTableMember : LuaSymbol
 {
     public ILuaType Type { get; }
 
@@ -154,13 +158,13 @@ public class PrimitiveGenericTableMember : LuaTypeMember
         Type = type;
     }
 
-    public override ILuaType? GetType(SearchContext context)
+    public override ILuaType GetType(SearchContext context)
     {
         return Type;
     }
 
-    public override bool MatchKey(IndexKey key, SearchContext context)
+    public override IEnumerable<LuaLocation> GetLocations(SearchContext context)
     {
-        return true;
+        throw new NotImplementedException();
     }
 }
