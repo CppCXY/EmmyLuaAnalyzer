@@ -8,7 +8,7 @@ public class LuaCommentSyntax : LuaSyntaxNode
 {
     public bool IsDeprecated => FirstChildToken(LuaTokenKind.TkTagDeprecated) != null;
 
-    public IEnumerable<LuaDocSyntax> DocList => ChildNodes<LuaDocSyntax>();
+    public IEnumerable<LuaDocTagSyntax> DocList => ChildNodes<LuaDocTagSyntax>();
 
     public IEnumerable<LuaSyntaxToken> Descriptions => ChildTokens(LuaTokenKind.TkDocDescription);
 

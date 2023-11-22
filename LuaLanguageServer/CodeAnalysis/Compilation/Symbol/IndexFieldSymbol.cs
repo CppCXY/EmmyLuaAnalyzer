@@ -5,34 +5,25 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class LocalSymbol : LuaSymbol
+public class IndexFieldSymbol : LuaSymbol
 {
-    public string Name { get; }
-
-    public LuaSyntaxElement Element { get; }
+    public long Index { get; }
 
     public LuaSyntaxElement? TypeElement { get; }
 
-    public int RetId { get; }
+    public LuaSyntaxElement Element { get; }
 
-    public LocalSymbol(LuaSyntaxElement element, string name, LuaSyntaxElement? typeElement, int retId = 0)
-        : base(SymbolKind.LocalSymbol, null)
+    public IndexFieldSymbol(LuaSyntaxElement element, long index, LuaSyntaxElement? typeElement, ILuaType containingType)
+        : base(SymbolKind.IndexFieldSymbol, containingType)
     {
-        Name = name;
         Element = element;
+        Index = index;
         TypeElement = typeElement;
-        RetId = retId;
     }
 
     public override ILuaType GetType(SearchContext context)
     {
-        var ty = context.Infer(TypeElement);
-        if (ty is LuaMultiRetType multiRetType)
-        {
-            ty = multiRetType.GetRetType(RetId) ?? context.Compilation.Builtin.Unknown;
-        }
-
-        return ty;
+        return context.Infer(TypeElement);
     }
 
     public override IEnumerable<LuaLocation> GetLocations(SearchContext context)

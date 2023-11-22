@@ -3,22 +3,21 @@ using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaTuple : LuaType
+public class LuaMultiRetType : LuaType
 {
     private readonly List<ILuaType> _types = new();
 
-    public LuaTuple(List<ILuaType> symbols) : base(TypeKind.Tuple)
+    public LuaMultiRetType(List<ILuaType> rets) : base(TypeKind.MultiRet)
     {
-        _types.AddRange(symbols);
+        _types.AddRange(rets);
     }
 
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
-        // return _types.Select((it, i) => new TupleMember((ulong)i, it, this));
-        throw new NotImplementedException();
+        return Enumerable.Empty<ILuaSymbol>();
     }
 
-    public ILuaType? IndexType(int index)
+    public ILuaType? GetRetType(int index)
     {
         return index < _types.Count ? _types[index] : null;
     }

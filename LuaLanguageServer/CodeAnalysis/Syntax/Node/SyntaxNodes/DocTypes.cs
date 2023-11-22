@@ -53,7 +53,7 @@ public class LuaDocArrayTypeSyntax : LuaDocTypeSyntax
 
 public class LuaDocTableTypeSyntax : LuaDocTypeSyntax
 {
-    public IEnumerable<LuaDocTypedFieldSyntax> FieldList => ChildNodes<LuaDocTypedFieldSyntax>();
+    public IEnumerable<LuaDocTagTypedFieldSyntax> FieldList => ChildNodes<LuaDocTagTypedFieldSyntax>();
 
     public LuaDocTableTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
@@ -63,7 +63,7 @@ public class LuaDocTableTypeSyntax : LuaDocTypeSyntax
 
 public class LuaDocFuncTypeSyntax : LuaDocTypeSyntax
 {
-    public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildNodes<LuaDocTypedParamSyntax>();
+    public IEnumerable<LuaDocTagTypedParamSyntax> ParamList => ChildNodes<LuaDocTagTypedParamSyntax>();
 
     public LuaDocTypeSyntax? ReturnType => FirstChild<LuaDocTypeSyntax>();
 
@@ -103,7 +103,7 @@ public class LuaDocParenTypeSyntax : LuaDocTypeSyntax
     }
 }
 
-public class LuaDocTypedFieldSyntax : LuaDocSyntax
+public class LuaDocTagTypedFieldSyntax : LuaDocTagSyntax
 {
     public bool IsNameKey => FirstChild<LuaNameToken>() != null;
 
@@ -123,7 +123,7 @@ public class LuaDocTypedFieldSyntax : LuaDocSyntax
 
     public LuaDocTypeSyntax? Type => ChildNodesAfterToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
 
-    public LuaDocTypedFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    public LuaDocTagTypedFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
     }

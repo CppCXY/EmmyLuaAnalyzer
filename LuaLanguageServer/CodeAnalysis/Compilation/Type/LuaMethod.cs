@@ -10,7 +10,7 @@ public class LuaMethod : LuaType
 
     public List<IFuncSignature> Signatures { get; } = new();
 
-    public LuaMethod(IFuncSignature mainSignature) : base(TypeKind.Func)
+    public LuaMethod(IFuncSignature mainSignature) : base(TypeKind.Method)
     {
         MainSignature = mainSignature;
     }

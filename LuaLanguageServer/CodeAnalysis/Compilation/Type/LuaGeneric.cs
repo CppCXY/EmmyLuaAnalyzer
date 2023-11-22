@@ -11,17 +11,17 @@ public class GenericParam : LuaType, ILuaNamedType
 
     public ILuaType? Type { get; }
 
-    private LuaDocGenericParamSyntax _genericParamSyntax;
+    private LuaDocTagGenericParamSyntax _tagGenericParamSyntax;
 
-    public GenericParam(string name, ILuaType? type, LuaDocGenericParamSyntax genericParamSyntax)
+    public GenericParam(string name, ILuaType? type, LuaDocTagGenericParamSyntax tagGenericParamSyntax)
         : base(TypeKind.GenericParam)
     {
         Name = name;
         Type = type;
-        _genericParamSyntax = genericParamSyntax;
+        _tagGenericParamSyntax = tagGenericParamSyntax;
     }
 
-    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => _genericParamSyntax;
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => _tagGenericParamSyntax;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {

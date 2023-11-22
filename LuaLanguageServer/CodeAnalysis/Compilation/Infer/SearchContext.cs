@@ -14,8 +14,6 @@ public class SearchContext
 
     private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
 
-    private Dictionary<LuaSyntaxElement, LuaSymbol> _memberCaches = new();
-
     private List<ILuaSearcher> _searchers = new();
 
     public CallExprInfer CallExprInfer { get; } = new();
@@ -53,24 +51,7 @@ public class SearchContext
             _ => Compilation.Builtin.Unknown
         };
     }
-
-    public TMember? InferMember<TMember>(LuaSyntaxElement element, Func<TMember?> factory)
-        where TMember : LuaSymbol
-    {
-        if (_memberCaches.TryGetValue(element, out var member))
-        {
-            return member as TMember;
-        }
-
-        var result = factory();
-        if (result is not null)
-        {
-            _memberCaches[element] = result;
-        }
-
-        return result;
-    }
-
+    
     public ILuaNamedType FindLuaType(string name)
     {
         foreach (var searcher in _searchers)

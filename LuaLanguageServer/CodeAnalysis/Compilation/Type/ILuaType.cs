@@ -51,7 +51,7 @@ public abstract record IndexKey
         return new Ty(context.Infer(expr.IndexKeyExpr));
     }
 
-    public static IndexKey FromDocTypedField(LuaDocTypedFieldSyntax field, SearchContext context)
+    public static IndexKey FromDocTypedField(LuaDocTagTypedFieldSyntax field, SearchContext context)
     {
         // switch (expr)
         // {
@@ -77,7 +77,7 @@ public abstract record IndexKey
         throw new NotImplementedException();
     }
 
-    public static IndexKey FromDocField(LuaDocFieldSyntax field, SearchContext context)
+    public static IndexKey FromDocField(LuaDocTagFieldSyntax tagField, SearchContext context)
     {
         // switch (expr)
         // {

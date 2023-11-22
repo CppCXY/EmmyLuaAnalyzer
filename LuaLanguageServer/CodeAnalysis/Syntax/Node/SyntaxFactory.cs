@@ -49,45 +49,45 @@ public static class SyntaxFactory
                 LuaSyntaxKind.Attribute => new LuaAttributeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ParamList => new LuaParamListSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.Comment => new LuaCommentSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocClass => new LuaDocClassSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocEnum => new LuaDocEnumSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocInterface => new LuaDocInterfaceSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocAlias => new LuaDocAliasSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocField => new LuaDocFieldSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocEnumField => new LuaDocEnumFieldSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocType => new LuaDocTypeSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocParam => new LuaDocParamSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocReturn => new LuaDocReturnSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocGeneric => new LuaDocGenericSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocSee => new LuaDocSeeSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocDeprecated => new LuaDocDeprecatedSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocCast => new LuaDocCastSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocOverload => new LuaDocOverloadSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocAsync => new LuaDocAsyncSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocVisibility => new LuaDocVisibilitySyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocOther => new LuaDocOtherSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocDiagnostic => new LuaDocDiagnosticSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocVersion => new LuaDocVersionSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocAs => new LuaDocAsSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocNodiscard => new LuaDocNodiscardSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocOperator => new LuaDocOperatorSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocClass => new LuaDocTagClassSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocEnum => new LuaDocTagEnumSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocInterface => new LuaDocTagInterfaceSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocAlias => new LuaDocTagAliasSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocField => new LuaDocTagFieldSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocEnumField => new LuaDocTagEnumFieldSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocType => new LuaDocTagTypeSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocParam => new LuaDocTagParamSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocReturn => new LuaDocTagReturnSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocGeneric => new LuaDocTagGenericSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocSee => new LuaDocTagSeeSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocDeprecated => new LuaDocTagDeprecatedSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocCast => new LuaDocTagCastSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocOverload => new LuaDocTagOverloadSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocAsync => new LuaDocTagAsyncSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocVisibility => new LuaDocTagVisibilitySyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocOther => new LuaDocTagOtherSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocDiagnostic => new LuaDocTagDiagnosticSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocVersion => new LuaDocTagVersionSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocAs => new LuaDocTagAsSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocNodiscard => new LuaDocTagNodiscardSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.GenericDeclareList => new LuaDocTagGenericDeclareListSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.TypeGeneric => new LuaDocGenericSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.TypeGeneric => new LuaDocTagGenericSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeTuple => new LuaDocTupleTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeTable => new LuaDocTableTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeParen => new LuaDocParenTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeLiteral => new LuaDocLiteralTypeSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.TypedField => new LuaDocTypedFieldSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.TypedParameter => new LuaDocTagTypedParamSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.TypedField => new LuaDocTagTypedFieldSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.TypeBody => new LuaDocBodySyntax(greenNode, tree, parent),
-                LuaSyntaxKind.DocModule => new LuaDocModuleSyntax(greenNode, tree, parent),
-                LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.TypeBody => new LuaDocTagBodySyntax(greenNode, tree, parent),
+                LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(greenNode, tree, parent),
+                LuaSyntaxKind.GenericParameter => new LuaDocTagGenericParamSyntax(greenNode, tree, parent),
                 LuaSyntaxKind.FuncBody => new LuaFuncBodySyntax(greenNode, tree, parent),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
@@ -197,9 +197,10 @@ public static class SyntaxFactory
 
     private static LuaSyntaxElement CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
-        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
-        // 裁剪掉complex的i
-        text = text[..^1];
-        return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
+        // var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        // // 裁剪掉complex的i
+        // text = text[..^1];
+        // return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
+        throw new NotImplementedException();
     }
 }

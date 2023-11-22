@@ -17,6 +17,7 @@ public class Builtin
     public readonly PrimitiveLuaClass Io = new PrimitiveLuaClass("io");
     public readonly PrimitiveLuaClass Table = new PrimitiveLuaClass("table");
     public readonly PrimitiveLuaClass Global = new PrimitiveLuaClass("global");
+    public readonly PrimitiveLuaClass Iter = new PrimitiveLuaClass("iter");
 
     public Builtin()
     {

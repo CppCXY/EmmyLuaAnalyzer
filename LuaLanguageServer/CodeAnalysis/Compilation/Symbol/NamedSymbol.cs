@@ -9,11 +9,11 @@ public class NamedSymbol : LuaSymbol
 {
     public string Name { get; }
 
-    public ILuaType Type { get; }
+    public ILuaNamedType Type { get; }
 
     public LuaSyntaxElement Element { get; }
 
-    public NamedSymbol(LuaSyntaxElement element, string name, ILuaType type, ILuaType containingType)
+    public NamedSymbol(LuaSyntaxElement element, string name, ILuaNamedType type, ILuaType containingType)
         : base(SymbolKind.NamedSymbol, containingType)
     {
         Name = name;

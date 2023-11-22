@@ -5,25 +5,25 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class FieldSymbol : LuaSymbol
+public class EnumFieldSymbol : LuaSymbol
 {
     public string Name { get; }
 
-    public LuaSyntaxElement? TypeElement { get; }
+    public new LuaEnum ContainingType { get; }
 
     public LuaSyntaxElement Element { get; }
 
-    public FieldSymbol(LuaSyntaxElement element, string name, LuaSyntaxElement? typeElement, ILuaType containingType)
-        : base(SymbolKind.FieldSymbol, containingType)
+    public EnumFieldSymbol(LuaSyntaxElement element, string name, LuaEnum containingType)
+        : base(SymbolKind.EnumFieldSymbol, containingType)
     {
         Element = element;
         Name = name;
-        TypeElement = typeElement;
+        ContainingType = containingType;
     }
 
     public override ILuaType GetType(SearchContext context)
     {
-        return context.Infer(TypeElement);
+        return ContainingType.GetBaseType(context);
     }
 
     public override IEnumerable<LuaLocation> GetLocations(SearchContext context)
