@@ -30,6 +30,12 @@ public class DeclarationTree
         return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
     }
 
+    // public bool IsGlobalName(LuaNameExprSyntax nameExpr)
+    // {
+    //     var scope = FindScope(nameExpr);
+    //     return scope?.FindNameExpr(nameExpr)?.IsGlobal ?? false;
+    // }
+
     public DeclarationScope? FindScope(LuaSyntaxElement element)
     {
         var cur = element;

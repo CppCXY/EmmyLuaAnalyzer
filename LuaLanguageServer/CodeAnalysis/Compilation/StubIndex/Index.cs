@@ -45,11 +45,6 @@ public static class Index
                     MethodIndex(stubIndexImpl, documentId, luaFuncStatSyntax);
                     break;
                 }
-                case LuaLabelStatSyntax luaLabelStatSyntax:
-                {
-                    LabelIndex(stubIndexImpl, documentId, luaLabelStatSyntax);
-                    break;
-                }
                 case LuaForStatSyntax luaForStatSyntax:
                 {
                     ForIndex(stubIndexImpl, documentId, luaForStatSyntax);
@@ -83,11 +78,6 @@ public static class Index
                 case LuaParamListSyntax luaParamListSyntax:
                 {
                     ParamIndex(stubIndexImpl, documentId, luaParamListSyntax);
-                    break;
-                }
-                case LuaDocTagGenericSyntax luaDocGenericSyntax:
-                {
-                    GenericDocIndex(stubIndexImpl, documentId, luaDocGenericSyntax);
                     break;
                 }
             }
@@ -136,7 +126,8 @@ public static class Index
     {
         if (luaDocTagClassSyntax.Name is { } name)
         {
-            var classType = new LuaClass(name.RepresentText);
+            var classType = CreateLuaType(stubIndexImpl, documentId, name.RepresentText,
+                () => new LuaClass(name.RepresentText));
             var classSymbol = new NamedSymbol(
                 luaDocTagClassSyntax,
                 name.RepresentText,
@@ -161,7 +152,8 @@ public static class Index
     {
         if (luaDocTagEnumSyntax.Name is { } name)
         {
-            var enumType = new LuaEnum(name.RepresentText, luaDocTagEnumSyntax.BaseType);
+            var enumType = CreateLuaType(stubIndexImpl, documentId, name.RepresentText,
+                () => new LuaEnum(name.RepresentText, luaDocTagEnumSyntax.BaseType));
             var enumSymbol = new NamedSymbol(
                 luaDocTagEnumSyntax,
                 luaDocTagEnumSyntax.Name.RepresentText,
@@ -194,7 +186,8 @@ public static class Index
     {
         if (luaDocTagInterfaceSyntax.Name is { } name)
         {
-            var interfaceType = new LuaInterface(name.RepresentText);
+            var interfaceType = CreateLuaType(stubIndexImpl, documentId, name.RepresentText,
+                () => new LuaInterface(name.RepresentText));
             var interfaceSymbol = new NamedSymbol(
                 luaDocTagInterfaceSyntax,
                 name.RepresentText,
@@ -221,7 +214,8 @@ public static class Index
         {
             var context = stubIndexImpl.Compilation.SearchContext;
             var baseTy = context.Infer(luaDocTagAliasSyntax.Type);
-            var aliasType = new LuaAlias(name.RepresentText, baseTy);
+            var aliasType = CreateLuaType(stubIndexImpl, documentId, name.RepresentText,
+                () => new LuaAlias(name.RepresentText, baseTy));
             var aliasSymbol = new NamedSymbol(
                 luaDocTagAliasSyntax,
                 name.RepresentText,
@@ -242,27 +236,24 @@ public static class Index
         ILuaType? classType = null;
         if (luaDocTagFieldSyntax.PrevOfType<LuaDocTagClassSyntax>() is { Name : { } className })
         {
-            var classSymbol = stubIndexImpl.ShortNameIndex.Get<NamedSymbol>(className.RepresentText).FirstOrDefault();
-            classType = classSymbol?.GetType(context);
+            classType = stubIndexImpl.LuaTypeIndex.Get<LuaClass>(className.RepresentText).FirstOrDefault();
         }
         else if (luaDocTagFieldSyntax.PrevOfType<LuaDocTagInterfaceSyntax>() is { Name : { } interfaceName })
         {
-            var classSymbol = stubIndexImpl.ShortNameIndex.Get<NamedSymbol>(interfaceName.RepresentText)
-                .FirstOrDefault();
-            classType = classSymbol?.GetType(context);
+            classType = stubIndexImpl.LuaTypeIndex.Get<LuaInterface>(interfaceName.RepresentText).FirstOrDefault();
         }
 
-        if (classType is null)
+        if (classType is not null)
         {
-            return;
+            AddFieldSymbol(stubIndexImpl, documentId, indexKey, luaDocTagFieldSyntax, luaDocTagFieldSyntax.Type,
+                classType);
         }
-
-        AddFieldSymbol(stubIndexImpl, documentId, indexKey, luaDocTagFieldSyntax, luaDocTagFieldSyntax.Type, classType);
     }
 
     private static void MethodIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaFuncStatSyntax luaFuncStatSyntax)
     {
+        // TODO
         // if (luaFuncStatSyntax is { PrefixExpr: { } prefixExpr })
         // {
         //     stubIndexImpl.Members.AddStub(
@@ -270,53 +261,156 @@ public static class Index
         // }
     }
 
-    private static void LabelIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
-        LuaLabelStatSyntax luaLabelStatSyntax)
-    {
-        if (luaLabelStatSyntax.Name is { } name)
-        {
-            var labelSymbol = new LabelSymbol(luaLabelStatSyntax, name.RepresentText);
-            stubIndexImpl.ShortNameIndex.AddStub(documentId, name.RepresentText, labelSymbol);
-        }
-    }
-
     private static void ForIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaForStatSyntax luaForStatSyntax)
     {
-        // TODO ---@param
-        if (luaForStatSyntax.IteratorName is { Name: { } name } it)
+        if (luaForStatSyntax.IteratorName is { Name: { } name } param)
         {
-            var localSymbol = new LocalSymbol(it, name.RepresentText, luaForStatSyntax.InitExpr);
-            stubIndexImpl.ShortNameIndex.AddStub(documentId, name.RepresentText, localSymbol);
+            var docTagParamSyntax = luaForStatSyntax.Comments.FirstOrDefault()?
+                .DocList.OfType<LuaDocTagParamSyntax>()
+                .FirstOrDefault();
+            if (docTagParamSyntax is { Name: { } tagParamName }
+                && string.Equals(tagParamName.RepresentText, name.RepresentText, StringComparison.Ordinal))
+            {
+                var localSymbol = new LocalSymbol(param, name.RepresentText, docTagParamSyntax.Type);
+                stubIndexImpl.LocalIndex.AddStub(documentId, param, localSymbol);
+            }
+            else
+            {
+                var localSymbol = new LocalSymbol(param, name.RepresentText, luaForStatSyntax.InitExpr);
+                stubIndexImpl.LocalIndex.AddStub(documentId, param, localSymbol);
+            }
         }
     }
 
     private static void ForRangeIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaForRangeStatSyntax luaForRangeStatSyntax)
     {
-        // TODO ---@param
+        var docTagParamSyntaxDictionary = luaForRangeStatSyntax.Comments.FirstOrDefault()?
+            .DocList.OfType<LuaDocTagParamSyntax>()
+            .Where(it => it.Name is not null)
+            .ToDictionary(it => it.Name!.RepresentText, it => it.Type);
+
+        var iteratorExprList = luaForRangeStatSyntax.ExprList;
+        var iteratorGenerator = new IteratorGenerator(iteratorExprList);
         foreach (var iteratorName in luaForRangeStatSyntax.IteratorNames)
         {
-            // if (iteratorName is { Name: { } name })
-            // {
-            //     var context = stubIndexImpl.Compilation.SearchContext;
-            //     var localType = context.Infer(luaForStatSyntax.InitExpr);
-            //     var localSymbol = new LocalSymbol(it, name.RepresentText, localType);
-            //     stubIndexImpl.ShortNameIndex.AddStub(documentId, name.RepresentText, localSymbol);
-            // }
-            // TODO
-            throw new NotImplementedException();
+            if (iteratorName is { Name: { } name } param)
+            {
+                if (docTagParamSyntaxDictionary is not null
+                    && docTagParamSyntaxDictionary.TryGetValue(name.RepresentText, out var type))
+                {
+                    var localSymbol = new LocalSymbol(iteratorName, name.RepresentText, type);
+                    stubIndexImpl.LocalIndex.AddStub(documentId, param, localSymbol);
+                }
+                else
+                {
+                    var iteratorParamSymbol =
+                        new IteratorParamSymbol(iteratorName, name.RepresentText, iteratorGenerator);
+                    stubIndexImpl.LocalIndex.AddStub(documentId, param, iteratorParamSymbol);
+                }
+            }
         }
     }
+
+    private static LuaDocTagSyntax? FindDefineTypeTag(LuaStatSyntax stat, StubIndexImpl stubIndexImpl)
+    {
+        var docList = stat.Comments.FirstOrDefault()?.DocList;
+        if (docList is null) return null;
+        foreach (var docTagSyntax in docList)
+        {
+            switch (docTagSyntax)
+            {
+                case LuaDocTagClassSyntax luaDocClassSyntax:
+                {
+                    return luaDocClassSyntax;
+                }
+                case LuaDocTagEnumSyntax luaDocEnumSyntax:
+                {
+                    return luaDocEnumSyntax;
+                }
+                case LuaDocTagInterfaceSyntax luaDocInterfaceSyntax:
+                {
+                    return luaDocInterfaceSyntax;
+                }
+                case LuaDocTagTypeSyntax luaDocTagSyntax:
+                {
+                    return luaDocTagSyntax;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static void ModifyNameDeclarationSymbol(LuaDocTagSyntax docTagSyntax,
+        List<(LuaSyntaxElement, LuaSymbol)> nameList, StubIndexImpl stubIndexImpl)
+    {
+        var firstLocalNameTuple = nameList.FirstOrDefault()!;
+        switch (docTagSyntax)
+        {
+            case LuaDocTagClassSyntax classSyntax:
+            {
+                if (classSyntax.Name is { } name)
+                {
+                    if(TryFindLuaType<LuaClass>(stubIndexImpl, name.RepresentText, out var luaClass) && luaClass is not null)
+                    {
+                        firstLocalNameTuple.Item2 = new TypeDeclarationSymbol(firstLocalNameTuple.Item1, luaClass);
+                    }
+                }
+
+                break;
+            }
+            case LuaDocTagEnumSyntax enumSyntax:
+            {
+                if (enumSyntax.Name is { } name)
+                {
+                    if(TryFindLuaType<LuaEnum>(stubIndexImpl, name.RepresentText, out var luaEnum) && luaEnum is not null)
+                    {
+                        firstLocalNameTuple.Item2 = new TypeDeclarationSymbol(firstLocalNameTuple.Item1, luaEnum);
+                    }
+                }
+                break;
+            }
+            case LuaDocTagInterfaceSyntax interfaceSyntax:
+            {
+                if (interfaceSyntax.Name is { } name)
+                {
+                    if(TryFindLuaType<LuaInterface>(stubIndexImpl, name.RepresentText, out var luaInterface) && luaInterface is not null)
+                    {
+                        firstLocalNameTuple.Item2 = new TypeDeclarationSymbol(firstLocalNameTuple.Item1, luaInterface);
+                    }
+                }
+                break;
+            }
+            case LuaDocTagTypeSyntax typeSyntax:
+            {
+                var idCount = 0;
+                foreach (var docTypeSyntax in typeSyntax.TypeList)
+                {
+                    if (idCount < nameList.Count)
+                    {
+                        var localNameTuple = nameList[idCount];
+                        if (localNameTuple.Item1 is LuaLocalNameSyntax localNameSyntax)
+                        {
+                            localNameTuple.Item2 = new LocalSymbol(localNameTuple.Item1,
+                                localNameSyntax.Name!.RepresentText, docTypeSyntax);
+                        }
+                    }
+
+                    idCount++;
+                }
+
+                break;
+            }
+        }
+    }
+
 
     private static void LocalIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaLocalStatSyntax luaLocalStatSyntax)
     {
-        var comment = luaLocalStatSyntax.Comments.FirstOrDefault();
-        var doc = comment?.DocList.FirstOrDefault(it => it is LuaDocTagClassSyntax
-            or LuaDocTagInterfaceSyntax or LuaDocTagEnumSyntax or LuaDocTagTypeSyntax
-        );
-
+        var localNameList = new List<(LuaSyntaxElement, LuaSymbol)>();
         var count = luaLocalStatSyntax.NameList.Count();
         var lastValidExprId = -1;
         LuaExprSyntax? lastValidExpr = null;
@@ -333,14 +427,31 @@ public static class Index
             if (localName is { Name: { } name })
             {
                 var localSymbol = new LocalSymbol(localName, name.RepresentText, lastValidExpr, i - lastValidExprId);
-                stubIndexImpl.ShortNameIndex.AddStub(documentId, name.RepresentText, localSymbol);
+                localNameList.Add((localName, localSymbol));
             }
+        }
+
+        if (localNameList.Count == 0)
+        {
+            return;
+        }
+
+        var docTag = FindDefineTypeTag(luaLocalStatSyntax, stubIndexImpl);
+        if (docTag is not null)
+        {
+            ModifyNameDeclarationSymbol(docTag, localNameList, stubIndexImpl);
+        }
+
+        foreach (var valueTuple in localNameList)
+        {
+            stubIndexImpl.LocalIndex.AddStub(documentId, valueTuple.Item1, valueTuple.Item2);
         }
     }
 
     private static void AssignIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaAssignStatSyntax luaAssignStatSyntax)
     {
+        var varSymbols = new List<(LuaSyntaxElement, LuaSymbol)>();
         var count = luaAssignStatSyntax.VarList.Count();
         var lastValidExprId = -1;
         LuaExprSyntax? lastValidExpr = null;
@@ -354,43 +465,23 @@ public static class Index
                 lastValidExprId = i;
             }
 
-            // switch (varName)
+            // var varSymbol = FindDeclaration(varName);
+            // if (varName is {})
             // {
-            //     case LuaNameExprSyntax { Name: { } exprName }:
-            //         stubIndexImpl.ShortNameIndex.AddStub(
-            //             documentId, exprName.RepresentText,
-            //             lastValidExprId == -1
-            //                 ? new LuaShortName.VarDef(varName, null, -1)
-            //                 : new LuaShortName.VarDef(varName, lastValidExpr, i - lastValidExprId));
-            //         break;
-            //     case LuaIndexExprSyntax { DotOrColonIndexName: { } name }:
-            //     {
-            //         stubIndexImpl.ShortNameIndex.AddStub(
-            //             documentId, name.RepresentText,
-            //             lastValidExprId == -1
-            //                 ? new LuaShortName.VarDef(varName, null, -1)
-            //                 : new LuaShortName.VarDef(varName, lastValidExpr, i - lastValidExprId));
-            //         break;
-            //     }
-            //     case LuaIndexExprSyntax
-            //     {
-            //         IsKeyIndex: true, IndexKeyExpr: LuaLiteralExprSyntax { Literal: LuaStringToken stringToken }
-            //     }:
-            //     {
-            //         stubIndexImpl.ShortNameIndex.AddStub(
-            //             documentId, stringToken.InnerString,
-            //             lastValidExprId == -1
-            //                 ? new LuaShortName.VarDef(varName, null, -1)
-            //                 : new LuaShortName.VarDef(varName, lastValidExpr, i - lastValidExprId));
-            //
-            //         break;
-            //     }
+            //     var localSymbol = new LocalSymbol(localName, name.RepresentText, lastValidExpr, i - lastValidExprId);
+            //     varSymbols.Add((varName, localSymbol));
             // }
+        }
 
-            // if (i == 0)
-            // {
-            //     AttachedIndex(stubIndexImpl, documentId, varName);
-            // }
+        var docTag = FindDefineTypeTag(luaAssignStatSyntax, stubIndexImpl);
+        if (docTag is not null)
+        {
+            ModifyNameDeclarationSymbol(docTag, varSymbols, stubIndexImpl);
+        }
+
+        foreach (var valueTuple in varSymbols)
+        {
+            stubIndexImpl.LocalIndex.AddStub(documentId, valueTuple.Item1, valueTuple.Item2);
         }
     }
 
@@ -458,42 +549,39 @@ public static class Index
         }
     }
 
-    private static void GenericDocIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
-        LuaDocTagGenericSyntax luaDocTagGenericSyntax)
+    private static bool TryFindLuaType<TLuaType>(StubIndexImpl stubIndexImpl, string name, out TLuaType? type)
+        where TLuaType : ILuaNamedType
     {
-        // foreach (var genericParam in luaDocTagGenericSyntax.ParamList)
-        // {
-        //     if (genericParam is { Name: { } name })
-        //     {
-        //         stubIndexImpl.ShortNameIndex.AddStub(
-        //             documentId, name.RepresentText, new LuaShortName.Generic(genericParam));
-        //     }
-        // }
+        var compilation = stubIndexImpl.Compilation;
+        var buildInTy = compilation.Builtin.FromName(name);
+        if (buildInTy is TLuaType luaClass)
+        {
+            type = luaClass;
+            return true;
+        }
+
+        if (stubIndexImpl.LuaTypeIndex.Get<TLuaType>(name).FirstOrDefault() is { } ty)
+        {
+            type = ty;
+            return true;
+        }
+
+        type = default(TLuaType);
+        return false;
     }
 
-    private static void AttachedIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
-        LuaSyntaxElement attached)
+    private static TLuaType CreateLuaType<TLuaType>(StubIndexImpl stubIndexImpl, DocumentId documentId, string name,
+        Func<TLuaType> factory)
+        where TLuaType : ILuaNamedType
     {
-        // var stat = attached.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
-        // if (stat?.Comments.FirstOrDefault() is { } comment)
-        // {
-        //     var doc = comment.DocList.FirstOrDefault(it => it is LuaDocClassSyntax
-        //         or LuaDocInterfaceSyntax or LuaDocEnumSyntax
-        //     );
-        //     switch (doc)
-        //     {
-        //         case LuaDocClassSyntax classSyntax:
-        //             stubIndexImpl.Attached.AddStub(documentId, classSyntax, new LuaDocAttached.Class(attached));
-        //             break;
-        //         case LuaDocInterfaceSyntax interfaceSyntax:
-        //             stubIndexImpl.Attached.AddStub(
-        //                 documentId, interfaceSyntax, new LuaDocAttached.Interface(attached));
-        //             break;
-        //         case LuaDocEnumSyntax enumSyntax:
-        //             stubIndexImpl.Attached.AddStub(documentId, enumSyntax, new LuaDocAttached.Enum(attached));
-        //             break;
-        //     }
-        // }
+        if (TryFindLuaType<TLuaType>(stubIndexImpl, name, out var ty))
+        {
+            return ty!;
+        }
+
+        var newTy = factory();
+        stubIndexImpl.LuaTypeIndex.AddStub(documentId, name, newTy);
+        return newTy;
     }
 
     public static void RemoveIndex(StubIndexImpl stubIndexImpl, DocumentId documentId, LuaSyntaxTree tree)

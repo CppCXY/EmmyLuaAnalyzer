@@ -132,21 +132,6 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
                         DeclarationFlag.Local | DeclarationFlag.Function);
                     _curScope?.Add(declaration);
                 }
-                // TODO global or redefine function
-                // else if (funcStatSyntax is { IsMethod: true, MethodName: { } methodName, Name: { } name2 })
-                // {
-                //     var declaration = CreateDeclaration(name2.RepresentText, funcStatSyntax,
-                //         DeclarationFlag.ClassMember | DeclarationFlag.Function);
-                //     if (methodName.PrefixExpr is { } parentExpr)
-                //     {
-                //         FindNameExpr(parentExpr)?.AddField(declaration);
-                //     }
-                //     else
-                //     {
-                //
-                //     }
-                // }
-
                 break;
             }
             case LuaAssignStatSyntax assignStatSyntax:
@@ -166,19 +151,6 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
 
                             break;
                         }
-                        // TODO
-                        // case LuaIndexExprSyntax indexExpr:
-                        // {
-                        //     // if (indexExpr.Name is { } name)
-                        //     // {
-                        //     //     var declaration = _curScope?.Find(indexExpr.PrefixExpr);
-                        //     //     declaration?.AddField(
-                        //     //         CreateDeclaration(name.RepresentText, indexExpr, DeclarationFlag.ClassMember)
-                        //     //     );
-                        //     // }
-                        //
-                        //     break;
-                        // }
                     }
                 }
 

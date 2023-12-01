@@ -105,16 +105,6 @@ public class Declaration : DeclarationNode
         PrevDeclaration = prev;
     }
 
-    // public Declaration? FindField(string name)
-    // {
-    //     return _fields.TryGetValue(name, out var child) ? child : null;
-    // }
-    //
-    // public void AddField(Declaration child)
-    // {
-    //     _fields.Add(child.Name, child);
-    // }
-
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 
     public override string ToString()

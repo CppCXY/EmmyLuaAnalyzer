@@ -11,4 +11,5 @@ public enum SymbolKind
     LocalSymbol,
     LabelSymbol,
     VirtualSymbol,
+    TypeDeclarationSymbol
 }

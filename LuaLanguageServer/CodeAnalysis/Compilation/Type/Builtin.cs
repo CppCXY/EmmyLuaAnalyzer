@@ -24,7 +24,7 @@ public class Builtin
         Integer.WithSuper(Number);
     }
 
-    public ILuaType? FromName(string name)
+    public ILuaNamedType? FromName(string name)
     {
         return name switch
         {
