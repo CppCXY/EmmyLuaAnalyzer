@@ -433,6 +433,8 @@ public static class SyntaxFactory
             return new LuaStringToken(string.Empty, greenNode, tree, parent);
         }
 
+        i++;
+
         if (text.Length < i + equalNum + 2)
         {
             tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,

@@ -11,9 +11,16 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    t = "\u{aaaa} \x12 \u{1F600}"
+    d = [[danshi
+        t = [[你说的对]]
+    e = "但是yx"
+    f = "可是啊"
+
+    local t = [==[afafa]==]
     """);
-var dtree = DeclarationTree.From(tree);
+Console.WriteLine(tree.SyntaxRoot.DebugSyntaxInspect());
+
+// var dtree = DeclarationTree.From(tree);
 // var tk = tree.SyntaxRoot.NodeAt(1, 0);
 // if (tk is LuaNameExprSyntax name)
 // {
