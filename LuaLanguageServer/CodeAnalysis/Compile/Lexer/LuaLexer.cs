@@ -147,11 +147,10 @@ public class LuaLexer
             {
                 Reader.Bump();
                 var sep = SkipSep();
-                if (sep <= 0) return LuaTokenKind.TkLeftBracket;
+                if (sep == 0 && Reader.CurrentChar != '[') return LuaTokenKind.TkLeftBracket;
                 if (Reader.CurrentChar != '[') return LuaTokenKind.TkUnCompleteLongStringStart;
                 Reader.Bump();
-                LexLongString(sep);
-                return LuaTokenKind.TkLongString;
+                return LexLongString(sep);
             }
             case '=':
             {

@@ -7,52 +7,17 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaStringToken : LuaSyntaxToken
 {
-    public LuaStringToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+    public string InnerString { get; }
+
+    public LuaStringToken(string innerString ,GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
         parent)
     {
+        InnerString = innerString;
     }
 
-    public string InnerString
+    public override string ToString()
     {
-        get
-        {
-            switch (Kind)
-            {
-                // skip [====[
-                case LuaTokenKind.TkString:
-                {
-                    var text = Text;
-                    return text.Length > 2 ? text[1..^1].ToString() : text.ToString();
-                }
-                case LuaTokenKind.TkLongString:
-                {
-                    var text = Text;
-                    var prefixCount = 0;
-                    foreach (var t in text)
-                    {
-                        if ((t == '[' && prefixCount == 0) || t == '=')
-                        {
-                            prefixCount++;
-                        }
-                        else if (t == '[')
-                        {
-                            prefixCount++;
-                            break;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    return text.Length > (prefixCount * 2)
-                        ? text[prefixCount..^prefixCount].ToString()
-                        : text.ToString();
-                }
-                default:
-                    return string.Empty;
-            }
-        }
+        return InnerString;
     }
 }
 

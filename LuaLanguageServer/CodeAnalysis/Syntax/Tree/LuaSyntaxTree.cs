@@ -63,4 +63,9 @@ public class LuaSyntaxTree
             return _root!;
         }
     }
+
+    public void PushDiagnostic(Diagnostic.Diagnostic diagnostic)
+    {
+        Diagnostics.Add(diagnostic);
+    }
 }

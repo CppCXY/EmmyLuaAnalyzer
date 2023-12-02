@@ -11,19 +11,15 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    local t
-    t = "123131"
-    function f()
-        print(t)
-    end
+    t = "\u{aaaa} \x12 \u{1F600}"
     """);
 var dtree = DeclarationTree.From(tree);
-var tk = tree.SyntaxRoot.NodeAt(1, 0);
-if (tk is LuaNameExprSyntax name)
-{
-    var declaration = dtree.FindDeclaration(name);
-    Console.Write(declaration);
-}
+// var tk = tree.SyntaxRoot.NodeAt(1, 0);
+// if (tk is LuaNameExprSyntax name)
+// {
+//     var declaration = dtree.FindDeclaration(name);
+//     Console.Write(declaration);
+// }
 
 // Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
 foreach (var diagnostic in tree.Diagnostics)

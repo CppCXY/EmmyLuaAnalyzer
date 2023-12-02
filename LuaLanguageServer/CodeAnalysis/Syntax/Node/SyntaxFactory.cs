@@ -1,5 +1,8 @@
 ﻿using System.Globalization;
+using System.Text;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
 using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -96,7 +99,8 @@ public static class SyntaxFactory
         {
             return greenNode.TokenKind switch
             {
-                LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(greenNode, tree, parent),
+                LuaTokenKind.TkString => CalculateString(greenNode, tree, parent),
+                LuaTokenKind.TkLongString => CalculateLongString(greenNode, tree, parent),
                 LuaTokenKind.TkInt =>
                     CalculateInt(greenNode, tree, parent),
                 LuaTokenKind.TkFloat =>
@@ -197,10 +201,248 @@ public static class SyntaxFactory
 
     private static LuaSyntaxElement CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
-        // var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
-        // // 裁剪掉complex的i
-        // text = text[..^1];
-        // return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
-        throw new NotImplementedException();
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        if (text.Length < 2)
+        {
+            return new LuaStringToken(string.Empty, greenNode, tree, parent);
+        }
+
+        var sb = new StringBuilder(text.Length - 2);
+        var delimiter = text[0];
+        for (var i = 1; i < text.Length; i++)
+        {
+            switch (text[i])
+            {
+                case '\\':
+                {
+                    i++;
+                    if (i >= text.Length)
+                    {
+                        tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                            "Unexpected end of string", new SourceRange(greenNode.Range.StartOffset + i - 1, 1)));
+                        break;
+                    }
+
+                    switch (text[i])
+                    {
+                        case 'a':
+                        {
+                            sb.Append('\a');
+                            break;
+                        }
+                        case 'b':
+                        {
+                            sb.Append('\b');
+                            break;
+                        }
+                        case 'f':
+                        {
+                            sb.Append('\f');
+                            break;
+                        }
+                        case 'n':
+                        {
+                            sb.Append('\n');
+                            break;
+                        }
+                        case 'r':
+                        {
+                            sb.Append('\r');
+                            break;
+                        }
+                        case 't':
+                        {
+                            sb.Append('\t');
+                            break;
+                        }
+                        case 'v':
+                        {
+                            sb.Append('\v');
+                            break;
+                        }
+                        case 'x':
+                        {
+                            if (i + 2 >= text.Length)
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    "Unexpected end of string", new SourceRange(greenNode.Range.StartOffset + i, 1)));
+                                break;
+                            }
+
+                            var hex = text[(i + 1)..(i + 3)];
+                            // 检查hex合法性
+                            if (!char.IsAsciiHexDigit(hex[0]) || !char.IsAsciiHexDigit(hex[1]))
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    $"Invalid hex escape sequence '\\x{hex}'",
+                                    new SourceRange(greenNode.Range.StartOffset + i, 2)));
+                                break;
+                            }
+
+                            i += 2;
+                            sb.Append((char)Convert.ToUInt16(hex.ToString(), 16));
+                            break;
+                        }
+                        case 'u':
+                        {
+                            // 解析 \u{xxxx} 形式的unicode字符
+                            if (i + 2 >= text.Length)
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    "Unexpected end of string",
+                                    new SourceRange(greenNode.Range.StartOffset + i - 1, 1)));
+                                break;
+                            }
+
+                            var j = 1;
+                            if (text[i + j] != '{')
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    $"Missing unicode escape sequence start '{{', current '{text[i + j]}'",
+                                    new SourceRange(greenNode.Range.StartOffset + i + j, 1)));
+                                break;
+                            }
+
+                            j++;
+                            while (i + j < text.Length && char.IsAsciiHexDigit(text[i + j]))
+                            {
+                                j++;
+                            }
+
+                            if (i + j >= text.Length)
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    "Unexpected end of string",
+                                    new SourceRange(greenNode.Range.StartOffset + i + j - 1, 1)));
+                                break;
+                            }
+
+                            if (text[i + j] != '}')
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    $"Missing unicode escape sequence end '}}', current '{text[i + j]}'",
+                                    new SourceRange(greenNode.Range.StartOffset + i + j, 1)));
+                                break;
+                            }
+
+                            var unicodeHex = text[(i + 2)..(i + j)];
+                            i += j;
+                            if (unicodeHex.Length > 8)
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    $"Invalid unicode escape sequence '{unicodeHex}'",
+                                    new SourceRange(greenNode.Range.StartOffset + i - j, unicodeHex.Length)));
+                                break;
+                            }
+
+                            var codePoint = Convert.ToInt32(unicodeHex.ToString(), 16);
+                            if (codePoint > 0x10FFFF)
+                            {
+                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                    $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
+                                    new SourceRange(greenNode.Range.StartOffset + i - j, unicodeHex.Length)));
+                                break;
+                            }
+
+                            sb.Append(char.ConvertFromUtf32(codePoint));
+                            break;
+                        }
+                        case '\r' or '\n':
+                        {
+                            // 跳过换行符
+                            break;
+                        }
+                        case '\\' or '\"' or '\'':
+                        {
+                            sb.Append(text[i]);
+                            break;
+                        }
+                        case 'z':
+                        {
+                            // 跳过空白符
+                            do
+                            {
+                                i++;
+                                if (i >= text.Length)
+                                {
+                                    break;
+                                }
+                            } while (char.IsWhiteSpace(text[i]));
+
+                            break;
+                        }
+                        default:
+                        {
+                            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                $"Invalid escape sequence '\\{text[i]}'",
+                                new SourceRange(greenNode.Range.StartOffset + i, 1)));
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+                default:
+                {
+                    if (text[i] == delimiter)
+                    {
+                        break;
+                    }
+
+                    sb.Append(text[i]);
+                    break;
+                }
+            }
+        }
+
+        return new LuaStringToken(sb.ToString(), greenNode, tree, parent);
+    }
+
+    // parse [[xxxx]]
+    private static LuaSyntaxElement CalculateLongString(GreenNode greenNode, LuaSyntaxTree tree,
+        LuaSyntaxElement? parent)
+    {
+        var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
+        if (text.Length < 4)
+        {
+            return new LuaStringToken(string.Empty, greenNode, tree, parent);
+        }
+
+        var equalNum = 0;
+        var i = 0;
+        if (text[i] != '[')
+        {
+            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                $"Invalid long string start, expected '[', current '{text[i]}'",
+                new SourceRange(greenNode.Range.StartOffset, 1)));
+            return new LuaStringToken(string.Empty, greenNode, tree, parent);
+        }
+
+        i++;
+        while (i < text.Length && text[i] == '=')
+        {
+            equalNum++;
+            i++;
+        }
+
+        if (i >= text.Length || text[i] != '[')
+        {
+            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                $"Invalid long string start, expected '[', current '{text[i]}'",
+                new SourceRange(greenNode.Range.StartOffset, 1)));
+            return new LuaStringToken(string.Empty, greenNode, tree, parent);
+        }
+
+        if (text.Length < i + equalNum + 2)
+        {
+            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                $"Invalid long string end, expected '{new string('=', equalNum)}]', current '{text[^1]}'",
+                new SourceRange(greenNode.Range.StartOffset + text.Length - 1, 1)));
+            return new LuaStringToken(string.Empty, greenNode, tree, parent);
+        }
+
+        var content = text[i..(text.Length - equalNum - 2)];
+
+        return new LuaStringToken(content.ToString(), greenNode, tree, parent);
     }
 }
