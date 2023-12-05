@@ -15,5 +15,6 @@ public enum TypeKind
     GenericParam,
     Table,
     GenericTable,
-    Method
+    Method,
+    LazyType
 }

@@ -11,28 +11,19 @@ public class LocalSymbol : LuaSymbol
 
     public LuaSyntaxElement Element { get; }
 
-    public LuaSyntaxElement? TypeElement { get; }
+    public ILuaType? LuaType { get; }
 
-    public int RetId { get; }
-
-    public LocalSymbol(LuaSyntaxElement element, string name, LuaSyntaxElement? typeElement, int retId = 0)
+    public LocalSymbol(LuaSyntaxElement element, string name, ILuaType luaType)
         : base(SymbolKind.LocalSymbol, null)
     {
         Name = name;
         Element = element;
-        TypeElement = typeElement;
-        RetId = retId;
+        LuaType = luaType;
     }
 
     public override ILuaType GetType(SearchContext context)
     {
-        var ty = context.Infer(TypeElement);
-        if (ty is LuaMultiRetType multiRetType)
-        {
-            ty = multiRetType.GetRetType(RetId) ?? context.Compilation.Builtin.Unknown;
-        }
-
-        return ty;
+        return LuaType;
     }
 
     public override IEnumerable<LuaLocation> GetLocations(SearchContext context)

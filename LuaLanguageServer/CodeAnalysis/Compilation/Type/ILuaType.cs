@@ -26,7 +26,7 @@ public abstract record IndexKey
 
     public record Ty(ILuaType Value) : IndexKey;
 
-    public static IndexKey FromExpr(LuaIndexExprSyntax expr, SearchContext context)
+    public static IndexKey? FromIndexExpr(LuaIndexExprSyntax expr, SearchContext context)
     {
         switch (expr)
         {
@@ -39,16 +39,37 @@ public abstract record IndexKey
                 switch (literal)
                 {
                     case LuaStringToken stringToken:
-                        return new String(stringToken.RepresentText);
+                        return new String(stringToken.InnerString);
                     case LuaIntegerToken integerToken:
-                        return new Integer((long)integerToken.Value);
+                        return new Integer(integerToken.Value);
                 }
 
                 break;
             }
         }
 
-        return new Ty(context.Infer(expr.IndexKeyExpr));
+        return null;
+    }
+
+    public static IndexKey? FromTableFieldExpr(LuaTableFieldSyntax field, SearchContext context)
+    {
+        switch (field)
+        {
+            case { NameKey : { } name }:
+            {
+                return new String(name.RepresentText);
+            }
+            case { NumberKey: LuaIntegerToken numberKey }:
+            {
+                return new Integer(numberKey.Value);
+            }
+            case { StringKey: { } stringKey }:
+            {
+                return new String(stringKey.InnerString);
+            }
+        }
+
+        return null;
     }
 
     public static IndexKey FromDocTypedField(LuaDocTagTypedFieldSyntax field, SearchContext context)

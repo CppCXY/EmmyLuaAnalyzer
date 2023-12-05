@@ -99,7 +99,7 @@ public abstract class LuaSyntaxElement
             {
                 var node = stack.Pop();
                 yield return node;
-                foreach (var child in node.Children)
+                foreach (var child in node.Children.Reverse())
                 {
                     stack.Push(child);
                 }
@@ -118,7 +118,7 @@ public abstract class LuaSyntaxElement
             }
 
             var stack = new Stack<LuaSyntaxElement>();
-            foreach (var child in Children)
+            foreach (var child in Children.Reverse())
             {
                 stack.Push(child);
             }
@@ -127,7 +127,7 @@ public abstract class LuaSyntaxElement
             {
                 var node = stack.Pop();
                 yield return node;
-                foreach (var child in node.Children)
+                foreach (var child in node.Children.Reverse())
                 {
                     stack.Push(child);
                 }
@@ -146,7 +146,7 @@ public abstract class LuaSyntaxElement
 
             var stack = new Stack<LuaSyntaxElement>();
 
-            foreach (var child in ChildrenWithTokens)
+            foreach (var child in ChildrenWithTokens.Reverse())
             {
                 stack.Push(child);
             }
@@ -158,7 +158,7 @@ public abstract class LuaSyntaxElement
                 // ReSharper disable once InvertIf
                 if (node is LuaSyntaxNode n)
                 {
-                    foreach (var child in n.ChildrenWithTokens)
+                    foreach (var child in n.ChildrenWithTokens.Reverse())
                     {
                         stack.Push(child);
                     }
@@ -211,7 +211,7 @@ public abstract class LuaSyntaxElement
                 // ReSharper disable once InvertIf
                 if (node is LuaSyntaxNode n)
                 {
-                    foreach (var child in n.ChildrenWithTokens)
+                    foreach (var child in n.ChildrenWithTokens.Reverse())
                     {
                         stack.Push(child);
                     }
@@ -268,7 +268,7 @@ public abstract class LuaSyntaxElement
 
         return _childrenElements == null
             ? null
-            : _childrenElements.OfType<LuaSyntaxToken>()?.FirstOrDefault(it => it.Kind == kind);
+            : _childrenElements.OfType<LuaSyntaxToken>().FirstOrDefault(it => it.Kind == kind);
     }
 
     public LuaSyntaxToken? FirstChildToken()

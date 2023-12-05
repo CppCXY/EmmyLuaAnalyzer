@@ -1,6 +1,7 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
@@ -15,7 +16,7 @@ public class StubIndexImpl
 
     public StubIndex<string, ILuaNamedType> LuaTypeIndex { get; } = new();
 
-    public StubIndex<LuaSyntaxElement, ILuaSymbol> LocalIndex { get; } = new();
+    public StubIndex<LuaSyntaxElement, ILuaSymbol> SyntaxIndex { get; } = new();
 
     public StubIndexImpl(LuaCompilation compilation)
     {

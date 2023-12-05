@@ -1,6 +1,7 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compile.Grammar.Lua;
 using LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 
@@ -22,13 +23,6 @@ public class LuaParser : IMarkerEventContainer
 
     private LuaDocParser _docParser;
 
-    public Marker Marker()
-    {
-        var position = Events.Count;
-        Events.Add(new MarkEvent.NodeStart(0, LuaSyntaxKind.None));
-        return new Marker(position);
-    }
-
     public LuaParser(LuaLexer lexer)
     {
         Lexer = lexer;
@@ -38,6 +32,13 @@ public class LuaParser : IMarkerEventContainer
         _tokenIndex = 0;
         _invalid = true;
         _docParser = new LuaDocParser(this);
+    }
+
+    public Marker Marker()
+    {
+        var position = Events.Count;
+        Events.Add(new MarkEvent.NodeStart(0, LuaSyntaxKind.None));
+        return new Marker(position);
     }
 
     public void Parse()

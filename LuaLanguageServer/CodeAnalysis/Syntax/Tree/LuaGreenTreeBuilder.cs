@@ -24,6 +24,8 @@ public class LuaGreenTreeBuilder
     // 多返回值
     public (GreenNode, List<Diagnostic.Diagnostic>) Build()
     {
+        Parser.Parse();
+        Diagnostics.AddRange(Parser.Lexer.Diagnostics);
         var tree = BuildTree();
         return (tree, Diagnostics);
     }

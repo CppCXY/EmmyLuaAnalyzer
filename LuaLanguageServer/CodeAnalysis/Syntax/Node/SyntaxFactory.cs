@@ -136,10 +136,20 @@ public static class SyntaxFactory
             }
         }
 
-        var value = hex
-            ? Convert.ToUInt64(text.ToString(), 16)
-            : Convert.ToUInt64(text.ToString(), 10);
-        return new LuaIntegerToken(value, suffix, greenNode, tree, parent);
+        try
+        {
+            var value = hex
+                ? Convert.ToInt64(text.ToString(), 16)
+                : Convert.ToInt64(text.ToString(), 10);
+            return new LuaIntegerToken(value, suffix, greenNode, tree, parent);
+        }
+        catch (OverflowException)
+        {
+            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                $"The integer literal '{text}' is too large to be represented in type 'long'",
+                new SourceRange(greenNode.Range.StartOffset, greenNode.Range.Length)));
+            return new LuaIntegerToken(0, suffix, greenNode, tree, parent);
+        }
     }
 
     private static LuaSyntaxElement CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)

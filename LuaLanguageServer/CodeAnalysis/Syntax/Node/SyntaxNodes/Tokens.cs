@@ -42,12 +42,12 @@ public class LuaNumberToken : LuaSyntaxToken
 
 public class LuaIntegerToken : LuaNumberToken
 {
-    public ulong Value { get; }
+    public long Value { get; }
 
     public string Suffix { get; }
 
     public LuaIntegerToken(
-        ulong value,
+        long value,
         string suffix,
         GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
     {

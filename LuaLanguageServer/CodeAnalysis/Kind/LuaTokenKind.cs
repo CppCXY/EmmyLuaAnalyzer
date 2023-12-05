@@ -75,11 +75,7 @@ public enum LuaTokenKind : ushort
     TkShebang, // shebang
     TkEof, // eof
 
-    // error
     TkUnknown, // unknown
-    TkUnCompleteLongStringStart, // [==
-    TkUnFinishedLongString, // ]]
-    TkUnFinishedString, // string
 
     // doc
     TkNormalStart, // -- or ---

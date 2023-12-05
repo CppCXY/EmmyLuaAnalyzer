@@ -11,8 +11,8 @@ public class TypeDeclarationSymbol : LuaSymbol
 
     public LuaSyntaxElement Element { get; }
 
-    public TypeDeclarationSymbol(LuaSyntaxElement element, ILuaType type, ILuaType? containingType = null) : base(
-        SymbolKind.TypeDeclarationSymbol, containingType)
+    public TypeDeclarationSymbol(LuaSyntaxElement element, ILuaType type) : base(
+        SymbolKind.TypeDeclarationSymbol, null)
     {
         Element = element;
         Type = type;

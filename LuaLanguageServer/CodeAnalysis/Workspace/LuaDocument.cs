@@ -10,10 +10,13 @@ public class DocumentId
 
     public string Url { get; }
 
+    public string Guid { get; }
+
     public DocumentId(string path)
     {
         Path = path;
         Url = new Uri(path).AbsoluteUri;
+        Guid = System.Guid.NewGuid().ToString();
     }
 }
 

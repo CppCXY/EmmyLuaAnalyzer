@@ -4,8 +4,6 @@ public enum SymbolKind
 {
     Unknown,
     NamedSymbol,
-    FieldSymbol,
-    IndexFieldSymbol,
     EnumFieldSymbol,
     MethodSymbol,
     LocalSymbol,

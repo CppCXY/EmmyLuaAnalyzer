@@ -8,7 +8,7 @@ public class VirtualSymbol : LuaSymbol
 {
     public ILuaType Type { get; }
 
-    public VirtualSymbol(ILuaType type, ILuaType containingType) : base(SymbolKind.VirtualSymbol, containingType)
+    public VirtualSymbol(ILuaType type, ILuaType? containingType) : base(SymbolKind.VirtualSymbol, containingType)
     {
         Type = type;
     }

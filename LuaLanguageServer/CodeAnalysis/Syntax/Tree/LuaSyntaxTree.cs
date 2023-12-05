@@ -35,7 +35,6 @@ public class LuaSyntaxTree
     public static LuaSyntaxTree Create(LuaSource source)
     {
         var parser = new LuaParser(new LuaLexer(source));
-        parser.Parse();
         var builder = new LuaGreenTreeBuilder(parser);
         var (root, diagnostics) = builder.Build();
 

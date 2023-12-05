@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using LuaLanguageServer.CodeAnalysis.Compile.Source;
 using LuaLanguageServer.CodeAnalysis.Kind;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 
@@ -9,10 +10,13 @@ public class LuaLexer
     public LuaSource Source { get; }
     private SourceReader Reader { get; }
 
+    public List<Diagnostic> Diagnostics { get; }
+
     public LuaLexer(LuaSource source)
     {
         Source = source;
         Reader = new SourceReader(source.Text);
+        Diagnostics = new List<Diagnostic>();
     }
 
     // 名字开始, 包括unicode
@@ -148,7 +152,13 @@ public class LuaLexer
                 Reader.Bump();
                 var sep = SkipSep();
                 if (sep == 0 && Reader.CurrentChar != '[') return LuaTokenKind.TkLeftBracket;
-                if (Reader.CurrentChar != '[') return LuaTokenKind.TkUnCompleteLongStringStart;
+                if (Reader.CurrentChar != '[')
+                {
+                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "invalid long string delimiter",
+                        Reader.SavedRange));
+                    return LuaTokenKind.TkLongString;
+                }
+
                 Reader.Bump();
                 return LexLongString(sep);
             }
@@ -243,7 +253,13 @@ public class LuaLexer
                     }
                 }
 
-                if (Reader.CurrentChar != quote) return LuaTokenKind.TkUnFinishedString;
+                if (Reader.CurrentChar != quote)
+                {
+                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished string",
+                        new SourceRange(Reader.CurrentPosition, 1)));
+                    return LuaTokenKind.TkString;
+                }
+
                 Reader.Bump();
                 return LuaTokenKind.TkString;
             }
@@ -402,8 +418,11 @@ public class LuaLexer
             }
 
             Reader.Bump();
-            break;
+            return LuaTokenKind.TkLongString;
         }
+
+        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished long string or comment",
+            new SourceRange(Reader.CurrentPosition, 1)));
 
         return LuaTokenKind.TkLongString;
     }

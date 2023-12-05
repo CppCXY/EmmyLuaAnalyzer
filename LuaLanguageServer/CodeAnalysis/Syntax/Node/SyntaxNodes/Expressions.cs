@@ -131,6 +131,8 @@ public class LuaTableExprSyntax : LuaExprSyntax
 {
     public IEnumerable<LuaTableFieldSyntax> FieldList => ChildNodes<LuaTableFieldSyntax>();
 
+    public string UniqueId => $"table:{Green.Range.StartOffset}";
+
     public LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
         : base(greenNode, tree, parent)
     {
