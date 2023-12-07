@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
+
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public static class ExpressionInfer
 {
@@ -179,16 +180,16 @@ public static class ExpressionInfer
 
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree);
-        var declaration = declarationTree.FindDeclaration(nameExpr)?.FirstDeclaration.SyntaxElement;
-        if (declaration is not null && !ReferenceEquals(declaration, nameExpr))
-        {
-            return context.Infer(declaration);
-        }
-        else
-        {
-            // TODO 找到他的表达式对象
-        }
+        // var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree);
+        // var declaration = declarationTree.FindDeclaration(nameExpr)?.FirstDeclaration.SyntaxElement;
+        // if (declaration is not null && !ReferenceEquals(declaration, nameExpr))
+        // {
+        //     return context.Infer(declaration);
+        // }
+        // else
+        // {
+        //     // TODO 找到他的表达式对象
+        // }
         return context.Compilation.Builtin.Unknown;
     }
 }

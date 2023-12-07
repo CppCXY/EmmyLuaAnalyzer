@@ -1,4 +1,4 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;

@@ -248,12 +248,12 @@ public static class Index
     private static void MethodIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaFuncStatSyntax luaFuncStatSyntax)
     {
-        // TODO
-        // if (luaFuncStatSyntax is { PrefixExpr: { } prefixExpr })
-        // {
-        //     stubIndexImpl.Members.AddStub(
-        //         documentId, prefixExpr, new LuaMember.Function(luaFuncStatSyntax));
-        // }
+        if (luaFuncStatSyntax is { IsLocal: true, FuncBody: { } funcBody, LocalName: { Name: { } name } localName })
+        {
+            var localSymbol = new LocalSymbol(localName, name.RepresentText,
+                new LuaLazyType(funcBody));
+            stubIndexImpl.SyntaxIndex.AddStub(documentId, localName, localSymbol);
+        }
     }
 
     private static void ForIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
@@ -411,7 +411,6 @@ public static class Index
     private static void LocalIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,
         LuaLocalStatSyntax luaLocalStatSyntax)
     {
-        var localNameList = new List<(LuaSyntaxElement, LuaSymbol)>();
         var count = luaLocalStatSyntax.NameList.Count();
         var lastValidExprId = -1;
         LuaExprSyntax? lastValidExpr = null;
@@ -429,24 +428,8 @@ public static class Index
             {
                 var localSymbol = new LocalSymbol(localName, name.RepresentText,
                     new LuaLazyType(lastValidExpr, i - lastValidExprId));
-                localNameList.Add((localName, localSymbol));
+                stubIndexImpl.SyntaxIndex.AddStub(documentId, localName, localSymbol);
             }
-        }
-
-        if (localNameList.Count == 0)
-        {
-            return;
-        }
-
-        var docTag = FindDefineTypeTag(luaLocalStatSyntax, stubIndexImpl);
-        if (docTag is not null)
-        {
-            ModifyNameDeclarationSymbol(docTag, localNameList, stubIndexImpl);
-        }
-
-        foreach (var valueTuple in localNameList)
-        {
-            stubIndexImpl.SyntaxIndex.AddStub(documentId, valueTuple.Item1, valueTuple.Item2);
         }
     }
 
@@ -454,9 +437,7 @@ public static class Index
         LuaAssignStatSyntax luaAssignStatSyntax)
     {
         var compilation = stubIndexImpl.Compilation;
-        // var context = compilation.SearchContext;
-        var declarationTree = compilation.GetDeclarationTree(luaAssignStatSyntax.Tree);
-        // var varSymbols = new List<(LuaSyntaxElement, LuaSymbol)>();
+        var declarationTree = compilation.GetDeclarationTree(documentId);
         var count = luaAssignStatSyntax.VarList.Count();
         var lastValidExprId = -1;
         LuaExprSyntax? lastValidExpr = null;
@@ -479,7 +460,7 @@ public static class Index
                     continue;
                 }
 
-                if (nameExpr is { Name: { } name })
+                if (declaration is { IsGlobal: true } && nameExpr is { Name: { } name })
                 {
                     var globalSymbol = new NamedSymbol(nameExpr, name.RepresentText,
                         new LuaLazyType(lastValidExpr, i - lastValidExprId), compilation.Builtin.Global);
@@ -494,17 +475,6 @@ public static class Index
                 stubIndexImpl.SyntaxIndex.AddStub(documentId, indexExpr, virtualSymbol);
             }
         }
-
-        // var docTag = FindDefineTypeTag(luaAssignStatSyntax, stubIndexImpl);
-        // if (docTag is not null)
-        // {
-        //     ModifyNameDeclarationSymbol(docTag, varSymbols, stubIndexImpl);
-        // }
-        //
-        // foreach (var valueTuple in varSymbols)
-        // {
-        //     stubIndexImpl.LocalIndex.AddStub(documentId, valueTuple.Item1, valueTuple.Item2);
-        // }
     }
 
     private static void TableIndex(StubIndexImpl stubIndexImpl, DocumentId documentId,

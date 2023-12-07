@@ -1,12 +1,10 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
-using LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
-using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public class SearchContext
 {
@@ -51,7 +49,7 @@ public class SearchContext
             _ => Compilation.Builtin.Unknown
         };
     }
-    
+
     public ILuaNamedType FindLuaType(string name)
     {
         foreach (var searcher in _searchers)

@@ -2,7 +2,7 @@
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public abstract class LuaSearcher : ILuaSearcher
 {

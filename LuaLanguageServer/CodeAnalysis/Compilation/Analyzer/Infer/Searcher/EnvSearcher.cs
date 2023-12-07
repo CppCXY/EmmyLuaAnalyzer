@@ -1,8 +1,6 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
-using LuaLanguageServer.CodeAnalysis.Compilation.Type;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer.Searcher;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public class EnvSearcher : LuaSearcher
 {

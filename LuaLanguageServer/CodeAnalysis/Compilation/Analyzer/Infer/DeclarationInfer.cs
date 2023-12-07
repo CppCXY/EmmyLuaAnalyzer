@@ -1,7 +1,7 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public static class DeclarationInfer
 {

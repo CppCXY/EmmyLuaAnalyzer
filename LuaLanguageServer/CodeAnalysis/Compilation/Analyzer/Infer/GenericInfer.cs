@@ -1,6 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Infer;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public static class GenericInfer
 {
