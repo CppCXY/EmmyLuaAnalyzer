@@ -5,13 +5,8 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public abstract class LuaType : ILuaType
+public abstract class LuaType(TypeKind kind) : ILuaType
 {
-    public LuaType(TypeKind kind)
-    {
-        Kind = kind;
-    }
-
     public abstract IEnumerable<ILuaSymbol> GetMembers(SearchContext context);
 
     public virtual IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context) => Enumerable.Empty<LuaSymbol>();
@@ -27,5 +22,5 @@ public abstract class LuaType : ILuaType
         return SubTypeOf(ty, context);
     }
 
-    public TypeKind Kind { get; }
+    public TypeKind Kind { get; } = kind;
 }

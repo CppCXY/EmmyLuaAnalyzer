@@ -5,23 +5,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class GenericParam : LuaType, ILuaNamedType
+public class GenericParam(string name, ILuaType? type, LuaDocTagGenericParamSyntax tagGenericParamSyntax)
+    : LuaType(TypeKind.GenericParam), ILuaNamedType
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public ILuaType? Type { get; }
+    public ILuaType? Type { get; } = type;
 
-    private LuaDocTagGenericParamSyntax _tagGenericParamSyntax;
-
-    public GenericParam(string name, ILuaType? type, LuaDocTagGenericParamSyntax tagGenericParamSyntax)
-        : base(TypeKind.GenericParam)
-    {
-        Name = name;
-        Type = type;
-        _tagGenericParamSyntax = tagGenericParamSyntax;
-    }
-
-    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => _tagGenericParamSyntax;
+    public LuaSyntaxElement? GetSyntaxElement(SearchContext context) => tagGenericParamSyntax;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {

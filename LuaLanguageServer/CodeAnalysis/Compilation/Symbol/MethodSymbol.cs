@@ -5,18 +5,12 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class MethodSymbol : LuaSymbol
+public class MethodSymbol(LuaSyntaxElement element, LuaMethod method, ILuaType containingType)
+    : LuaSymbol(SymbolKind.MethodSymbol, containingType)
 {
-    public LuaMethod Method { get; }
+    public LuaMethod Method { get; } = method;
 
-    public LuaSyntaxElement Element { get; }
-
-    public MethodSymbol(LuaSyntaxElement element, LuaMethod method, ILuaType containingType)
-        : base(SymbolKind.MethodSymbol, containingType)
-    {
-        Element = element;
-        Method = method;
-    }
+    public LuaSyntaxElement Element { get; } = element;
 
     public override ILuaType GetType(SearchContext context)
     {

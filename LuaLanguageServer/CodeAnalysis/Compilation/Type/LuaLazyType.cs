@@ -5,19 +5,9 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaLazyType : LuaType
+public class LuaLazyType(LuaSyntaxElement? typeElement, int retId = 0) : LuaType(TypeKind.LazyType)
 {
     private ILuaType? _reaLuaType;
-
-    private LuaSyntaxElement? _typeElement;
-
-    private int _retId;
-
-    public LuaLazyType(LuaSyntaxElement? typeElement, int retId = 0) : base(TypeKind.LazyType)
-    {
-        _typeElement = typeElement;
-        _retId = retId;
-    }
 
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {
@@ -26,10 +16,10 @@ public class LuaLazyType : LuaType
 
     public ILuaType GetRealType(SearchContext context)
     {
-        _reaLuaType ??= context.Infer(_typeElement);
+        _reaLuaType ??= context.Infer(typeElement);
         if (_reaLuaType is LuaMultiRetType multi)
         {
-            return multi.GetRetType(_retId) ?? context.Compilation.Builtin.Unknown;
+            return multi.GetRetType(retId) ?? context.Compilation.Builtin.Unknown;
         }
 
         return _reaLuaType;

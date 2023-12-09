@@ -5,14 +5,9 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaClass : LuaType, ILuaNamedType
+public class LuaClass(string name) : LuaType(TypeKind.Class), ILuaNamedType
 {
-    public string Name { get; }
-
-    public LuaClass(string name) : base(TypeKind.Class)
-    {
-        Name = name;
-    }
+    public string Name { get; } = name;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {

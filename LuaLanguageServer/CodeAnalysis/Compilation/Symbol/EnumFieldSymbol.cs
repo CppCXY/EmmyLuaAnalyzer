@@ -5,21 +5,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class EnumFieldSymbol : LuaSymbol
+public class EnumFieldSymbol(LuaSyntaxElement element, string name, LuaEnum containingType)
+    : LuaSymbol(SymbolKind.EnumFieldSymbol, containingType)
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public new LuaEnum ContainingType { get; }
+    public new LuaEnum ContainingType { get; } = containingType;
 
-    public LuaSyntaxElement Element { get; }
-
-    public EnumFieldSymbol(LuaSyntaxElement element, string name, LuaEnum containingType)
-        : base(SymbolKind.EnumFieldSymbol, containingType)
-    {
-        Element = element;
-        Name = name;
-        ContainingType = containingType;
-    }
+    public LuaSyntaxElement Element { get; } = element;
 
     public override ILuaType GetType(SearchContext context)
     {

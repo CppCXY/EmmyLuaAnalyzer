@@ -7,7 +7,7 @@ public class LuaTuple : LuaType
 {
     private readonly List<ILuaType> _types = new();
 
-    public LuaTuple(List<ILuaType> symbols) : base(TypeKind.Tuple)
+    public LuaTuple(IEnumerable<ILuaType> symbols) : base(TypeKind.Tuple)
     {
         _types.AddRange(symbols);
     }

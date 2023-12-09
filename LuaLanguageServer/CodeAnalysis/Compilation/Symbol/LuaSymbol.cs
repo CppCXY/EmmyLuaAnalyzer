@@ -4,22 +4,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public abstract class LuaSymbol : ILuaSymbol
+public abstract class LuaSymbol(SymbolKind kind, ILuaType? containingType) : ILuaSymbol
 {
-    public SymbolKind Kind { get; }
+    public SymbolKind Kind { get; } = kind;
 
-    public ILuaType? ContainingType { get; }
+    public ILuaType? ContainingType { get; } = containingType;
 
-    public LuaSymbol(SymbolKind kind, ILuaType? containingType)
+    public LuaSymbol(ILuaType containingType) : this(SymbolKind.Unknown, containingType)
     {
-        Kind = kind;
-        ContainingType = containingType;
-    }
-
-    public LuaSymbol(ILuaType containingType)
-    {
-        Kind = SymbolKind.Unknown;
-        ContainingType = containingType;
     }
 
     public abstract ILuaType GetType(SearchContext context);

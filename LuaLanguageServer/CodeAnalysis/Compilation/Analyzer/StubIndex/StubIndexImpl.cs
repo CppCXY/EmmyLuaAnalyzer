@@ -4,9 +4,9 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
 
-public class StubIndexImpl
+public class StubIndexImpl(LuaCompilation compilation)
 {
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
     public StubIndex<string, ILuaSymbol> ShortNameIndex { get; } = new();
 
@@ -15,9 +15,4 @@ public class StubIndexImpl
     public StubIndex<string, ILuaNamedType> LuaTypeIndex { get; } = new();
 
     public StubIndex<LuaSyntaxElement, ILuaSymbol> SyntaxIndex { get; } = new();
-
-    public StubIndexImpl(LuaCompilation compilation)
-    {
-        Compilation = compilation;
-    }
 }

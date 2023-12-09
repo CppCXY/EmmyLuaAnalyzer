@@ -4,14 +4,10 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class VirtualSymbol : LuaSymbol
+public class VirtualSymbol(ILuaType type, ILuaType? containingType)
+    : LuaSymbol(SymbolKind.VirtualSymbol, containingType)
 {
-    public ILuaType Type { get; }
-
-    public VirtualSymbol(ILuaType type, ILuaType? containingType) : base(SymbolKind.VirtualSymbol, containingType)
-    {
-        Type = type;
-    }
+    public ILuaType Type { get; } = type;
 
     public override ILuaType GetType(SearchContext context)
     {

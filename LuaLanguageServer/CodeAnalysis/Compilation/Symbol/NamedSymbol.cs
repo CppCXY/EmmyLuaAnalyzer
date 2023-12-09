@@ -5,21 +5,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class NamedSymbol : LuaSymbol
+public class NamedSymbol(LuaSyntaxElement element, string name, ILuaType type, ILuaType containingType)
+    : LuaSymbol(SymbolKind.NamedSymbol, containingType)
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public ILuaType Type { get; }
+    public ILuaType Type { get; } = type;
 
-    public LuaSyntaxElement Element { get; }
-
-    public NamedSymbol(LuaSyntaxElement element, string name, ILuaType type, ILuaType containingType)
-        : base(SymbolKind.NamedSymbol, containingType)
-    {
-        Name = name;
-        Element = element;
-        Type = type;
-    }
+    public LuaSyntaxElement Element { get; } = element;
 
     public override ILuaType GetType(SearchContext context)
     {

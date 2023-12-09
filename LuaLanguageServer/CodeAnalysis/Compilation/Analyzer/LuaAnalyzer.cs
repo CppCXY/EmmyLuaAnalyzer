@@ -5,18 +5,15 @@ using Index = LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex.Inde
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer;
 
-public class LuaAnalyzer
+public class LuaAnalyzer(LuaCompilation compilation)
 {
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
     private HashSet<DocumentId> DirtyDocuments { get; } = new();
 
     private Dictionary<DocumentId, DeclarationTree> DeclarationTrees { get; } = new();
 
-    public LuaAnalyzer(LuaCompilation compilation)
-    {
-        Compilation = compilation;
-    }
+    private Dictionary<string, Declaration.Declaration> GlobalDeclaration { get; } = new();
 
     public void Analyze()
     {
@@ -39,6 +36,15 @@ public class LuaAnalyzer
                     if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
                     {
                         Index.BuildIndex(Compilation.StubIndexImpl, documentId, syntaxTree);
+                    }
+                }
+
+                // bind analyze
+                foreach (var documentId in DirtyDocuments)
+                {
+                    if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
+                    {
+                        // Index.BuildIndex(Compilation.StubIndexImpl, documentId, syntaxTree);
                     }
                 }
             }

@@ -4,21 +4,15 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaEnum : LuaType, ILuaNamedType
+public class LuaEnum(string name, LuaSyntaxElement? typeElement) : LuaType(TypeKind.Enum), ILuaNamedType
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public LuaSyntaxElement? TypeElement { get; }
+    public LuaSyntaxElement? TypeElement { get; } = typeElement;
 
     public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
     {
         return Enumerable.Empty<GenericParam>();
-    }
-
-    public LuaEnum(string name, LuaSyntaxElement? typeElement) : base(TypeKind.Enum)
-    {
-        Name = name;
-        TypeElement = typeElement;
     }
 
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)

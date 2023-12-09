@@ -5,18 +5,11 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class LabelSymbol : LuaSymbol
+public class LabelSymbol(LuaSyntaxElement element, string name) : LuaSymbol(SymbolKind.LabelSymbol, null)
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public LuaSyntaxElement Element { get; }
-
-    public LabelSymbol(LuaSyntaxElement element, string name)
-        : base(SymbolKind.LabelSymbol, null)
-    {
-        Name = name;
-        Element = element;
-    }
+    public LuaSyntaxElement Element { get; } = element;
 
     public override ILuaType GetType(SearchContext context)
     {

@@ -41,11 +41,6 @@
     </ItemGroup>
 
 
-    <ItemGroup>
-      <Folder Include="CodeAnalysis\Compilation\Analyzer\Bind\" />
-    </ItemGroup>
-
-
 
 
 

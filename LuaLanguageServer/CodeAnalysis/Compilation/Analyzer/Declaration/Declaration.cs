@@ -74,17 +74,24 @@ public enum DeclarationFlag : ushort
     Global = 0x0008,
 }
 
-public class Declaration : DeclarationNode
+public class Declaration(
+    string name,
+    int position,
+    LuaSyntaxElement syntaxElement,
+    DeclarationFlag flag,
+    DeclarationNodeContainer? parent,
+    Declaration? prev)
+    : DeclarationNode(position, parent)
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public LuaSyntaxElement SyntaxElement { get; }
+    public LuaSyntaxElement SyntaxElement { get; } = syntaxElement;
 
-    public DeclarationFlag Flags { get; set; }
+    public DeclarationFlag Flags { get; set; } = flag;
 
     // private Dictionary<string, Declaration> _fields = new();
 
-    public Declaration? PrevDeclaration { get; set; }
+    public Declaration? PrevDeclaration { get; set; } = prev;
 
     public bool IsLocal => (Flags & DeclarationFlag.Local) != 0;
 
@@ -93,17 +100,6 @@ public class Declaration : DeclarationNode
     public bool IsClassMember => (Flags & DeclarationFlag.ClassMember) != 0;
 
     public bool IsGlobal => (Flags & DeclarationFlag.Global) != 0;
-
-    public Declaration(
-        string name, int position, LuaSyntaxElement syntaxElement, DeclarationFlag flag,
-        DeclarationNodeContainer? parent, Declaration? prev)
-        : base(position, parent)
-    {
-        Name = name;
-        SyntaxElement = syntaxElement;
-        Flags = flag;
-        PrevDeclaration = prev;
-    }
 
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 

@@ -5,21 +5,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
-public class IndexedSymbol : LuaSymbol
+public class IndexedSymbol(LuaSyntaxElement element, long index, ILuaType type, ILuaType containingType)
+    : LuaSymbol(SymbolKind.NamedSymbol, containingType)
 {
-    public long Index { get; }
+    public long Index { get; } = index;
 
-    public ILuaType Type { get; }
+    public ILuaType Type { get; } = type;
 
-    public LuaSyntaxElement Element { get; }
-
-    public IndexedSymbol(LuaSyntaxElement element, long index, ILuaType type, ILuaType containingType)
-        : base(SymbolKind.NamedSymbol, containingType)
-    {
-        Index = index;
-        Element = element;
-        Type = type;
-    }
+    public LuaSyntaxElement Element { get; } = element;
 
     public override ILuaType GetType(SearchContext context)
     {
