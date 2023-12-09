@@ -5,7 +5,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
 
 public static class Index
 {
@@ -437,7 +437,7 @@ public static class Index
         LuaAssignStatSyntax luaAssignStatSyntax)
     {
         var compilation = stubIndexImpl.Compilation;
-        var declarationTree = compilation.GetDeclarationTree(documentId);
+        var declarationTree = compilation.LuaAnalyzer.GetDeclarationTree(documentId);
         var count = luaAssignStatSyntax.VarList.Count();
         var lastValidExprId = -1;
         LuaExprSyntax? lastValidExpr = null;

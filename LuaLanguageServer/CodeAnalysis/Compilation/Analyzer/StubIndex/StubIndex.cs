@@ -1,7 +1,6 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
-using LuaLanguageServer.CodeAnalysis.Workspace;
+﻿using LuaLanguageServer.CodeAnalysis.Workspace;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.StubIndex;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
 
 public class StubIndex<TKey, TStubElement>
     where TKey : notnull
