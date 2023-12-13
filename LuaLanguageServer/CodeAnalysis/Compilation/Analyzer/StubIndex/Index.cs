@@ -148,8 +148,8 @@ public static class Index
             var enumType = CreateLuaType(stubIndexImpl, documentId, name.RepresentText,
                 () => new LuaEnum(name.RepresentText, luaDocTagEnumSyntax.BaseType));
             var enumSymbol = new NamedSymbol(
-                luaDocTagEnumSyntax,
-                luaDocTagEnumSyntax.Name.RepresentText,
+                name,
+                name.RepresentText,
                 enumType,
                 stubIndexImpl.Compilation.Builtin.Global
             );
@@ -162,7 +162,7 @@ public static class Index
                 if (field is { Name: { } fieldName })
                 {
                     var fieldSymbol = new EnumFieldSymbol(
-                        field,
+                        fieldName,
                         fieldName.RepresentText,
                         enumType
                     );

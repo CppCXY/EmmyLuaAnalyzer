@@ -1,7 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
-using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;

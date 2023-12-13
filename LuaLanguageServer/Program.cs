@@ -4,7 +4,6 @@
 // await server.StartAsync(args);
 
 using System.Diagnostics;
-using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;

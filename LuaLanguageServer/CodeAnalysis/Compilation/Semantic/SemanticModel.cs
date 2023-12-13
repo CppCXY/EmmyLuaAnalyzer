@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;

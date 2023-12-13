@@ -1,9 +1,10 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
 public class DeclarationTreeBuilder : ILuaNodeWalker
 {
@@ -17,16 +18,21 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
 
     private DeclarationTree _tree;
 
-    public static DeclarationTree Build(LuaSyntaxTree tree)
+    private Dictionary<string, ILuaType> _typeDeclarations = new();
+
+    private LuaAnalyzer Analyzer { get; }
+
+    public static DeclarationTree Build(LuaSyntaxTree tree, LuaAnalyzer analyzer)
     {
-        var builder = new DeclarationTreeBuilder(tree);
+        var builder = new DeclarationTreeBuilder(tree, analyzer);
         tree.SyntaxRoot.Accept(builder);
         return builder._tree;
     }
 
-    public DeclarationTreeBuilder(LuaSyntaxTree tree)
+    private DeclarationTreeBuilder(LuaSyntaxTree tree, LuaAnalyzer analyzer)
     {
         _tree = new DeclarationTree(tree, _scopeOwners);
+        Analyzer = analyzer;
     }
 
     private Declaration? FindNameExpr(LuaNameExprSyntax nameExpr)
@@ -52,14 +58,15 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
 
     private int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
-    private Declaration CreateDeclaration(string name, LuaSyntaxElement element, DeclarationFlag flag)
+    private Declaration CreateDeclaration(string name, LuaSyntaxElement element, DeclarationFlag flag,
+        ILuaType? luaType)
     {
         var first = element switch
         {
             LuaNameExprSyntax nameExpr => FindNameExpr(nameExpr),
             _ => null
         };
-        return new Declaration(name, GetPosition(element), element, flag, _curScope, first);
+        return new Declaration(name, GetPosition(element), element, flag, _curScope, first, luaType);
     }
 
     private DeclarationScope Push(LuaSyntaxElement element)
@@ -98,69 +105,69 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
 
     public void WalkIn(LuaSyntaxNode node)
     {
+        if (IsScopeOwner(node))
+        {
+            Push(node);
+        }
+
         switch (node)
         {
-            case LuaLocalNameSyntax localNameSyntax:
+            case LuaLocalStatSyntax localStatSyntax:
             {
-                if (localNameSyntax.Name is { } name)
-                {
-                    var declaration = CreateDeclaration(name.RepresentText, localNameSyntax, DeclarationFlag.Local);
-                    _curScope?.Add(declaration);
-                }
-
+                LocalStatDeclarationAnalysis(localStatSyntax);
                 break;
             }
             case LuaParamListSyntax paramListSyntax:
             {
+                var dic = FindParamListDeclaration(paramListSyntax);
                 foreach (var param in paramListSyntax.Params)
                 {
                     if (param.Name is { } name)
                     {
-                        var declaration = CreateDeclaration(name.RepresentText, param,
-                            DeclarationFlag.Local);
+                        var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
+                            dic.GetValueOrDefault(name.RepresentText));
                         _curScope?.Add(declaration);
                     }
                 }
 
                 break;
             }
-            case LuaFuncStatSyntax funcStatSyntax:
+            case LuaForRangeStatSyntax forRangeStatSyntax:
             {
-                if (funcStatSyntax is { IsLocal: true, LocalName.Name: { } name })
+                var dic = FindParamListDeclaration(forRangeStatSyntax);
+                foreach (var param in forRangeStatSyntax.IteratorNames)
                 {
-                    var declaration = CreateDeclaration(name.RepresentText, funcStatSyntax,
-                        DeclarationFlag.Local | DeclarationFlag.Function);
-                    _curScope?.Add(declaration);
-                }
-                break;
-            }
-            case LuaAssignStatSyntax assignStatSyntax:
-            {
-                foreach (var varExpr in assignStatSyntax.VarList)
-                {
-                    switch (varExpr)
+                    if (param.Name is { } name)
                     {
-                        case LuaNameExprSyntax nameExpr:
-                        {
-                            if (nameExpr.Name is { } name)
-                            {
-                                var flags = FindNameExpr(nameExpr)?.Flags ?? DeclarationFlag.Global;
-                                var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags);
-                                _curScope?.Add(declaration);
-                            }
-
-                            break;
-                        }
+                        var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
+                            dic.GetValueOrDefault(name.RepresentText));
+                        _curScope?.Add(declaration);
                     }
                 }
 
                 break;
             }
-        }
+            case LuaForStatSyntax forStatSyntax:
+            {
+                if (forStatSyntax.IteratorName is { Name: { } name })
+                {
+                    var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local,
+                        Analyzer.Compilation.Builtin.Integer);
+                    _curScope?.Add(declaration);
+                }
 
-        if (IsScopeOwner(node))
-        {
-            Push(node);
+                break;
+            }
+            case LuaFuncStatSyntax funcStatSyntax:
+            {
+                MethodDeclarationAnalysis(funcStatSyntax);
+                break;
+            }
+            case LuaAssignStatSyntax assignStatSyntax:
+            {
+                AssignStatDeclarationAnalysis(assignStatSyntax);
+                break;
+            }
         }
     }
 
@@ -173,6 +180,163 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
     }
 
     private static bool IsScopeOwner(LuaSyntaxNode node)
-        => node is LuaBlockSyntax or LuaFuncStatSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
+        => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
             or LuaForStatSyntax;
+
+    private void LocalStatDeclarationAnalysis(LuaLocalStatSyntax localStatSyntax)
+    {
+        var typeDeclarations = FindLocalOrAssignTagDeclaration(localStatSyntax);
+        var nameList = localStatSyntax.NameList.ToList();
+        var count = nameList.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var localName = nameList[i];
+
+            var luaType = typeDeclarations.ElementAtOrDefault(i);
+            if (localName is { Name: { } name })
+            {
+                var declaration = CreateDeclaration(name.RepresentText, localName, DeclarationFlag.Local, luaType);
+                _curScope?.Add(declaration);
+            }
+        }
+    }
+
+    private List<ILuaType> FindLocalOrAssignTagDeclaration(LuaStatSyntax stat)
+    {
+        var docList = stat.Comments.FirstOrDefault()?.DocList;
+        if (docList is null)
+        {
+            return [];
+        }
+
+        foreach (var tag in docList)
+        {
+            switch (tag)
+            {
+                case LuaDocTagClassSyntax tagClassSyntax:
+                {
+                    if (tagClassSyntax is { Name: { } name })
+                    {
+                        if (_typeDeclarations.TryGetValue(name.RepresentText, out var type))
+                        {
+                            return [type];
+                        }
+                    }
+
+                    break;
+                }
+                case LuaDocTagInterfaceSyntax tagInterfaceSyntax:
+                {
+                    if (tagInterfaceSyntax is { Name: { } name })
+                    {
+                        if (_typeDeclarations.TryGetValue(name.RepresentText, out var type))
+                        {
+                            return [type];
+                        }
+                    }
+
+                    break;
+                }
+                case LuaDocTagAliasSyntax tagAliasSyntax:
+                {
+                    if (tagAliasSyntax is { Name: { } name })
+                    {
+                        if (_typeDeclarations.TryGetValue(name.RepresentText, out var type))
+                        {
+                            return [type];
+                        }
+                    }
+
+                    break;
+                }
+                case LuaDocTagEnumSyntax tagEnumSyntax:
+                {
+                    if (tagEnumSyntax is { Name: { } name })
+                    {
+                        if (_typeDeclarations.TryGetValue(name.RepresentText, out var type))
+                        {
+                            return [type];
+                        }
+                    }
+
+                    break;
+                }
+                case LuaDocTagTypeSyntax tagTypeSyntax:
+                {
+                    return tagTypeSyntax.TypeList.Select(type => new LuaTypeRef(type)).Cast<ILuaType>().ToList();
+                }
+            }
+        }
+
+        return [];
+    }
+
+    private Dictionary<string, ILuaType> FindParamListDeclaration(LuaSyntaxElement element)
+    {
+        var stat = element.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
+        if (stat is null)
+        {
+            return [];
+        }
+
+        var docList = stat.Comments.FirstOrDefault()?.DocList;
+        if (docList is null)
+        {
+            return [];
+        }
+
+        var dic = new Dictionary<string, ILuaType>();
+        foreach (var tagParam in docList.OfType<LuaDocTagParamSyntax>())
+        {
+            if (tagParam is { Name: { } name, Type: { } type })
+            {
+                dic.Add(name.RepresentText, new LuaTypeRef(type));
+            }
+        }
+
+        return dic;
+    }
+
+    private void AssignStatDeclarationAnalysis(LuaAssignStatSyntax luaAssignStat)
+    {
+        var typeDeclarations = FindLocalOrAssignTagDeclaration(luaAssignStat);
+        var varList = luaAssignStat.VarList.ToList();
+        var count = varList.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var varExpr = varList[i];
+            var luaType = typeDeclarations.ElementAtOrDefault(i);
+
+            switch (varExpr)
+            {
+                case LuaNameExprSyntax nameExpr:
+                {
+                    if (nameExpr.Name is { } name)
+                    {
+                        var flags = FindNameExpr(nameExpr)?.Flags ?? DeclarationFlag.Global;
+                        var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, luaType);
+                        _curScope?.Add(declaration);
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private void MethodDeclarationAnalysis(LuaFuncStatSyntax luaFuncStat)
+    {
+        if (luaFuncStat is { IsLocal: true, LocalName.Name: { } name })
+        {
+            var declaration = CreateDeclaration(name.RepresentText, luaFuncStat,
+                DeclarationFlag.Function | DeclarationFlag.Local, null);
+            _curScope?.Add(declaration);
+        }
+        else if (luaFuncStat is { IsLocal: false, NameExpr: { } nameExpr })
+        {
+            // var declaration = CreateDeclaration(name.RepresentText, luaFuncStat,
+            //     DeclarationFlag.Function | DeclarationFlag.Global, null);
+            // _curScope?.Add(declaration);
+        }
+    }
 }

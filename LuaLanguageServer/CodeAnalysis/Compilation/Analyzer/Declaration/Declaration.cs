@@ -1,7 +1,7 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
 public class DeclarationNode
 {
@@ -72,6 +72,7 @@ public enum DeclarationFlag : ushort
     Function = 0x0002,
     ClassMember = 0x0004,
     Global = 0x0008,
+    TypeDeclaration = 0x0010,
 }
 
 public class Declaration(
@@ -80,7 +81,8 @@ public class Declaration(
     LuaSyntaxElement syntaxElement,
     DeclarationFlag flag,
     DeclarationNodeContainer? parent,
-    Declaration? prev)
+    Declaration? prev,
+    ILuaType? luaType)
     : DeclarationNode(position, parent)
 {
     public string Name { get; } = name;
@@ -89,7 +91,7 @@ public class Declaration(
 
     public DeclarationFlag Flags { get; set; } = flag;
 
-    // private Dictionary<string, Declaration> _fields = new();
+    public ILuaType? LuaType { get; set; } = luaType;
 
     public Declaration? PrevDeclaration { get; set; } = prev;
 

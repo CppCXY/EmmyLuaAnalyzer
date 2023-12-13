@@ -15,4 +15,6 @@ public class StubIndexImpl(LuaCompilation compilation)
     public StubIndex<string, ILuaNamedType> LuaTypeIndex { get; } = new();
 
     public StubIndex<LuaSyntaxElement, ILuaSymbol> SyntaxIndex { get; } = new();
+
+    public StubIndex<string, Declaration.Declaration> Global { get; } = new();
 }

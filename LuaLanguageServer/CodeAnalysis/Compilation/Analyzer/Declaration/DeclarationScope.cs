@@ -1,19 +1,13 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationScope : DeclarationNodeContainer
+public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
+    : DeclarationNodeContainer(pos, parent)
 {
-    public DeclarationTree Tree { get; }
+    public DeclarationTree Tree { get; } = tree;
 
-    public new DeclarationScope? Parent { get; }
-
-    public DeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
-        : base(position, parent)
-    {
-        Tree = tree;
-        Parent = parent;
-    }
+    public new DeclarationScope? Parent { get; } = parent;
 
     public virtual bool WalkOver(Func<Declaration, bool> process)
     {
@@ -58,13 +52,9 @@ public class DeclarationScope : DeclarationNodeContainer
     }
 }
 
-public class LocalStatDeclarationScope : DeclarationScope
+public class LocalStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
+    : DeclarationScope(tree, pos, parent)
 {
-    public LocalStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
-        : base(tree, position, parent)
-    {
-    }
-
     public override bool WalkOver(Func<Declaration, bool> process)
     {
         return ProcessNode(process);
@@ -76,13 +66,9 @@ public class LocalStatDeclarationScope : DeclarationScope
     }
 }
 
-public class RepeatStatDeclarationScope : DeclarationScope
+public class RepeatStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
+    : DeclarationScope(tree, pos, parent)
 {
-    public RepeatStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
-        : base(tree, position, parent)
-    {
-    }
-
     public override void WalkUp(int position, int level, Func<Declaration, bool> process)
     {
         if (Children.FirstOrDefault() is DeclarationScope scope && level == 0)
@@ -96,13 +82,25 @@ public class RepeatStatDeclarationScope : DeclarationScope
     }
 }
 
-public class ForRangeStatDeclarationScope : DeclarationScope
+public class ForRangeStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
+    : DeclarationScope(tree, pos, parent)
 {
-    public ForRangeStatDeclarationScope(DeclarationTree tree, int position, DeclarationScope? parent)
-        : base(tree, position, parent)
+    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
     {
+        if (level == 0)
+        {
+            Parent?.WalkUp(position, level, process);
+        }
+        else
+        {
+            base.WalkUp(position, level, process);
+        }
     }
+}
 
+public class MethodStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
+    : DeclarationScope(tree, pos, parent)
+{
     public override void WalkUp(int position, int level, Func<Declaration, bool> process)
     {
         if (level == 0)

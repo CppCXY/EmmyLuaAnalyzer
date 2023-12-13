@@ -1,20 +1,14 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
-using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
 public class DeclarationTree
 {
     public LuaSyntaxTree LuaSyntaxTree { get; }
 
     private Dictionary<LuaSyntaxElement, DeclarationScope> _scopeOwners;
-
-    public static DeclarationTree From(LuaSyntaxTree tree)
-    {
-        return DeclarationTreeBuilder.Build(tree);
-    }
 
     public DeclarationTree(LuaSyntaxTree tree, Dictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
     {

@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Declaration;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 using Index = LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex.Index;
@@ -13,8 +14,6 @@ public class LuaAnalyzer(LuaCompilation compilation)
 
     private Dictionary<DocumentId, DeclarationTree> DeclarationTrees { get; } = new();
 
-    private Dictionary<string, Declaration.Declaration> GlobalDeclaration { get; } = new();
-
     public void Analyze()
     {
         if (DirtyDocuments.Count != 0)
@@ -26,7 +25,7 @@ public class LuaAnalyzer(LuaCompilation compilation)
                 {
                     if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
                     {
-                        DeclarationTrees[documentId] = DeclarationTree.From(syntaxTree);
+                        DeclarationTrees[documentId] = DeclarationTreeBuilder.Build(syntaxTree, this);
                     }
                 }
 
