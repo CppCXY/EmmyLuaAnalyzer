@@ -6,8 +6,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaStringToken(string innerString, GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent)
+    : LuaSyntaxToken(greenNode, tree, parent)
 {
     public string InnerString { get; } = innerString;
 
@@ -18,8 +17,7 @@ public class LuaStringToken(string innerString, GreenNode greenNode, LuaSyntaxTr
 }
 
 public class LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent)
+    : LuaSyntaxToken(greenNode, tree, parent)
 {
     public bool IsInteger => Kind == LuaTokenKind.TkInt;
 
@@ -82,20 +80,16 @@ public class LuaComplexToken(
 }
 
 public class LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent);
+    : LuaSyntaxToken(greenNode, tree, parent);
 
 public class LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent)
+    : LuaSyntaxToken(greenNode, tree, parent)
 {
     public bool Value => Text == "true";
 }
 
 public class LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent);
+    : LuaSyntaxToken(greenNode, tree, parent);
 
 public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree,
-        parent);
+    : LuaSyntaxToken(greenNode, tree, parent);

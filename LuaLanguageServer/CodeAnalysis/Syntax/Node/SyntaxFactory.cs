@@ -116,7 +116,7 @@ public static class SyntaxFactory
         }
     }
 
-    private static LuaSyntaxElement CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    private static LuaIntegerToken CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
         var hex = false;
         var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
@@ -152,7 +152,7 @@ public static class SyntaxFactory
         }
     }
 
-    private static LuaSyntaxElement CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    private static LuaFloatToken CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
         double value = 0;
         var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
@@ -201,7 +201,7 @@ public static class SyntaxFactory
     }
 
     // luajit 支持复数干嘛?
-    private static LuaSyntaxElement CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    private static LuaComplexToken CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
         var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
         // 裁剪掉complex的i
@@ -209,7 +209,7 @@ public static class SyntaxFactory
         return new LuaComplexToken(text.ToString(), greenNode, tree, parent);
     }
 
-    private static LuaSyntaxElement CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    private static LuaStringToken CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     {
         var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
         if (text.Length < 2)
@@ -409,7 +409,7 @@ public static class SyntaxFactory
     }
 
     // parse [[xxxx]]
-    private static LuaSyntaxElement CalculateLongString(GreenNode greenNode, LuaSyntaxTree tree,
+    private static LuaStringToken CalculateLongString(GreenNode greenNode, LuaSyntaxTree tree,
         LuaSyntaxElement? parent)
     {
         var text = tree.Source.Text.AsSpan(greenNode.Range.StartOffset, greenNode.Range.Length);
