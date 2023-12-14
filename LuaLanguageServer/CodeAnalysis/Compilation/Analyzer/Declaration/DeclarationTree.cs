@@ -4,23 +4,24 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationTree(LuaSyntaxTree tree, Dictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
+public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
 {
     public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
 
     public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
-    public Declaration? FindDeclaration(LuaNameExprSyntax nameExpr)
+    public Declaration? FindDeclaration(LuaSyntaxElement element)
     {
-        var scope = FindScope(nameExpr);
-        return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
+        if (element is LuaNameExprSyntax nameExpr)
+        {
+            var scope = FindScope(nameExpr);
+            return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
+        }
+        else
+        {
+            return null;
+        }
     }
-
-    // public bool IsGlobalName(LuaNameExprSyntax nameExpr)
-    // {
-    //     var scope = FindScope(nameExpr);
-    //     return scope?.FindNameExpr(nameExpr)?.IsGlobal ?? false;
-    // }
 
     public DeclarationScope? FindScope(LuaSyntaxElement element)
     {

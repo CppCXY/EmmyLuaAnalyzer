@@ -6,7 +6,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationTreeBuilder : ILuaElementWalker
+public class DeclarationBuilder : ILuaElementWalker
 {
     private DeclarationScope? _topScope = null;
 
@@ -20,19 +20,16 @@ public class DeclarationTreeBuilder : ILuaElementWalker
 
     private Dictionary<string, ILuaType> _typeDeclarations = new();
 
-    private LuaAnalyzer Analyzer { get; }
-
-    public static DeclarationTree Build(LuaSyntaxTree tree, LuaAnalyzer analyzer)
+    public static DeclarationTree Analysis(LuaSyntaxTree tree)
     {
-        var builder = new DeclarationTreeBuilder(tree, analyzer);
+        var builder = new DeclarationBuilder(tree);
         tree.SyntaxRoot.Accept(builder);
         return builder._tree;
     }
 
-    private DeclarationTreeBuilder(LuaSyntaxTree tree, LuaAnalyzer analyzer)
+    private DeclarationBuilder(LuaSyntaxTree tree)
     {
         _tree = new DeclarationTree(tree, _scopeOwners);
-        Analyzer = analyzer;
     }
 
     private Declaration? FindNameExpr(LuaNameExprSyntax nameExpr)
@@ -152,7 +149,7 @@ public class DeclarationTreeBuilder : ILuaElementWalker
                 if (forStatSyntax.IteratorName is { Name: { } name })
                 {
                     var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local,
-                        Analyzer.Compilation.Builtin.Integer);
+                        null);
                     _curScope?.Add(declaration);
                 }
 
@@ -172,22 +169,38 @@ public class DeclarationTreeBuilder : ILuaElementWalker
             {
                 if (tagClassSyntax is { Name: { } name })
                 {
-                    var declaration = CreateDeclaration(name.RepresentText, tagClassSyntax,
-                        DeclarationFlag.TypeDeclaration, null);
-                    _curScope?.Add(declaration);
-                    _typeDeclarations.Add(name.RepresentText, new LuaTypeRef(tagClassSyntax));
+                    var luaClass = new LuaClass(name.RepresentText);
+                    _typeDeclarations.Add(name.RepresentText, luaClass);
                 }
 
                 break;
             }
             case LuaDocTagAliasSyntax tagAliasSyntax:
             {
-                if (tagAliasSyntax is { Name: { } name })
+                if (tagAliasSyntax is { Name: { } name, Type: { } type })
                 {
-                    var declaration = CreateDeclaration(name.RepresentText, tagAliasSyntax,
-                        DeclarationFlag.TypeDeclaration, null);
-                    _curScope?.Add(declaration);
-                    _typeDeclarations.Add(name.RepresentText, new LuaTypeRef(tagAliasSyntax));
+                    var luaAlias = new LuaAlias(name.RepresentText, new LuaTypeRef(type));
+                    _typeDeclarations.Add(name.RepresentText, luaAlias);
+                }
+
+                break;
+            }
+            case LuaDocTagEnumSyntax tagEnumSyntax:
+            {
+                if (tagEnumSyntax is { Name: { } name })
+                {
+                    var luaEnum = new LuaEnum(name.RepresentText, tagEnumSyntax.BaseType);
+                    _typeDeclarations.Add(name.RepresentText, luaEnum);
+                }
+
+                break;
+            }
+            case LuaDocTagInterfaceSyntax tagInterfaceSyntax:
+            {
+                if (tagInterfaceSyntax is { Name: { } name })
+                {
+                    var luaInterface = new LuaInterface(name.RepresentText);
+                    _typeDeclarations.Add(name.RepresentText, luaInterface);
                 }
 
                 break;
@@ -352,15 +365,15 @@ public class DeclarationTreeBuilder : ILuaElementWalker
     {
         if (luaFuncStat is { IsLocal: true, LocalName.Name: { } name })
         {
-            var declaration = CreateDeclaration(name.RepresentText, luaFuncStat,
+            var declaration = CreateDeclaration(name.RepresentText, name,
                 DeclarationFlag.Function | DeclarationFlag.Local, null);
             _curScope?.Add(declaration);
         }
-        else if (luaFuncStat is { IsLocal: false, NameExpr: { } nameExpr })
+        else if (luaFuncStat is { IsLocal: false, NameExpr.Name: { } name2 })
         {
-            // var declaration = CreateDeclaration(name.RepresentText, luaFuncStat,
-            //     DeclarationFlag.Function | DeclarationFlag.Global, null);
-            // _curScope?.Add(declaration);
+            var declaration = CreateDeclaration(name2.RepresentText, name2,
+                DeclarationFlag.Function | DeclarationFlag.ClassMember, null);
+            _curScope?.Add(declaration);
         }
     }
 }

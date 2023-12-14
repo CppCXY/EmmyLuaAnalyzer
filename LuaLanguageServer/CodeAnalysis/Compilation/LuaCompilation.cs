@@ -1,11 +1,12 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Bind;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
 using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
-using Index = LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex.Index;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation;
 
@@ -13,9 +14,9 @@ public class LuaCompilation
 {
     public LuaWorkspace Workspace { get; }
 
-    private Dictionary<DocumentId, LuaSyntaxTree> _syntaxTrees = new();
+    private readonly Dictionary<DocumentId, LuaSyntaxTree> _syntaxTrees = new();
 
-    private Dictionary<DocumentId, SemanticModel> _semanticModels = new();
+    private Dictionary<DocumentId, SemanticModel> SemanticModels { get; } = new();
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
@@ -25,14 +26,23 @@ public class LuaCompilation
 
     public SearchContext SearchContext { get; }
 
-    public LuaAnalyzer LuaAnalyzer { get; }
+    private HashSet<DocumentId> DirtyDocuments { get; } = [];
+
+    internal Dictionary<DocumentId, DeclarationTree> DeclarationTrees { get; } = new();
+
+    private List<ILuaAnalyzer> Analyzers { get; }
 
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
         StubIndexImpl = new StubIndexImpl(this);
         SearchContext = new SearchContext(this);
-        LuaAnalyzer = new LuaAnalyzer(this);
+        Analyzers = new List<ILuaAnalyzer>()
+        {
+            new DeclarationAnalyzer(this),
+            new IndexAnalyzer(this),
+            new BindAnalyzer(this)
+        };
     }
 
     private void InternalAddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
@@ -40,14 +50,17 @@ public class LuaCompilation
         if (_syntaxTrees.TryGetValue(documentId, out var oldSyntaxTree))
         {
             _syntaxTrees[documentId] = syntaxTree;
-            LuaAnalyzer.Remove(documentId, oldSyntaxTree);
+            foreach (var luaAnalyzer in Analyzers)
+            {
+                luaAnalyzer.RemoveCache(documentId);
+            }
         }
         else
         {
             _syntaxTrees.Add(documentId, syntaxTree);
         }
 
-        LuaAnalyzer.AddDirtyDocument(documentId);
+        AddDirtyDocument(documentId);
     }
 
     public void AddSyntaxTrees(IEnumerable<(DocumentId, LuaSyntaxTree)> syntaxTrees)
@@ -57,13 +70,13 @@ public class LuaCompilation
             InternalAddSyntaxTree(documentId, syntaxTree);
         }
 
-        LuaAnalyzer.Analyze();
+        Analyze();
     }
 
     public void AddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
     {
         InternalAddSyntaxTree(documentId, syntaxTree);
-        LuaAnalyzer.Analyze();
+        Analyze();
     }
 
     public LuaSyntaxTree? GetSyntaxTree(DocumentId documentId)
@@ -79,14 +92,45 @@ public class LuaCompilation
             return null;
         }
 
-        if (_semanticModels.TryGetValue(document.Id, out var semanticModel))
+        if (SemanticModels.TryGetValue(document.Id, out var semanticModel))
         {
             return semanticModel;
         }
 
         semanticModel = new SemanticModel(this, document.SyntaxTree);
-        _semanticModels.Add(document.Id, semanticModel);
+        SemanticModels.Add(document.Id, semanticModel);
         return semanticModel;
+    }
+
+    private void Analyze()
+    {
+        if (DirtyDocuments.Count != 0)
+        {
+            try
+            {
+                foreach (var analyzer in Analyzers)
+                {
+                    foreach (var documentId in DirtyDocuments)
+                    {
+                        analyzer.Analyze(documentId);
+                    }
+                }
+            }
+            finally
+            {
+                DirtyDocuments.Clear();
+            }
+        }
+    }
+
+    private void AddDirtyDocument(DocumentId documentId)
+    {
+        DirtyDocuments.Add(documentId);
+    }
+
+    public DeclarationTree? GetDeclarationTree(DocumentId documentId)
+    {
+        return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
     // public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(
