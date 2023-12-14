@@ -25,19 +25,13 @@ public class GenericParam(string name, ILuaType? type, LuaDocTagGenericParamSynt
     }
 }
 
-public class LuaGeneric : LuaType, IGeneric
+public class LuaGeneric(ILuaNamedType baseType, List<ILuaType> genericArgs) : LuaType(TypeKind.Generic), IGeneric
 {
-    public ILuaNamedType BaseType { get; }
+    public ILuaNamedType BaseType { get; } = baseType;
 
-    public List<ILuaType> GenericArgs { get; }
+    public List<ILuaType> GenericArgs { get; } = genericArgs;
 
     private Dictionary<string, ILuaType>? _genericImpl;
-
-    public LuaGeneric(ILuaNamedType baseType, List<ILuaType> genericArgs) : base(TypeKind.Generic)
-    {
-        BaseType = baseType;
-        GenericArgs = genericArgs;
-    }
 
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {

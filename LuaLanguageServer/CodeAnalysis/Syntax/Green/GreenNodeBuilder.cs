@@ -5,16 +5,10 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
 public class GreenNodeBuilder
 {
-    struct ParentInfo
+    struct ParentInfo(int position, LuaSyntaxKind kind)
     {
-        public int FirstChild { get; }
-        public LuaSyntaxKind Kind { get; }
-
-        public ParentInfo(int position, LuaSyntaxKind kind)
-        {
-            FirstChild = position;
-            Kind = kind;
-        }
+        public int FirstChild { get; } = position;
+        public LuaSyntaxKind Kind { get; } = kind;
     }
 
     private Stack<ParentInfo> Parents { get; } = new();

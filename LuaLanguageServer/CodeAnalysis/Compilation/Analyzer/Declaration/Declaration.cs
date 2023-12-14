@@ -3,31 +3,21 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationNode
+public class DeclarationNode(int position, DeclarationNodeContainer? parent)
 {
     public DeclarationNode? Prev { get; set; }
 
     public DeclarationNode? Next { get; set; }
 
-    public DeclarationNodeContainer? Parent { get; set; }
+    public DeclarationNodeContainer? Parent { get; set; } = parent;
 
-    public int Position { get; }
-
-    public DeclarationNode(int position, DeclarationNodeContainer? parent)
-    {
-        Position = position;
-        Parent = parent;
-    }
+    public int Position { get; } = position;
 }
 
-public abstract class DeclarationNodeContainer : DeclarationNode
+public abstract class DeclarationNodeContainer(int position, DeclarationNodeContainer? parent)
+    : DeclarationNode(position, parent)
 {
     public List<DeclarationNode> Children { get; } = new();
-
-    public DeclarationNodeContainer(int position, DeclarationNodeContainer? parent)
-        : base(position, parent)
-    {
-    }
 
     public void Add(DeclarationNode node)
     {

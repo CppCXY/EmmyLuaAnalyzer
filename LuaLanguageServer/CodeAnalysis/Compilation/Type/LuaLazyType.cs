@@ -26,19 +26,13 @@ public class LuaLazyType(LuaSyntaxElement? typeElement, int retId = 0) : LuaType
     }
 }
 
-public class LuaLazyIterType : LuaType
+public class LuaLazyIterType(List<LuaExprSyntax> exprList, int itPosition) : LuaType(TypeKind.LazyType)
 {
     private ILuaType? _reaLuaType;
 
-    private List<LuaExprSyntax> _exprList;
+    private List<LuaExprSyntax> _exprList = exprList;
 
-    private int _itPosition;
-
-    public LuaLazyIterType(List<LuaExprSyntax> exprList, int itPosition) : base(TypeKind.LazyType)
-    {
-        _exprList = exprList;
-        _itPosition = itPosition;
-    }
+    private int _itPosition = itPosition;
 
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
     {

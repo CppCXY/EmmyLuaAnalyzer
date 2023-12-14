@@ -3,14 +3,8 @@ using LuaLanguageServer.CodeAnalysis.Kind;
 
 namespace LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 
-public struct LuaTokenData
+public struct LuaTokenData(LuaTokenKind kind, SourceRange range)
 {
-    public LuaTokenKind Kind { get; }
-    public SourceRange Range { get; }
-
-    public LuaTokenData(LuaTokenKind kind, SourceRange range)
-    {
-        Kind = kind;
-        Range = range;
-    }
+    public LuaTokenKind Kind { get; } = kind;
+    public SourceRange Range { get; } = range;
 }

@@ -5,15 +5,11 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStringToken : LuaSyntaxToken
-{
-    public string InnerString { get; }
-
-    public LuaStringToken(string innerString ,GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+public class LuaStringToken(string innerString, GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
         parent)
-    {
-        InnerString = innerString;
-    }
+{
+    public string InnerString { get; } = innerString;
 
     public override string ToString()
     {
@@ -21,13 +17,10 @@ public class LuaStringToken : LuaSyntaxToken
     }
 }
 
-public class LuaNumberToken : LuaSyntaxToken
-{
-    public LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+public class LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
         parent)
-    {
-    }
-
+{
     public bool IsInteger => Kind == LuaTokenKind.TkInt;
 
     public bool IsComplex => Kind == LuaTokenKind.TkComplex;
@@ -40,20 +33,17 @@ public class LuaNumberToken : LuaSyntaxToken
     }
 }
 
-public class LuaIntegerToken : LuaNumberToken
+public class LuaIntegerToken(
+    long value,
+    string suffix,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent)
+    : LuaNumberToken(greenNode, tree, parent)
 {
-    public long Value { get; }
+    public long Value { get; } = value;
 
-    public string Suffix { get; }
-
-    public LuaIntegerToken(
-        long value,
-        string suffix,
-        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
-    {
-        Value = value;
-        Suffix = suffix;
-    }
+    public string Suffix { get; } = suffix;
 
     public override string ToString()
     {
@@ -61,16 +51,14 @@ public class LuaIntegerToken : LuaNumberToken
     }
 }
 
-public class LuaFloatToken : LuaNumberToken
+public class LuaFloatToken(
+    double value,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent)
+    : LuaNumberToken(greenNode, tree, parent)
 {
-    public double Value { get; }
-
-    public LuaFloatToken(
-        double value,
-        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
-    {
-        Value = value;
-    }
+    public double Value { get; } = value;
 
     public override string ToString()
     {
@@ -78,16 +66,14 @@ public class LuaFloatToken : LuaNumberToken
     }
 }
 
-public class LuaComplexToken : LuaNumberToken
+public class LuaComplexToken(
+    string value,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent)
+    : LuaNumberToken(greenNode, tree, parent)
 {
-    public string Value { get; }
-
-    public LuaComplexToken(
-        string value,
-        GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree, parent)
-    {
-        Value = value;
-    }
+    public string Value { get; } = value;
 
     public override string ToString()
     {
@@ -95,36 +81,21 @@ public class LuaComplexToken : LuaNumberToken
     }
 }
 
-public class LuaNilToken : LuaSyntaxToken
-{
-    public LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
-        parent)
-    {
-    }
-}
+public class LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
+        parent);
 
-public class LuaBoolToken : LuaSyntaxToken
-{
-    public LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
+public class LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
         parent)
-    {
-    }
-
+{
     public bool Value => Text == "true";
 }
 
-public class LuaDotsToken : LuaSyntaxToken
-{
-    public LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
-        parent)
-    {
-    }
-}
+public class LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
+        parent);
 
-public class LuaNameToken : LuaSyntaxToken
-{
-    public LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent) : base(greenNode, tree,
-        parent)
-    {
-    }
-}
+public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxToken(greenNode, tree,
+        parent);

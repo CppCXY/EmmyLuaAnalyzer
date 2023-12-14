@@ -1,17 +1,11 @@
 ﻿namespace LuaLanguageServer.CodeAnalysis.Compile.Source;
 
-public struct SourceRange
+public struct SourceRange(int startOffset = 0, int length = 0)
 {
-    public int StartOffset { get; set; }
-    public int Length { get; set; }
+    public int StartOffset { get; set; } = startOffset;
+    public int Length { get; set; } = length;
 
     public int EndOffset => StartOffset + Length;
-
-    public SourceRange(int startOffset = 0, int length = 0)
-    {
-        StartOffset = startOffset;
-        Length = length;
-    }
 
     public override string ToString()
     {

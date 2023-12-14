@@ -3,29 +3,19 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
-public class Diagnostic
+public class Diagnostic(DiagnosticSeverity severity, string message, SourceRange range)
 {
-    public DiagnosticSeverity Severity { get; }
+    public DiagnosticSeverity Severity { get; } = severity;
 
-    public string Message { get; }
+    public string Message { get; } = message;
 
-    public SourceRange Range { get; }
+    public SourceRange Range { get; } = range;
 
     public LuaLocation? Location { get; private set; }
 
-    public Diagnostic(DiagnosticSeverity severity, string message, SourceRange range)
+    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location) : this(severity, message, location.Range)
     {
-        Severity = severity;
-        Message = message;
-        Range = range;
-    }
-
-    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location)
-    {
-        Severity = severity;
-        Message = message;
         Location = location;
-        Range = location.Range;
     }
 
     public Diagnostic WithLocation(LuaLocation location)

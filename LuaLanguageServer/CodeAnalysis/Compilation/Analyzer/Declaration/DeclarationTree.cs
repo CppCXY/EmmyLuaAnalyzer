@@ -4,17 +4,9 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationTree
+public class DeclarationTree(LuaSyntaxTree tree, Dictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
 {
-    public LuaSyntaxTree LuaSyntaxTree { get; }
-
-    private Dictionary<LuaSyntaxElement, DeclarationScope> _scopeOwners;
-
-    public DeclarationTree(LuaSyntaxTree tree, Dictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
-    {
-        LuaSyntaxTree = tree;
-        _scopeOwners = scopeOwners;
-    }
+    public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
 
     public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
@@ -35,7 +27,7 @@ public class DeclarationTree
         var cur = element;
         while (cur != null)
         {
-            if (_scopeOwners.TryGetValue(cur, out var scope))
+            if (scopeOwners.TryGetValue(cur, out var scope))
             {
                 return scope;
             }

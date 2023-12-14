@@ -4,54 +4,38 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaSourceSyntax : LuaSyntaxNode
+public class LuaSourceSyntax(GreenNode greenNode, LuaSyntaxTree tree) : LuaSyntaxNode(greenNode, tree, null)
 {
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaSourceSyntax(GreenNode greenNode, LuaSyntaxTree tree)
-        : base(greenNode, tree, null)
-    {
-    }
 }
 
-public class LuaBlockSyntax : LuaSyntaxNode
+public class LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
 
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
-
-    public LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaParamDefSyntax : LuaSyntaxNode
+public class LuaParamDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public bool IsVarArgs => FirstChild<LuaDotsToken>() != null;
-
-    public LuaParamDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaParamListSyntax : LuaSyntaxNode
+public class LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public IEnumerable<LuaParamDefSyntax> Params => ChildNodes<LuaParamDefSyntax>();
 
     public bool HasVarArgs => Params.LastOrDefault()?.IsVarArgs == true;
-
-    public LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaAttributeSyntax : LuaSyntaxNode
+public class LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -80,49 +64,32 @@ public class LuaAttributeSyntax : LuaSyntaxNode
             return Name.Text is "close";
         }
     }
-
-    public LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaLocalNameSyntax : LuaSyntaxNode
+public class LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public LuaAttributeSyntax? Attribute => FirstChild<LuaAttributeSyntax>();
 
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
-
-    public LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaCallArgListSyntax : LuaSyntaxNode
+public class LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
 
     public bool IsSingleArgCall => FirstChildToken(LuaTokenKind.TkLeftParen) != null;
 
     public LuaExprSyntax? SingleArg => FirstChild<LuaExprSyntax>();
-
-    public LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaFuncBodySyntax : LuaSyntaxNode
+public class LuaFuncBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaFuncBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
 public interface IFuncBodyOwner

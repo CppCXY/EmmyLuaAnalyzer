@@ -6,7 +6,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 
-public class DeclarationTreeBuilder : ILuaNodeWalker
+public class DeclarationTreeBuilder : ILuaElementWalker
 {
     private DeclarationScope? _topScope = null;
 
@@ -103,7 +103,7 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
         _curScope = _scopes.Count != 0 ? _scopes.Peek() : _topScope;
     }
 
-    public void WalkIn(LuaSyntaxNode node)
+    public void WalkIn(LuaSyntaxElement node)
     {
         if (IsScopeOwner(node))
         {
@@ -168,10 +168,34 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
                 AssignStatDeclarationAnalysis(assignStatSyntax);
                 break;
             }
+            case LuaDocTagClassSyntax tagClassSyntax:
+            {
+                if (tagClassSyntax is { Name: { } name })
+                {
+                    var declaration = CreateDeclaration(name.RepresentText, tagClassSyntax,
+                        DeclarationFlag.TypeDeclaration, null);
+                    _curScope?.Add(declaration);
+                    _typeDeclarations.Add(name.RepresentText, new LuaTypeRef(tagClassSyntax));
+                }
+
+                break;
+            }
+            case LuaDocTagAliasSyntax tagAliasSyntax:
+            {
+                if (tagAliasSyntax is { Name: { } name })
+                {
+                    var declaration = CreateDeclaration(name.RepresentText, tagAliasSyntax,
+                        DeclarationFlag.TypeDeclaration, null);
+                    _curScope?.Add(declaration);
+                    _typeDeclarations.Add(name.RepresentText, new LuaTypeRef(tagAliasSyntax));
+                }
+
+                break;
+            }
         }
     }
 
-    public void WalkOut(LuaSyntaxNode node)
+    public void WalkOut(LuaSyntaxElement node)
     {
         if (IsScopeOwner(node))
         {
@@ -179,7 +203,7 @@ public class DeclarationTreeBuilder : ILuaNodeWalker
         }
     }
 
-    private static bool IsScopeOwner(LuaSyntaxNode node)
+    private static bool IsScopeOwner(LuaSyntaxElement node)
         => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
             or LuaForStatSyntax;
 

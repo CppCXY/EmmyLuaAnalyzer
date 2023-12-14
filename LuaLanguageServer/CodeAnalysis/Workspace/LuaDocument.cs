@@ -4,20 +4,13 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Workspace;
 
-public class DocumentId
+public class DocumentId(string path)
 {
-    public string Path { get; }
+    public string Path { get; } = path;
 
-    public string Url { get; }
+    public string Url { get; } = new Uri(path).AbsoluteUri;
 
-    public string Guid { get; }
-
-    public DocumentId(string path)
-    {
-        Path = path;
-        Url = new Uri(path).AbsoluteUri;
-        Guid = System.Guid.NewGuid().ToString();
-    }
+    public string Guid { get; } = System.Guid.NewGuid().ToString();
 }
 
 public class LuaDocument

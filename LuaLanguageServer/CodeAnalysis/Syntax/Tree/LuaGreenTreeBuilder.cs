@@ -7,19 +7,13 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
-public class LuaGreenTreeBuilder
+public class LuaGreenTreeBuilder(LuaParser parser)
 {
-    private LuaParser Parser { get; }
+    private LuaParser Parser { get; } = parser;
 
-    private GreenNodeBuilder NodeBuilder { get; }
+    private GreenNodeBuilder NodeBuilder { get; } = new();
 
     private List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
-
-    public LuaGreenTreeBuilder(LuaParser parser)
-    {
-        Parser = parser;
-        NodeBuilder = new GreenNodeBuilder();
-    }
 
     // 多返回值
     public (GreenNode, List<Diagnostic.Diagnostic>) Build()

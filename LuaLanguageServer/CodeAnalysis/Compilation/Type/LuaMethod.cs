@@ -48,17 +48,11 @@ public class LuaMethod(IFuncSignature mainSignature) : LuaType(TypeKind.Method)
     public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
 }
 
-public class FuncTypedParam
+public class FuncTypedParam(string name, ILuaType? type)
 {
-    public string Name { get; }
+    public string Name { get; } = name;
 
-    public ILuaType? Type { get; }
-
-    public FuncTypedParam(string name, ILuaType? type)
-    {
-        Name = name;
-        Type = type;
-    }
+    public ILuaType? Type { get; } = type;
 }
 
 public interface IFuncSignature
@@ -74,27 +68,20 @@ public interface IFuncSignature
     public int Match(List<LuaExprSyntax> arguments, SearchContext context);
 }
 
-public class FuncSignature : IFuncSignature
+public class FuncSignature(
+    bool colonCall,
+    List<FuncTypedParam> parameters,
+    ILuaType? variadic,
+    ILuaType? returnType)
+    : IFuncSignature
 {
-    public bool ColonCall { get; }
+    public bool ColonCall { get; } = colonCall;
 
-    public ILuaType? ReturnType { get; }
+    public ILuaType? ReturnType { get; } = returnType;
 
-    public List<FuncTypedParam> Parameters { get; }
+    public List<FuncTypedParam> Parameters { get; } = parameters;
 
-    public ILuaType? Variadic { get; }
-
-    public FuncSignature(
-        bool colonCall,
-        List<FuncTypedParam> parameters,
-        ILuaType? variadic,
-        ILuaType? returnType)
-    {
-        ColonCall = colonCall;
-        ReturnType = returnType;
-        Parameters = parameters;
-        Variadic = variadic;
-    }
+    public ILuaType? Variadic { get; } = variadic;
 
     public int Match(List<LuaExprSyntax> arguments, SearchContext context)
     {

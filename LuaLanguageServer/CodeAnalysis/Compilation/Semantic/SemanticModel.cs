@@ -8,17 +8,11 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 
-public class SemanticModel
+public class SemanticModel(LuaCompilation compilation, LuaSyntaxTree tree)
 {
-    private LuaCompilation _compilation;
+    private LuaCompilation _compilation = compilation;
 
-    private LuaSyntaxTree _tree;
-
-    public SemanticModel(LuaCompilation compilation, LuaSyntaxTree tree)
-    {
-        _compilation = compilation;
-        _tree = tree;
-    }
+    private LuaSyntaxTree _tree = tree;
 
     public ILuaSymbol GetSymbol(LuaSyntaxElement element)
     {

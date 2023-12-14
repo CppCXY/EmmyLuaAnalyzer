@@ -21,14 +21,9 @@ public interface IMarkerEventContainer
     public Marker Marker();
 }
 
-public struct Marker
+public struct Marker(int position)
 {
-    public int Position { get; set; }
-
-    public Marker(int position)
-    {
-        Position = position;
-    }
+    public int Position { get; set; } = position;
 
     public CompleteMarker Complete(IMarkerEventContainer p, LuaSyntaxKind kind)
     {
@@ -58,22 +53,14 @@ public struct Marker
     }
 }
 
-public struct CompleteMarker
+public struct CompleteMarker(int start, int finish, LuaSyntaxKind kind, bool isComplete)
 {
     public static CompleteMarker Empty { get; } = new(-1, -1, LuaSyntaxKind.None, false);
-    private int Start { get; }
-    private int Finish { get; }
-    public LuaSyntaxKind Kind { get; }
+    private int Start { get; } = start;
+    private int Finish { get; } = finish;
+    public LuaSyntaxKind Kind { get; } = kind;
 
-    public bool IsComplete { get; }
-
-    public CompleteMarker(int start, int finish, LuaSyntaxKind kind, bool isComplete)
-    {
-        Start = start;
-        Finish = finish;
-        Kind = kind;
-        IsComplete = isComplete;
-    }
+    public bool IsComplete { get; } = isComplete;
 
     public Marker Precede(IMarkerEventContainer p)
     {

@@ -9,14 +9,9 @@ public enum LuaLanguageLevel : short
     Lua54 = 540,
 }
 
-public class LuaLanguage
+public class LuaLanguage(LuaLanguageLevel languageLevel = LuaLanguageLevel.Lua54)
 {
     public static LuaLanguage Default { get; } = new();
 
-    public LuaLanguageLevel LanguageLevel { get; set; }
-
-    public LuaLanguage(LuaLanguageLevel languageLevel = LuaLanguageLevel.Lua54)
-    {
-        LanguageLevel = languageLevel;
-    }
+    public LuaLanguageLevel LanguageLevel { get; set; } = languageLevel;
 }

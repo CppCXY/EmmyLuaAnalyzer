@@ -14,15 +14,15 @@ public enum LuaDocLexerState
     Trivia
 }
 
-public class LuaDocLexer
+public class LuaDocLexer(LuaSource source)
 {
-    public LuaSource Source { get; }
+    public LuaSource Source { get; } = source;
 
-    internal SourceReader Reader { get; }
+    internal SourceReader Reader { get; } = new(source.Text);
 
     private LuaTokenKind OriginTokenKind { get; set; }
 
-    public LuaDocLexerState State { get; set; }
+    public LuaDocLexerState State { get; set; } = LuaDocLexerState.Init;
 
     public bool Invalid => (State is LuaDocLexerState.Invalid) || Reader.IsEof;
 
@@ -64,13 +64,6 @@ public class LuaDocLexer
             "private" or "protected" or "public" or "package" => LuaTokenKind.TkDocVisibility,
             _ => LuaTokenKind.TkName
         };
-    }
-
-    public LuaDocLexer(LuaSource source)
-    {
-        Source = source;
-        Reader = new SourceReader(source.Text);
-        State = LuaDocLexerState.Init;
     }
 
     public void Reset(LuaTokenData tokenData)

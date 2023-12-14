@@ -5,7 +5,8 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaExprSyntax : LuaSyntaxNode
+public class LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
@@ -58,36 +59,24 @@ public class LuaExprSyntax : LuaSyntaxNode
             }
         }
     }
-
-    public LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaNameExprSyntax : LuaExprSyntax
+public class LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
-
-    public LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaCallExprSyntax : LuaExprSyntax
+public class LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public LuaCallArgListSyntax? ArgList => FirstChild<LuaCallArgListSyntax>();
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
-
-    public LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaBinaryExprSyntax : LuaExprSyntax
+public class LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public LuaExprSyntax LeftExpr => FirstChild<LuaExprSyntax>()!;
 
@@ -101,14 +90,10 @@ public class LuaBinaryExprSyntax : LuaExprSyntax
     }
 
     public LuaExprSyntax? RightExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
-
-    public LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaUnaryExprSyntax : LuaExprSyntax
+public class LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public OperatorKind.UnaryOperator Operator
     {
@@ -120,26 +105,18 @@ public class LuaUnaryExprSyntax : LuaExprSyntax
     }
 
     public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
-
-    public LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaTableExprSyntax : LuaExprSyntax
+public class LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public IEnumerable<LuaTableFieldSyntax> FieldList => ChildNodes<LuaTableFieldSyntax>();
 
     public string UniqueId => $"table:{Green.Range.StartOffset}";
-
-    public LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaTableFieldSyntax : LuaSyntaxNode
+public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
 
@@ -160,48 +137,32 @@ public class LuaTableFieldSyntax : LuaSyntaxNode
     public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
     public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
-
-    public LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaClosureExprSyntax : LuaExprSyntax, IFuncBodyOwner
+public class LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent), IFuncBodyOwner
 {
     public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
-
-    public LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaLiteralExprSyntax : LuaExprSyntax
+public class LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken Literal => FirstChildToken()!;
-
-    public LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaParenExprSyntax : LuaExprSyntax
+public class LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken LeftParen => FirstChildToken(LuaTokenKind.TkLeftParen)!;
 
     public LuaExprSyntax? Inner => FirstChild<LuaExprSyntax>();
 
     public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
-
-    public LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaIndexExprSyntax : LuaExprSyntax
+public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaExprSyntax(greenNode, tree, parent)
 {
     public bool IsDotIndex => FirstChildToken(LuaTokenKind.TkDot) != null;
 
@@ -214,9 +175,4 @@ public class LuaIndexExprSyntax : LuaExprSyntax
     public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
-
-    public LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }

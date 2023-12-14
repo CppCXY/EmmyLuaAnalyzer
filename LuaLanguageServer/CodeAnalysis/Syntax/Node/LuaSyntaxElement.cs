@@ -12,25 +12,17 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-public abstract class LuaSyntaxElement
+public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
 {
-    public GreenNode Green { get; }
+    public GreenNode Green { get; } = green;
 
-    public LuaSyntaxElement? Parent { get; }
+    public LuaSyntaxElement? Parent { get; } = parent;
 
-    public LuaSyntaxTree Tree { get; }
+    public LuaSyntaxTree Tree { get; } = tree;
 
     private ImmutableArray<LuaSyntaxElement>? _childrenElements;
 
-    protected bool _lazyInit;
-
-    public LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    {
-        Green = green;
-        Parent = parent;
-        Tree = tree;
-        _lazyInit = false;
-    }
+    protected bool _lazyInit = false;
 
     protected void LazyInit()
     {

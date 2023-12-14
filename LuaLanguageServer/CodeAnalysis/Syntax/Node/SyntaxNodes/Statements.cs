@@ -5,18 +5,15 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStatSyntax : LuaSyntaxNode
+public class LuaStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxNode(greenNode, tree, parent)
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
-
-    public LuaStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaLocalStatSyntax : LuaStatSyntax
+public class LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
 
@@ -27,28 +24,20 @@ public class LuaLocalStatSyntax : LuaStatSyntax
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
     public IEnumerable<LuaExprSyntax> ExpressionList => ChildNodes<LuaExprSyntax>();
-
-    public LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaAssignStatSyntax : LuaStatSyntax
+public class LuaAssignStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public IEnumerable<LuaExprSyntax> VarList => ChildNodesBeforeToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
 
     public IEnumerable<LuaExprSyntax> ExprList => ChildNodesAfterToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
-
-    public LuaAssignStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaFuncStatSyntax : LuaStatSyntax, IFuncBodyOwner
+public class LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent), IFuncBodyOwner
 {
     public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
 
@@ -63,58 +52,38 @@ public class LuaFuncStatSyntax : LuaStatSyntax, IFuncBodyOwner
     public LuaIndexExprSyntax? IndexExpr => FirstChild<LuaIndexExprSyntax>();
 
     public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
-
-    public LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaLabelStatSyntax : LuaStatSyntax
+public class LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
-
-    public LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaGotoStatSyntax : LuaStatSyntax
+public class LuaGotoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken? Goto => FirstChildToken(LuaTokenKind.TkGoto);
 
     public LuaNameToken? LabelName => FirstChild<LuaNameToken>();
-
-    public LuaGotoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaBreakStatSyntax : LuaStatSyntax
+public class LuaBreakStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken Break => FirstChildToken(LuaTokenKind.TkBreak)!;
-
-    public LuaBreakStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaReturnStatSyntax : LuaStatSyntax
+public class LuaReturnStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken Return => FirstChildToken(LuaTokenKind.TkReturn)!;
 
     public IEnumerable<LuaExprSyntax>? ExpressionSyntaxList => ChildNodes<LuaExprSyntax>();
-
-    public LuaReturnStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaIfStatSyntax : LuaStatSyntax
+public class LuaIfStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken If => FirstChildToken(LuaTokenKind.TkIf)!;
 
@@ -127,14 +96,10 @@ public class LuaIfStatSyntax : LuaStatSyntax
     public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList => ChildNodes<LuaIfClauseStatSyntax>();
 
     public LuaSyntaxToken End => FirstChildToken(LuaTokenKind.TkEnd)!;
-
-    public LuaIfStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaIfClauseStatSyntax : LuaStatSyntax
+public class LuaIfClauseStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken? ElseIf => FirstChildToken(LuaTokenKind.TkElseIf);
 
@@ -149,14 +114,10 @@ public class LuaIfClauseStatSyntax : LuaStatSyntax
     public LuaSyntaxToken? Then => FirstChildToken(LuaTokenKind.TkThen);
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaIfClauseStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaWhileStatSyntax : LuaStatSyntax
+public class LuaWhileStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken While => FirstChildToken(LuaTokenKind.TkWhile)!;
 
@@ -167,28 +128,20 @@ public class LuaWhileStatSyntax : LuaStatSyntax
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 
     public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
-
-    public LuaWhileStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaDoStatSyntax : LuaStatSyntax
+public class LuaDoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken Do => FirstChildToken(LuaTokenKind.TkDo)!;
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 
     public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
-
-    public LuaDoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaForStatSyntax : LuaStatSyntax
+public class LuaForStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaParamDefSyntax? IteratorName => FirstChild<LuaParamDefSyntax>();
 
@@ -197,28 +150,20 @@ public class LuaForStatSyntax : LuaStatSyntax
     public LuaExprSyntax? LimitExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
     public LuaExprSyntax? Step => ChildNodes<LuaExprSyntax>().Skip(2).FirstOrDefault();
-
-    public LuaForStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaForRangeStatSyntax : LuaStatSyntax
+public class LuaForRangeStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public IEnumerable<LuaParamDefSyntax> IteratorNames => ChildNodes<LuaParamDefSyntax>();
 
     public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-
-    public LuaForRangeStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaRepeatStatSyntax : LuaStatSyntax
+public class LuaRepeatStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaSyntaxToken Repeat => FirstChildToken(LuaTokenKind.TkRepeat)!;
 
@@ -227,35 +172,16 @@ public class LuaRepeatStatSyntax : LuaStatSyntax
     public LuaSyntaxToken? Until => FirstChildToken(LuaTokenKind.TkUntil);
 
     public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
-
-    public LuaRepeatStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaCallStatSyntax : LuaStatSyntax
+public class LuaCallStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent)
 {
     public LuaExprSyntax? Expr => FirstChild<LuaExprSyntax>();
-
-    public LuaCallStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
 }
 
-public class LuaEmptyStatSyntax : LuaStatSyntax
-{
-    public LuaEmptyStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
+public class LuaEmptyStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent);
 
-public class LuaUnknownStatSyntax : LuaStatSyntax
-{
-    public LuaUnknownStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(greenNode, tree, parent)
-    {
-    }
-}
+public class LuaUnknownStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaStatSyntax(greenNode, tree, parent);

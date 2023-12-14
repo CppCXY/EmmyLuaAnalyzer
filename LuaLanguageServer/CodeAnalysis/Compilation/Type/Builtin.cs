@@ -44,13 +44,9 @@ public class Builtin
     }
 }
 
-public class Primitive : LuaClass
+public class Primitive(string name) : LuaClass(name)
 {
     public ILuaType? Super { get; private set; }
-
-    public Primitive(string name) : base(name)
-    {
-    }
 
     public override ILuaType? GetSuper(SearchContext context)
     {
@@ -69,19 +65,9 @@ public class Primitive : LuaClass
         Enumerable.Empty<LuaSymbol>();
 }
 
-public class PrimitiveLuaClass : LuaClass
-{
-    public PrimitiveLuaClass(string name) : base(name)
-    {
-    }
-}
+public class PrimitiveLuaClass(string name) : LuaClass(name);
 
-public class Unknown : Primitive
-{
-    public Unknown() : base("unknown")
-    {
-    }
-}
+public class Unknown() : Primitive("unknown");
 
 public class PrimitiveGenericTable : LuaType, IGeneric
 {
@@ -150,14 +136,9 @@ public class PrimitiveGenericTable : LuaType, IGeneric
     }
 }
 
-public class PrimitiveGenericTableMember : LuaSymbol
+public class PrimitiveGenericTableMember(ILuaType type, ILuaType? containingType) : LuaSymbol(containingType)
 {
-    public ILuaType Type { get; }
-
-    public PrimitiveGenericTableMember(ILuaType type, ILuaType? containingType) : base(containingType)
-    {
-        Type = type;
-    }
+    public ILuaType Type { get; } = type;
 
     public override ILuaType GetType(SearchContext context)
     {

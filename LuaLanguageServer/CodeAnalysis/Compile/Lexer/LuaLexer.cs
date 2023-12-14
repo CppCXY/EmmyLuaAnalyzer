@@ -5,19 +5,12 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace LuaLanguageServer.CodeAnalysis.Compile.Lexer;
 
-public class LuaLexer
+public class LuaLexer(LuaSource source)
 {
-    public LuaSource Source { get; }
-    private SourceReader Reader { get; }
+    public LuaSource Source { get; } = source;
+    private SourceReader Reader { get; } = new(source.Text);
 
-    public List<Diagnostic> Diagnostics { get; }
-
-    public LuaLexer(LuaSource source)
-    {
-        Source = source;
-        Reader = new SourceReader(source.Text);
-        Diagnostics = new List<Diagnostic>();
-    }
+    public List<Diagnostic> Diagnostics { get; } = new();
 
     // 名字开始, 包括unicode
     public static bool IsNameStart(char c)

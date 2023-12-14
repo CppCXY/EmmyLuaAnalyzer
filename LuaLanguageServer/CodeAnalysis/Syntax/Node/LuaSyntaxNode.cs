@@ -4,12 +4,8 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-public class LuaSyntaxNode : LuaSyntaxElement
+public class LuaSyntaxNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaSyntaxElement(green, tree, parent)
 {
-    public LuaSyntaxNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-        : base(green, tree, parent)
-    {
-    }
-
     public LuaSyntaxKind Kind => Green.SyntaxKind;
 }

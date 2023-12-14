@@ -8,33 +8,23 @@ namespace LuaLanguageServer.CodeAnalysis.Compile.Parser;
 /// <summary>
 /// backtracking parser
 /// </summary>
-public class LuaDocParser : IMarkerEventContainer
+public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 {
-    private LuaParser OwnerParser { get; }
+    private LuaParser OwnerParser { get; } = luaParser;
 
-    public LuaDocLexer Lexer { get; }
+    public LuaDocLexer Lexer { get; } = new(luaParser.Lexer.Source);
 
-    private LuaTokenData _current;
+    private LuaTokenData _current = new(LuaTokenKind.TkEof, new SourceRange());
 
-    private bool _invalid;
+    private bool _invalid = true;
 
-    private int _originTokenIndex;
+    private int _originTokenIndex = 0;
 
-    private List<LuaTokenData> OriginLuaTokenList { get; set; }
+    private List<LuaTokenData> OriginLuaTokenList { get; set; } = new();
 
     public List<MarkEvent> Events => OwnerParser.Events;
 
     public Marker Marker() => OwnerParser.Marker();
-
-    public LuaDocParser(LuaParser luaParser)
-    {
-        OwnerParser = luaParser;
-        OriginLuaTokenList = new List<LuaTokenData>();
-        Lexer = new LuaDocLexer(luaParser.Lexer.Source);
-        _current = new LuaTokenData(LuaTokenKind.TkEof, new SourceRange());
-        _invalid = true;
-        _originTokenIndex = 0;
-    }
 
     public void Parse(List<LuaTokenData> luaTokenData)
     {
