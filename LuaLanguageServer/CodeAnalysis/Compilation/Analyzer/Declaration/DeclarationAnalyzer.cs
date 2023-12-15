@@ -6,7 +6,11 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
 {
     public override void Analyze(DocumentId documentId)
     {
-
+        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
+        {
+            var builder = new DeclarationBuilder(documentId, syntaxTree, this);
+            Compilation.DeclarationTrees[documentId] = builder.Build();
+        }
     }
 
     public override void RemoveCache(DocumentId documentId)

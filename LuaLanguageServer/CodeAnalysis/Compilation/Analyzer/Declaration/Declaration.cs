@@ -17,7 +17,7 @@ public class DeclarationNode(int position, DeclarationNodeContainer? parent)
 public abstract class DeclarationNodeContainer(int position, DeclarationNodeContainer? parent)
     : DeclarationNode(position, parent)
 {
-    public List<DeclarationNode> Children { get; } = new();
+    public List<DeclarationNode> Children { get; } = [];
 
     public void Add(DeclarationNode node)
     {
@@ -63,6 +63,7 @@ public enum DeclarationFlag : ushort
     ClassMember = 0x0004,
     Global = 0x0008,
     TypeDeclaration = 0x0010,
+    Parameter = 0x0020,
 }
 
 public class Declaration(
@@ -92,6 +93,8 @@ public class Declaration(
     public bool IsClassMember => (Flags & DeclarationFlag.ClassMember) != 0;
 
     public bool IsGlobal => (Flags & DeclarationFlag.Global) != 0;
+
+    public bool IsParam => (Flags & DeclarationFlag.Parameter) != 0;
 
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 

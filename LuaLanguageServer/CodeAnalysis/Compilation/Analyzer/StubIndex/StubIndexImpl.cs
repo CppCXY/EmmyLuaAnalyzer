@@ -16,5 +16,5 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<LuaSyntaxElement, ILuaSymbol> SyntaxIndex { get; } = new();
 
-    public StubIndex<string, Declaration.Declaration> Global { get; } = new();
+    public StubIndex<string, Declaration.Declaration> TypeDeclaration { get; } = new();
 }
