@@ -2,7 +2,7 @@
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
-namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.StubIndex;
+namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Stub;
 
 public class StubIndexImpl(LuaCompilation compilation)
 {

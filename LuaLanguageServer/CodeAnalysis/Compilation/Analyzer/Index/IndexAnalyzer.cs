@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Stub;
+using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
