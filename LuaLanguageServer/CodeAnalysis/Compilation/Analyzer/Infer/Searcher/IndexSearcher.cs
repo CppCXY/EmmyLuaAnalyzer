@@ -15,7 +15,7 @@ public class IndexSearcher : LuaSearcher
         }
 
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        if (stubIndexImpl.LuaTypeIndex.Get<ILuaNamedType>(name).FirstOrDefault() is { } ty)
+        if (stubIndexImpl.NamedTypeIndex.Get<ILuaNamedType>(name).FirstOrDefault() is { } ty)
         {
             type = ty;
             return true;
@@ -28,7 +28,8 @@ public class IndexSearcher : LuaSearcher
     public override IEnumerable<LuaSymbol> SearchMembers(ILuaType type, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        return stubIndexImpl.Members.Get<LuaSymbol>(type);
+        // return stubIndexImpl.Members.Get<LuaSymbol>(type);
+        throw new NotImplementedException();
     }
 
 }

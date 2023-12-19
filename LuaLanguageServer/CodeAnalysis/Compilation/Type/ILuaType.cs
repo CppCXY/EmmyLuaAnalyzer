@@ -39,7 +39,7 @@ public abstract record IndexKey
                 switch (literal)
                 {
                     case LuaStringToken stringToken:
-                        return new String(stringToken.InnerString);
+                        return new String(stringToken.Value);
                     case LuaIntegerToken integerToken:
                         return new Integer(integerToken.Value);
                 }
@@ -65,7 +65,7 @@ public abstract record IndexKey
             }
             case { StringKey: { } stringKey }:
             {
-                return new String(stringKey.InnerString);
+                return new String(stringKey.Value);
             }
         }
 

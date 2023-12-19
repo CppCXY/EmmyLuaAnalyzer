@@ -5,14 +5,14 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStringToken(string innerString, GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+public class LuaStringToken(string value, GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     : LuaSyntaxToken(greenNode, tree, parent)
 {
-    public string InnerString { get; } = innerString;
+    public string Value { get; } = value;
 
     public override string ToString()
     {
-        return InnerString;
+        return Value;
     }
 }
 

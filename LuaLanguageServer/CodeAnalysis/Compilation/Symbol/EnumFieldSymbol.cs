@@ -16,7 +16,8 @@ public class EnumFieldSymbol(LuaSyntaxElement element, string name, LuaEnum cont
 
     public override ILuaType GetType(SearchContext context)
     {
-        return ContainingType.GetBaseType(context);
+        // return ContainingType.GetBaseType(context);
+        throw new NotImplementedException();
     }
 
     public override IEnumerable<LuaLocation> GetLocations(SearchContext context)

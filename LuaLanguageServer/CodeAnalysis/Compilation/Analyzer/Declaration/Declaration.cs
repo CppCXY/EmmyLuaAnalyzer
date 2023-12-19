@@ -59,11 +59,13 @@ public abstract class DeclarationNodeContainer(int position, DeclarationNodeCont
 public enum DeclarationFlag : ushort
 {
     Local = 0x0001,
-    Function = 0x0002,
+    Method = 0x0002,
     ClassMember = 0x0004,
     Global = 0x0008,
     TypeDeclaration = 0x0010,
     Parameter = 0x0020,
+    DocField = 0x0040,
+    EnumMember = 0x0080,
 }
 
 public class Declaration(
@@ -88,7 +90,7 @@ public class Declaration(
 
     public bool IsLocal => (Flags & DeclarationFlag.Local) != 0;
 
-    public bool IsFunction => (Flags & DeclarationFlag.Function) != 0;
+    public bool IsMethod => (Flags & DeclarationFlag.Method) != 0;
 
     public bool IsClassMember => (Flags & DeclarationFlag.ClassMember) != 0;
 

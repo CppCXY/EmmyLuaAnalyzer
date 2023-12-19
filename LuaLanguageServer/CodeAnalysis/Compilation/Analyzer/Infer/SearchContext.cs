@@ -14,6 +14,11 @@ public class SearchContext
 
     private List<ILuaSearcher> _searchers = new();
 
+    private const int MaxDepth = 1000;
+
+    // 推断深度
+    private int _currentDepth = 0;
+
     public CallExprInfer CallExprInfer { get; } = new();
 
     public EnvSearcher EnvSearcher { get; } = new();
@@ -39,15 +44,28 @@ public class SearchContext
 
     private ILuaType InferCore(LuaSyntaxElement element)
     {
-        return element switch
+        if (_currentDepth > MaxDepth)
         {
-            LuaExprSyntax expr => ExpressionInfer.InferExpr(expr, this),
-            LuaLocalNameSyntax localName => DeclarationInfer.InferLocalName(localName, this),
-            LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
-            LuaFuncStatSyntax funcStat => throw new NotImplementedException(),
-            LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
-            _ => Compilation.Builtin.Unknown
-        };
+            return Compilation.Builtin.Unknown;
+        }
+
+        try
+        {
+            _currentDepth++;
+            return element switch
+            {
+                LuaExprSyntax expr => ExpressionInfer.InferExpr(expr, this),
+                LuaLocalNameSyntax localName => DeclarationInfer.InferLocalName(localName, this),
+                LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
+                LuaFuncStatSyntax funcStat => throw new NotImplementedException(),
+                LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
+                _ => Compilation.Builtin.Unknown
+            };
+        }
+        finally
+        {
+            _currentDepth--;
+        }
     }
 
     public ILuaNamedType FindLuaType(string name)

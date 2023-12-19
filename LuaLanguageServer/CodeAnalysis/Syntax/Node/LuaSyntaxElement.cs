@@ -486,7 +486,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         Parent?.ChildrenWithTokens.ElementAtOrDefault(Green.ChildPosition - prev);
 
     // 从自身向前迭代, 直到找到一个类型为T的节点
-    public T? PrevOfType<T>()
+    public IEnumerable<T> PrevOfType<T>()
         where T : LuaSyntaxElement
     {
         if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
@@ -497,12 +497,27 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
                 var nodeOrToken = childrenWithTokenArray[i];
                 if (nodeOrToken is T node)
                 {
-                    return node;
+                    yield return node;
                 }
             }
         }
+    }
 
-        return null;
+    public IEnumerable<T> NextOfType<T>()
+        where T : LuaSyntaxElement
+    {
+        if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
+        {
+            var selfPosition = Green.ChildPosition;
+            for (var i = selfPosition + 1; i < childrenWithTokenArray.Length; i++)
+            {
+                var nodeOrToken = childrenWithTokenArray[i];
+                if (nodeOrToken is T node)
+                {
+                    yield return node;
+                }
+            }
+        }
     }
 
     public LuaSourceLocation Location => new LuaSourceLocation(Tree, Green.Range);

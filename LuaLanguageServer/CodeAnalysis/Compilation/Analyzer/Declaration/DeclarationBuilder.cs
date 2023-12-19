@@ -1,4 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Compilation.TypeOperator;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
@@ -324,15 +325,13 @@ public class DeclarationBuilder : ILuaElementWalker
         return null;
     }
 
-    private List<ILuaType> FindLocalOrAssignTypes(LuaStatSyntax stat)
-    {
-        return (
-            from comment in stat.Comments
-            from tagType in comment.DocList.OfType<LuaDocTagTypeSyntax>()
-            from type in tagType.TypeList
-            select new LuaTypeRef(type)
-        ).Cast<ILuaType>().ToList();
-    }
+    private List<ILuaType> FindLocalOrAssignTypes(LuaStatSyntax stat) =>
+    (
+        from comment in stat.Comments
+        from tagType in comment.DocList.OfType<LuaDocTagTypeSyntax>()
+        from type in tagType.TypeList
+        select new LuaTypeRef(type)
+    ).Cast<ILuaType>().ToList();
 
     private Dictionary<string, Declaration> FindParamListDeclaration(LuaSyntaxElement element)
     {
@@ -367,21 +366,38 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AssignStatDeclarationAnalysis(LuaAssignStatSyntax luaAssignStat)
     {
-        var typeDeclarations = FindLocalOrAssignTagDeclaration(luaAssignStat);
+        var types = FindLocalOrAssignTypes(luaAssignStat);
         var varList = luaAssignStat.VarList.ToList();
         var count = varList.Count;
         for (var i = 0; i < count; i++)
         {
             var varExpr = varList[i];
-
+            var luaType = types.ElementAtOrDefault(i);
             switch (varExpr)
             {
                 case LuaNameExprSyntax nameExpr:
                 {
                     if (nameExpr.Name is { } name)
                     {
-                        var flags = FindNameExpr(nameExpr)?.Flags ?? DeclarationFlag.Global;
-                        var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, null);
+                        var prevDeclaration = FindNameExpr(nameExpr);
+                        var flags = prevDeclaration?.Flags ?? DeclarationFlag.Global;
+                        var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, luaType);
+                        if (prevDeclaration is not null)
+                        {
+                            declaration.PrevDeclaration = prevDeclaration;
+                        }
+                        else
+                        {
+                            if (i == 0)
+                            {
+                                var typeDeclaration = FindLocalOrAssignTagDeclaration(luaAssignStat);
+                                declaration.PrevDeclaration = typeDeclaration;
+                            }
+
+                            Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText,
+                                declaration);
+                        }
+
                         _curScope?.Add(declaration);
                     }
 
@@ -396,13 +412,13 @@ public class DeclarationBuilder : ILuaElementWalker
         if (luaFuncStat is { IsLocal: true, LocalName.Name: { } name })
         {
             var declaration = CreateDeclaration(name.RepresentText, name,
-                DeclarationFlag.Function | DeclarationFlag.Local, null);
+                DeclarationFlag.Method | DeclarationFlag.Local, null);
             _curScope?.Add(declaration);
         }
         else if (luaFuncStat is { IsLocal: false, NameExpr.Name: { } name2 })
         {
             var declaration = CreateDeclaration(name2.RepresentText, name2,
-                DeclarationFlag.Function | DeclarationFlag.ClassMember, null);
+                DeclarationFlag.Method | DeclarationFlag.ClassMember, null);
             _curScope?.Add(declaration);
         }
     }
@@ -414,7 +430,13 @@ public class DeclarationBuilder : ILuaElementWalker
             var luaClass = new LuaClass(name.RepresentText);
             var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.TypeDeclaration, luaClass);
             _typeDeclarations.Add(name.RepresentText, declaration);
-            Analyzer.Compilation.StubIndexImpl.TypeDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, name.RepresentText, luaClass);
+            ClassOrInterfaceFieldsTagAnalysis(luaClass, tagClassSyntax);
+            if (tagClassSyntax is { Body: { } body })
+            {
+                ClassOrInterfaceBodyAnalysis(luaClass, body);
+            }
         }
     }
 
@@ -425,7 +447,8 @@ public class DeclarationBuilder : ILuaElementWalker
             var luaAlias = new LuaAlias(name.RepresentText, new LuaTypeRef(type));
             var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.TypeDeclaration, luaAlias);
             _typeDeclarations.Add(name.RepresentText, declaration);
-            Analyzer.Compilation.StubIndexImpl.TypeDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, name.RepresentText, luaAlias);
         }
     }
 
@@ -433,10 +456,24 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (tagEnumSyntax is { Name: { } name })
         {
-            var luaEnum = new LuaEnum(name.RepresentText, tagEnumSyntax.BaseType);
+            ILuaType baseType = tagEnumSyntax.BaseType is { } type
+                ? new LuaTypeRef(type)
+                : Analyzer.Compilation.Builtin.Integer;
+            var luaEnum = new LuaEnum(name.RepresentText, baseType);
             var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.TypeDeclaration, luaEnum);
             _typeDeclarations.Add(name.RepresentText, declaration);
-            Analyzer.Compilation.StubIndexImpl.TypeDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, name.RepresentText, luaEnum);
+            foreach (var field in tagEnumSyntax.FieldList)
+            {
+                if (field is { Name: { } fieldName })
+                {
+                    var fieldDeclaration = CreateDeclaration(fieldName.RepresentText, fieldName,
+                        DeclarationFlag.EnumMember, baseType);
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, name.RepresentText,
+                        fieldDeclaration);
+                }
+            }
         }
     }
 
@@ -448,7 +485,13 @@ public class DeclarationBuilder : ILuaElementWalker
             var declaration =
                 CreateDeclaration(name.RepresentText, name, DeclarationFlag.TypeDeclaration, luaInterface);
             _typeDeclarations.Add(name.RepresentText, declaration);
-            Analyzer.Compilation.StubIndexImpl.TypeDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
+            Analyzer.Compilation.StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, name.RepresentText, luaInterface);
+            ClassOrInterfaceFieldsTagAnalysis(luaInterface, tagInterfaceSyntax);
+            if (tagInterfaceSyntax is { Body: { } body })
+            {
+                ClassOrInterfaceBodyAnalysis(luaInterface, body);
+            }
         }
     }
 
@@ -474,6 +517,80 @@ public class DeclarationBuilder : ILuaElementWalker
             var declaration = CreateDeclaration(name.RepresentText, name,
                 DeclarationFlag.Local | DeclarationFlag.Parameter, new LuaTypeRef(type));
             AddTagDocDeclaration(tagParamSyntax, declaration);
+        }
+    }
+
+    private void ClassOrInterfaceFieldsTagAnalysis(ILuaNamedType namedType, LuaDocTagSyntax typeTag)
+    {
+        foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
+        {
+            switch (tagField)
+            {
+                case { NameField: { } nameField, Type: { } type1 }:
+                {
+                    var declaration = CreateDeclaration(nameField.RepresentText, nameField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type1));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { IntegerField: { } integerField, Type: { } type2 }:
+                {
+                    var declaration = CreateDeclaration($"[{integerField.Value}]", integerField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type2));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { StringField: { } stringField, Type: { } type3 }:
+                {
+                    var declaration = CreateDeclaration(stringField.Value, stringField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type3));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { TypeField: { } typeField, Type: { } type4 }:
+                {
+                    var indexOperator = new IndexOperator(new LuaTypeRef(typeField), new LuaTypeRef(type4));
+                    Analyzer.Compilation.StubIndexImpl.TypeOperators.AddStub(DocumentId, namedType.Name, indexOperator);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void ClassOrInterfaceBodyAnalysis(ILuaNamedType namedType, LuaDocTagBodySyntax docBody)
+    {
+        foreach (var field in docBody.FieldList)
+        {
+            switch (field)
+            {
+                case { NameField: { } nameField, Type: { } type1 }:
+                {
+                    var declaration = CreateDeclaration(nameField.RepresentText, nameField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type1));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { IntegerField: { } integerField, Type: { } type2 }:
+                {
+                    var declaration = CreateDeclaration($"[{integerField.Value}]", integerField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type2));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { StringField: { } stringField, Type: { } type3 }:
+                {
+                    var declaration = CreateDeclaration(stringField.Value, stringField,
+                        DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type3));
+                    Analyzer.Compilation.StubIndexImpl.Members.AddStub(DocumentId, namedType.Name, declaration);
+                    break;
+                }
+                case { TypeField: { } typeField, Type: { } type4 }:
+                {
+                    var indexOperator = new IndexOperator(new LuaTypeRef(typeField), new LuaTypeRef(type4));
+                    Analyzer.Compilation.StubIndexImpl.TypeOperators.AddStub(DocumentId, namedType.Name, indexOperator);
+                    break;
+                }
+            }
         }
     }
 }

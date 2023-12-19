@@ -62,7 +62,7 @@ public class CallExprInfer
     private static ILuaType InferRequire(LuaCallExprSyntax callExpr, SearchContext context)
     {
         var firstArg = callExpr.ArgList?.ArgList.FirstOrDefault();
-        if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { InnerString: { } modulePath } })
+        if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { Value: { } modulePath } })
         {
             if (context.Compilation.Workspace.Features.VirtualModule.TryGetValue(modulePath, out var realModule))
             {
