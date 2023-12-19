@@ -81,7 +81,7 @@ public class SearchContext
         return Compilation.Builtin.Unknown;
     }
 
-    public IEnumerable<ILuaSymbol> FindMembers(ILuaType type)
+    public IEnumerable<Declaration.Declaration> FindMembers(ILuaType type)
     {
         return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this));
     }

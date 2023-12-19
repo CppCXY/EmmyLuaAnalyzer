@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -12,7 +13,7 @@ public class LuaTuple : LuaType
         _types.AddRange(symbols);
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
         // return _types.Select((it, i) => new TupleMember((ulong)i, it, this));
         throw new NotImplementedException();

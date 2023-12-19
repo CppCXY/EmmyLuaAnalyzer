@@ -25,7 +25,7 @@ public class IndexSearcher : LuaSearcher
         return false;
     }
 
-    public override IEnumerable<LuaSymbol> SearchMembers(ILuaType type, SearchContext context)
+    public override IEnumerable<Declaration.Declaration> SearchMembers(ILuaType type, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
         // return stubIndexImpl.Members.Get<LuaSymbol>(type);

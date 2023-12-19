@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -12,9 +13,9 @@ public class LuaMultiRetType : LuaType
         _types.AddRange(rets);
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return Enumerable.Empty<ILuaSymbol>();
+        return Enumerable.Empty<Declaration>();
     }
 
     public ILuaType? GetRetType(int index)

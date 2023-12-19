@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -24,12 +25,12 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), ILuaNamedType
         throw new NotImplementedException();
     }
 
-    public IEnumerable<ILuaSymbol> GetRawMembers(SearchContext context)
+    public IEnumerable<Declaration> GetRawMembers(SearchContext context)
     {
         return context.FindMembers(this);
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
         return GetRawMembers(context);
     }

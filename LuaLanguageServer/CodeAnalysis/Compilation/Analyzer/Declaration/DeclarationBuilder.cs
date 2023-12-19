@@ -43,9 +43,27 @@ public class DeclarationBuilder : ILuaElementWalker
         DocumentId = documentId;
     }
 
-    private Declaration? FindNameExpr(LuaNameExprSyntax nameExpr)
+    private Declaration? FindDeclaration(LuaExprSyntax nameOrIndexExpr)
     {
-        return FindScope(nameExpr)?.FindNameExpr(nameExpr)?.FirstDeclaration;
+        if (nameOrIndexExpr is LuaNameExprSyntax nameExpr)
+        {
+            return FindScope(nameExpr)?.FindNameExpr(nameExpr)?.FirstDeclaration;
+        }
+        else if (nameOrIndexExpr is LuaIndexExprSyntax { PrefixExpr: {} prefixExpr } indexExpr )
+        {
+            var declaration = FindDeclaration(prefixExpr);
+            if (declaration is { LuaType: { } luaType })
+            {
+                var context = Analyzer.Compilation.SearchContext;
+                var indexKey = IndexKey.FromIndexExpr(indexExpr, context);
+                if (indexKey is not null)
+                {
+                    return luaType.IndexMember(indexKey, context).FirstOrDefault();
+                }
+            }
+        }
+
+        return null;
     }
 
     private DeclarationScope? FindScope(LuaSyntaxNode element)
@@ -69,12 +87,7 @@ public class DeclarationBuilder : ILuaElementWalker
     private Declaration CreateDeclaration(string name, LuaSyntaxElement element, DeclarationFlag flag,
         ILuaType? luaType)
     {
-        var first = element switch
-        {
-            LuaNameExprSyntax nameExpr => FindNameExpr(nameExpr),
-            _ => null
-        };
-        return new Declaration(name, GetPosition(element), element, flag, _curScope, first, luaType);
+        return new Declaration(name, GetPosition(element), element, flag, _curScope, null, luaType);
     }
 
     private DeclarationScope Push(LuaSyntaxElement element)
@@ -190,6 +203,12 @@ public class DeclarationBuilder : ILuaElementWalker
         => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
             or LuaForStatSyntax;
 
+    private UndeterminedType CreateUniqueType(LuaSyntaxElement element)
+    {
+        var id = $"{DocumentId.Guid}|{GetPosition(element)}";
+        return new UndeterminedType(id);
+    }
+
     private void LocalStatDeclarationAnalysis(LuaLocalStatSyntax localStatSyntax)
     {
         var types = FindLocalOrAssignTypes(localStatSyntax);
@@ -198,7 +217,7 @@ public class DeclarationBuilder : ILuaElementWalker
         for (var i = 0; i < count; i++)
         {
             var localName = nameList[i];
-            var luaType = types.ElementAtOrDefault(i);
+            var luaType = types.ElementAtOrDefault(i) ?? CreateUniqueType(localName);
             if (localName is { Name: { } name })
             {
                 var declaration = CreateDeclaration(name.RepresentText, localName, DeclarationFlag.Local, luaType);
@@ -220,7 +239,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, null);
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, CreateUniqueType(param));
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -238,7 +257,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, null);
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, CreateUniqueType(param));
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -372,14 +391,14 @@ public class DeclarationBuilder : ILuaElementWalker
         for (var i = 0; i < count; i++)
         {
             var varExpr = varList[i];
-            var luaType = types.ElementAtOrDefault(i);
+            var luaType = types.ElementAtOrDefault(i) ?? CreateUniqueType(varExpr);
             switch (varExpr)
             {
                 case LuaNameExprSyntax nameExpr:
                 {
                     if (nameExpr.Name is { } name)
                     {
-                        var prevDeclaration = FindNameExpr(nameExpr);
+                        var prevDeclaration = FindDeclaration(nameExpr);
                         var flags = prevDeclaration?.Flags ?? DeclarationFlag.Global;
                         var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, luaType);
                         if (prevDeclaration is not null)
@@ -403,6 +422,13 @@ public class DeclarationBuilder : ILuaElementWalker
 
                     break;
                 }
+                case LuaIndexExprSyntax indexExpr:
+                {
+                    var uniqueType = CreateUniqueType(indexExpr);
+                    var declaration = CreateDeclaration(uniqueType.UniqueId, indexExpr, DeclarationFlag.ClassMember, luaType);
+                    _curScope?.Add(declaration);
+                    break;
+                }
             }
         }
     }
@@ -412,13 +438,13 @@ public class DeclarationBuilder : ILuaElementWalker
         if (luaFuncStat is { IsLocal: true, LocalName.Name: { } name })
         {
             var declaration = CreateDeclaration(name.RepresentText, name,
-                DeclarationFlag.Method | DeclarationFlag.Local, null);
+                DeclarationFlag.Method | DeclarationFlag.Local, CreateUniqueType(name));
             _curScope?.Add(declaration);
         }
         else if (luaFuncStat is { IsLocal: false, NameExpr.Name: { } name2 })
         {
             var declaration = CreateDeclaration(name2.RepresentText, name2,
-                DeclarationFlag.Method | DeclarationFlag.ClassMember, null);
+                DeclarationFlag.Method | DeclarationFlag.ClassMember, CreateUniqueType(name2));
             _curScope?.Add(declaration);
         }
     }

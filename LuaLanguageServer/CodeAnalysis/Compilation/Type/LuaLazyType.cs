@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -9,7 +10,7 @@ public class LuaLazyType(LuaSyntaxElement? typeElement, int retId = 0) : LuaType
 {
     private ILuaType? _reaLuaType;
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
         return GetRealType(context).GetMembers(context);
     }
@@ -34,7 +35,7 @@ public class LuaLazyIterType(List<LuaExprSyntax> exprList, int itPosition) : Lua
 
     private int _itPosition = itPosition;
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
         return GetRealType(context).GetMembers(context);
     }

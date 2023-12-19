@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -7,9 +8,9 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
 public interface ILuaType
 {
-    public IEnumerable<ILuaSymbol> GetMembers(SearchContext context);
+    public IEnumerable<Declaration> GetMembers(SearchContext context);
 
-    public IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context);
+    public IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context);
 
     public bool SubTypeOf(ILuaType other, SearchContext context);
 

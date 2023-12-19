@@ -17,5 +17,6 @@ public enum TypeKind
     GenericTable,
     Method,
     LazyType,
-    TypeRef
+    TypeRef,
+    Undetermined,
 }

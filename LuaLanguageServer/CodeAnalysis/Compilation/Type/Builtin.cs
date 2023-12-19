@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
@@ -59,10 +60,10 @@ public class Primitive(string name) : LuaClass(name)
         return this;
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
+    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
 
-    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context) =>
-        Enumerable.Empty<LuaSymbol>();
+    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context) =>
+        Enumerable.Empty<Declaration>();
 }
 
 public class PrimitiveLuaClass(string name) : LuaClass(name);
@@ -85,12 +86,12 @@ public class PrimitiveGenericTable : LuaType, IGeneric
     }
 
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return Enumerable.Empty<LuaSymbol>();
+        return Enumerable.Empty<Declaration>();
     }
 
-    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
     {
         switch (key)
         {

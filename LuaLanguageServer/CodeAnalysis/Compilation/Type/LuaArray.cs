@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -15,9 +16,9 @@ public class LuaArray : LuaType
         Symbol = new VirtualSymbol(baseTy, this);
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context) => Enumerable.Empty<LuaSymbol>();
+    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
 
-    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
     {
         switch (key)
         {

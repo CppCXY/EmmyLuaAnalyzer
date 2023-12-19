@@ -1,4 +1,5 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -19,9 +20,9 @@ public class GenericParam(string name, ILuaType? type, LuaDocTagGenericParamSynt
         return Enumerable.Empty<GenericParam>();
     }
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return Type?.GetMembers(context) ?? Enumerable.Empty<LuaSymbol>();
+        return Type?.GetMembers(context) ?? Enumerable.Empty<Declaration>();
     }
 }
 
@@ -33,12 +34,12 @@ public class LuaGeneric(ILuaNamedType baseType, List<ILuaType> genericArgs) : Lu
 
     private Dictionary<string, ILuaType>? _genericImpl;
 
-    public override IEnumerable<ILuaSymbol> GetMembers(SearchContext context)
+    public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
         return BaseType.GetMembers(context);
     }
 
-    public override IEnumerable<ILuaSymbol> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
     {
         return BaseType.IndexMember(key, context);
     }

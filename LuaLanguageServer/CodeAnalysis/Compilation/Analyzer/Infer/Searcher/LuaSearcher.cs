@@ -12,9 +12,9 @@ public abstract class LuaSearcher : ILuaSearcher
         return false;
     }
 
-    public virtual IEnumerable<LuaSymbol> SearchMembers(ILuaType type, SearchContext context)
+    public virtual IEnumerable<Declaration.Declaration> SearchMembers(ILuaType type, SearchContext context)
     {
-        return Enumerable.Empty<LuaSymbol>();
+        return Enumerable.Empty<Declaration.Declaration>();
     }
 
     public virtual IEnumerable<Declaration.Declaration> SearchDeclarations(LuaSyntaxElement element, SearchContext context)
