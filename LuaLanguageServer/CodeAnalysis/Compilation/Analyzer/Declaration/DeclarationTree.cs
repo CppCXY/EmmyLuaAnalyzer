@@ -1,4 +1,6 @@
-﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -10,17 +12,24 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
 
     public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
-    public Declaration? FindDeclaration(LuaSyntaxElement element)
+    public Declaration? FindDeclaration(LuaSyntaxElement element, SearchContext context)
     {
         if (element is LuaNameExprSyntax nameExpr)
         {
             var scope = FindScope(nameExpr);
             return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
         }
-        else
+        else if (element is LuaIndexExprSyntax indexExpr)
         {
-            return null;
+            var ty = context.Infer(indexExpr.PrefixExpr);
+            var key = IndexKey.FromIndexExpr(indexExpr, context);
+            if (key is not null)
+            {
+                return ty.IndexMember(key, context).FirstOrDefault();
+            }
         }
+
+        return null;
     }
 
     public DeclarationScope? FindScope(LuaSyntaxElement element)
@@ -58,8 +67,4 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
             return true;
         });
     }
-
-    private static bool IsScopeOwner(LuaSyntaxNode node)
-        => node is LuaBlockSyntax or LuaFuncStatSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
-            or LuaForStatSyntax;
 }

@@ -43,27 +43,9 @@ public class DeclarationBuilder : ILuaElementWalker
         DocumentId = documentId;
     }
 
-    private Declaration? FindDeclaration(LuaExprSyntax nameOrIndexExpr)
+    private Declaration? FindDeclaration(LuaNameExprSyntax nameExpr)
     {
-        if (nameOrIndexExpr is LuaNameExprSyntax nameExpr)
-        {
-            return FindScope(nameExpr)?.FindNameExpr(nameExpr)?.FirstDeclaration;
-        }
-        else if (nameOrIndexExpr is LuaIndexExprSyntax { PrefixExpr: {} prefixExpr } indexExpr )
-        {
-            var declaration = FindDeclaration(prefixExpr);
-            if (declaration is { LuaType: { } luaType })
-            {
-                var context = Analyzer.Compilation.SearchContext;
-                var indexKey = IndexKey.FromIndexExpr(indexExpr, context);
-                if (indexKey is not null)
-                {
-                    return luaType.IndexMember(indexKey, context).FirstOrDefault();
-                }
-            }
-        }
-
-        return null;
+        return FindScope(nameExpr)?.FindNameExpr(nameExpr)?.FirstDeclaration;
     }
 
     private DeclarationScope? FindScope(LuaSyntaxNode element)
@@ -239,7 +221,8 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, CreateUniqueType(param));
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
+                    CreateUniqueType(param));
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -257,7 +240,8 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, CreateUniqueType(param));
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
+                    CreateUniqueType(param));
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -424,8 +408,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    var uniqueType = CreateUniqueType(indexExpr);
-                    var declaration = CreateDeclaration(uniqueType.UniqueId, indexExpr, DeclarationFlag.ClassMember, luaType);
+                    var declaration = CreateDeclaration("", indexExpr, DeclarationFlag.ClassMember,
+                        luaType);
                     _curScope?.Add(declaration);
                     break;
                 }
@@ -435,17 +419,41 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void MethodDeclarationAnalysis(LuaFuncStatSyntax luaFuncStat)
     {
-        if (luaFuncStat is { IsLocal: true, LocalName.Name: { } name })
+        switch (luaFuncStat)
         {
-            var declaration = CreateDeclaration(name.RepresentText, name,
-                DeclarationFlag.Method | DeclarationFlag.Local, CreateUniqueType(name));
-            _curScope?.Add(declaration);
-        }
-        else if (luaFuncStat is { IsLocal: false, NameExpr.Name: { } name2 })
-        {
-            var declaration = CreateDeclaration(name2.RepresentText, name2,
-                DeclarationFlag.Method | DeclarationFlag.ClassMember, CreateUniqueType(name2));
-            _curScope?.Add(declaration);
+            case { IsLocal: true, LocalName.Name: { } name }:
+            {
+                var declaration = CreateDeclaration(name.RepresentText, name,
+                    DeclarationFlag.Method | DeclarationFlag.Local, CreateUniqueType(name));
+                _curScope?.Add(declaration);
+                break;
+            }
+            case { IsLocal: false, NameExpr.Name: { } name2 }:
+            {
+                var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
+                var flags = prevDeclaration?.Flags ?? (DeclarationFlag.Global | DeclarationFlag.Method);
+                var declaration = CreateDeclaration(name2.RepresentText, name2, flags, CreateUniqueType(name2));
+                if (prevDeclaration is not null)
+                {
+                    declaration.PrevDeclaration = prevDeclaration;
+                }
+                else
+                {
+                    Analyzer.Compilation.StubIndexImpl.GlobalDeclaration.AddStub(
+                        DocumentId, name2.RepresentText, declaration);
+                }
+
+                _curScope?.Add(declaration);
+                break;
+            }
+            case { IsMethod: true, IndexExpr: { } indexExpr }:
+            {
+                var uniqueTy = CreateUniqueType(indexExpr);
+                var declaration = CreateDeclaration(uniqueTy.UniqueId, indexExpr,
+                    DeclarationFlag.Method | DeclarationFlag.ClassMember, uniqueTy);
+                _curScope?.Add(declaration);
+                break;
+            }
         }
     }
 

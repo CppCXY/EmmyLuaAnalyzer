@@ -156,11 +156,11 @@ public static class ExpressionInfer
         {
             var key = IndexKey.FromIndexExpr(indexExpr, context);
             var prefixTy = InferExpr(prefixExpr, context);
-            var ty = prefixTy.IndexMember(key, context).FirstOrDefault()?.GetType(context);
-            if (ty is not null)
-            {
-                return ty;
-            }
+            // var ty = prefixTy.IndexMember(key, context).FirstOrDefault()?.GetType(context);
+            // if (ty is not null)
+            // {
+            //     return ty;
+            // }
         }
 
         return context.Compilation.Builtin.Unknown;

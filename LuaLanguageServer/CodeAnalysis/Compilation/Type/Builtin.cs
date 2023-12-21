@@ -95,34 +95,36 @@ public class PrimitiveGenericTable : LuaType, IGeneric
     {
         switch (key)
         {
-            case IndexKey.Integer:
-            {
-                if (KeyType.SubTypeOf(context.Compilation.Builtin.Number, context))
-                {
-                    yield return MemberType;
-                }
-
-                break;
-            }
-            case IndexKey.String:
-            {
-                if (KeyType.SubTypeOf(context.Compilation.Builtin.String, context))
-                {
-                    yield return MemberType;
-                }
-
-                break;
-            }
-            case IndexKey.Ty ty:
-            {
-                if (ty.Value.SubTypeOf(KeyType, context))
-                {
-                    yield return MemberType;
-                }
-
-                break;
-            }
+            // case IndexKey.Integer:
+            // {
+            //     if (KeyType.SubTypeOf(context.Compilation.Builtin.Number, context))
+            //     {
+            //         yield return MemberType;
+            //     }
+            //
+            //     break;
+            // }
+            // case IndexKey.String:
+            // {
+            //     if (KeyType.SubTypeOf(context.Compilation.Builtin.String, context))
+            //     {
+            //         yield return MemberType;
+            //     }
+            //
+            //     break;
+            // }
+            // case IndexKey.Ty ty:
+            // {
+            //     if (ty.Value.SubTypeOf(KeyType, context))
+            //     {
+            //         yield return MemberType;
+            //     }
+            //
+            //     break;
+            // }
         }
+
+        throw new NotImplementedException();
     }
 
     public ILuaNamedType GetBaseType(SearchContext context)

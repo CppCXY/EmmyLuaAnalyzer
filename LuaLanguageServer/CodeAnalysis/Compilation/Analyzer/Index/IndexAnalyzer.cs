@@ -543,12 +543,5 @@ public class IndexAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation
     //     return newTy;
     // }
     //
-    // public override void RemoveCache(DocumentId documentId)
-    // {
-    //     var stubIndexImpl = Compilation.StubIndexImpl;
-    //     stubIndexImpl.ShortNameIndex.RemoveStub(documentId);
-    //     stubIndexImpl.Members.RemoveStub(documentId);
-    //     stubIndexImpl.SyntaxIndex.RemoveStub(documentId);
-    //     stubIndexImpl.NamedTypeIndex.RemoveStub(documentId);
-    // }
+
 }
