@@ -199,7 +199,7 @@ public class DeclarationBuilder : ILuaElementWalker
         for (var i = 0; i < count; i++)
         {
             var localName = nameList[i];
-            var luaType = types.ElementAtOrDefault(i) ?? CreateUniqueType(localName);
+            var luaType = types.ElementAtOrDefault(i) ?? null;
             if (localName is { Name: { } name })
             {
                 var declaration = CreateDeclaration(name.RepresentText, localName, DeclarationFlag.Local, luaType);
@@ -221,8 +221,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
-                    CreateUniqueType(param));
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, null);
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -240,8 +239,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local,
-                    CreateUniqueType(param));
+                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, null);
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -375,7 +373,7 @@ public class DeclarationBuilder : ILuaElementWalker
         for (var i = 0; i < count; i++)
         {
             var varExpr = varList[i];
-            var luaType = types.ElementAtOrDefault(i) ?? CreateUniqueType(varExpr);
+            var luaType = types.ElementAtOrDefault(i) ?? null;
             switch (varExpr)
             {
                 case LuaNameExprSyntax nameExpr:
@@ -424,7 +422,7 @@ public class DeclarationBuilder : ILuaElementWalker
             case { IsLocal: true, LocalName.Name: { } name }:
             {
                 var declaration = CreateDeclaration(name.RepresentText, name,
-                    DeclarationFlag.Method | DeclarationFlag.Local, CreateUniqueType(name));
+                    DeclarationFlag.Method | DeclarationFlag.Local, null);
                 _curScope?.Add(declaration);
                 break;
             }
@@ -432,7 +430,7 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                 var flags = prevDeclaration?.Flags ?? (DeclarationFlag.Global | DeclarationFlag.Method);
-                var declaration = CreateDeclaration(name2.RepresentText, name2, flags, CreateUniqueType(name2));
+                var declaration = CreateDeclaration(name2.RepresentText, name2, flags, null);
                 if (prevDeclaration is not null)
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -448,9 +446,9 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsMethod: true, IndexExpr: { } indexExpr }:
             {
-                var uniqueTy = CreateUniqueType(indexExpr);
-                var declaration = CreateDeclaration(uniqueTy.UniqueId, indexExpr,
-                    DeclarationFlag.Method | DeclarationFlag.ClassMember, uniqueTy);
+                // var uniqueTy = CreateUniqueType(indexExpr);
+                var declaration = CreateDeclaration(indexExpr.Name, indexExpr,
+                    DeclarationFlag.Method | DeclarationFlag.ClassMember, null);
                 _curScope?.Add(declaration);
                 break;
             }

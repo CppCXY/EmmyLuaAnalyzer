@@ -175,4 +175,20 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
     public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
+
+    public string Name
+    {
+        get
+        {
+            // if (DotOrColonIndexName?.RepresentText is {} name)
+            // {
+            //     return name;
+            // }
+            // else if (IndexKeyExpr is { } indexExpr)
+            // {
+            //     return indexExpr.ToString();
+            // }
+            return string.Empty;
+        }
+    }
 }
