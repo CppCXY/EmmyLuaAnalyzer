@@ -1,7 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Bind;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
-using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Index;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Stub;
 using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
@@ -41,7 +40,6 @@ public class LuaCompilation
         Analyzers = new List<ILuaAnalyzer>()
         {
             new DeclarationAnalyzer(this),
-            new IndexAnalyzer(this),
             new BindAnalyzer(this)
         };
     }

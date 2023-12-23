@@ -105,3 +105,21 @@ public class Declaration(
         return $"{Flags} {Name}";
     }
 }
+
+public class IndexDeclaration(
+    IndexKey? key,
+    int position,
+    LuaSyntaxElement syntaxElement,
+    DeclarationFlag flag,
+    DeclarationNodeContainer? parent,
+    Declaration? prev,
+    ILuaType? luaType)
+    : Declaration("", position, syntaxElement, flag, parent, prev, luaType)
+{
+    public IndexKey? Key { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Flags} {Key}";
+    }
+}
