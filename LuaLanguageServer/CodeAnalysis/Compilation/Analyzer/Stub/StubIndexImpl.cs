@@ -16,8 +16,6 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<string, ILuaNamedType> NamedTypeIndex { get; } = new();
 
-    public StubIndex<LuaSyntaxElement, ILuaSymbol> SyntaxIndex { get; } = new();
-
     public StubIndex<string, Declaration.Declaration> GlobalDeclaration { get; } = new();
 
     public StubIndex<string, ILuaOperator> TypeOperators { get; } = new();
@@ -26,7 +24,6 @@ public class StubIndexImpl(LuaCompilation compilation)
     {
         ShortNameIndex.RemoveStub(documentId);
         Members.RemoveStub(documentId);
-        SyntaxIndex.RemoveStub(documentId);
         NamedTypeIndex.RemoveStub(documentId);
         GlobalDeclaration.RemoveStub(documentId);
         TypeOperators.RemoveStub(documentId);

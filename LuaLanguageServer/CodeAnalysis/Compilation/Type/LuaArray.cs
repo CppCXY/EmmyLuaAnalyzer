@@ -18,7 +18,7 @@ public class LuaArray : LuaType
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
 
-    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
         // switch (key)
         // {

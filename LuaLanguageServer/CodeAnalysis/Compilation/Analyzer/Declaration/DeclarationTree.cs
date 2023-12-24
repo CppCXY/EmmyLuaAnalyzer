@@ -1,6 +1,4 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Type;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+﻿using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -12,24 +10,10 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
 
     public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
-    public Declaration? FindDeclaration(LuaSyntaxElement element, SearchContext context)
+    public Declaration? FindDeclaration(LuaNameExprSyntax nameExpr)
     {
-        if (element is LuaNameExprSyntax nameExpr)
-        {
-            var scope = FindScope(nameExpr);
-            return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
-        }
-        else if (element is LuaIndexExprSyntax indexExpr)
-        {
-            var ty = context.Infer(indexExpr.PrefixExpr);
-            var key = IndexKey.FromIndexExpr(indexExpr, context);
-            if (key is not null)
-            {
-                return ty.IndexMember(key, context).FirstOrDefault();
-            }
-        }
-
-        return null;
+        var scope = FindScope(nameExpr);
+        return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
     }
 
     public DeclarationScope? FindScope(LuaSyntaxElement element)

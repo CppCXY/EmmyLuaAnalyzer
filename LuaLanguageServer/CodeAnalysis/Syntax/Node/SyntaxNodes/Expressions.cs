@@ -139,6 +139,52 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
     public LuaTableExprSyntax? ParentTable => Parent as LuaTableExprSyntax;
+
+    public string? Name
+    {
+        get
+        {
+            if (NameKey is {} nameKey)
+            {
+                return nameKey.RepresentText;
+            }
+            else if (NumberKey is LuaIntegerToken integerToken)
+            {
+                return $"[{integerToken.Value}]";
+            }
+            else if (NumberKey is { } number)
+            {
+                return $"[{number}]";
+            }
+            else if (StringKey is {} stringToken)
+            {
+                return stringToken.Value;
+            }
+
+            return null;
+        }
+    }
+
+    public LuaSyntaxElement? KeyElement
+    {
+        get
+        {
+            if (NameKey is {} nameKey)
+            {
+                return nameKey;
+            }
+            else if (NumberKey is { } number)
+            {
+                return number;
+            }
+            else if (StringKey is {} stringToken)
+            {
+                return stringToken;
+            }
+
+            return null;
+        }
+    }
 }
 
 public class LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
@@ -177,4 +223,45 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
     public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
+
+    public string? Name
+    {
+        get
+        {
+            if (DotOrColonIndexName != null)
+            {
+                return DotOrColonIndexName.RepresentText;
+            }
+            else if (IndexKeyExpr is LuaLiteralExprSyntax literal)
+            {
+                if (literal.Literal is LuaStringToken stringToken)
+                {
+                    return  stringToken.Value;
+                }
+                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
+                {
+                    return $"[{luaIntegerToken.Value}]";
+                }
+                else
+                {
+                    return literal.Literal.RepresentText;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public LuaSyntaxElement? KeyElement
+    {
+        get
+        {
+            if (DotOrColonIndexName != null)
+            {
+                return DotOrColonIndexName;
+            }
+
+            return IndexKeyExpr;
+        }
+    }
 }

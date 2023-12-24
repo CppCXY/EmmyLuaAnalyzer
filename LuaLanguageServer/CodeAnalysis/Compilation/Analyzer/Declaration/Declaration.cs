@@ -75,7 +75,7 @@ public class Declaration(
     DeclarationFlag flag,
     DeclarationNodeContainer? parent,
     Declaration? prev,
-    ILuaType? luaType)
+    ILuaType? type)
     : DeclarationNode(position, parent)
 {
     public string Name { get; } = name;
@@ -84,7 +84,7 @@ public class Declaration(
 
     public DeclarationFlag Flags { get; set; } = flag;
 
-    public ILuaType? LuaType { get; set; } = luaType;
+    public ILuaType? Type { get; set; } = type;
 
     public Declaration? PrevDeclaration { get; set; } = prev;
 
@@ -103,23 +103,5 @@ public class Declaration(
     public override string ToString()
     {
         return $"{Flags} {Name}";
-    }
-}
-
-public class IndexDeclaration(
-    IndexKey? key,
-    int position,
-    LuaSyntaxElement syntaxElement,
-    DeclarationFlag flag,
-    DeclarationNodeContainer? parent,
-    Declaration? prev,
-    ILuaType? luaType)
-    : Declaration("", position, syntaxElement, flag, parent, prev, luaType)
-{
-    public IndexKey? Key { get; set; }
-
-    public override string ToString()
-    {
-        return $"{Flags} {Key}";
     }
 }

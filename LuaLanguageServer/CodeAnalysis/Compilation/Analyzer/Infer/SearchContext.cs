@@ -3,6 +3,7 @@ using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
@@ -84,5 +85,10 @@ public class SearchContext
     public IEnumerable<Declaration.Declaration> FindMembers(ILuaType type)
     {
         return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this));
+    }
+
+    public string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
+    {
+        return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";
     }
 }

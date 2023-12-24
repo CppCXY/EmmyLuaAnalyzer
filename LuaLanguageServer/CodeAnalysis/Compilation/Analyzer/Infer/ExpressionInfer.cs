@@ -154,8 +154,8 @@ public static class ExpressionInfer
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
-            var key = IndexKey.FromIndexExpr(indexExpr, context);
-            var prefixTy = InferExpr(prefixExpr, context);
+            // var key = IndexKey.FromIndexExpr(indexExpr, context);
+            // var prefixTy = InferExpr(prefixExpr, context);
             // var ty = prefixTy.IndexMember(key, context).FirstOrDefault()?.GetType(context);
             // if (ty is not null)
             // {

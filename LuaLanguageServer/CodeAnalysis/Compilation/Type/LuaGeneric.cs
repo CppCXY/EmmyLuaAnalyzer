@@ -39,9 +39,9 @@ public class LuaGeneric(ILuaNamedType baseType, List<ILuaType> genericArgs) : Lu
         return BaseType.GetMembers(context);
     }
 
-    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
-        return BaseType.IndexMember(key, context);
+        return BaseType.IndexMember(name, context);
     }
 
     public ILuaNamedType GetBaseType(SearchContext context)

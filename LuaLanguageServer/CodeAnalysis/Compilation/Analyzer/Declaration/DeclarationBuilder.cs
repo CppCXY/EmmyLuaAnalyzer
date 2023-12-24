@@ -78,12 +78,6 @@ public class DeclarationBuilder : ILuaElementWalker
         return new Declaration(name, GetPosition(element), element, flag, _curScope, null, luaType);
     }
 
-    private IndexDeclaration CreateIndexDeclaration(IndexKey key, LuaSyntaxElement element, DeclarationFlag flag,
-        ILuaType? luaType)
-    {
-        return new IndexDeclaration(key, GetPosition(element), element, flag, _curScope, null, luaType);
-    }
-
     private DeclarationScope Push(LuaSyntaxElement element)
     {
         var position = GetPosition(element);
@@ -417,14 +411,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    var indexKey = IndexKey.FromIndexExpr(indexExpr, Compilation.SearchContext);
-                    if (indexKey is not null)
-                    {
-                        var declaration =
-                            CreateIndexDeclaration(indexKey, indexExpr, DeclarationFlag.ClassMember, luaType);
-                        Analyzer.IndexDeclarations.Add(declaration);
-                    }
-
+                    Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId));
                     break;
                 }
             }
@@ -461,14 +448,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsMethod: true, IndexExpr: { } indexExpr }:
             {
-                var indexKey = IndexKey.FromIndexExpr(indexExpr, Analyzer.Compilation.SearchContext);
-                if (indexKey is not null)
-                {
-                    var declaration = CreateIndexDeclaration(indexKey, indexExpr,
-                        DeclarationFlag.Method | DeclarationFlag.ClassMember, null);
-                    Analyzer.IndexDeclarations.Add(declaration);
-                }
-
+                Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId));
                 break;
             }
         }
@@ -647,9 +627,6 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void TableFieldDeclarationAnalysis(LuaTableFieldSyntax tableFieldSyntax)
     {
-        if (tableFieldSyntax.ParentTable is { } table)
-        {
-            
-        }
+        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(tableFieldSyntax, DocumentId));
     }
 }

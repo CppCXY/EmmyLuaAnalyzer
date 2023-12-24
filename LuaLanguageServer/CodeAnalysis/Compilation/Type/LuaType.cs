@@ -10,7 +10,7 @@ public abstract class LuaType(TypeKind kind) : ILuaType
 {
     public abstract IEnumerable<Declaration> GetMembers(SearchContext context);
 
-    public virtual IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context) => Enumerable.Empty<Declaration>();
+    public virtual IEnumerable<Declaration> IndexMember(string name, SearchContext context) => Enumerable.Empty<Declaration>();
 
     public virtual bool SubTypeOf(ILuaType other, SearchContext context)
     {

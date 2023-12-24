@@ -62,7 +62,7 @@ public class Primitive(string name) : LuaClass(name)
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
 
-    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context) =>
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context) =>
         Enumerable.Empty<Declaration>();
 }
 
@@ -91,39 +91,8 @@ public class PrimitiveGenericTable : LuaType, IGeneric
         return Enumerable.Empty<Declaration>();
     }
 
-    public override IEnumerable<Declaration> IndexMember(IndexKey key, SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
-        switch (key)
-        {
-            // case IndexKey.Integer:
-            // {
-            //     if (KeyType.SubTypeOf(context.Compilation.Builtin.Number, context))
-            //     {
-            //         yield return MemberType;
-            //     }
-            //
-            //     break;
-            // }
-            // case IndexKey.String:
-            // {
-            //     if (KeyType.SubTypeOf(context.Compilation.Builtin.String, context))
-            //     {
-            //         yield return MemberType;
-            //     }
-            //
-            //     break;
-            // }
-            // case IndexKey.Ty ty:
-            // {
-            //     if (ty.Value.SubTypeOf(KeyType, context))
-            //     {
-            //         yield return MemberType;
-            //     }
-            //
-            //     break;
-            // }
-        }
-
         throw new NotImplementedException();
     }
 
