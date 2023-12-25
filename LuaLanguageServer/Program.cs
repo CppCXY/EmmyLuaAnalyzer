@@ -10,10 +10,10 @@ using LuaLanguageServer.CodeAnalysis.Workspace;
 
 var tree = LuaSyntaxTree.ParseText(
     """
-    f = "可是啊
-    d = [[danshi
+    for a, b in i do
+    end
     """);
-// Console.WriteLine(tree.SyntaxRoot.DebugSyntaxInspect());
+Console.WriteLine(tree.SyntaxRoot.DebugSyntaxInspect());
 
 // var dtree = DeclarationTree.From(tree);
 // var tk = tree.SyntaxRoot.NodeAt(1, 0);
@@ -24,10 +24,10 @@ var tree = LuaSyntaxTree.ParseText(
 // }
 
 // Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
-foreach (var diagnostic in tree.Diagnostics)
-{
-    Console.WriteLine(diagnostic);
-}
+// foreach (var diagnostic in tree.Diagnostics)
+// {
+//     Console.WriteLine(diagnostic);
+// }
 
 
 // var block = tree.SyntaxRoot.Descendants.OfType<LuaCallExprSyntax>().FirstOrDefault();
@@ -48,7 +48,11 @@ foreach (var diagnostic in tree.Diagnostics)
 // Console.WriteLine($"耗时: {sw.ElapsedMilliseconds} ms");
 //
 // var compilation = w.Compilation;
-// foreach(var diagnostic in compilation.GetDiagnostics(1))
+// foreach (var (id, declarationTree) in compilation.DeclarationTrees)
 // {
-//     Console.WriteLine(diagnostic);
+//     Console.WriteLine("Analyzing: " + id.Path);
+//     foreach (var declaration in declarationTree.RootScope!.DescendantDeclarations)
+//     {
+//         Console.WriteLine($"{declaration.Position} {declaration}");
+//     }
 // }

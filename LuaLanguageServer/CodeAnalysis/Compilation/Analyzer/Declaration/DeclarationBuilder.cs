@@ -38,6 +38,7 @@ public class DeclarationBuilder : ILuaElementWalker
     public DeclarationTree Build()
     {
         _syntaxTree.SyntaxRoot.Accept(this);
+        _tree.RootScope = _topScope;
         return _tree;
     }
 
@@ -75,7 +76,9 @@ public class DeclarationBuilder : ILuaElementWalker
     private Declaration CreateDeclaration(string name, LuaSyntaxElement element, DeclarationFlag flag,
         ILuaType? luaType)
     {
-        return new Declaration(name, GetPosition(element), element, flag, _curScope, null, luaType);
+        var declaration = new Declaration(name, GetPosition(element), element, flag, _curScope, null, luaType);
+        _curScope?.Add(declaration);
+        return declaration;
     }
 
     private DeclarationScope Push(LuaSyntaxElement element)
@@ -181,6 +184,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 TableFieldDeclarationAnalysis(tableFieldSyntax);
                 break;
             }
+            case LuaFuncBodySyntax funcBodySyntax:
+            {
+                FuncBodyDeclarationAnalysis(funcBodySyntax);
+                break;
+            }
         }
     }
 
@@ -213,8 +221,6 @@ public class DeclarationBuilder : ILuaElementWalker
                     var typeDeclaration = FindLocalOrAssignTagDeclaration(localStatSyntax);
                     declaration.PrevDeclaration = typeDeclaration;
                 }
-
-                _curScope?.Add(declaration);
             }
         }
     }
@@ -231,8 +237,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     declaration.PrevDeclaration = prevDeclaration;
                 }
-
-                _curScope?.Add(declaration);
             }
         }
     }
@@ -250,7 +254,6 @@ public class DeclarationBuilder : ILuaElementWalker
                     declaration.PrevDeclaration = prevDeclaration;
                 }
 
-                _curScope?.Add(declaration);
             }
         }
     }
@@ -259,9 +262,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (forStatSyntax.IteratorName is { Name: { } name })
         {
-            var declaration = CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local,
-                Compilation.Builtin.Integer);
-            _curScope?.Add(declaration);
+            CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local, Compilation.Builtin.Integer);
         }
     }
 
@@ -403,15 +404,22 @@ public class DeclarationBuilder : ILuaElementWalker
                             StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name.RepresentText,
                                 declaration);
                         }
-
-                        _curScope?.Add(declaration);
                     }
 
                     break;
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId));
+                    if (i == 0)
+                    {
+                        var typeDeclaration = FindLocalOrAssignTagDeclaration(luaAssignStat);
+                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType, typeDeclaration, _curScope));
+                    }
+                    else
+                    {
+                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType, null, _curScope));
+                    }
+
                     break;
                 }
             }
@@ -424,9 +432,8 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             case { IsLocal: true, LocalName.Name: { } name }:
             {
-                var declaration = CreateDeclaration(name.RepresentText, name,
+                CreateDeclaration(name.RepresentText, name,
                     DeclarationFlag.Method | DeclarationFlag.Local, null);
-                _curScope?.Add(declaration);
                 break;
             }
             case { IsLocal: false, NameExpr.Name: { } name2 }:
@@ -443,12 +450,11 @@ public class DeclarationBuilder : ILuaElementWalker
                     StubIndexImpl.GlobalDeclaration.AddStub(DocumentId, name2.RepresentText, declaration);
                 }
 
-                _curScope?.Add(declaration);
                 break;
             }
             case { IsMethod: true, IndexExpr: { } indexExpr }:
             {
-                Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId));
+                Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, null, null, _curScope));
                 break;
             }
         }
@@ -546,7 +552,7 @@ public class DeclarationBuilder : ILuaElementWalker
         if (tagParamSyntax is { Name: { } name, Type: { } type })
         {
             var declaration = CreateDeclaration(name.RepresentText, name,
-                DeclarationFlag.Local | DeclarationFlag.Parameter, new LuaTypeRef(type));
+                DeclarationFlag.Parameter, new LuaTypeRef(type));
             AddTagDocDeclaration(tagParamSyntax, declaration);
         }
     }
@@ -627,6 +633,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void TableFieldDeclarationAnalysis(LuaTableFieldSyntax tableFieldSyntax)
     {
-        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(tableFieldSyntax, DocumentId));
+        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(tableFieldSyntax, DocumentId, null, null, _curScope));
+    }
+
+    private void FuncBodyDeclarationAnalysis(LuaFuncBodySyntax funcBodySyntax)
+    {
+        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(funcBodySyntax, DocumentId, null, null, _curScope));
     }
 }

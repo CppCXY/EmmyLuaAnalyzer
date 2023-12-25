@@ -5,7 +5,7 @@ namespace LuaLanguageServer.CodeAnalysis.Syntax.Green;
 
 public class GreenNodeBuilder
 {
-    struct ParentInfo(int position, LuaSyntaxKind kind)
+    readonly struct ParentInfo(int position, LuaSyntaxKind kind)
     {
         public int FirstChild { get; } = position;
         public LuaSyntaxKind Kind { get; } = kind;
@@ -63,7 +63,7 @@ public class GreenNodeBuilder
 
         for (var i = childStart; i <= childEnd; i++)
         {
-            if (i == parentInfo.FirstChild)
+            if (i == childStart)
             {
                 nodeRange.StartOffset = Children[i].Range.StartOffset;
                 nodeRange.Length = Children[i].Range.Length;

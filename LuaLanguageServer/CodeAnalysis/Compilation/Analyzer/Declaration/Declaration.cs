@@ -22,14 +22,41 @@ public abstract class DeclarationNodeContainer(int position, DeclarationNodeCont
     public void Add(DeclarationNode node)
     {
         node.Parent = this;
-        if (Children.Count != 0)
+
+        // 如果Children为空，直接添加
+        if (Children.Count == 0)
+        {
+            Children.Add(node);
+            return;
+        }
+
+        // 如果Children的最后一个节点的位置小于等于node的位置，直接添加
+        if (Children.Last().Position <= node.Position)
         {
             var last = Children.Last();
             node.Prev = last;
             last.Next = node;
+            Children.Add(node);
         }
+        else
+        {
+            var index = Children.FindIndex(n => n.Position > node.Position);
+            // 否则，插入到找到的位置
+            var nextNode = Children[index];
+            var prevNode = nextNode.Prev;
 
-        Children.Add(node);
+            node.Next = nextNode;
+            node.Prev = prevNode;
+
+            if (prevNode != null)
+            {
+                prevNode.Next = node;
+            }
+
+            nextNode.Prev = node;
+
+            Children.Insert(index, node);
+        }
     }
 
     public bool ProcessNode<T>(Func<T, bool> process)

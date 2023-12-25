@@ -8,12 +8,14 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
 {
     public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
 
+    public DeclarationScope? RootScope { get; internal set; }
+
     public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
     public Declaration? FindDeclaration(LuaNameExprSyntax nameExpr)
     {
         var scope = FindScope(nameExpr);
-        return scope?.FindNameExpr(nameExpr)?.FirstDeclaration;
+        return scope?.FindNameExpr(nameExpr);
     }
 
     public DeclarationScope? FindScope(LuaSyntaxElement element)

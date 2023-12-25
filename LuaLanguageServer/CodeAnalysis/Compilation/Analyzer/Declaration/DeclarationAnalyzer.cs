@@ -16,10 +16,10 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             Compilation.DeclarationTrees[documentId] = builder.Build();
         }
 
-        AnalyzeIndex();
+        DelayAnalyze();
     }
 
-    private void AnalyzeIndex()
+    private void DelayAnalyze()
     {
         foreach (var node in DelayAnalyzeNodes)
         {
@@ -27,12 +27,12 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             {
                 case LuaIndexExprSyntax indexExprSyntax:
                 {
-                    IndexExprAnalyze(indexExprSyntax, node.DocumentId);
+                    IndexExprAnalyze(indexExprSyntax, node.DocumentId, node);
                     break;
                 }
                 case LuaTableFieldSyntax tableFieldSyntax:
                 {
-                    TableFieldAnalyze(tableFieldSyntax, node.DocumentId);
+                    TableFieldAnalyze(tableFieldSyntax, node.DocumentId, node);
                     break;
                 }
             }
@@ -41,7 +41,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         DelayAnalyzeNodes.Clear();
     }
 
-    private void IndexExprAnalyze(LuaIndexExprSyntax expr, DocumentId documentId)
+    private void IndexExprAnalyze(LuaIndexExprSyntax expr, DocumentId documentId, DelayAnalyzeNode delayAnalyzeNode)
     {
         if (expr is { Name: { } indexName, KeyElement: { } keyElement })
         {
@@ -50,7 +50,6 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                 var declarationTree = Compilation.DeclarationTrees[documentId];
                 var scope = declarationTree.FindScope(nameExpr);
                 if (scope is null) return;
-                var name = nameExpr.Name;
                 var nameDeclaration = scope.FindNameExpr(nameExpr)?.FirstDeclaration;
                 if (nameDeclaration is null) return;
                 var ty = nameDeclaration.Type;
@@ -65,7 +64,8 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                 }
 
                 var declaration = new Declaration(indexName, declarationTree.GetPosition(keyElement), keyElement,
-                    DeclarationFlag.ClassMember, null, null, null);
+                    DeclarationFlag.ClassMember, delayAnalyzeNode.Scope, delayAnalyzeNode.Prev, delayAnalyzeNode.LuaType);
+                delayAnalyzeNode.Scope?.Add(declaration);
                 Compilation.StubIndexImpl.Members.AddStub(documentId, parentTyName, declaration);
             }
             else if (expr.PrefixExpr is LuaIndexExprSyntax indexExpr)
@@ -75,15 +75,16 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         }
     }
 
-    private void TableFieldAnalyze(LuaTableFieldSyntax field, DocumentId documentId)
+    private void TableFieldAnalyze(LuaTableFieldSyntax field, DocumentId documentId, DelayAnalyzeNode delayAnalyzeNode)
     {
-        if (field is { Name: { } fieldName, KeyElement: { } keyElement, ParentTable: {} table })
+        if (field is { Name: { } fieldName, KeyElement: { } keyElement, ParentTable: { } table })
         {
             var declarationTree = Compilation.DeclarationTrees[documentId];
             var parentId = Compilation.SearchContext.GetUniqueId(table, documentId);
 
             var declaration = new Declaration(fieldName, declarationTree.GetPosition(field), field,
-                DeclarationFlag.ClassMember, null, null, null);
+                DeclarationFlag.ClassMember, delayAnalyzeNode.Scope, delayAnalyzeNode.Prev, delayAnalyzeNode.LuaType);
+            delayAnalyzeNode.Scope?.Add(declaration);
             Compilation.StubIndexImpl.Members.AddStub(documentId, parentId, declaration);
         }
     }

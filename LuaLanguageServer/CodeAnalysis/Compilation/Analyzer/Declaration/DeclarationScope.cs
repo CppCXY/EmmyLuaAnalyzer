@@ -41,14 +41,44 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
             Declaration? result = null;
             WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
             {
-                if (declaration.Name != nameText) return true;
-                result = declaration;
-                return false;
+                if ((declaration.IsGlobal || declaration.IsLocal) &&
+                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
+                {
+                    result = declaration;
+                    return false;
+                }
+
+                return true;
             });
             return result;
         }
 
         return null;
+    }
+
+    public IEnumerable<Declaration> DescendantDeclarations
+    {
+        get
+        {
+            var stack = new Stack<DeclarationNode>();
+            stack.Push(this);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                // ReSharper disable once InvertIf
+                if (node is Declaration declaration)
+                {
+                    yield return declaration;
+                }
+                else if (node is DeclarationNodeContainer n)
+                {
+                    foreach (var child in n.Children.AsEnumerable().Reverse())
+                    {
+                        stack.Push(child);
+                    }
+                }
+            }
+        }
     }
 }
 
