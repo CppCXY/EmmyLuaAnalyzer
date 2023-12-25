@@ -7,12 +7,12 @@ public class StubIndex<TKey, TStubElement>
 {
     private class StubFile
     {
-        public List<TStubElement> Elements { get; set; } = new();
+        public List<TStubElement> Elements { get; set; } = [];
     }
 
-    private class StubEntry
+    private class StubEntry(TKey key)
     {
-        public TKey Key { get; set; }
+        public TKey Key { get; set; } = key;
         public Dictionary<DocumentId, StubFile> Files { get; set; } = new();
     }
 
@@ -22,10 +22,7 @@ public class StubIndex<TKey, TStubElement>
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {
-            entry = new StubEntry()
-            {
-                Key = key
-            };
+            entry = new StubEntry(key);
             _indexMap.Add(key, entry);
         }
 
@@ -56,7 +53,7 @@ public class StubIndex<TKey, TStubElement>
         }
     }
 
-    public IEnumerable<TStubElement> Get(TKey key)
+    private IEnumerable<TStubElement> Get(TKey key)
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it.Elements)

@@ -12,11 +12,7 @@ namespace LuaLanguageServer.LanguageServer;
 
 public class LanguageServer
 {
-    public LanguageServer()
-    {
-    }
-
-    public async Task StartAsync(string[] args)
+    public static async Task StartAsync(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
@@ -33,7 +29,7 @@ public class LanguageServer
             }
             else
             {
-                var port = Int32.Parse(args[0]);
+                var port = int.Parse(args[0]);
                 var tcpServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 var ipAddress = new IPAddress(new byte[] { 127, 0, 0, 1 });
                 EndPoint endPoint = new IPEndPoint(ipAddress, port);

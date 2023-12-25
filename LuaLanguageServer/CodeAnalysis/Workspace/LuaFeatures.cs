@@ -8,22 +8,19 @@ public class LuaFeatures
 
     public string Extensions { get; set; } = "*.lua";
 
-    public List<string> ExcludeFolders { get; set; } = new()
-    {
+    public List<string> ExcludeFolders { get; set; } =
+    [
         ".git",
         ".svn",
         ".idea",
         ".vs",
         ".vscode"
-    };
+    ];
 
-    public List<string> RequirePattern { get; set; } = new()
-    {
-        "./?.lua"
-    };
+    public List<string> RequirePattern { get; set; } = ["./?.lua"];
 
     public Dictionary<string, string> VirtualModule { get; set; } = new()
     {
-        {"socket.core", "xxx.lua"}
+        { "socket.core", "xxx.lua" }
     };
 }

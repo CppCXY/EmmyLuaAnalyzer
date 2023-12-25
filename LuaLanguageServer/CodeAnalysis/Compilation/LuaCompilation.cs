@@ -37,26 +37,19 @@ public class LuaCompilation
         Workspace = workspace;
         StubIndexImpl = new StubIndexImpl(this);
         SearchContext = new SearchContext(this);
-        Analyzers = new List<ILuaAnalyzer>()
-        {
+        Analyzers =
+        [
             new DeclarationAnalyzer(this),
             new BindAnalyzer(this)
-        };
+        ];
     }
 
     private void InternalAddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
     {
-        if (_syntaxTrees.TryGetValue(documentId, out var oldSyntaxTree))
+        if (!_syntaxTrees.TryAdd(documentId, syntaxTree))
         {
+            RemoveCache(documentId);
             _syntaxTrees[documentId] = syntaxTree;
-            foreach (var luaAnalyzer in Analyzers)
-            {
-                luaAnalyzer.RemoveCache(documentId);
-            }
-        }
-        else
-        {
-            _syntaxTrees.Add(documentId, syntaxTree);
         }
 
         AddDirtyDocument(documentId);
@@ -76,6 +69,16 @@ public class LuaCompilation
     {
         InternalAddSyntaxTree(documentId, syntaxTree);
         Analyze();
+    }
+
+    public void RemoveCache(DocumentId documentId)
+    {
+        foreach (var luaAnalyzer in Analyzers)
+        {
+            luaAnalyzer.RemoveCache(documentId);
+        }
+
+        StubIndexImpl.Remove(documentId);
     }
 
     public LuaSyntaxTree? GetSyntaxTree(DocumentId documentId)

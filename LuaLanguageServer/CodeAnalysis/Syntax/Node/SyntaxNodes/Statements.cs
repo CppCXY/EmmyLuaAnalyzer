@@ -23,7 +23,7 @@ public class LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
-    public IEnumerable<LuaExprSyntax> ExpressionList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
 }
 
 public class LuaAssignStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)

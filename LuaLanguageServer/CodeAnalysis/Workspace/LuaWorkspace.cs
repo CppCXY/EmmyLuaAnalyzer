@@ -72,7 +72,7 @@ public class LuaWorkspace
 
     public LuaDocument? GetDocument(DocumentId id)
     {
-        return _documents.TryGetValue(id, out var document) ? document : null;
+        return _documents.GetValueOrDefault(id);
     }
 
     public LuaDocument? GetDocument(string url)
@@ -84,7 +84,7 @@ public class LuaWorkspace
     {
         modulePath = modulePath.Replace('.', '/');
         var modulePaths = Features.RequirePattern
-            .Select(it => Path.Combine(WorkspacePath, it.Replace("?", modulePath))).ToList();
+            .Select(it => Path.Combine(WorkspacePath, it.Replace("?", modulePath)));
         foreach (var module in modulePaths)
         {
             if (_pathToDocument.TryGetValue(module, out var document))
