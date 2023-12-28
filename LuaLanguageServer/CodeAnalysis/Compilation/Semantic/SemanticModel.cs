@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
+using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
@@ -14,7 +15,7 @@ public class SemanticModel(LuaCompilation compilation, LuaSyntaxTree tree)
 
     private LuaSyntaxTree _tree = tree;
 
-    public ILuaSymbol GetSymbol(LuaSyntaxElement element)
+    public Declaration GetDeclaration(LuaSyntaxElement element)
     {
         // return element switch
         // {

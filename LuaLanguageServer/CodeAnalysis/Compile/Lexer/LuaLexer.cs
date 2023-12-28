@@ -10,7 +10,7 @@ public class LuaLexer(LuaSource source)
     public LuaSource Source { get; } = source;
     private SourceReader Reader { get; } = new(source.Text);
 
-    public List<Diagnostic> Diagnostics { get; } = new();
+    public List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
 
     // 名字开始, 包括unicode
     public static bool IsNameStart(char c)
@@ -147,7 +147,7 @@ public class LuaLexer(LuaSource source)
                 if (sep == 0 && Reader.CurrentChar != '[') return LuaTokenKind.TkLeftBracket;
                 if (Reader.CurrentChar != '[')
                 {
-                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "invalid long string delimiter",
+                    Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, "invalid long string delimiter",
                         Reader.SavedRange));
                     return LuaTokenKind.TkLongString;
                 }
@@ -248,7 +248,7 @@ public class LuaLexer(LuaSource source)
 
                 if (Reader.CurrentChar != quote)
                 {
-                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished string",
+                    Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, "unfinished string",
                         new SourceRange(Reader.CurrentPosition, 1)));
                     return LuaTokenKind.TkString;
                 }
@@ -414,7 +414,7 @@ public class LuaLexer(LuaSource source)
             return LuaTokenKind.TkLongString;
         }
 
-        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished long string or comment",
+        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, "unfinished long string or comment",
             new SourceRange(Reader.CurrentPosition, 1)));
 
         return LuaTokenKind.TkLongString;

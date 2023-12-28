@@ -1,9 +1,10 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
-namespace LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
+namespace LuaLanguageServer.CodeAnalysis.Compile.Diagnostic;
 
-public class Diagnostic(DiagnosticSeverity severity, string message, SourceRange range)
+public class Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, SourceRange range)
 {
     public DiagnosticSeverity Severity { get; } = severity;
 
@@ -11,20 +12,36 @@ public class Diagnostic(DiagnosticSeverity severity, string message, SourceRange
 
     public SourceRange Range { get; } = range;
 
+    public DiagnosticCode Code { get; } = code;
+
     public LuaLocation? Location { get; private set; }
 
-    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location) : this(severity, message, location.Range)
+    public Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, LuaLocation location)
+        : this(severity, code, message, location.Range)
     {
         Location = location;
     }
 
+    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location)
+        : this(severity, DiagnosticCode.SyntaxError, message, location.Range)
+    {
+        Location = location;
+    }
+
+    public Diagnostic(DiagnosticSeverity severity, string message, SourceRange range)
+        : this(severity, DiagnosticCode.SyntaxError, message, range)
+    {
+    }
+
     public Diagnostic WithLocation(LuaLocation location)
     {
-        return new Diagnostic(Severity, Message, location);
+        return new Diagnostic(Severity, Code, Message, location);
     }
 
     public override string ToString()
     {
-        return Location != null ? $"{Location}: {Severity}: {Message}" : $"{Range}: {Severity}: {Message}";
+        return Location != null
+            ? $"{Location}: {Severity}: {Message} ({Code})"
+            : $"{Range}: {Severity}: {Message} ({Code})";
     }
 }

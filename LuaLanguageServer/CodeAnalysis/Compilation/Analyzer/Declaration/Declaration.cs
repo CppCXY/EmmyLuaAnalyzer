@@ -93,6 +93,7 @@ public enum DeclarationFlag : ushort
     Parameter = 0x0020,
     DocField = 0x0040,
     EnumMember = 0x0080,
+    Virtual = 0x0100,
 }
 
 public class Declaration(
@@ -131,4 +132,9 @@ public class Declaration(
     {
         return $"{Flags} {Name}";
     }
+}
+
+public class VirtualDeclaration(ILuaType type)
+    : Declaration("", 0, null, DeclarationFlag.Virtual, null, null, type)
+{
 }

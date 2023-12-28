@@ -145,7 +145,7 @@ public static class SyntaxFactory
         }
         catch (OverflowException)
         {
-            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                 $"The integer literal '{text}' is too large to be represented in type 'long'",
                 new SourceRange(greenNode.Range.StartOffset, greenNode.Range.Length)));
             return new LuaIntegerToken(0, suffix, greenNode, tree, parent);
@@ -228,7 +228,7 @@ public static class SyntaxFactory
                     i++;
                     if (i >= text.Length)
                     {
-                        tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                        tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                             "Unexpected end of string", new SourceRange(greenNode.Range.StartOffset + i - 1, 1)));
                         break;
                     }
@@ -274,7 +274,7 @@ public static class SyntaxFactory
                         {
                             if (i + 2 >= text.Length)
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     "Unexpected end of string", new SourceRange(greenNode.Range.StartOffset + i, 1)));
                                 break;
                             }
@@ -283,7 +283,7 @@ public static class SyntaxFactory
                             // 检查hex合法性
                             if (!char.IsAsciiHexDigit(hex[0]) || !char.IsAsciiHexDigit(hex[1]))
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     $"Invalid hex escape sequence '\\x{hex}'",
                                     new SourceRange(greenNode.Range.StartOffset + i, 2)));
                                 break;
@@ -298,7 +298,7 @@ public static class SyntaxFactory
                             // 解析 \u{xxxx} 形式的unicode字符
                             if (i + 2 >= text.Length)
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     "Unexpected end of string",
                                     new SourceRange(greenNode.Range.StartOffset + i - 1, 1)));
                                 break;
@@ -307,7 +307,7 @@ public static class SyntaxFactory
                             var j = 1;
                             if (text[i + j] != '{')
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     $"Missing unicode escape sequence start '{{', current '{text[i + j]}'",
                                     new SourceRange(greenNode.Range.StartOffset + i + j, 1)));
                                 break;
@@ -321,7 +321,7 @@ public static class SyntaxFactory
 
                             if (i + j >= text.Length)
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     "Unexpected end of string",
                                     new SourceRange(greenNode.Range.StartOffset + i + j - 1, 1)));
                                 break;
@@ -329,7 +329,7 @@ public static class SyntaxFactory
 
                             if (text[i + j] != '}')
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     $"Missing unicode escape sequence end '}}', current '{text[i + j]}'",
                                     new SourceRange(greenNode.Range.StartOffset + i + j, 1)));
                                 break;
@@ -339,7 +339,7 @@ public static class SyntaxFactory
                             i += j;
                             if (unicodeHex.Length > 8)
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     $"Invalid unicode escape sequence '{unicodeHex}'",
                                     new SourceRange(greenNode.Range.StartOffset + i - j, unicodeHex.Length)));
                                 break;
@@ -348,7 +348,7 @@ public static class SyntaxFactory
                             var codePoint = Convert.ToInt32(unicodeHex.ToString(), 16);
                             if (codePoint > 0x10FFFF)
                             {
-                                tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                     $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
                                     new SourceRange(greenNode.Range.StartOffset + i - j, unicodeHex.Length)));
                                 break;
@@ -383,7 +383,7 @@ public static class SyntaxFactory
                         }
                         default:
                         {
-                            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                                 $"Invalid escape sequence '\\{text[i]}'",
                                 new SourceRange(greenNode.Range.StartOffset + i, 1)));
                             break;
@@ -422,7 +422,7 @@ public static class SyntaxFactory
         var i = 0;
         if (text[i] != '[')
         {
-            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                 $"Invalid long string start, expected '[', current '{text[i]}'",
                 new SourceRange(greenNode.Range.StartOffset, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent);
@@ -437,7 +437,7 @@ public static class SyntaxFactory
 
         if (i >= text.Length || text[i] != '[')
         {
-            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                 $"Invalid long string start, expected '[', current '{text[i]}'",
                 new SourceRange(greenNode.Range.StartOffset, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent);
@@ -447,7 +447,7 @@ public static class SyntaxFactory
 
         if (text.Length < i + equalNum + 2)
         {
-            tree.PushDiagnostic(new Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
                 $"Invalid long string end, expected '{new string('=', equalNum)}]', current '{text[^1]}'",
                 new SourceRange(greenNode.Range.StartOffset + text.Length - 1, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent);

@@ -1,29 +1,12 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaClass(string name) : LuaType(TypeKind.Class), ILuaNamedType
+public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
 {
     public string Name { get; } = name;
-
-    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
-    {
-        // if (GetSyntaxElement(context) is { GenericDeclareList.Params: { } genericParams })
-        // {
-        //     foreach (var genericParam in genericParams)
-        //     {
-        //         if (genericParam is { Name: { } name })
-        //         {
-        //             yield return new GenericParam(name.RepresentText, context.Infer(genericParam.Type), genericParam);
-        //         }
-        //     }
-        // }
-        throw new NotImplementedException();
-    }
 
     public IEnumerable<Declaration> GetRawMembers(SearchContext context)
     {
@@ -51,6 +34,17 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), ILuaNamedType
     public IEnumerable<LuaInterface> GetAllInterface(SearchContext context)
     {
         throw new NotImplementedException();
+    }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+        if (other is LuaClass otherClass)
+        {
+            return string.Equals(Name, otherClass.Name, StringComparison.CurrentCulture);
+
+        }
+
+        return false;
     }
 }
 

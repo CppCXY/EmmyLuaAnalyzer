@@ -128,21 +128,22 @@ public static class ExpressionInfer
             }
         }
 
-        switch ((keyType, elementType))
-        {
-            case (Unknown, Unknown):
-            {
-                return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, context.Compilation.Builtin.Unknown);
-            }
-            case (Unknown, _):
-            {
-                return new Type.LuaArray(elementType);
-            }
-            default:
-            {
-                return new PrimitiveGenericTable(keyType, elementType);
-            }
-        }
+        // switch ((keyType, elementType))
+        // {
+        //     case (Unknown, Unknown):
+        //     {
+        //         // return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, context.Compilation.Builtin.Unknown);
+        //     }
+        //     case (Unknown, _):
+        //     {
+        //         return new Type.LuaArray(elementType);
+        //     }
+        //     default:
+        //     {
+        //         // return new PrimitiveGenericTable(keyType, elementType);
+        //     }
+        // }
+        throw new NotImplementedException();
     }
 
     private static ILuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

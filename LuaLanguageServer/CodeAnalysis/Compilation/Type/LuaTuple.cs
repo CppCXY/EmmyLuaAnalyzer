@@ -1,26 +1,47 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaTuple : LuaType
+public class LuaTuple(List<Declaration> declarations) : LuaType(TypeKind.Tuple)
 {
-    private readonly List<ILuaType> _types = new();
-
-    public LuaTuple(IEnumerable<ILuaType> symbols) : base(TypeKind.Tuple)
-    {
-        _types.AddRange(symbols);
-    }
+    public List<Declaration> Declarations => declarations;
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        // return _types.Select((it, i) => new TupleMember((ulong)i, it, this));
-        throw new NotImplementedException();
+        return declarations;
     }
 
-    public ILuaType? IndexType(int index)
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
-        return index < _types.Count ? _types[index] : null;
+        if (index < declarations.Count)
+        {
+            yield return declarations[(int)index];
+        }
+    }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+        if (other is LuaTuple tuple)
+        {
+            if (tuple.Declarations.Count != declarations.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < declarations.Count; i++)
+            {
+                var luaType = Declarations[i].Type;
+                var type = tuple.Declarations[i].Type;
+                if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

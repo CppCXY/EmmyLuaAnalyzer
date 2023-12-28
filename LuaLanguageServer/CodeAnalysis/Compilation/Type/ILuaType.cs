@@ -1,7 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -11,6 +9,10 @@ public interface ILuaType
     public IEnumerable<Declaration> GetMembers(SearchContext context);
 
     public IEnumerable<Declaration> IndexMember(string name, SearchContext context);
+
+    public IEnumerable<Declaration> IndexMember(long index, SearchContext context);
+
+    public IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context);
 
     public bool SubTypeOf(ILuaType other, SearchContext context);
 
@@ -22,13 +24,19 @@ public interface ILuaType
 public interface ILuaNamedType : ILuaType
 {
     public string Name { get; }
-
-    public IEnumerable<GenericParam> GetGenericParams(SearchContext context);
 }
 
-public interface IGeneric : ILuaType
+public interface IGenericBase : ILuaNamedType
 {
-    public ILuaNamedType GetBaseType(SearchContext context);
+    public IEnumerable<Declaration> GetGenericParams(SearchContext context)
+    {
+        return context.FindGenericParams(Name);
+    }
+}
 
-    public IEnumerable<ILuaType> GetGenericArgs(SearchContext context);
+public interface IGenericImpl : ILuaType
+{
+    public IGenericBase BaseType { get; }
+
+    public List<ILuaType> GenericArgs { get; }
 }

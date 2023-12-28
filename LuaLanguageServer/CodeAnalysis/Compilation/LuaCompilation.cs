@@ -5,6 +5,9 @@ using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Stub;
 using LuaLanguageServer.CodeAnalysis.Compilation.Semantic;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Compile.Diagnostic;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
+using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
@@ -135,9 +138,20 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    // public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.SelectMany(
-    //     tree => tree.Diagnostics.Select(it => it.WithLocation(
-    //         it.Range.ToLocation(tree, baseLine)
-    //     ))
-    // );
+    public void AddDiagnostic(DocumentId documentId, Diagnostic diagnostic)
+    {
+        var syntaxTree = GetSyntaxTree(documentId);
+        if (syntaxTree is null)
+        {
+            return;
+        }
+
+        syntaxTree.PushDiagnostic(diagnostic);
+    }
+
+    public IEnumerable<Diagnostic> GetDiagnostics(int baseLine = 0) => _syntaxTrees.Values.SelectMany(
+        tree => tree.Diagnostics.Select(it => it.WithLocation(
+            it.Range.ToLocation(tree, baseLine)
+        ))
+    );
 }

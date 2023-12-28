@@ -1,6 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
@@ -70,55 +69,3 @@ public class PrimitiveLuaClass(string name) : LuaClass(name);
 
 public class Unknown() : Primitive("unknown");
 
-public class PrimitiveGenericTable : LuaType, IGeneric
-{
-    public ILuaType KeyType { get; }
-
-    public ILuaType ValueType { get; }
-
-    public PrimitiveGenericTableMember MemberType { get; }
-
-    public PrimitiveGenericTable(ILuaType keyType, ILuaType valueType) : base(TypeKind.GenericTable)
-    {
-        KeyType = keyType;
-        ValueType = valueType;
-        MemberType = new PrimitiveGenericTableMember(valueType, this);
-    }
-
-
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
-    {
-        return Enumerable.Empty<Declaration>();
-    }
-
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
-
-    public ILuaNamedType GetBaseType(SearchContext context)
-    {
-        return context.Compilation.Builtin.Table;
-    }
-
-    public IEnumerable<ILuaType> GetGenericArgs(SearchContext context)
-    {
-        yield return KeyType;
-        yield return ValueType;
-    }
-}
-
-public class PrimitiveGenericTableMember(ILuaType type, ILuaType? containingType) : LuaSymbol(containingType)
-{
-    public ILuaType Type { get; } = type;
-
-    public override ILuaType GetType(SearchContext context)
-    {
-        return Type;
-    }
-
-    public override IEnumerable<LuaLocation> GetLocations(SearchContext context)
-    {
-        throw new NotImplementedException();
-    }
-}

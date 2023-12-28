@@ -1,4 +1,7 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Compile.Diagnostic;
+using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Workspace;
@@ -7,7 +10,8 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Bind;
 
 public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    private Dictionary<DocumentId, BindData> BindData { get; }= new();
+    private SearchContext Context => compilation.SearchContext;
+    private Dictionary<DocumentId, BindData> BindData { get; } = new();
 
     public override void Analyze(DocumentId documentId)
     {
@@ -21,6 +25,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         {
             return;
         }
+
         var bindData = new BindData(documentId, declarationTree);
         BindData.Add(documentId, bindData);
 
@@ -42,11 +47,6 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         bindData.Step = BindAnalyzeStep.Finish;
     }
 
-    private bool IsMatch(ILuaType ty1, ILuaType ty2)
-    {
-        throw new NotImplementedException();
-    }
-
     private void LocalBindAnalysis(LuaLocalStatSyntax localStat, BindData bindData)
     {
         var tree = bindData.Tree;
@@ -62,10 +62,19 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             var declaration = tree.FindDeclaration(localName);
             if (declaration is { Type: { } ty })
             {
-                if (!IsMatch(ty, exprType))
+                if (!exprType.SubTypeOf(ty, Context))
                 {
-                    // Compilation.AddDiagnostic(DiagnosticCode.TypeNotMatch, localName);
+                    localStat.Tree.PushDiagnostic(new Diagnostic(
+                        DiagnosticSeverity.Warning,
+                        DiagnosticCode.TypeNotMatch,
+                        $"local {localName} type not match",
+                        localName.Location
+                    ));
                 }
+            }
+            else
+            {
+                if (declaration != null) declaration.Type = exprType;
             }
         }
     }

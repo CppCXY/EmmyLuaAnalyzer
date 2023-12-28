@@ -13,10 +13,7 @@ public enum TypeKind
     Interface,
     Generic,
     GenericParam,
-    Table,
     GenericTable,
     Method,
-    LazyType,
     TypeRef,
-    Undetermined,
 }

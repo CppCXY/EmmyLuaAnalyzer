@@ -13,10 +13,10 @@ public class LuaGreenTreeBuilder(LuaParser parser)
 
     private GreenNodeBuilder NodeBuilder { get; } = new();
 
-    private List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
+    private List<Compile.Diagnostic.Diagnostic> Diagnostics { get; } = new();
 
     // 多返回值
-    public (GreenNode, List<Diagnostic.Diagnostic>) Build()
+    public (GreenNode, List<Compile.Diagnostic.Diagnostic>) Build()
     {
         Parser.Parse();
         Diagnostics.AddRange(Parser.Lexer.Diagnostics);
@@ -80,11 +80,11 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                             MarkEvent.EatToken(var tkRange, _) => tkRange,
                             _ => throw new UnreachableException(),
                         };
-                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                        Diagnostics.Add(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
                     }
                     else
                     {
-                        Diagnostics.Add(new Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
+                        Diagnostics.Add(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
                             Parser.Lexer.Source.Text.Length
                         )));
                     }

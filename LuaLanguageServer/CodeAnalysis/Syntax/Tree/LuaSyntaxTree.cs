@@ -6,6 +6,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Binder;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 
@@ -15,7 +16,7 @@ public class LuaSyntaxTree
 
     public GreenNode GreenRoot { get; }
 
-    public List<Diagnostic.Diagnostic> Diagnostics { get; }
+    public List<Compile.Diagnostic.Diagnostic> Diagnostics { get; }
 
     private LuaSourceSyntax? _root;
 
@@ -41,7 +42,7 @@ public class LuaSyntaxTree
         return new LuaSyntaxTree(source, root, diagnostics);
     }
 
-    private LuaSyntaxTree(LuaSource source, GreenNode root, List<Diagnostic.Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaSource source, GreenNode root, List<Compile.Diagnostic.Diagnostic> diagnostics)
     {
         Source = source;
         GreenRoot = root;
@@ -63,7 +64,7 @@ public class LuaSyntaxTree
         }
     }
 
-    public void PushDiagnostic(Diagnostic.Diagnostic diagnostic)
+    public void PushDiagnostic(Compile.Diagnostic.Diagnostic diagnostic)
     {
         Diagnostics.Add(diagnostic);
     }

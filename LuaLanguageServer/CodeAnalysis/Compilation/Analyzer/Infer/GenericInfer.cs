@@ -4,18 +4,18 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public static class GenericInfer
 {
-    public static IGeneric InferGeneric(ILuaNamedType baseType, List<ILuaType> args, SearchContext context)
+    public static IGenericImpl InferGeneric(ILuaNamedType baseType, List<ILuaType> args, SearchContext context)
     {
         if (baseType == context.Compilation.Builtin.Table)
         {
-            switch (args.Count)
-            {
-                case 1:
-                    return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, args[0]);
-                case 2:
-                    return new PrimitiveGenericTable(args[0], args[1]);
-            }
+            // switch (args.Count)
+            // {
+            //     case 1:
+            //         return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, args[0]);
+            //     case 2:
+            //         return new PrimitiveGenericTable(args[0], args[1]);
+            // }
         }
-        return new LuaGeneric(baseType, args);
+        return new LuaGenericImpl(baseType, args);
     }
 }

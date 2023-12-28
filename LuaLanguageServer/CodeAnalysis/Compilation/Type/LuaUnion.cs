@@ -1,6 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -92,7 +91,22 @@ public class LuaUnion : LuaType
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return _childTypes.SelectMany(it=> it.GetMembers(context));
+        return _childTypes.SelectMany(it => it.GetMembers(context));
+    }
+
+    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    {
+        return _childTypes.SelectMany(it => it.IndexMember(ty, context));
+    }
+
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    {
+        return _childTypes.SelectMany(it => it.IndexMember(name, context));
+    }
+
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    {
+        return _childTypes.SelectMany(it => it.IndexMember(index, context));
     }
 }
 
@@ -100,6 +114,6 @@ public static class UnionTypeExtensions
 {
     public static ILuaType Union(this ILuaType a, ILuaType b)
     {
-        return Type.LuaUnion.UnionType(a, b);
+        return LuaUnion.UnionType(a, b);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -87,6 +86,10 @@ public class SearchContext
         return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this));
     }
 
+    public IEnumerable<Declaration.Declaration> FindGenericParams(string name)
+    {
+        throw new NotImplementedException();
+    }
     public string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
     {
         return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";

@@ -1,7 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Compilation.Symbol;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
@@ -11,14 +9,14 @@ public class LuaEnum(string name, ILuaType luaType) : LuaType(TypeKind.Enum), IL
 
     public ILuaType BaseType { get; } = luaType;
 
-    public IEnumerable<GenericParam> GetGenericParams(SearchContext context)
-    {
-        return Enumerable.Empty<GenericParam>();
-    }
-
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return context.FindMembers(this);
+        return context.FindMembers(BaseType);
+    }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+        return ReferenceEquals(this, other) ||
+               other is LuaEnum @enum && string.Equals(Name, @enum.Name, StringComparison.CurrentCulture);
     }
 }
-
