@@ -14,6 +14,8 @@ public class SearchContext
 
     private List<ILuaSearcher> _searchers = new();
 
+    private HashSet<ILuaType> _substituteGuard = new();
+
     private const int MaxDepth = 1000;
 
     // 推断深度
@@ -90,8 +92,24 @@ public class SearchContext
     {
         throw new NotImplementedException();
     }
+
+    public IEnumerable<ILuaType> FindSupers(string name)
+    {
+        throw new NotImplementedException();
+    }
+
     public string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
     {
         return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";
+    }
+
+    public bool TryAddSubstitute(ILuaType type)
+    {
+        return _substituteGuard.Add(type);
+    }
+
+    public void RemoveSubstitute(ILuaType type)
+    {
+        _substituteGuard.Remove(type);
     }
 }

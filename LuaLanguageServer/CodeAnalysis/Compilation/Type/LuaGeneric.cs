@@ -3,6 +3,20 @@ using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
+public interface IGenericBase : ILuaNamedType
+{
+    public IEnumerable<Declaration> GetGenericParams(SearchContext context)
+    {
+        return context.FindGenericParams(Name);
+    }
+}
+
+public interface IGenericImpl : ILuaType
+{
+    public IGenericBase BaseType { get; }
+
+    public List<ILuaType> GenericArgs { get; }
+}
 
 public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) : LuaType(TypeKind.Generic), IGenericImpl
 {

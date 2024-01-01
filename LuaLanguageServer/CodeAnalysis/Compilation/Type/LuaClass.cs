@@ -46,5 +46,6 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
 
         return false;
     }
+
 }
 

@@ -16,6 +16,7 @@ public static class GenericInfer
             //         return new PrimitiveGenericTable(args[0], args[1]);
             // }
         }
-        return new LuaGenericImpl(baseType, args);
+        // return new LuaGenericImpl(baseType, args);
+        throw new NotImplementedException();
     }
 }
