@@ -18,6 +18,8 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<string, ILuaOperator> TypeOperators { get; } = new();
 
+    public StubIndex<string, ILuaType> Supers { get; } = new();
+
     public void Remove(DocumentId documentId)
     {
         ShortNameIndex.RemoveStub(documentId);

@@ -21,4 +21,15 @@ public class LuaArray(ILuaType baseTy) : LuaType(TypeKind.Array)
         return ReferenceEquals(this, other) ||
                other is LuaArray array && Base.SubTypeOf(array.Base, context);
     }
+
+    protected override ILuaType OnSubstitute(SearchContext context)
+    {
+        var baseTySubstitute = Base.Substitute(context);
+        if (ReferenceEquals(baseTySubstitute, Base))
+        {
+            return this;
+        }
+
+        return new LuaArray(baseTySubstitute);
+    }
 }

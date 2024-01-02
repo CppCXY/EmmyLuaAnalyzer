@@ -29,5 +29,19 @@ public abstract class LuaType(TypeKind kind) : ILuaType
         return SubTypeOf(ty, context);
     }
 
+    public ILuaType Substitute(SearchContext context)
+    {
+        if (!context.TryAddSubstitute(this)) return this;
+
+        var ty = OnSubstitute(context);
+        context.RemoveSubstitute(this);
+        return ty;
+    }
+
+    protected virtual ILuaType OnSubstitute(SearchContext context)
+    {
+        return this;
+    }
+
     public TypeKind Kind { get; } = kind;
 }

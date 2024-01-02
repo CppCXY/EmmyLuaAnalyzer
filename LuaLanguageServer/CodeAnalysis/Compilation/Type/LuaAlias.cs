@@ -18,4 +18,9 @@ public class LuaAlias(string name, ILuaType baseType) : LuaType(TypeKind.Alias),
     {
         return BaseType.SubTypeOf(other, context);
     }
+
+    protected override ILuaType OnSubstitute(SearchContext context)
+    {
+        return BaseType.Substitute(context);
+    }
 }

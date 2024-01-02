@@ -253,7 +253,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     declaration.PrevDeclaration = prevDeclaration;
                 }
-
             }
         }
     }
@@ -413,11 +412,13 @@ public class DeclarationBuilder : ILuaElementWalker
                     if (i == 0)
                     {
                         var typeDeclaration = FindLocalOrAssignTagDeclaration(luaAssignStat);
-                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType, typeDeclaration, _curScope));
+                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType,
+                            typeDeclaration, _curScope));
                     }
                     else
                     {
-                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType, null, _curScope));
+                        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, luaType, null,
+                            _curScope));
                     }
 
                     break;
@@ -474,6 +475,11 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 ClassOrInterfaceBodyAnalysis(luaClass, body);
             }
+
+            if (tagClassSyntax is { ExtendTypeList: { } extendTypeList })
+            {
+                ClassOrInterfaceSupersAnalysis(extendTypeList, luaClass);
+            }
         }
     }
 
@@ -528,6 +534,11 @@ public class DeclarationBuilder : ILuaElementWalker
             if (tagInterfaceSyntax is { Body: { } body })
             {
                 ClassOrInterfaceBodyAnalysis(luaInterface, body);
+            }
+
+            if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
+            {
+                ClassOrInterfaceSupersAnalysis(extendTypeList, luaInterface);
             }
         }
     }
@@ -628,6 +639,15 @@ public class DeclarationBuilder : ILuaElementWalker
                     break;
                 }
             }
+        }
+    }
+
+    private void ClassOrInterfaceSupersAnalysis(IEnumerable<LuaDocTypeSyntax> extendList, ILuaNamedType namedType)
+    {
+        foreach (var extend in extendList)
+        {
+            var type = new LuaTypeRef(extend);
+            StubIndexImpl.Supers.AddStub(DocumentId, namedType.Name, type);
         }
     }
 
