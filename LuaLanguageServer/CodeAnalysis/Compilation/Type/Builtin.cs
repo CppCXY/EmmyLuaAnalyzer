@@ -17,7 +17,6 @@ public class Builtin
     public readonly PrimitiveLuaClass Io = new PrimitiveLuaClass("io");
     public readonly PrimitiveLuaClass Table = new PrimitiveLuaClass("table");
     public readonly PrimitiveLuaClass Global = new PrimitiveLuaClass("global");
-    public readonly PrimitiveLuaClass Iter = new PrimitiveLuaClass("iter");
 
     public Builtin()
     {
@@ -47,11 +46,6 @@ public class Builtin
 public class Primitive(string name) : LuaClass(name)
 {
     public ILuaType? Super { get; private set; }
-
-    public override ILuaType? GetSuper(SearchContext context)
-    {
-        return Super;
-    }
 
     public Primitive WithSuper(ILuaType super)
     {

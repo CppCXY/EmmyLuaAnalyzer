@@ -11,7 +11,7 @@ public class LuaAlias(string name, ILuaType baseType) : LuaType(TypeKind.Alias),
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return context.FindMembers(BaseType);
+        return BaseType.GetMembers(context);
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

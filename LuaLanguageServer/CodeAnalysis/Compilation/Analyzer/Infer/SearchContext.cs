@@ -72,7 +72,7 @@ public class SearchContext
     {
         foreach (var searcher in _searchers)
         {
-            if (searcher.TrySearchLuaType(name, this, out var ty) && ty is not null)
+            if (searcher.SearchType(name, this).FirstOrDefault() is { } ty)
             {
                 return ty;
             }
@@ -81,15 +81,21 @@ public class SearchContext
         return Compilation.Builtin.Unknown;
     }
 
-    public IEnumerable<Declaration.Declaration> FindMembers(ILuaType type)
+    public IEnumerable<Declaration.Declaration> FindMembers(string name)
     {
-        return _searchers.SelectMany(searcher => searcher.SearchMembers(type, this));
+        return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
     }
 
     public IEnumerable<Declaration.Declaration> FindGenericParams(string name)
     {
-        throw new NotImplementedException();
+        return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
     }
+
+    public IEnumerable<ILuaType> FindSupers(string name)
+    {
+        return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
+    }
+
     public string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
     {
         return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";

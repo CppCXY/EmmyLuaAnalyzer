@@ -4,31 +4,25 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public class IndexSearcher : LuaSearcher
 {
-    public override bool TrySearchLuaType(string name, SearchContext context, out ILuaNamedType? type)
+    public override IEnumerable<ILuaNamedType> SearchType(string className, SearchContext context)
     {
-        var buildIn = context.Compilation.Builtin.FromName(name);
+        var buildIn = context.Compilation.Builtin.FromName(className);
         if (buildIn is not null)
         {
-            type = buildIn;
-            return true;
+            yield return buildIn;
         }
 
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        if (stubIndexImpl.NamedTypeIndex.Get<ILuaNamedType>(name).FirstOrDefault() is { } ty)
+        if (stubIndexImpl.NamedTypeIndex.Get<ILuaNamedType>(className).FirstOrDefault() is { } ty)
         {
-            type = ty;
-            return true;
+            yield return ty;
         }
-
-        type = null;
-        return false;
     }
 
-    public override IEnumerable<Declaration.Declaration> SearchMembers(ILuaType type, SearchContext context)
+
+    public override IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        // return stubIndexImpl.Members.Get<LuaSymbol>(type);
-        throw new NotImplementedException();
+        return stubIndexImpl.Members.Get<Declaration.Declaration>(className);
     }
-
 }

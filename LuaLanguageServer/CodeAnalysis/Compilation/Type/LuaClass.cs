@@ -10,7 +10,7 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
 
     public IEnumerable<Declaration> GetRawMembers(SearchContext context)
     {
-        return context.FindMembers(this);
+        return context.FindMembers(Name);
     }
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
@@ -18,9 +18,9 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
         return GetRawMembers(context);
     }
 
-    public virtual ILuaType? GetSuper(SearchContext context)
+    public virtual IEnumerable<ILuaType> GetSuper(SearchContext context)
     {
-        throw new NotImplementedException();
+        return context.FindSupers(Name);
     }
 
     public IEnumerable<LuaInterface> GetInterfaces(SearchContext context)

@@ -1,23 +1,27 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
-using LuaLanguageServer.CodeAnalysis.Syntax.Node;
+
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public abstract class LuaSearcher : ILuaSearcher
 {
-    public virtual  bool TrySearchLuaType(string name, SearchContext context, out ILuaNamedType? type)
+    public virtual IEnumerable<ILuaNamedType> SearchType(string className, SearchContext context)
     {
-        type = null;
-        return false;
+        return Enumerable.Empty<ILuaNamedType>();
     }
 
-    public virtual IEnumerable<Declaration.Declaration> SearchMembers(ILuaType type, SearchContext context)
+    public virtual IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context)
     {
         return Enumerable.Empty<Declaration.Declaration>();
     }
 
-    public virtual IEnumerable<Declaration.Declaration> SearchDeclarations(LuaSyntaxElement element, SearchContext context)
+    public virtual IEnumerable<Declaration.Declaration> SearchGenericParams(string className, SearchContext context)
     {
         return Enumerable.Empty<Declaration.Declaration>();
+    }
+
+    public virtual IEnumerable<ILuaType> SearchSupers(string className, SearchContext context)
+    {
+        return Enumerable.Empty<ILuaType>();
     }
 }

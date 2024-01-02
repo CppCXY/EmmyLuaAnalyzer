@@ -11,7 +11,7 @@ public class LuaEnum(string name, ILuaType luaType) : LuaType(TypeKind.Enum), IL
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return context.FindMembers(BaseType);
+        return Enumerable.Empty<Declaration>();
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

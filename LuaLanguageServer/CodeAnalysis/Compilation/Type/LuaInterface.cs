@@ -9,7 +9,7 @@ public class LuaInterface(string name) : LuaType(TypeKind.Interface), IGenericBa
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return context.FindMembers(this);
+        return context.FindMembers(Name);
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

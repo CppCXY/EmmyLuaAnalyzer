@@ -4,7 +4,11 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public interface ILuaSearcher
 {
-    bool TrySearchLuaType(string name, SearchContext context, out ILuaNamedType? type);
+    IEnumerable<ILuaNamedType> SearchType(string className, SearchContext context);
 
-    IEnumerable<Declaration.Declaration> SearchMembers(ILuaType type, SearchContext context);
+    IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context);
+
+    IEnumerable<Declaration.Declaration> SearchGenericParams(string className, SearchContext context);
+
+    IEnumerable<ILuaType> SearchSupers(string className, SearchContext context);
 }
