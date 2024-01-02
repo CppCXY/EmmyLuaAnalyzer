@@ -20,6 +20,8 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<string, ILuaType> Supers { get; } = new();
 
+    public StubIndex<string, Declaration.Declaration> GenericParams { get; } = new();
+
     public void Remove(DocumentId documentId)
     {
         ShortNameIndex.RemoveStub(documentId);
@@ -27,5 +29,7 @@ public class StubIndexImpl(LuaCompilation compilation)
         NamedTypeIndex.RemoveStub(documentId);
         GlobalDeclaration.RemoveStub(documentId);
         TypeOperators.RemoveStub(documentId);
+        Supers.RemoveStub(documentId);
+        GenericParams.RemoveStub(documentId);
     }
 }

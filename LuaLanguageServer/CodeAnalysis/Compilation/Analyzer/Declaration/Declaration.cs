@@ -94,6 +94,7 @@ public enum DeclarationFlag : ushort
     DocField = 0x0040,
     EnumMember = 0x0080,
     Virtual = 0x0100,
+    GenericParameter = 0x0200,
 }
 
 public class Declaration(
@@ -134,7 +135,7 @@ public class Declaration(
     }
 }
 
-public class VirtualDeclaration(ILuaType type)
+public class VirtualDeclaration(ILuaType? type)
     : Declaration("", 0, null, DeclarationFlag.Virtual, null, null, type)
 {
 }

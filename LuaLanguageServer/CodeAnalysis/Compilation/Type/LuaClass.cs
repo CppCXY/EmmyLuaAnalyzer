@@ -15,37 +15,36 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return GetRawMembers(context);
+        return GetRawMembers(context).Concat(GetSupers(context).SelectMany(t => t.GetMembers(context)));
     }
 
-    public virtual IEnumerable<ILuaType> GetSuper(SearchContext context)
+    public virtual IEnumerable<ILuaType> GetSupers(SearchContext context)
     {
         return context.FindSupers(Name);
     }
 
-    public IEnumerable<LuaInterface> GetInterfaces(SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
-        throw new NotImplementedException();
+        return GetMembers(context).Where(it => string.Compare(it.Name, name, StringComparison.CurrentCulture) == 0);
     }
 
-    /// <summary>
-    /// contains all interfaces
-    /// </summary>
-    public IEnumerable<LuaInterface> GetAllInterface(SearchContext context)
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
-        throw new NotImplementedException();
+        var key = $"[{index}]";
+        return GetMembers(context).Where(it => string.Compare(it.Name, key, StringComparison.CurrentCulture) == 0);
     }
+
+    // public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    // {
+    //     return GetMembers(context).Where(it => it.Name == ty.Name);
+    // }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        if (other is LuaClass otherClass)
-        {
-            return string.Equals(Name, otherClass.Name, StringComparison.CurrentCulture);
-
-        }
-
-        return false;
+        var otherSubstitute = other.Substitute(context);
+        return ReferenceEquals(this, otherSubstitute) ||
+               (otherSubstitute is LuaClass @class &&
+                string.Equals(Name, @class.Name, StringComparison.CurrentCulture)) ||
+               GetSupers(context).Any(it => it.SubTypeOf(otherSubstitute, context));
     }
-
 }
-

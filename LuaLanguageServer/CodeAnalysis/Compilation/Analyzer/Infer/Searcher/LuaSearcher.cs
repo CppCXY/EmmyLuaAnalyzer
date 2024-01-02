@@ -5,7 +5,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public abstract class LuaSearcher : ILuaSearcher
 {
-    public virtual IEnumerable<ILuaNamedType> SearchType(string className, SearchContext context)
+    public virtual IEnumerable<ILuaType> SearchType(string className, SearchContext context)
     {
         return Enumerable.Empty<ILuaNamedType>();
     }

@@ -108,6 +108,17 @@ public class LuaUnion : LuaType
     {
         return _childTypes.SelectMany(it => it.IndexMember(index, context));
     }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+         var otherSubstitute = other.Substitute(context);
+         if (otherSubstitute is LuaUnion otherUnion)
+         {
+             return _childTypes.All(it => otherUnion._childTypes.Any(it2 => it.SubTypeOf(it2, context)));
+         }
+
+         return false;
+    }
 }
 
 public static class UnionTypeExtensions

@@ -11,12 +11,12 @@ public class Builtin
     public readonly Primitive Nil = new Primitive("nil");
     public readonly Primitive Number = new Primitive("number");
     public readonly Primitive Integer = new Primitive("integer");
-    public readonly PrimitiveLuaClass String = new PrimitiveLuaClass("string");
+    public readonly LuaClass String = new LuaClass("string");
     public readonly Primitive Boolean = new Primitive("boolean");
     public readonly Primitive Userdata = new Primitive("userdata");
-    public readonly PrimitiveLuaClass Io = new PrimitiveLuaClass("io");
-    public readonly PrimitiveLuaClass Table = new PrimitiveLuaClass("table");
-    public readonly PrimitiveLuaClass Global = new PrimitiveLuaClass("global");
+    public readonly LuaClass Io = new LuaClass("io");
+    public readonly LuaTable Table = new LuaTable(null, null);
+    public readonly LuaClass Global = new LuaClass("global");
 
     public Builtin()
     {
@@ -57,9 +57,62 @@ public class Primitive(string name) : LuaClass(name)
 
     public override IEnumerable<Declaration> IndexMember(string name, SearchContext context) =>
         Enumerable.Empty<Declaration>();
-}
 
-public class PrimitiveLuaClass(string name) : LuaClass(name);
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context) =>
+        Enumerable.Empty<Declaration>();
+
+    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context) =>
+        Enumerable.Empty<Declaration>();
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
+        ReferenceEquals(this, other) || Super?.SubTypeOf(other, context) == true;
+}
 
 public class Unknown() : Primitive("unknown");
 
+public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table")
+{
+    public ILuaType? Key { get; } = key;
+
+    public ILuaType? Value { get; } = value;
+
+    public VirtualDeclaration MemberDeclaration { get; } = new(value);
+
+    public static LuaTable WithGeneric(ILuaType key, ILuaType value)
+    {
+        return new LuaTable(key, value);
+    }
+
+    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    {
+        if (ReferenceEquals(Key, context.Compilation.Builtin.String))
+        {
+            yield return MemberDeclaration;
+        }
+    }
+
+
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    {
+        if (ReferenceEquals(Key, context.Compilation.Builtin.Integer)
+            || ReferenceEquals(Key, context.Compilation.Builtin.Number))
+        {
+            yield return MemberDeclaration;
+        }
+    }
+
+    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    {
+        if (Key is not null && ty.SubTypeOf(Key, context))
+        {
+            yield return MemberDeclaration;
+        }
+    }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
+        ReferenceEquals(this, other) || other is LuaTable;
+
+    public override IEnumerable<ILuaType> GetSupers(SearchContext context) => Enumerable.Empty<ILuaType>();
+}

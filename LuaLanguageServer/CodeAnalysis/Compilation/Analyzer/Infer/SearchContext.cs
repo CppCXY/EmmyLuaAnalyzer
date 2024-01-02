@@ -70,7 +70,7 @@ public class SearchContext
         }
     }
 
-    public ILuaNamedType FindLuaType(string name)
+    public ILuaType FindLuaType(string name)
     {
         foreach (var searcher in _searchers)
         {

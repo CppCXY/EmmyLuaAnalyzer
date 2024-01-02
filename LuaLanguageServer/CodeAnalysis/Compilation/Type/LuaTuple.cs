@@ -22,7 +22,13 @@ public class LuaTuple(List<Declaration> declarations) : LuaType(TypeKind.Tuple)
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        if (other is LuaTuple tuple)
+        var otherSubstitute = other.Substitute(context);
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (otherSubstitute is LuaTuple tuple)
         {
             if (tuple.Declarations.Count != declarations.Count)
             {

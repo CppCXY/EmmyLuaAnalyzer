@@ -6,22 +6,13 @@ public class EnvSearcher : LuaSearcher
 {
     private Stack<Dictionary<string, ILuaType>> _envStack = new();
 
-    public bool TrySearchClass(string name, SearchContext context, out LuaClass? type)
+    public override IEnumerable<ILuaType> SearchType(string className, SearchContext context)
     {
-        foreach (var env in _envStack)
+        var env = _envStack.Peek();
+        if (env.TryGetValue(className, out var ty))
         {
-            if (env.TryGetValue(name, out var ty))
-            {
-                if (ty is LuaClass luaClass)
-                {
-                    type = luaClass;
-                    return true;
-                }
-            }
+            yield return ty;
         }
-
-        type = null;
-        return false;
     }
 
     public void PushEnv(Dictionary<string, ILuaType> env)

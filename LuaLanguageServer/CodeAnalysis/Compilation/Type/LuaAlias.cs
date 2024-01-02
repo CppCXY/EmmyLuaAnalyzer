@@ -14,6 +14,21 @@ public class LuaAlias(string name, ILuaType baseType) : LuaType(TypeKind.Alias),
         return BaseType.GetMembers(context);
     }
 
+    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    {
+        return BaseType.IndexMember(name, context);
+    }
+
+    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    {
+        return BaseType.IndexMember(index, context);
+    }
+
+    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    {
+        return BaseType.IndexMember(ty, context);
+    }
+
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
         return BaseType.SubTypeOf(other, context);

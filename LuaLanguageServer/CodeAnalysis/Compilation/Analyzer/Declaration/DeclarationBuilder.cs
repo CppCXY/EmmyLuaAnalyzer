@@ -480,6 +480,11 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 ClassOrInterfaceSupersAnalysis(extendTypeList, luaClass);
             }
+
+            if (tagClassSyntax is { GenericDeclareList: { } genericDeclareList })
+            {
+                ClassOrInterfaceGenericParamAnalysis(genericDeclareList, luaClass);
+            }
         }
     }
 
@@ -539,6 +544,11 @@ public class DeclarationBuilder : ILuaElementWalker
             if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
             {
                 ClassOrInterfaceSupersAnalysis(extendTypeList, luaInterface);
+            }
+
+            if (tagInterfaceSyntax is { GenericDeclareList: { } genericDeclareList })
+            {
+                ClassOrInterfaceGenericParamAnalysis(genericDeclareList, luaInterface);
             }
         }
     }
@@ -648,6 +658,20 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             var type = new LuaTypeRef(extend);
             StubIndexImpl.Supers.AddStub(DocumentId, namedType.Name, type);
+        }
+    }
+
+    private void ClassOrInterfaceGenericParamAnalysis(LuaDocTagGenericDeclareListSyntax genericDeclareList,
+        ILuaNamedType namedType)
+    {
+        foreach (var param in genericDeclareList.Params)
+        {
+            if (param is { Name: { } name })
+            {
+                var declaration = CreateDeclaration(name.RepresentText, name,
+                    DeclarationFlag.GenericParameter, param.Type != null ? new LuaTypeRef(param.Type) : null);
+                StubIndexImpl.GenericParams.AddStub(DocumentId, namedType.Name, declaration);
+            }
         }
     }
 

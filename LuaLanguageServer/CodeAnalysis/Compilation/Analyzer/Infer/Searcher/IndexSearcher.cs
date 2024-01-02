@@ -4,7 +4,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 
 public class IndexSearcher : LuaSearcher
 {
-    public override IEnumerable<ILuaNamedType> SearchType(string className, SearchContext context)
+    public override IEnumerable<ILuaType> SearchType(string className, SearchContext context)
     {
         var buildIn = context.Compilation.Builtin.FromName(className);
         if (buildIn is not null)
@@ -24,5 +24,11 @@ public class IndexSearcher : LuaSearcher
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
         return stubIndexImpl.Members.Get<Declaration.Declaration>(className);
+    }
+
+    public override IEnumerable<Declaration.Declaration> SearchGenericParams(string className, SearchContext context)
+    {
+        var stubIndexImpl = context.Compilation.StubIndexImpl;
+        return stubIndexImpl.GenericParams.Get<Declaration.Declaration>(className);
     }
 }
