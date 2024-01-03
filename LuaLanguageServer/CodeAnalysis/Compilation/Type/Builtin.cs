@@ -1,6 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
 using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
-using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 

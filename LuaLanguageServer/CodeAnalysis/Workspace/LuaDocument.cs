@@ -13,10 +13,8 @@ public class DocumentId(string path)
     public string Guid { get; } = System.Guid.NewGuid().ToString();
 }
 
-public class LuaDocument
+public class LuaDocument : LuaSource
 {
-    public LuaSource Source { get; }
-
     public DocumentId Id { get; }
 
     private LuaSyntaxTree? _syntaxTree;
@@ -24,28 +22,26 @@ public class LuaDocument
     public static LuaDocument OpenDocument(string path, LuaLanguage language)
     {
         var fileText = File.ReadAllText(path);
-        var luaSource = LuaSourceFile.From(path, fileText, language);
         var documentId = new DocumentId(path);
-        return new LuaDocument(luaSource, documentId);
+        return new LuaDocument(fileText, language, documentId);
     }
 
     public static LuaDocument From(string path, string text, LuaLanguage language)
     {
-        var luaSource = LuaSourceFile.From(path, text, language);
         var documentId = new DocumentId(path);
-        return new LuaDocument(luaSource, documentId);
+        return new LuaDocument(text, language, documentId);
     }
 
-    private LuaDocument(LuaSource luaSource, DocumentId id)
+    private LuaDocument(string text, LuaLanguage language, DocumentId id)
+        : base(text, language)
     {
-        Source = luaSource;
         Id = id;
     }
 
-    public string GetText()
-    {
-        return Source.Text;
-    }
+    public LuaSyntaxTree SyntaxTree => _syntaxTree ??= LuaSyntaxTree.Create(this);
 
-    public LuaSyntaxTree SyntaxTree => _syntaxTree ??= LuaSyntaxTree.Create(Source);
+    public override LuaDocumentLocation GetLocation(SourceRange range)
+    {
+        return new LuaDocumentLocation(this, range);
+    }
 }

@@ -13,6 +13,8 @@ public class LuaSource
 
     private LineIndex LineIndex { get; set; }
 
+    public virtual string Name => string.Empty;
+
     internal LuaSource(string text, LuaLanguage language)
     {
         Text = text;
@@ -33,6 +35,11 @@ public class LuaSource
     public int GetOffset(int line, int col)
     {
         return LineIndex.GetOffset(line, col, Text);
+    }
+
+    public virtual LuaLocation GetLocation(SourceRange range)
+    {
+        return new LuaLocation(this, range);
     }
 }
 
@@ -186,21 +193,5 @@ internal class LineIndex
     public int GetTotalLine()
     {
         return _indexs.Count;
-    }
-}
-
-public class LuaSourceFile : LuaSource
-{
-    public static LuaSourceFile From(string filePath, string text, LuaLanguage language)
-    {
-        return new LuaSourceFile(filePath, text, language);
-    }
-
-    public string FilePath { get; set; }
-
-    private LuaSourceFile(string filePath, string text, LuaLanguage language)
-        : base(text, language)
-    {
-        FilePath = filePath;
     }
 }

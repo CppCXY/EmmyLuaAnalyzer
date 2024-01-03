@@ -1,6 +1,5 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compile.Source;
 using LuaLanguageServer.CodeAnalysis.Syntax.Diagnostic;
-using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 
 namespace LuaLanguageServer.CodeAnalysis.Compile.Diagnostic;
 

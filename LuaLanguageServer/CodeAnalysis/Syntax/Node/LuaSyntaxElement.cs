@@ -3,9 +3,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using LuaLanguageServer.CodeAnalysis.Compile.Source;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Green;
-using LuaLanguageServer.CodeAnalysis.Syntax.Location;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
 using LuaLanguageServer.CodeAnalysis.Syntax.Walker;
@@ -520,7 +520,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         }
     }
 
-    public LuaSourceLocation Location => new LuaSourceLocation(Tree, Green.Range);
+    public LuaLocation Location => Tree.Source.GetLocation(Green.Range);
 
     public LuaSyntaxToken TokenAt(int offset)
     {
