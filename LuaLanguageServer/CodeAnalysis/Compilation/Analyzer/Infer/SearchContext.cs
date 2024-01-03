@@ -27,6 +27,8 @@ public class SearchContext
 
     public IndexSearcher IndexSearcher { get; } = new();
 
+
+
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;

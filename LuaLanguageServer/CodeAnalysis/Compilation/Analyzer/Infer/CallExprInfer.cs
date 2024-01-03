@@ -69,7 +69,7 @@ public class CallExprInfer
                 modulePath = realModule;
             }
 
-            var document = context.Compilation.Workspace.FindModule(modulePath);
+            var document = context.Compilation.Workspace.ModuleGraph.FindModule(modulePath);
             if (document is not null)
             {
                 context.Infer(document.SyntaxTree.SyntaxRoot);

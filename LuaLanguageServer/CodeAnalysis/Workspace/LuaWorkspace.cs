@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation;
 using LuaLanguageServer.CodeAnalysis.Syntax.Tree;
+using LuaLanguageServer.CodeAnalysis.Workspace.Module;
 
 namespace LuaLanguageServer.CodeAnalysis.Workspace;
 
@@ -7,19 +8,19 @@ public class LuaWorkspace
 {
     public string WorkspacePath { get; }
 
-    public List<string> ExternalWorkspace { get; }
+    public List<string> ExternalWorkspace { get; } = new();
 
     public LuaFeatures Features { get; }
 
-    private Dictionary<DocumentId, LuaDocument> _documents;
+    private Dictionary<DocumentId, LuaDocument> Documents { get; set; } = new();
 
-    private Dictionary<string, DocumentId> _urlToDocument;
+    private Dictionary<string, DocumentId> UrlToDocument { get; set; } = new();
 
-    private Dictionary<string, LuaDocument> _pathToDocument;
+    private Dictionary<string, DocumentId> PathToDocument { get; set; } = new();
 
-    private LuaCompilation _compilation;
+    private LuaCompilation Compilation { get; }
 
-    public LuaCompilation Compilation => _compilation;
+    public ModuleGraph ModuleGraph { get; }
 
     public static LuaWorkspace Create(string workspacePath)
     {
@@ -37,11 +38,9 @@ public class LuaWorkspace
     {
         WorkspacePath = workspacePath;
         Features = features;
-        ExternalWorkspace = new List<string>();
-        _documents = new Dictionary<DocumentId, LuaDocument>();
-        _urlToDocument = new Dictionary<string, DocumentId>();
-        _pathToDocument = new Dictionary<string, LuaDocument>();
-        _compilation = new LuaCompilation(this);
+        Compilation = new LuaCompilation(this);
+        ModuleGraph = new ModuleGraph(this);
+        ModuleGraph.UpdatePattern(features.RequirePattern);
     }
 
     public void AddExternalWorkspace(string workspacePath)
@@ -58,41 +57,25 @@ public class LuaWorkspace
         var documents =
             new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));
 
-        _documents = _documents.Concat(documents.ToDictionary(it => it.Id, it => it))
-            .ToDictionary(it => it.Key, it => it.Value);
+        ModuleGraph.AddDocuments(workspace, documents);
 
-        _urlToDocument = _urlToDocument.Concat(documents.ToDictionary(it => it.Id.Url, it => it.Id))
-            .ToDictionary(it => it.Key, it => it.Value);
+        foreach (var document in documents)
+        {
+            Documents.Add(document.Id, document);
+            UrlToDocument.Add(document.Id.Url, document.Id);
+            PathToDocument.Add(document.Id.Path, document.Id);
+        }
 
-        _pathToDocument = _pathToDocument.Concat(documents.ToDictionary(it => it.Id.Path, it => it))
-            .ToDictionary(it => it.Key, it => it.Value);
-
-        _compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
+        Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
     }
 
     public LuaDocument? GetDocument(DocumentId id)
     {
-        return _documents.GetValueOrDefault(id);
+        return Documents.GetValueOrDefault(id);
     }
 
     public LuaDocument? GetDocument(string url)
     {
-        return _urlToDocument.TryGetValue(url, out var id) ? GetDocument(id) : null;
-    }
-
-    public LuaDocument? FindModule(string modulePath)
-    {
-        modulePath = modulePath.Replace('.', '/');
-        var modulePaths = Features.RequirePattern
-            .Select(it => Path.Combine(WorkspacePath, it.Replace("?", modulePath)));
-        foreach (var module in modulePaths)
-        {
-            if (_pathToDocument.TryGetValue(module, out var document))
-            {
-                return document;
-            }
-        }
-
-        return null;
+        return UrlToDocument.TryGetValue(url, out var id) ? GetDocument(id) : null;
     }
 }
