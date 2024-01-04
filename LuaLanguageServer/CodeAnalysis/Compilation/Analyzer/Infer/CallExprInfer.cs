@@ -26,20 +26,20 @@ public class CallExprInfer
             return handle(callExpr, context);
         }
 
-        var symbol = context.Infer(prefixExpr);
-        LuaUnion.Each(symbol, s =>
+        var luaType = context.Infer(prefixExpr);
+        LuaUnion.Each(luaType, type =>
         {
-            switch (s)
+            switch (type)
             {
-                case LuaMethod func:
+                case LuaMethod luaMethod:
                 {
                     var args = callExpr.ArgList?.ArgList;
                     if (args == null) return;
-                    var perfectSig = func.FindPerfectSignature(args, context);
-                    if (perfectSig.ReturnType is { } retTy)
-                    {
-                        ret = LuaUnion.UnionType(ret, retTy);
-                    }
+                    // var perfectSig = luaMethod.FindPerfectSignature(args, context);
+                    // if (perfectSig.ReturnType is { } retTy)
+                    // {
+                    //     ret = LuaUnion.UnionType(ret, retTy);
+                    // }
 
                     break;
                 }

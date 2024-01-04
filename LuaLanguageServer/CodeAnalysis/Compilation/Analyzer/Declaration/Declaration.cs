@@ -129,6 +129,11 @@ public class Declaration(
 
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 
+    public Declaration WithType(ILuaType? type)
+    {
+        return new Declaration(Name, Position, SyntaxElement, Flags, Parent, PrevDeclaration, type);
+    }
+
     public override string ToString()
     {
         return $"{Flags} {Name}";

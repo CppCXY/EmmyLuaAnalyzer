@@ -4,90 +4,21 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaMethod(IFuncSignature mainSignature) : LuaType(TypeKind.Method)
-{
-    public IFuncSignature MainSignature { get; private set; } = mainSignature;
-
-    public List<IFuncSignature> Signatures { get; } = new();
-
-    public void ProcessSignature(Func<IFuncSignature, bool> process)
-    {
-        if (process(MainSignature))
-        {
-            foreach (var signature in Signatures)
-            {
-                if (!process(signature))
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    public IFuncSignature FindPerfectSignature(IEnumerable<LuaExprSyntax> arguments, SearchContext context)
-    {
-        var perfectSignature = MainSignature;
-        var perfectCount = 0;
-        var argumentsList = arguments.ToList();
-        ProcessSignature(signature =>
-        {
-            var count = signature.Match(argumentsList, context);
-
-            if (count > perfectCount)
-            {
-                perfectSignature = signature;
-                perfectCount = count;
-            }
-
-            return true;
-        });
-
-        return perfectSignature;
-    }
-
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
-
-}
-
-public class FuncTypedParam(string name, ILuaType? type)
-{
-    public string Name { get; } = name;
-
-    public ILuaType? Type { get; } = type;
-}
-
-public interface IFuncSignature
-{
-    public bool ColonCall { get; }
-
-    public ILuaType? ReturnType { get; }
-
-    public List<FuncTypedParam> Parameters { get; }
-
-    public ILuaType? Variadic { get; }
-
-    public int Match(List<LuaExprSyntax> arguments, SearchContext context);
-}
-
-public class FuncSignature(
-    bool colonCall,
-    List<FuncTypedParam> parameters,
-    ILuaType? variadic,
-    ILuaType? returnType)
-    : IFuncSignature
+public class LuaMethod(bool colonCall, List<Declaration> parameters, ILuaType? variadic, ILuaType? retType)
+    : LuaType(TypeKind.Method)
 {
     public bool ColonCall { get; } = colonCall;
 
-    public ILuaType? ReturnType { get; } = returnType;
+    public ILuaType? ReturnType { get; } = retType;
 
-    public List<FuncTypedParam> Parameters { get; } = parameters;
+    public List<Declaration> Parameters { get; } = parameters;
 
     public ILuaType? Variadic { get; } = variadic;
 
     public int Match(List<LuaExprSyntax> arguments, SearchContext context)
     {
         var matched = 0;
-        for(; matched < Parameters.Count; matched++)
+        for (; matched < Parameters.Count; matched++)
         {
             if (arguments.Count <= matched)
             {
@@ -118,5 +49,128 @@ public class FuncSignature(
         }
 
         return matched;
+    }
+
+    public static void ProcessSignature(Func<LuaMethod, bool> process, IEnumerable<LuaMethod> signatures)
+    {
+        foreach (var signature in signatures)
+        {
+            if (!process(signature))
+            {
+                break;
+            }
+        }
+    }
+
+    public static LuaMethod? FindPerfectSignature(
+        IEnumerable<LuaExprSyntax> arguments,
+        IEnumerable<LuaMethod> signatures,
+        SearchContext context)
+    {
+        LuaMethod? perfectSignature = null;
+        var perfectCount = 0;
+        var argumentsList = arguments.ToList();
+        ProcessSignature(signature =>
+        {
+            var count = signature.Match(argumentsList, context);
+
+            if (count > perfectCount)
+            {
+                perfectSignature = signature;
+                perfectCount = count;
+            }
+
+            return true;
+        }, signatures);
+
+        return perfectSignature;
+    }
+
+    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+
+    protected override ILuaType OnSubstitute(SearchContext context)
+    {
+        var same = true;
+        var parameters = new List<Declaration>();
+        foreach (var parameter in Parameters)
+        {
+            var type = parameter.Type;
+            if (type != null)
+            {
+                var substitute = type.Substitute(context);
+                if (ReferenceEquals(substitute, type))
+                {
+                    parameters.Add(parameter);
+                }
+                else
+                {
+                    parameters.Add(parameter.WithType(substitute));
+                    same = false;
+                }
+            }
+            else
+            {
+                parameters.Add(parameter);
+            }
+        }
+
+        var retType = ReturnType?.Substitute(context);
+        if (!ReferenceEquals(ReturnType, retType))
+        {
+            same = false;
+        }
+
+        var variadic = Variadic?.Substitute(context);
+        if (!ReferenceEquals(Variadic, variadic))
+        {
+            same = false;
+        }
+
+        return !same ? new LuaMethod(ColonCall, parameters, variadic, retType) : this;
+    }
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is LuaMethod method)
+        {
+            if (method.ColonCall != ColonCall)
+            {
+                return false;
+            }
+
+            if (method.Parameters.Count != Parameters.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < Parameters.Count; i++)
+            {
+                var luaType = Parameters[i].Type;
+                var type = method.Parameters[i].Type;
+                if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
+                {
+                    return false;
+                }
+            }
+
+            if (method.Variadic != null && Variadic != null && !Variadic.SubTypeOf(method.Variadic, context))
+            {
+                return false;
+            }
+
+            if (method.ReturnType != null && ReturnType != null && !ReturnType.SubTypeOf(method.ReturnType, context))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
