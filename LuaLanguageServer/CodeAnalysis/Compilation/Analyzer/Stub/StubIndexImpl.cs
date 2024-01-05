@@ -1,5 +1,6 @@
 ﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Compilation.TypeOperator;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Stub;
@@ -21,6 +22,8 @@ public class StubIndexImpl(LuaCompilation compilation)
     public StubIndex<string, ILuaType> Supers { get; } = new();
 
     public StubIndex<string, Declaration.Declaration> GenericParams { get; } = new();
+
+    public StubIndex<LuaClosureExprSyntax, LuaMethod> Closure { get; } = new();
 
     public void Remove(DocumentId documentId)
     {

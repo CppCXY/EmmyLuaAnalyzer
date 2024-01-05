@@ -4,7 +4,7 @@ using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Type;
 
-public class LuaMethod(bool colonCall, List<Declaration> parameters, ILuaType? variadic, ILuaType? retType)
+public class LuaMethod(bool colonCall, List<Declaration> parameters, ILuaType? retType)
     : LuaType(TypeKind.Method)
 {
     public bool ColonCall { get; } = colonCall;
@@ -13,7 +13,18 @@ public class LuaMethod(bool colonCall, List<Declaration> parameters, ILuaType? v
 
     public List<Declaration> Parameters { get; } = parameters;
 
-    public ILuaType? Variadic { get; } = variadic;
+    public ILuaType? Variadic
+    {
+        get
+        {
+            if (Parameters.LastOrDefault() is { Name: "..." } lastParam)
+            {
+                return lastParam.FirstDeclaration.Type;
+            }
+
+            return null;
+        }
+    }
 
     public int Match(List<LuaExprSyntax> arguments, SearchContext context)
     {
@@ -120,13 +131,7 @@ public class LuaMethod(bool colonCall, List<Declaration> parameters, ILuaType? v
             same = false;
         }
 
-        var variadic = Variadic?.Substitute(context);
-        if (!ReferenceEquals(Variadic, variadic))
-        {
-            same = false;
-        }
-
-        return !same ? new LuaMethod(ColonCall, parameters, variadic, retType) : this;
+        return !same ? new LuaMethod(ColonCall, parameters, retType) : this;
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

@@ -21,6 +21,11 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
                 var scope = FindScope(nameExpr);
                 return scope?.FindNameExpr(nameExpr);
             }
+            case LuaParamDefSyntax paramDef:
+            {
+                var scope = FindScope(paramDef);
+                return scope?.FindParamDef(paramDef);
+            }
         }
 
         return null;

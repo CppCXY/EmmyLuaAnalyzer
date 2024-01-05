@@ -10,7 +10,7 @@ namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Bind;
 
 public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    private SearchContext Context => compilation.SearchContext;
+    private SearchContext Context => Compilation.SearchContext;
     private Dictionary<DocumentId, BindData> BindData { get; } = new();
 
     public override void Analyze(DocumentId documentId)

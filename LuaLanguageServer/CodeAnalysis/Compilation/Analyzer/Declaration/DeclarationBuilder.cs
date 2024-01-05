@@ -31,8 +31,6 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private Dictionary<string, Declaration> _typeDeclarations = new();
 
-    private Dictionary<LuaSyntaxElement, List<Declaration>> _bindDocDeclarations = new();
-
     private DocumentId DocumentId { get; }
 
     public DeclarationTree Build()
@@ -129,11 +127,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 LocalStatDeclarationAnalysis(localStatSyntax);
                 break;
             }
-            case LuaParamListSyntax paramListSyntax:
-            {
-                ParamListDeclarationAnalysis(paramListSyntax);
-                break;
-            }
             case LuaForRangeStatSyntax forRangeStatSyntax:
             {
                 ForRangeStatDeclarationAnalysis(forRangeStatSyntax);
@@ -147,6 +140,11 @@ public class DeclarationBuilder : ILuaElementWalker
             case LuaFuncStatSyntax funcStatSyntax:
             {
                 MethodDeclarationAnalysis(funcStatSyntax);
+                break;
+            }
+            case LuaClosureExprSyntax closureExprSyntax:
+            {
+                ClosureExprDeclarationAnalysis(closureExprSyntax);
                 break;
             }
             case LuaAssignStatSyntax assignStatSyntax:
@@ -174,19 +172,9 @@ public class DeclarationBuilder : ILuaElementWalker
                 InterfaceTagDeclarationAnalysis(tagInterfaceSyntax);
                 break;
             }
-            case LuaDocTagParamSyntax tagParamSyntax:
-            {
-                ParamTagDeclarationAnalysis(tagParamSyntax);
-                break;
-            }
             case LuaTableFieldSyntax tableFieldSyntax:
             {
                 TableFieldDeclarationAnalysis(tableFieldSyntax);
-                break;
-            }
-            case LuaFuncBodySyntax funcBodySyntax:
-            {
-                FuncBodyDeclarationAnalysis(funcBodySyntax);
                 break;
             }
         }
@@ -225,25 +213,76 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void ParamListDeclarationAnalysis(LuaParamListSyntax paramListSyntax)
+    private List<Declaration> GetParamListDeclaration(LuaParamListSyntax paramListSyntax)
     {
-        var dic = FindParamListDeclaration(paramListSyntax);
+        var declarations = new List<Declaration>();
+        var dic = FindParamDeclarations(paramListSyntax);
         foreach (var param in paramListSyntax.Params)
         {
             if (param.Name is { } name)
             {
-                var declaration = CreateDeclaration(name.RepresentText, param, DeclarationFlag.Local, null);
+                var declaration = CreateDeclaration(name.RepresentText, param,
+                    DeclarationFlag.Local | DeclarationFlag.Parameter, null);
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
                 }
+
+                declarations.Add(declaration);
+            }
+            else if (param.IsVarArgs)
+            {
+                var declaration = CreateDeclaration("...", param,
+                    DeclarationFlag.Local | DeclarationFlag.Parameter, null);
+                if (dic.TryGetValue("...", out var prevDeclaration))
+                {
+                    declaration.PrevDeclaration = prevDeclaration;
+                }
+
+                declarations.Add(declaration);
+            }
+        }
+
+        return declarations;
+    }
+
+    private ILuaType? GetRetType(IEnumerable<LuaDocTagSyntax> docList)
+    {
+        var retTag = docList.OfType<LuaDocTagReturnSyntax>().ToList();
+        switch (retTag.Count)
+        {
+            case 0:
+                return null;
+            case 1:
+            {
+                var typeList = retTag[0].TypeList.ToList();
+                switch (typeList.Count)
+                {
+                    case 0:
+                        return null;
+                    case 1:
+                        return new LuaTypeRef(typeList[0]);
+                    default:
+                    {
+                        var rets = typeList.Select(type => new LuaTypeRef(type)).Cast<ILuaType>().ToList();
+                        return new LuaMultiRetType(rets);
+                    }
+                }
+
+                break;
+            }
+            default:
+            {
+                var rets = retTag.SelectMany(tag => tag.TypeList).Select(type => new LuaTypeRef(type)).Cast<ILuaType>()
+                    .ToList();
+                return new LuaMultiRetType(rets);
             }
         }
     }
 
     private void ForRangeStatDeclarationAnalysis(LuaForRangeStatSyntax forRangeStatSyntax)
     {
-        var dic = FindParamListDeclaration(forRangeStatSyntax);
+        var dic = FindParamDeclarations(forRangeStatSyntax);
         foreach (var param in forRangeStatSyntax.IteratorNames)
         {
             if (param.Name is { } name)
@@ -339,7 +378,7 @@ public class DeclarationBuilder : ILuaElementWalker
         select new LuaTypeRef(type)
     ).Cast<ILuaType>().ToList();
 
-    private Dictionary<string, Declaration> FindParamListDeclaration(LuaSyntaxElement element)
+    private Dictionary<string, Declaration> FindParamDeclarations(LuaSyntaxElement element)
     {
         var stat = element.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
         if (stat is null)
@@ -355,15 +394,19 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var dic = new Dictionary<string, Declaration>();
 
-        // ReSharper disable once InvertIf
-        if (_bindDocDeclarations.TryGetValue(stat, out var declarations))
+        foreach (var tagParamSyntax in docList.OfType<LuaDocTagParamSyntax>())
         {
-            foreach (var declaration in declarations)
+            if (tagParamSyntax is { Name: { } name, Type: { } type })
             {
-                if (declaration is { Name: { } name, IsParam: true })
-                {
-                    dic.Add(name, declaration);
-                }
+                var declaration = CreateDeclaration(name.RepresentText, name,
+                    DeclarationFlag.Parameter, new LuaTypeRef(type));
+                dic.Add(name.RepresentText, declaration);
+            }
+            else if (tagParamSyntax is { VarArgs: { } varArgs, Type: { } type2 })
+            {
+                var declaration = CreateDeclaration(varArgs.RepresentText, varArgs,
+                    DeclarationFlag.Parameter, new LuaTypeRef(type2));
+                dic.Add("...", declaration);
             }
         }
 
@@ -434,14 +477,15 @@ public class DeclarationBuilder : ILuaElementWalker
             case { IsLocal: true, LocalName.Name: { } name }:
             {
                 CreateDeclaration(name.RepresentText, name,
-                    DeclarationFlag.Method | DeclarationFlag.Local, null);
+                    DeclarationFlag.Method | DeclarationFlag.Local, GetMethodDeclaration(luaFuncStat.FuncBody, false));
                 break;
             }
             case { IsLocal: false, NameExpr.Name: { } name2 }:
             {
                 var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                 var flags = prevDeclaration?.Flags ?? (DeclarationFlag.Global | DeclarationFlag.Method);
-                var declaration = CreateDeclaration(name2.RepresentText, name2, flags, null);
+                var declaration = CreateDeclaration(name2.RepresentText, name2, flags,
+                    GetMethodDeclaration(luaFuncStat.FuncBody, false));
                 if (prevDeclaration is not null)
                 {
                     declaration.PrevDeclaration = prevDeclaration;
@@ -455,9 +499,20 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsMethod: true, IndexExpr: { } indexExpr }:
             {
-                Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId, null, null, _curScope));
+                Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(indexExpr, DocumentId,
+                    GetMethodDeclaration(luaFuncStat.FuncBody, indexExpr.IsColonIndex), null, _curScope));
                 break;
             }
+        }
+    }
+
+    private void ClosureExprDeclarationAnalysis(LuaClosureExprSyntax closureExprSyntax)
+    {
+        var funcBody = closureExprSyntax.FuncBody;
+        var luaMethod = GetMethodDeclaration(funcBody, false);
+        if (luaMethod is not null)
+        {
+            StubIndexImpl.Closure.AddStub(DocumentId, closureExprSyntax, luaMethod);
         }
     }
 
@@ -550,31 +605,6 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 ClassOrInterfaceGenericParamAnalysis(genericDeclareList, luaInterface);
             }
-        }
-    }
-
-    private void AddTagDocDeclaration(LuaDocTagSyntax element, Declaration declaration)
-    {
-        var stat = element.Parent?.Parent;
-        if (stat is LuaStatSyntax)
-        {
-            if (!_bindDocDeclarations.TryGetValue(stat, out var declarations))
-            {
-                declarations = new List<Declaration>();
-                _bindDocDeclarations.Add(stat, declarations);
-            }
-
-            declarations.Add(declaration);
-        }
-    }
-
-    private void ParamTagDeclarationAnalysis(LuaDocTagParamSyntax tagParamSyntax)
-    {
-        if (tagParamSyntax is { Name: { } name, Type: { } type })
-        {
-            var declaration = CreateDeclaration(name.RepresentText, name,
-                DeclarationFlag.Parameter, new LuaTypeRef(type));
-            AddTagDocDeclaration(tagParamSyntax, declaration);
         }
     }
 
@@ -677,11 +707,38 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void TableFieldDeclarationAnalysis(LuaTableFieldSyntax tableFieldSyntax)
     {
-        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(tableFieldSyntax, DocumentId, null, null, _curScope));
+        if (tableFieldSyntax is { Name: { } fieldName, ParentTable: { } table })
+        {
+            var parentId = Compilation.SearchContext.GetUniqueId(table, DocumentId);
+
+            var declaration = CreateDeclaration(fieldName, tableFieldSyntax,
+                DeclarationFlag.ClassMember, null);
+            StubIndexImpl.Members.AddStub(DocumentId, parentId, declaration);
+        }
     }
 
-    private void FuncBodyDeclarationAnalysis(LuaFuncBodySyntax funcBodySyntax)
+    private LuaMethod? GetMethodDeclaration(LuaFuncBodySyntax? funcBody, bool colon)
     {
-        Analyzer.DelayAnalyzeNodes.Add(new DelayAnalyzeNode(funcBodySyntax, DocumentId, null, null, _curScope));
+        var stat = funcBody?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
+        if (stat is null)
+        {
+            return null;
+        }
+
+        var comment = stat.Comments.FirstOrDefault();
+
+        ILuaType? retType = null;
+        if (comment?.DocList is { } docList)
+        {
+            retType = GetRetType(docList);
+        }
+
+        var parameters = new List<Declaration>();
+        if (funcBody?.ParamList is { } paramList)
+        {
+            parameters = GetParamListDeclaration(paramList);
+        }
+
+        return new LuaMethod(colon, parameters, retType);
     }
 }

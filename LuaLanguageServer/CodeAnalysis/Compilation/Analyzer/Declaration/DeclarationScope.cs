@@ -56,6 +56,29 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         return null;
     }
 
+    public Declaration? FindParamDef(LuaParamDefSyntax paramDef)
+    {
+        if (paramDef.Name is { } name)
+        {
+            var nameText = name.RepresentText;
+            Declaration? result = null;
+            WalkUp(Tree.GetPosition(paramDef), 0, declaration =>
+            {
+                if (declaration.IsParam &&
+                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
+                {
+                    result = declaration;
+                    return false;
+                }
+
+                return true;
+            });
+            return result;
+        }
+
+        return null;
+    }
+
     public IEnumerable<Declaration> DescendantDeclarations
     {
         get

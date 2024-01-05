@@ -129,7 +129,7 @@ public class LuaDocTagParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public bool IsVarArgs => FirstChildToken(LuaTokenKind.TkDots) != null;
+    public LuaSyntaxToken? VarArgs => FirstChildToken(LuaTokenKind.TkDots);
 
     public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
 
