@@ -739,6 +739,6 @@ public class DeclarationBuilder : ILuaElementWalker
             parameters = GetParamListDeclaration(paramList);
         }
 
-        return new LuaMethod(colon, parameters, retType);
+        return new LuaMethod(new MethodSignature(colon, parameters, retType), null);
     }
 }

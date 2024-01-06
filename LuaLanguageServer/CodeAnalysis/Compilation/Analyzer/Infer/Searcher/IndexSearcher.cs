@@ -19,7 +19,6 @@ public class IndexSearcher : LuaSearcher
         }
     }
 
-
     public override IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;

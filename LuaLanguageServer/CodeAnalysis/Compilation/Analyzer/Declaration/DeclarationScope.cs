@@ -79,6 +79,29 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         return null;
     }
 
+    public Declaration? FindLocalName(LuaLocalNameSyntax localName)
+    {
+        if (localName.Name is { } name)
+        {
+            var nameText = name.RepresentText;
+            Declaration? result = null;
+            WalkUp(Tree.GetPosition(localName), 0, declaration =>
+            {
+                if (declaration.IsLocal &&
+                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
+                {
+                    result = declaration;
+                    return false;
+                }
+
+                return true;
+            });
+            return result;
+        }
+
+        return null;
+    }
+
     public IEnumerable<Declaration> DescendantDeclarations
     {
         get

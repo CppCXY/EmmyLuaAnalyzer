@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-
 using LuaLanguageServer.CodeAnalysis.Compilation.Type;
 using LuaLanguageServer.CodeAnalysis.Kind;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -95,7 +94,12 @@ public static class ExpressionInfer
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        // TODO: infer func type
+        var method = context.Compilation.StubIndexImpl.Closure.Get<LuaMethod>(closureExpr).FirstOrDefault();
+        if (method is not null)
+        {
+            return method;
+        }
+
         return context.Compilation.Builtin.Unknown;
     }
 
@@ -115,7 +119,7 @@ public static class ExpressionInfer
                 {
                     keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.String);
                 }
-                else if(field.IsNumberKey)
+                else if (field.IsNumberKey)
                 {
                     keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.Number);
                 }
@@ -155,13 +159,37 @@ public static class ExpressionInfer
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
-            // var key = IndexKey.FromIndexExpr(indexExpr, context);
-            // var prefixTy = InferExpr(prefixExpr, context);
-            // var ty = prefixTy.IndexMember(key, context).FirstOrDefault()?.GetType(context);
-            // if (ty is not null)
-            // {
-            //     return ty;
-            // }
+            Declaration.Declaration? declaration = null;
+            var prefixType = context.Infer(prefixExpr);
+            if (indexExpr is { DotOrColonIndexName: { } nameToken })
+            {
+                declaration = prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
+            }
+            else if (indexExpr is { IndexKeyExpr: LuaLiteralExprSyntax literal })
+            {
+                if (literal.Literal is LuaStringToken stringToken)
+                {
+                    declaration = prefixType.IndexMember(stringToken.Value, context).FirstOrDefault();
+                }
+                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
+                {
+                    declaration = prefixType.IndexMember(luaIntegerToken.Value, context).FirstOrDefault();
+                }
+                else
+                {
+                    declaration = prefixType.IndexMember(literal.Literal.RepresentText, context).FirstOrDefault();
+                }
+            }
+            else if (indexExpr is { IndexKeyExpr: { } expr })
+            {
+                var indexType = context.Infer(expr);
+                declaration = prefixType.IndexMember(indexType, context).FirstOrDefault();
+            }
+
+            if (declaration is { Type: { } ty2 })
+            {
+                return ty2;
+            }
         }
 
         return context.Compilation.Builtin.Unknown;
@@ -181,16 +209,13 @@ public static class ExpressionInfer
 
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        // var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree);
-        // var declaration = declarationTree.FindDeclaration(nameExpr)?.FirstDeclaration.SyntaxElement;
-        // if (declaration is not null && !ReferenceEquals(declaration, nameExpr))
-        // {
-        //     return context.Infer(declaration);
-        // }
-        // else
-        // {
-        //     // TODO 找到他的表达式对象
-        // }
+        var declarationTree = DeclarationInfer.GetDeclarationTree(nameExpr, context);
+        var nameDecl = declarationTree?.FindDeclaration(nameExpr);
+        if (nameDecl?.Type is { } ty)
+        {
+            return ty;
+        }
+
         return context.Compilation.Builtin.Unknown;
     }
 }

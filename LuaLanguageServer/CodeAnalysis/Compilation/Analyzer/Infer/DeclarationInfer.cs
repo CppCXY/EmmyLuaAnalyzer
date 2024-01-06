@@ -1,17 +1,34 @@
-﻿using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+﻿using LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Declaration;
+using LuaLanguageServer.CodeAnalysis.Compilation.Type;
+using LuaLanguageServer.CodeAnalysis.Syntax.Node;
 using LuaLanguageServer.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LuaLanguageServer.CodeAnalysis.Workspace;
 
 namespace LuaLanguageServer.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public static class DeclarationInfer
 {
+    public static DeclarationTree? GetDeclarationTree(LuaSyntaxElement element, SearchContext context)
+    {
+        var source = element.Tree.Source;
+        if (source is LuaDocument document)
+        {
+            return context.Compilation.GetDeclarationTree(document.Id);
+        }
+
+        return null;
+    }
+
     public static ILuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
     {
-        return localName switch
+        var declarationTree = GetDeclarationTree(localName, context);
+        if (declarationTree is null)
         {
-            // LuaIdentifierLocalNameSyntax identifierLocalName => InferIdentifierLocalName(identifierLocalName),
-            _ => throw new NotImplementedException()
-        };
+            return context.Compilation.Builtin.Unknown;
+        }
+
+        var declaration = declarationTree.FindDeclaration(localName);
+        return declaration?.FirstDeclaration.Type ?? context.Compilation.Builtin.Unknown;
     }
 
     public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
@@ -25,10 +42,13 @@ public static class DeclarationInfer
 
     public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
     {
-        return paramDef switch
+        var declarationTree = GetDeclarationTree(paramDef, context);
+        if (declarationTree is null)
         {
-            // LuaIdentifierParamDefSyntax identifierParamDef => InferIdentifierParamDef(identifierParamDef),
-            _ => throw new NotImplementedException()
-        };
+            return context.Compilation.Builtin.Unknown;
+        }
+
+        var declaration = declarationTree.FindDeclaration(paramDef);
+        return declaration?.FirstDeclaration.Type ?? context.Compilation.Builtin.Unknown;
     }
 }
