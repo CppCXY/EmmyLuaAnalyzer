@@ -26,22 +26,80 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return BaseType.GetMembers(context);
+        foreach (var memberDeclaration in BaseType.GetMembers(context))
+        {
+            if (memberDeclaration.Type is { } ty)
+            {
+                yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
+            }
+            else
+            {
+                yield return memberDeclaration;
+            }
+        }
     }
 
     public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
-        return BaseType.IndexMember(name, context);
+        foreach (var memberDeclaration in BaseType.IndexMember(name, context))
+        {
+            if (memberDeclaration.Type is { } ty)
+            {
+                yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
+            }
+            else
+            {
+                yield return memberDeclaration;
+            }
+        }
     }
 
     public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
-        return BaseType.IndexMember(index, context);
+        foreach (var memberDeclaration in BaseType.IndexMember(index, context))
+        {
+            if (memberDeclaration.Type is { } ty)
+            {
+                yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
+            }
+            else
+            {
+                yield return memberDeclaration;
+            }
+        }
     }
 
     public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
     {
-        return BaseType.IndexMember(ty, context);
+        foreach (var memberDeclaration in BaseType.IndexMember(ty, context))
+        {
+            if (memberDeclaration.Type is { } ty2)
+            {
+                yield return memberDeclaration.WithType(ty2.Substitute(context, GetGenericEnv(context)));
+            }
+            else
+            {
+                yield return memberDeclaration;
+            }
+        }
     }
 
+    private Dictionary<string, ILuaType> GetGenericEnv(SearchContext context)
+    {
+        var env = new Dictionary<string, ILuaType>();
+        var genericParams = BaseType.GetGenericParams(context).ToList();
+        for (var i = 0; i < genericParams.Count; i++)
+        {
+            if (i < GenericArgs.Count)
+            {
+                env[genericParams[i].Name] = GenericArgs[i];
+            }
+            else if (genericParams[i].Type is { } ty)
+            {
+                env[genericParams[i].Name] = ty;
+            }
+        }
+
+        return env;
+    }
 }

@@ -38,6 +38,16 @@ public abstract class LuaType(TypeKind kind) : ILuaType
         return ty;
     }
 
+    public ILuaType Substitute(SearchContext context, Dictionary<string, ILuaType> env)
+    {
+        if (!context.TryAddSubstitute(this)) return this;
+        context.EnvSearcher.PushEnv(env);
+        var ty = OnSubstitute(context);
+        context.RemoveSubstitute(this);
+        context.EnvSearcher.PopEnv();
+        return ty;
+    }
+
     protected virtual ILuaType OnSubstitute(SearchContext context)
     {
         return this;

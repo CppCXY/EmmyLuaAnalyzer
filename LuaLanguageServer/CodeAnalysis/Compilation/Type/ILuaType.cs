@@ -20,6 +20,8 @@ public interface ILuaType
 
     public ILuaType Substitute(SearchContext context);
 
+    public ILuaType Substitute(SearchContext context, Dictionary<string, ILuaType> env);
+
     public TypeKind Kind { get; }
 }
 

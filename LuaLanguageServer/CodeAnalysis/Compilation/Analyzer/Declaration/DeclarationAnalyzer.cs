@@ -41,57 +41,19 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
     {
         if (expr is { Name: { } indexName, KeyElement: { } keyElement })
         {
-            switch (expr.PrefixExpr)
+            var prefixTy = Compilation.SearchContext.Infer(expr.PrefixExpr);
+            if (prefixTy is ILuaNamedType namedType)
             {
-                case LuaNameExprSyntax nameExpr:
+                var declarationTree = Compilation.GetDeclarationTree(documentId);
+                if (declarationTree is not null)
                 {
-                    // TODO 优化
-                    var declarationTree = Compilation.DeclarationTrees[documentId];
-                    var scope = declarationTree.FindScope(nameExpr);
-                    if (scope is null) return;
-                    var nameDeclaration = scope.FindNameExpr(nameExpr)?.FirstDeclaration;
-                    var parentTyName = "";
-                    if (nameDeclaration is not null)
-                    {
-                        var ty = nameDeclaration.Type;
-                        if (ty is ILuaNamedType namedType)
-                        {
-                            parentTyName = namedType.Name;
-                        }
-                        else
-                        {
-                            parentTyName =
-                                Compilation.SearchContext.GetUniqueId(nameDeclaration.SyntaxElement, documentId);
-                        }
-                    }
-                    else if (nameExpr.Name is { } name)
-                    {
-                        var globalDeclaration = Compilation.StubIndexImpl.GlobalDeclaration.Get<Declaration>(name.RepresentText).FirstOrDefault();
-                        if (globalDeclaration is not null)
-                        {
-                            var ty = globalDeclaration.Type;
-                            if (ty is ILuaNamedType namedType)
-                            {
-                                parentTyName = namedType.Name;
-                            }
-                            else
-                            {
-                                parentTyName =
-                                    Compilation.SearchContext.GetUniqueId(globalDeclaration.SyntaxElement, documentId);
-                            }
-                        }
-                    }
-
+                    var parentTyName = namedType.Name;
                     var declaration = new Declaration(indexName, declarationTree.GetPosition(keyElement), keyElement,
                         DeclarationFlag.ClassMember, delayAnalyzeNode.Scope, delayAnalyzeNode.Prev,
                         delayAnalyzeNode.LuaType);
                     delayAnalyzeNode.Scope?.Add(declaration);
                     Compilation.StubIndexImpl.Members.AddStub(documentId, parentTyName, declaration);
-                    break;
                 }
-                case LuaIndexExprSyntax indexExpr:
-                    // TODO: AAA.BBB.CCC = 1 的形式暂时不支持, 因为需要真的做类型推断, 应该需要在bind分析之后
-                    break;
             }
         }
     }
