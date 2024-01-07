@@ -77,8 +77,8 @@ public static class ExpressionInfer
 
         // or
         var lhs = binaryExpr.LeftExpr;
-        var symbol = context.Infer(lhs);
-        return rhs != null ? LuaUnion.UnionType(symbol, context.Infer(rhs)) : symbol;
+        var lty = context.Infer(lhs);
+        return rhs != null ? LuaUnion.UnionType(lty, context.Infer(rhs)) : lty;
     }
 
     private static ILuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
@@ -132,22 +132,21 @@ public static class ExpressionInfer
             }
         }
 
-        // switch ((keyType, elementType))
-        // {
-        //     case (Unknown, Unknown):
-        //     {
-        //         // return new PrimitiveGenericTable(context.Compilation.Builtin.Unknown, context.Compilation.Builtin.Unknown);
-        //     }
-        //     case (Unknown, _):
-        //     {
-        //         return new Type.LuaArray(elementType);
-        //     }
-        //     default:
-        //     {
-        //         // return new PrimitiveGenericTable(keyType, elementType);
-        //     }
-        // }
-        throw new NotImplementedException();
+        switch ((keyType, elementType))
+        {
+            case (Unknown, Unknown):
+            {
+                return new LuaTable(keyType, elementType);
+            }
+            case (Unknown, _):
+            {
+                return new LuaArray(elementType);
+            }
+            default:
+            {
+                return new LuaTable(keyType, elementType);
+            }
+        }
     }
 
     private static ILuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

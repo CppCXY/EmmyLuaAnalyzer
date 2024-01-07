@@ -69,11 +69,15 @@ public class Primitive(string name) : LuaClass(name)
 
 public class Unknown() : Primitive("unknown");
 
-public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table")
+public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table"), IGenericImpl
 {
     public ILuaType? Key { get; } = key;
 
     public ILuaType? Value { get; } = value;
+
+    public IGenericBase BaseType => this;
+
+    public List<ILuaType> GenericArgs { get; } = [];
 
     public VirtualDeclaration MemberDeclaration { get; } = new(value);
 
@@ -91,7 +95,6 @@ public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table")
             yield return MemberDeclaration;
         }
     }
-
 
     public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
