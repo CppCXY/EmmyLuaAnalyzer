@@ -1,9 +1,6 @@
-﻿// using EmmyLuaAnalyzer.LanguageServer;
-
-// var server = new LanguageServer();
+﻿// var server = new LanguageServer.LanguageServer();
 // await server.StartAsync(args);
 
-using System.Diagnostics;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Tree;
 using EmmyLuaAnalyzer.CodeAnalysis.Workspace;

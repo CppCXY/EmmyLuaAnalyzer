@@ -8,7 +8,7 @@ using Serilog;
 using Serilog.Events;
 using static OmniSharp.Extensions.LanguageServer.Server.LanguageServer;
 
-namespace EmmyLuaAnalyzer.LanguageServer;
+namespace LanguageServer;
 
 public class LanguageServer
 {
