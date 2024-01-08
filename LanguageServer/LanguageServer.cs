@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using EmmyLuaAnalyzer.CodeAnalysis.Workspace;
+using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

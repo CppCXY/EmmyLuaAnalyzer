@@ -1,4 +1,4 @@
-﻿using EmmyLuaAnalyzer.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Workspace;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
