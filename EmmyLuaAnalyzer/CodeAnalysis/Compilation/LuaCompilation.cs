@@ -8,7 +8,6 @@ using EmmyLuaAnalyzer.CodeAnalysis.Compilation.Type;
 using EmmyLuaAnalyzer.CodeAnalysis.Compile.Diagnostic;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Tree;
 using EmmyLuaAnalyzer.CodeAnalysis.Workspace;
-using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace EmmyLuaAnalyzer.CodeAnalysis.Compilation;
 

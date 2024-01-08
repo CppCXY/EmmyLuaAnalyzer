@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using System.Text;
+using EmmyLuaAnalyzer.CodeAnalysis.Compile.Diagnostic;
 using EmmyLuaAnalyzer.CodeAnalysis.Compile.Source;
 using EmmyLuaAnalyzer.CodeAnalysis.Kind;
-using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Green;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Tree;

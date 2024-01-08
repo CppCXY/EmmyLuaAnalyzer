@@ -1,5 +1,4 @@
 ﻿using EmmyLuaAnalyzer.CodeAnalysis.Compile.Source;
-using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace EmmyLuaAnalyzer.CodeAnalysis.Compile.Diagnostic;
 

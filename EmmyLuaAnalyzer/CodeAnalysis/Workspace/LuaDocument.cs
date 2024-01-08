@@ -44,4 +44,9 @@ public class LuaDocument : LuaSource
     {
         return new LuaDocumentLocation(this, range);
     }
+
+    public LuaDocument WithText(string text)
+    {
+        return new LuaDocument(text, Language, Id);
+    }
 }

@@ -1,7 +1,6 @@
 ﻿using EmmyLuaAnalyzer.CodeAnalysis.Compile.Grammar.Lua;
 using EmmyLuaAnalyzer.CodeAnalysis.Compile.Lexer;
 using EmmyLuaAnalyzer.CodeAnalysis.Kind;
-using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
 
 namespace EmmyLuaAnalyzer.CodeAnalysis.Compile.Parser;
 

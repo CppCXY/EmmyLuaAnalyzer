@@ -1,6 +1,5 @@
 ﻿using EmmyLuaAnalyzer.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLuaAnalyzer.CodeAnalysis.Compile.Diagnostic;
-using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
 using EmmyLuaAnalyzer.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLuaAnalyzer.CodeAnalysis.Workspace;
 using EmmyLuaAnalyzer.CodeAnalysis.Compilation.Type;

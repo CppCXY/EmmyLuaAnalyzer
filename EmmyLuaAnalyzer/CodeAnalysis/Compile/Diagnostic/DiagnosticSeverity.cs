@@ -1,4 +1,4 @@
-﻿namespace EmmyLuaAnalyzer.CodeAnalysis.Syntax.Diagnostic;
+﻿namespace EmmyLuaAnalyzer.CodeAnalysis.Compile.Diagnostic;
 
 public enum DiagnosticSeverity
 {
