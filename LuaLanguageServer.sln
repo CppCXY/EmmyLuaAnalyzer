@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuaLanguageServer", "LuaLanguageServer\LuaLanguageServer.csproj", "{FFF8037C-9545-4958-AA07-73D051BE0346}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLuaAnalyzer", "EmmyLuaAnalyzer\EmmyLuaAnalyzer.csproj", "{FFF8037C-9545-4958-AA07-73D051BE0346}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
