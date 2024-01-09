@@ -71,6 +71,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
 
+    private string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
+    {
+        return $"{documentId.Guid}:{GetPosition(element)}";
+    }
+
     private Declaration CreateDeclaration(string name, LuaSyntaxElement element, DeclarationFlag flag,
         ILuaType? luaType)
     {
@@ -714,7 +719,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (tableFieldSyntax is { Name: { } fieldName, ParentTable: { } table })
         {
-            var parentId = Compilation.SearchContext.GetUniqueId(table, DocumentId);
+            var parentId = GetUniqueId(table, DocumentId);
 
             var declaration = CreateDeclaration(fieldName, tableFieldSyntax,
                 DeclarationFlag.ClassMember, null);

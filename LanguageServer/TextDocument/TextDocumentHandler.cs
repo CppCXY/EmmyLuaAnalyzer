@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Diagnostic;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -14,7 +15,8 @@ namespace LanguageServer.TextDocument;
 public class TextDocumentHandler(
     ILogger<TextDocumentHandler> logger,
     ILanguageServerConfiguration configuration,
-    LuaWorkspace workspace
+    LuaWorkspace workspace,
+    ILanguageServerFacade languageServerFacade
 ) : TextDocumentSyncHandlerBase
 {
     private TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;
@@ -29,28 +31,6 @@ public class TextDocumentHandler(
     public override TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
         => new(uri, "lua");
 
-    public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
-    {
-        workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), request.TextDocument.Text);
-        return Unit.Task;
-    }
-
-    public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
-    {
-        // workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), request.ContentChanges[0].Text);
-        return Unit.Task;
-    }
-
-    public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
     protected override TextDocumentSyncRegistrationOptions CreateRegistrationOptions(
         TextSynchronizationCapability capability,
         ClientCapabilities clientCapabilities)
@@ -58,6 +38,44 @@ public class TextDocumentHandler(
         {
             DocumentSelector = TextDocumentSelector,
             Change = Change,
-            Save = new SaveOptions() { IncludeText = true }
+            Save = new SaveOptions() { IncludeText = false }
         };
+
+    public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
+    {
+        workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), request.TextDocument.Text);
+        PushDiagnostic(request.TextDocument, workspace.GetDocument(request.TextDocument.Uri.ToUnencodedString())!);
+        return Unit.Task;
+    }
+
+    public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
+    {
+        var changes = request.ContentChanges.ToList();
+        workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), changes[0].Text);
+        PushDiagnostic(request.TextDocument, workspace.GetDocument(request.TextDocument.Uri.ToUnencodedString())!);
+        return Unit.Task;
+    }
+
+    public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
+    {
+        return Unit.Task;
+    }
+
+    public override Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
+    {
+        workspace.CloseDocument(request.TextDocument.Uri.ToUnencodedString());
+        return Unit.Task;
+    }
+
+    public void PushDiagnostic(TextDocumentIdentifier identifier, LuaDocument document)
+    {
+        var diagnostics = workspace.Compilation.GetDiagnostic(document.Id).Select(it => it.ToLspDiagnostic(document))
+            .ToList();
+
+        languageServerFacade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+        {
+            Diagnostics = Container.From(diagnostics),
+            Uri = identifier.Uri,
+        });
+    }
 }

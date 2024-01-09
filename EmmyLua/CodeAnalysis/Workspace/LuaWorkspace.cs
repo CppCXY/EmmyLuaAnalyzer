@@ -6,8 +6,6 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
-    public string WorkspacePath { get; }
-
     public LuaFeatures Features { get; }
 
     private Dictionary<DocumentId, LuaDocument> Documents { get; set; } = new();
@@ -16,7 +14,7 @@ public class LuaWorkspace
 
     private Dictionary<string, DocumentId> PathToDocument { get; set; } = new();
 
-    private LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; }
 
     public ModuleGraph ModuleGraph { get; }
 
@@ -27,7 +25,7 @@ public class LuaWorkspace
 
     public static LuaWorkspace Create(string workspacePath, LuaFeatures features)
     {
-        var workspace = new LuaWorkspace(workspacePath, features);
+        var workspace = new LuaWorkspace(features);
         if (workspacePath.Length != 0)
         {
             workspace.LoadWorkspace(workspacePath);
@@ -36,9 +34,8 @@ public class LuaWorkspace
         return workspace;
     }
 
-    public LuaWorkspace(string workspacePath, LuaFeatures features)
+    public LuaWorkspace(LuaFeatures features)
     {
-        WorkspacePath = workspacePath;
         Features = features;
         Compilation = new LuaCompilation(this);
         ModuleGraph = new ModuleGraph(this);
@@ -77,11 +74,24 @@ public class LuaWorkspace
 
     public void AddDocument(string uri, string text)
     {
-        var document = LuaDocument.From(uri, text, Features.Language);
+        var document = LuaDocument.FromUri(uri, text, Features.Language);
         Documents.Add(document.Id, document);
         UrlToDocument.Add(document.Id.Url, document.Id);
         PathToDocument.Add(document.Id.Path, document.Id);
+        ModuleGraph.AddDocument(document);
         Compilation.AddSyntaxTree(document.Id, document.SyntaxTree);
+    }
+
+    public void RemoveDocument(string uri)
+    {
+        if (UrlToDocument.TryGetValue(uri, out var id))
+        {
+            Documents.Remove(id);
+            UrlToDocument.Remove(uri);
+            PathToDocument.Remove(id.Path);
+            ModuleGraph.RemoveDocument(id);
+            Compilation.RemoveSyntaxTree(id);
+        }
     }
 
     public void UpdateDocument(string uri, string text)
@@ -92,12 +102,29 @@ public class LuaWorkspace
             if (document is not null)
             {
                 var newDocument = document.WithText(text);
+                ModuleGraph.RemoveDocument(id);
+                ModuleGraph.AddDocument(newDocument);
                 Compilation.AddSyntaxTree(id, newDocument.SyntaxTree);
                 Documents[id] = newDocument;
             }
             else
             {
                 AddDocument(uri, text);
+            }
+        }
+    }
+
+    public void CloseDocument(string uri)
+    {
+        if (UrlToDocument.TryGetValue(uri, out var id))
+        {
+            var document = GetDocument(id);
+            if (document is not null)
+            {
+                if (ModuleGraph.GetWorkspace(id).Length == 0)
+                {
+                    RemoveDocument(id.Url);
+                }
             }
         }
     }

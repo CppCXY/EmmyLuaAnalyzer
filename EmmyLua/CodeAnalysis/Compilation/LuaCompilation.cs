@@ -72,6 +72,12 @@ public class LuaCompilation
         Analyze();
     }
 
+    public void RemoveSyntaxTree(DocumentId documentId)
+    {
+        _syntaxTrees.Remove(documentId);
+        RemoveCache(documentId);
+    }
+
     public void RemoveCache(DocumentId documentId)
     {
         foreach (var luaAnalyzer in Analyzers)
@@ -152,4 +158,11 @@ public class LuaCompilation
             tree.Source.GetLocation(it.Range)
         ))
     );
+
+    public IEnumerable<Diagnostic> GetDiagnostic(DocumentId documentId) =>
+        _syntaxTrees.TryGetValue(documentId, out var tree)
+            ? tree.Diagnostics.Select(it => it.WithLocation(
+                tree.Source.GetLocation(it.Range)
+            ))
+            : [];
 }

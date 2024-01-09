@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Diagnostic;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,8 @@ var server = await From(options =>
                 .SetMinimumLevel(LogLevel.Debug)
         )
         .WithHandler<TextDocumentHandler>()
+        .WithHandler<DidChangeWatchedFilesHandler>()
+        // .WithHandler<DiagnosticHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
@@ -55,17 +58,10 @@ var server = await From(options =>
             workspacePath = request.RootPath;
             return Task.CompletedTask;
         })
-        .OnInitialized((server, request, response, token) => Task.CompletedTask)
-        .OnStarted(
-            async (languageServer, token) =>
-            {
-                using var manager = await languageServer.WorkDoneManager
-                    .Create(new WorkDoneProgressBegin { Title = "EmmyLua LS Analyzing ..." })
-                    .ConfigureAwait(false);
-
-                manager.OnNext(new WorkDoneProgressReport { Message = "doing things..." });
-                languageServer.Services.GetService<LuaWorkspace>()?.LoadWorkspace(workspacePath);
-                manager.OnCompleted();
-            });
+        .OnInitialized((server, request, response, token) =>
+        {
+            server.Services.GetService<LuaWorkspace>()?.LoadWorkspace(workspacePath);
+            return Task.CompletedTask;
+        });
 }).ConfigureAwait(false);
 await server.WaitForExit.ConfigureAwait(false);

@@ -111,7 +111,10 @@ public static class TagParser
             }
             default:
             {
-                throw new UnreachableException();
+                p.Events.Add(new MarkEvent.Error($"expected <tag> but got {p.Current}"));
+                p.SetState(LuaDocLexerState.Trivia);
+                p.Accept(LuaTokenKind.TkDocTrivia);
+                return CompleteMarker.Empty;
             }
         }
     }

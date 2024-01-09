@@ -35,6 +35,11 @@ public class GreenNodeBuilder
 
     public void FinishNode()
     {
+        if (Parents.Count == 0)
+        {
+            return;
+        }
+
         var parentInfo = Parents.Pop();
         var nodeChildren = new List<GreenNode>();
         var nodeRange = new SourceRange();

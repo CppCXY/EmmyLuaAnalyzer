@@ -2,9 +2,9 @@
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph(LuaWorkspace workspace)
+public class ModuleGraph(LuaWorkspace luaWorkspace)
 {
-    public LuaWorkspace Workspace { get; } = workspace;
+    public LuaWorkspace Workspace { get; } = luaWorkspace;
 
     public Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
@@ -68,9 +68,18 @@ public class ModuleGraph(LuaWorkspace workspace)
         }
     }
 
-    public void RemoveDocument(string workspace, LuaDocument document)
+    public void AddDocument(LuaDocument document)
     {
-        var documentId = document.Id;
+        AddDocument(GetWorkspace(document.Id), document);
+    }
+
+    public void RemoveDocument(DocumentId id)
+    {
+        RemoveDocument(GetWorkspace(id), id);
+    }
+
+    public void RemoveDocument(string workspace, DocumentId documentId)
+    {
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
@@ -93,6 +102,21 @@ public class ModuleGraph(LuaWorkspace workspace)
             node.Document = null;
             DocumentIndex.Remove(documentId);
         }
+    }
+
+    public string GetWorkspace(DocumentId documentId)
+    {
+        var workspace = string.Empty;
+        foreach (var pair in WorkspaceModule)
+        {
+            if (documentId.Path.StartsWith(pair.Key))
+            {
+                workspace = pair.Key;
+                break;
+            }
+        }
+
+        return workspace;
     }
 
     public LuaDocument? FindModule(string modulePath)
