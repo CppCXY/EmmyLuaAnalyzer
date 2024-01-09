@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Diagnostic;
+﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Workspace;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -8,6 +8,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
+using LuaDiagnostic = EmmyLua.CodeAnalysis.Compile.Diagnostic.Diagnostic;
 
 namespace LanguageServer.TextDocument;
 
@@ -77,5 +78,41 @@ public class TextDocumentHandler(
             Diagnostics = Container.From(diagnostics),
             Uri = identifier.Uri,
         });
+    }
+}
+
+public static class DiagnosticExtensions
+{
+    public static OmniSharp.Extensions.LanguageServer.Protocol.Models.Diagnostic ToLspDiagnostic(
+        this LuaDiagnostic diagnostic, LuaDocument document)
+    {
+        return new()
+        {
+            Code = diagnostic.Code.ToString(),
+            Message = diagnostic.Message,
+            Range = new()
+            {
+                Start = new Position()
+                {
+                    Line = document.GetLine(diagnostic.Range.StartOffset),
+                    Character = document.GetCol(diagnostic.Range.StartOffset)
+                },
+                End = new Position()
+                {
+                    Line = document.GetLine(diagnostic.Range.EndOffset),
+                    Character = document.GetCol(diagnostic.Range.EndOffset)
+                }
+            },
+            Severity = diagnostic.Severity switch
+            {
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Error => DiagnosticSeverity.Error,
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Warning => DiagnosticSeverity.Warning,
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Information =>
+                    DiagnosticSeverity.Information,
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
+                _ => throw new UnreachableException()
+            },
+            Source = "EmmyLua"
+        };
     }
 }

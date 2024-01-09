@@ -1,11 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Diagnostic;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Serilog;
 using Serilog.Events;
@@ -47,7 +45,6 @@ var server = await From(options =>
         )
         .WithHandler<TextDocumentHandler>()
         .WithHandler<DidChangeWatchedFilesHandler>()
-        // .WithHandler<DiagnosticHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
