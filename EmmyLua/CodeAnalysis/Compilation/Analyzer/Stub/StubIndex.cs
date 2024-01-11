@@ -53,7 +53,7 @@ public class StubIndex<TKey, TStubElement>
         }
     }
 
-    private IEnumerable<TStubElement> Get(TKey key)
+    public IEnumerable<TStubElement> Get(TKey key)
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it.Elements)

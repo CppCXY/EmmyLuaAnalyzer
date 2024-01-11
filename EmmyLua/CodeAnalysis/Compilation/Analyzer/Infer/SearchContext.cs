@@ -60,6 +60,7 @@ public class SearchContext
                 LuaLocalNameSyntax localName => DeclarationInfer.InferLocalName(localName, this),
                 LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
                 LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
+                LuaDocTypeSyntax ty => TypeInfer.InferType(ty, this),
                 _ => Compilation.Builtin.Unknown
             };
         }
@@ -97,9 +98,16 @@ public class SearchContext
         return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
     }
 
-    public string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
+    public string GetUniqueId(LuaSyntaxElement element)
     {
-        return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";
+        var source = element.Tree.Source;
+        if (source is LuaDocument document)
+        {
+            var documentId = document.Id;
+            return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";
+        }
+
+        return string.Empty;
     }
 
     public bool TryAddSubstitute(ILuaType type)

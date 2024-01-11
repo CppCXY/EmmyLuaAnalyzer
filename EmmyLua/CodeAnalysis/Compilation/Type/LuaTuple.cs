@@ -3,20 +3,20 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaTuple(List<Declaration> declarations) : LuaType(TypeKind.Tuple)
+public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 {
-    public List<Declaration> Declarations => declarations;
+    public List<Declaration> Declarations => types.Select(it=>new VirtualDeclaration(it)).Cast<Declaration>().ToList();
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return declarations;
+        return Declarations;
     }
 
     public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
-        if (index < declarations.Count)
+        if (index < Declarations.Count)
         {
-            yield return declarations[(int)index];
+            yield return Declarations[(int)index];
         }
     }
 
@@ -30,12 +30,12 @@ public class LuaTuple(List<Declaration> declarations) : LuaType(TypeKind.Tuple)
 
         if (otherSubstitute is LuaTuple tuple)
         {
-            if (tuple.Declarations.Count != declarations.Count)
+            if (tuple.Declarations.Count != Declarations.Count)
             {
                 return false;
             }
 
-            for (var i = 0; i < declarations.Count; i++)
+            for (var i = 0; i < Declarations.Count; i++)
             {
                 var luaType = Declarations[i].Type;
                 var type = tuple.Declarations[i].Type;

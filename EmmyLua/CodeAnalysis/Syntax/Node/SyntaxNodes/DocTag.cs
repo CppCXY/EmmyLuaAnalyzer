@@ -173,14 +173,11 @@ public class LuaDocTagTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, 
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
+    public LuaDotsToken? VarArgs => FirstChild<LuaDotsToken>();
+
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTagGenericSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaDocTagSyntax(greenNode, tree, parent)
-{
-    public IEnumerable<LuaDocTagTypedParamSyntax> ParamList => ChildNodes<LuaDocTagTypedParamSyntax>();
-}
 
 public class LuaDocTagCastSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
     : LuaDocTagSyntax(greenNode, tree, parent)

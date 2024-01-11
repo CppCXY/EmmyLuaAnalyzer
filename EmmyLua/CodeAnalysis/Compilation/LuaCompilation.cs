@@ -106,7 +106,7 @@ public class LuaCompilation
             return semanticModel;
         }
 
-        semanticModel = new SemanticModel(this, document.SyntaxTree);
+        semanticModel = new SemanticModel(this, document);
         SemanticModels.Add(document.Id, semanticModel);
         return semanticModel;
     }

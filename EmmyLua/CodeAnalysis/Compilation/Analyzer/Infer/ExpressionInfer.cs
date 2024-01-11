@@ -87,14 +87,13 @@ public static class ExpressionInfer
         var lhs = binaryExpr.LeftExpr;
         // var rhs = binaryExpr.RightExpr;
         var lhsTy = context.Infer(lhs);
-        // var rhsSymbol = context.Infer(rhs);
         // TODO: for override
         return lhsTy;
     }
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var method = context.Compilation.StubIndexImpl.Closure.Get<LuaMethod>(closureExpr).FirstOrDefault();
+        var method = context.Compilation.StubIndexImpl.Methods.Get(closureExpr).FirstOrDefault();
         if (method is not null)
         {
             return method;

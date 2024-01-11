@@ -89,14 +89,14 @@ public static class OperatorKind
     /*
      ** Priority table for binary operators.
      */
-    public struct PriorityTable
+    public struct PriorityTable(int left, int right)
     {
-        public int Left;
-        public int Right;
+        public int Left = left;
+        public int Right = right;
     };
 
-    public static readonly PriorityTable[] Priority = new PriorityTable[]
-    {
+    public static readonly PriorityTable[] Priority =
+    [
         /* ORDER OPR */
         new PriorityTable { Left = 10, Right = 10 }, /* OPR_ADD */
         new PriorityTable { Left = 10, Right = 10 }, /* OPR_SUB */
@@ -123,8 +123,8 @@ public static class OperatorKind
         new PriorityTable { Left = 3, Right = 3 }, /* OPR_GE */
 
         new PriorityTable { Left = 2, Right = 2 }, /* OPR_AND */
-        new PriorityTable { Left = 1, Right = 1 }, /* OPR_OR */
-    };
+        new PriorityTable { Left = 1, Right = 1 } /* OPR_OR */
+    ];
 
     public static int UNARY_PRIORITY = 12; /* priority for unary operators */
 }

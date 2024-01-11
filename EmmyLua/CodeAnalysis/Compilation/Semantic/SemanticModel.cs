@@ -1,30 +1,23 @@
-﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 
-public class SemanticModel(LuaCompilation compilation, LuaSyntaxTree tree)
+public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 {
-    private LuaCompilation _compilation = compilation;
+    public LuaCompilation Compilation { get; } = compilation;
 
-    private LuaSyntaxTree _tree = tree;
+    public LuaDocument Document { get; } = document;
 
-    public Declaration GetDeclaration(LuaSyntaxElement element)
+    public Declaration? GetDeclaration(LuaSyntaxElement element)
     {
-        // return element switch
-        // {
-        //     LuaLocalNameSyntax localName => GetSymbol(localName),
-        //     LuaParamDefSyntax paramDef => GetSymbol(paramDef),
-        //     LuaFuncStatSyntax funcStat => GetSymbol(funcStat),
-        //     LuaSourceSyntax source => GetSymbol(source),
-        //     _ => throw new NotImplementedException()
-        // };
+        var declarationTree = Compilation.GetDeclarationTree(Document.Id);
+        if (declarationTree?.FindDeclaration(element) is { } declaration)
+        {
+            return declaration;
+        }
 
-        throw new NotImplementedException();
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.TypeOperator;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -23,7 +24,7 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<string, Declaration.Declaration> GenericParams { get; } = new();
 
-    public StubIndex<LuaClosureExprSyntax, LuaMethod> Closure { get; } = new();
+    public StubIndex<LuaSyntaxElement, LuaMethod> Methods { get; } = new();
 
     public StubIndex<LuaSourceSyntax, LuaExprSyntax> Modules { get; } = new();
 
@@ -36,5 +37,7 @@ public class StubIndexImpl(LuaCompilation compilation)
         TypeOperators.RemoveStub(documentId);
         Supers.RemoveStub(documentId);
         GenericParams.RemoveStub(documentId);
+        Methods.RemoveStub(documentId);
+        Modules.RemoveStub(documentId);
     }
 }

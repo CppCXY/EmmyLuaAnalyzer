@@ -14,4 +14,5 @@ public enum TypeKind
     Generic,
     Method,
     TypeRef,
+    Literal,
 }

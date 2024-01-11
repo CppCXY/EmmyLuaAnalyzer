@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -87,4 +86,11 @@ public class LuaDocTagTypedFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, 
     public LuaDocTypeSyntax? TypeField => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
 
     public LuaDocTypeSyntax? Type => ChildNodesAfterToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
+}
+
+public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
+    : LuaDocTypeSyntax(greenNode, tree, parent)
+{
+    public LuaDocNameTypeSyntax? Name => FirstChild<LuaDocNameTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
 }

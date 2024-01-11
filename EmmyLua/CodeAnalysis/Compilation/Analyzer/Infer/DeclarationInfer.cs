@@ -33,11 +33,13 @@ public static class DeclarationInfer
 
     public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        return source switch
+        var expr = context.Compilation.StubIndexImpl.Modules.Get<LuaExprSyntax>(source).FirstOrDefault();
+        if (expr is null)
         {
-            // LuaChunkSyntax chunk => InferChunk(chunk, context),
-            _ => throw new NotImplementedException()
-        };
+            return context.Compilation.Builtin.Unknown;
+        }
+
+        return context.Infer(expr);
     }
 
     public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)

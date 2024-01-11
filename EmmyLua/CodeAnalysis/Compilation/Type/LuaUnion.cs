@@ -3,13 +3,13 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaUnion : LuaType
+public class LuaUnion() : LuaType(TypeKind.Union)
 {
-    private HashSet<ILuaType> _childTypes = new();
+    private HashSet<ILuaType> ChildrenType { get; } = new();
 
-    private static bool IsValid(ILuaType symbol)
+    private static bool IsValid(ILuaType ty)
     {
-        return symbol.Kind is TypeKind.Unknown;
+        return ty.Kind is TypeKind.Unknown;
     }
 
     public static ILuaType UnionType(ILuaType a, ILuaType b)
@@ -22,20 +22,20 @@ public class LuaUnion : LuaType
         {
             return a;
         }
-        else if (a is LuaUnion unionSymbol)
+        else if (a is LuaUnion unionType)
         {
-            unionSymbol._childTypes.Add(b);
-            return unionSymbol;
+            unionType.ChildrenType.Add(b);
+            return unionType;
         }
-        else if (b is LuaUnion unionSymbol2)
+        else if (b is LuaUnion unionType2)
         {
-            unionSymbol2._childTypes.Add(a);
-            return unionSymbol2;
+            unionType2.ChildrenType.Add(a);
+            return unionType2;
         }
         else
         {
             var union = new LuaUnion(a, b);
-            return union._childTypes.Count == 1 ? union._childTypes.First() : union;
+            return union.ChildrenType.Count == 1 ? union.ChildrenType.First() : union;
         }
     }
 
@@ -43,7 +43,7 @@ public class LuaUnion : LuaType
     {
         if (symbol is LuaUnion unionSymbol)
         {
-            foreach (var childSymbol in unionSymbol._childTypes)
+            foreach (var childSymbol in unionSymbol.ChildrenType)
             {
                 if (!process(childSymbol))
                 {
@@ -66,24 +66,24 @@ public class LuaUnion : LuaType
         });
     }
 
-    public LuaUnion(ILuaType a, ILuaType b) : base(TypeKind.Union)
+    public LuaUnion(ILuaType a, ILuaType b) : this()
     {
-        _childTypes.Add(a);
-        _childTypes.Add(b);
+        ChildrenType.Add(a);
+        ChildrenType.Add(b);
     }
 
     public ILuaType UnionType(ILuaType symbol)
     {
         if (symbol is LuaUnion unionSymbol)
         {
-            foreach (var childSymbol in unionSymbol._childTypes)
+            foreach (var childSymbol in unionSymbol.ChildrenType)
             {
-                _childTypes.Add(childSymbol);
+                ChildrenType.Add(childSymbol);
             }
         }
         else
         {
-            _childTypes.Add(symbol);
+            ChildrenType.Add(symbol);
         }
 
         return this;
@@ -91,22 +91,22 @@ public class LuaUnion : LuaType
 
     public override IEnumerable<Declaration> GetMembers(SearchContext context)
     {
-        return _childTypes.SelectMany(it => it.GetMembers(context));
+        return ChildrenType.SelectMany(it => it.GetMembers(context));
     }
 
     public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
     {
-        return _childTypes.SelectMany(it => it.IndexMember(ty, context));
+        return ChildrenType.SelectMany(it => it.IndexMember(ty, context));
     }
 
     public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
     {
-        return _childTypes.SelectMany(it => it.IndexMember(name, context));
+        return ChildrenType.SelectMany(it => it.IndexMember(name, context));
     }
 
     public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
     {
-        return _childTypes.SelectMany(it => it.IndexMember(index, context));
+        return ChildrenType.SelectMany(it => it.IndexMember(index, context));
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)
@@ -114,7 +114,7 @@ public class LuaUnion : LuaType
          var otherSubstitute = other.Substitute(context);
          if (otherSubstitute is LuaUnion otherUnion)
          {
-             return _childTypes.All(it => otherUnion._childTypes.Any(it2 => it.SubTypeOf(it2, context)));
+             return ChildrenType.All(it => otherUnion.ChildrenType.Any(it2 => it.SubTypeOf(it2, context)));
          }
 
          return false;

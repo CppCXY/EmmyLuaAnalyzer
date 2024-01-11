@@ -182,9 +182,19 @@ public class DeclarationBuilder : ILuaElementWalker
                 TableFieldDeclarationAnalysis(tableFieldSyntax);
                 break;
             }
+            case LuaDocTableTypeSyntax tableTypeSyntax:
+            {
+                LuaTableTypeAnalysis(tableTypeSyntax);
+                break;
+            }
             case LuaSourceSyntax luaSourceSyntax:
             {
                 LuaSourceAnalysis(luaSourceSyntax);
+                break;
+            }
+            case LuaDocFuncTypeSyntax funcTypeSyntax:
+            {
+                LuaFuncTypeAnalysis(funcTypeSyntax);
                 break;
             }
         }
@@ -278,8 +288,6 @@ public class DeclarationBuilder : ILuaElementWalker
                         return new LuaMultiRetType(rets);
                     }
                 }
-
-                break;
             }
             default:
             {
@@ -522,7 +530,7 @@ public class DeclarationBuilder : ILuaElementWalker
         var luaMethod = GetMethodDeclaration(funcBody, false);
         if (luaMethod is not null)
         {
-            StubIndexImpl.Closure.AddStub(DocumentId, closureExprSyntax, luaMethod);
+            StubIndexImpl.Methods.AddStub(DocumentId, closureExprSyntax, luaMethod);
         }
     }
 
@@ -738,9 +746,16 @@ public class DeclarationBuilder : ILuaElementWalker
         var comment = stat.Comments.FirstOrDefault();
 
         ILuaType? retType = null;
+        List<LuaTypeRef>? overloads = null;
         if (comment?.DocList is { } docList)
         {
-            retType = GetRetType(docList);
+            var list = docList.ToList();
+            retType = GetRetType(list);
+            overloads = list
+                .OfType<LuaDocTagOverloadSyntax>()
+                .Select(it => it.TypeFunc is not null ? new LuaTypeRef(it.TypeFunc) : null)
+                .OfType<LuaTypeRef>()
+                .ToList();
         }
 
         var parameters = new List<Declaration>();
@@ -749,7 +764,40 @@ public class DeclarationBuilder : ILuaElementWalker
             parameters = GetParamListDeclaration(paramList);
         }
 
-        return new LuaMethod(new MethodSignature(colon, parameters, retType), null);
+        return new LuaMethod(colon, parameters, retType, overloads);
+    }
+
+    private void LuaTableTypeAnalysis(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
+    {
+        var className = GetUniqueId(luaDocTableTypeSyntax, DocumentId);
+        foreach (var fieldSyntax in luaDocTableTypeSyntax.FieldList)
+        {
+            if (fieldSyntax is { NameField: { } nameToken, Type: { } type })
+            {
+                var declaration = CreateDeclaration(nameToken.RepresentText, nameToken,
+                    DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type));
+                StubIndexImpl.Members.AddStub(DocumentId, className, declaration);
+            }
+            else if (fieldSyntax is { IntegerField: { } integerField, Type: { } type2 })
+            {
+                var declaration = CreateDeclaration($"[{integerField.Value}]", integerField,
+                    DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type2));
+                StubIndexImpl.Members.AddStub(DocumentId, className, declaration);
+            }
+            else if (fieldSyntax is { StringField: { } stringField, Type: { } type3 })
+            {
+                var declaration = CreateDeclaration(stringField.Value, stringField,
+                    DeclarationFlag.ClassMember | DeclarationFlag.DocField, new LuaTypeRef(type3));
+                StubIndexImpl.Members.AddStub(DocumentId, className, declaration);
+            }
+            else if (fieldSyntax is { TypeField: { } typeField, Type: { } type4 })
+            {
+                var indexOperator = new IndexOperator(new LuaTypeRef(typeField), new LuaTypeRef(type4));
+                StubIndexImpl.TypeOperators.AddStub(DocumentId, className, indexOperator);
+            }
+        }
+
+        StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, className, new LuaClass(className));
     }
 
     private void LuaSourceAnalysis(LuaSourceSyntax sourceSyntax)
@@ -844,5 +892,28 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
             }
         }
+    }
+
+    private void LuaFuncTypeAnalysis(LuaDocFuncTypeSyntax funcTypeSyntax)
+    {
+        var paramDeclaration = new List<Declaration>();
+        foreach (var typedParam in funcTypeSyntax.ParamList)
+        {
+            if (typedParam is { Name: { } name })
+            {
+                var declaration = CreateDeclaration(name.RepresentText, name,
+                    DeclarationFlag.Parameter, typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
+                paramDeclaration.Add(declaration);
+            }
+            else if (typedParam is { VarArgs: { } varArgs })
+            {
+                var declaration = CreateDeclaration(varArgs.RepresentText, varArgs,
+                    DeclarationFlag.Parameter, typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
+                paramDeclaration.Add(declaration);
+            }
+        }
+        var retType = funcTypeSyntax.ReturnType is not null ? new LuaTypeRef(funcTypeSyntax.ReturnType) : null;
+        var luaMethod = new LuaMethod(false, paramDeclaration, retType);
+        StubIndexImpl.Methods.AddStub(DocumentId, funcTypeSyntax, luaMethod);
     }
 }
