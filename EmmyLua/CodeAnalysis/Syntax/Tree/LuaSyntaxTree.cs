@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compile;
+﻿using System.Collections.Immutable;
+using EmmyLua.CodeAnalysis.Compile;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Compile.Source;
@@ -6,7 +7,6 @@ using EmmyLua.CodeAnalysis.Syntax.Binder;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -49,6 +49,39 @@ public class LuaSyntaxTree
         Diagnostics = diagnostics;
     }
 
+    public LuaSourceSyntax BuildRed()
+    {
+        var root = SyntaxFactory.CreateSyntax(GreenRoot, this, null, 0) as LuaSourceSyntax;
+        var queue = new Queue<LuaSyntaxElement>();
+        queue.Enqueue(root!);
+        while (queue.Count != 0)
+        {
+            var node = queue.Dequeue();
+            var startOffset = node.Range.StartOffset;
+            var childrenElement = new List<LuaSyntaxElement>();
+            foreach (var child in node.Green.Children)
+            {
+                var childNode = SyntaxFactory.CreateSyntax(child, this, node, startOffset);
+                childNode.ChildPosition = childrenElement.Count;
+                childrenElement.Add(childNode);
+                startOffset += child.Length;
+                if (child.IsNode)
+                {
+                    queue.Enqueue(childNode);
+                }
+            }
+
+            node.ChildrenElements = childrenElement.ToImmutableArray();
+        }
+
+        return root!;
+    }
+
+    public void Reparse()
+    {
+
+    }
+
     public LuaSourceSyntax SyntaxRoot
     {
         get
@@ -56,7 +89,7 @@ public class LuaSyntaxTree
             // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
             if (_root is null)
             {
-                _root = SyntaxFactory.CreateSyntax(GreenRoot, this, null) as LuaSourceSyntax;
+                _root = BuildRed();
                 BinderData = BinderAnalysis.Analysis(_root!);
             }
 

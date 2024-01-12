@@ -5,8 +5,13 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStringToken(string value, GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent)
+public class LuaStringToken(
+    string value,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset)
 {
     public string Value { get; } = value;
 
@@ -16,8 +21,8 @@ public class LuaStringToken(string value, GreenNode greenNode, LuaSyntaxTree tre
     }
 }
 
-public class LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent)
+public class LuaNumberToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset)
 {
     public bool IsInteger => Kind == LuaTokenKind.TkInt;
 
@@ -36,8 +41,9 @@ public class LuaIntegerToken(
     string suffix,
     GreenNode greenNode,
     LuaSyntaxTree tree,
-    LuaSyntaxElement? parent)
-    : LuaNumberToken(greenNode, tree, parent)
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaNumberToken(greenNode, tree, parent, startOffset)
 {
     public long Value { get; } = value;
 
@@ -53,8 +59,9 @@ public class LuaFloatToken(
     double value,
     GreenNode greenNode,
     LuaSyntaxTree tree,
-    LuaSyntaxElement? parent)
-    : LuaNumberToken(greenNode, tree, parent)
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaNumberToken(greenNode, tree, parent, startOffset)
 {
     public double Value { get; } = value;
 
@@ -68,8 +75,9 @@ public class LuaComplexToken(
     string value,
     GreenNode greenNode,
     LuaSyntaxTree tree,
-    LuaSyntaxElement? parent)
-    : LuaNumberToken(greenNode, tree, parent)
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaNumberToken(greenNode, tree, parent, startOffset)
 {
     public string Value { get; } = value;
 
@@ -79,17 +87,17 @@ public class LuaComplexToken(
     }
 }
 
-public class LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent);
+public class LuaNilToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset);
 
-public class LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent)
+public class LuaBoolToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset)
 {
     public bool Value => Text == "true";
 }
 
-public class LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent);
+public class LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset);
 
-public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxToken(greenNode, tree, parent);
+public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset);

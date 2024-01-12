@@ -23,7 +23,7 @@ public class GreenNodeBuilder
 
     private static bool IsTrivia(GreenNode greenNode)
     {
-        if (greenNode.IsSyntaxNode)
+        if (greenNode.IsNode)
         {
             return greenNode.SyntaxKind is LuaSyntaxKind.Comment;
         }
@@ -42,7 +42,7 @@ public class GreenNodeBuilder
 
         var parentInfo = Parents.Pop();
         var nodeChildren = new List<GreenNode>();
-        var nodeRange = new SourceRange();
+        var length = 0;
         var childStart = parentInfo.FirstChild;
         var childEnd = Children.Count - 1;
         var childCount = Children.Count;
@@ -70,21 +70,19 @@ public class GreenNodeBuilder
         {
             if (i == childStart)
             {
-                nodeRange.StartOffset = Children[i].Range.StartOffset;
-                nodeRange.Length = Children[i].Range.Length;
+                length = Children[i].Length;
             }
             else
             {
-                nodeRange.Length += Children[i].Range.Length;
+                length += Children[i].Length;
             }
 
-            Children[i].ChildPosition = i - parentInfo.FirstChild;
             nodeChildren.Add(Children[i]);
         }
 
 
         Children.RemoveRange(childStart, childEnd - childStart + 1);
-        var green = new GreenNode(parentInfo.Kind, nodeRange, nodeChildren);
+        var green = new GreenNode(parentInfo.Kind, length, nodeChildren);
         if (childEnd + 1 < childCount)
         {
             Children.Insert(childStart, green);
@@ -97,7 +95,7 @@ public class GreenNodeBuilder
 
     public void EatToken(LuaTokenKind kind, SourceRange range)
     {
-        Children.Add(new GreenNode(kind, range));
+        Children.Add(new GreenNode(kind, range.Length));
     }
 
     public GreenNode Finish()

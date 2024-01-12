@@ -44,8 +44,14 @@ public class TextDocumentHandler(
 
     public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
-        workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), request.TextDocument.Text);
-        PushDiagnostic(request.TextDocument, workspace.GetDocument(request.TextDocument.Uri.ToUnencodedString())!);
+        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var document = workspace.GetDocument(uri);
+        if (document is not null && string.Equals(document.Text, request.TextDocument.Text, StringComparison.Ordinal))
+        {
+            return Unit.Task;
+        }
+        workspace.UpdateDocument(uri, request.TextDocument.Text);
+        PushDiagnostic(request.TextDocument, workspace.GetDocument(uri)!);
         return Unit.Task;
     }
 
@@ -68,7 +74,7 @@ public class TextDocumentHandler(
         return Unit.Task;
     }
 
-    public void PushDiagnostic(TextDocumentIdentifier identifier, LuaDocument document)
+    private void PushDiagnostic(TextDocumentIdentifier identifier, LuaDocument document)
     {
         var diagnostics = workspace.Compilation.GetDiagnostic(document.Id).Select(it => it.ToLspDiagnostic(document))
             .ToList();
@@ -83,7 +89,7 @@ public class TextDocumentHandler(
 
 public static class DiagnosticExtensions
 {
-    public static OmniSharp.Extensions.LanguageServer.Protocol.Models.Diagnostic ToLspDiagnostic(
+    public static Diagnostic ToLspDiagnostic(
         this LuaDiagnostic diagnostic, LuaDocument document)
     {
         return new()

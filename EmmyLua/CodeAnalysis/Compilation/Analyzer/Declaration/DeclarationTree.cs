@@ -10,7 +10,7 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
 
     public DeclarationScope? RootScope { get; internal set; }
 
-    public int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
+    public int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
 
     public Declaration? FindDeclaration(LuaSyntaxElement element)
     {

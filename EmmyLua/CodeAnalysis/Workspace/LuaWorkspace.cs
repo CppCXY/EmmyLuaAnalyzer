@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -113,6 +114,7 @@ public class LuaWorkspace
             }
         }
     }
+
 
     public void CloseDocument(string uri)
     {

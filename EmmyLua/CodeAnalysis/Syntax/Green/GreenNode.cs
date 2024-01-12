@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-using EmmyLua.CodeAnalysis.Compile.Source;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
@@ -15,15 +13,13 @@ public class GreenNode
         Token
     }
 
-    public SourceRange Range { get; }
-
-    public int ChildPosition { get; internal set; } = 0;
+    public int Length { get; }
 
     private readonly ushort _kind;
 
-    private ImmutableArray<GreenNode>? _children;
+    private List<GreenNode>? _children;
 
-    public IEnumerable<GreenNode> Children => IsSyntaxNode ? _children! : ImmutableArray<GreenNode>.Empty;
+    public IEnumerable<GreenNode> Children => IsNode ? _children! : Enumerable.Empty<GreenNode>();
 
     private readonly NodeFlags _flag;
 
@@ -31,24 +27,22 @@ public class GreenNode
 
     public LuaTokenKind TokenKind => _flag is NodeFlags.Token ? (LuaTokenKind)_kind : LuaTokenKind.None;
 
-    public bool IsSyntaxNode => _flag is NodeFlags.Node;
+    public bool IsNode => _flag is NodeFlags.Node;
 
     public bool IsToken => _flag is NodeFlags.Token;
 
-    public GreenNode(LuaSyntaxKind kind, SourceRange range, IEnumerable<GreenNode> children, int childPosition = 0)
+    public GreenNode(LuaSyntaxKind kind, int length, IEnumerable<GreenNode> children)
     {
         _flag = NodeFlags.Node;
         _kind = (ushort)kind;
-        Range = range;
-        _children = children.ToImmutableArray();
-        ChildPosition = childPosition;
+        Length = length;
+        _children = children.ToList();
     }
 
-    public GreenNode(LuaTokenKind kind, SourceRange range, int childPosition = 0)
+    public GreenNode(LuaTokenKind kind,  int length)
     {
         _flag = NodeFlags.Token;
         _kind = (ushort)kind;
-        Range = range;
-        ChildPosition = childPosition;
+        Length = length;
     }
 }

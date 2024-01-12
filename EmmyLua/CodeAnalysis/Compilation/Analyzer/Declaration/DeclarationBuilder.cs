@@ -69,7 +69,7 @@ public class DeclarationBuilder : ILuaElementWalker
         return null;
     }
 
-    private int GetPosition(LuaSyntaxElement element) => element.Green.Range.StartOffset;
+    private int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
 
     private string GetUniqueId(LuaSyntaxElement element, DocumentId documentId)
     {

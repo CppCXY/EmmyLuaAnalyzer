@@ -4,8 +4,8 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaCommentSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent)
-    : LuaSyntaxNode(greenNode, tree, parent)
+public class LuaCommentSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public bool IsDeprecated => FirstChildToken(LuaTokenKind.TkTagDeprecated) != null;
 
