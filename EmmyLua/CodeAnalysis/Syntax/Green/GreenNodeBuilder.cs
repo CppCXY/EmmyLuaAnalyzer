@@ -95,7 +95,7 @@ public class GreenNodeBuilder
 
     public void EatToken(LuaTokenKind kind, SourceRange range)
     {
-        Children.Add(new GreenNode(kind, range.Length));
+        Children.Add(GreenTokenFactory.Instance.Create(kind, range.Length));
     }
 
     public GreenNode Finish()

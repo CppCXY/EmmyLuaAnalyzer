@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Kind;
+﻿using System.ComponentModel;
+using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
@@ -44,5 +45,10 @@ public class GreenNode
         _flag = NodeFlags.Token;
         _kind = (ushort)kind;
         Length = length;
+    }
+
+    public GreenNode With(int length)
+    {
+        return _flag is NodeFlags.Node ? new GreenNode(SyntaxKind, length, Children) : new GreenNode(TokenKind, length);
     }
 }

@@ -116,5 +116,5 @@ public enum LuaTokenKind : ushort
     TkDocContinue, // ---
     TkDocDescription, // '#' or '@' description
     TkNullable, // '?'
-    TkDocVisibility // public private protected package
+    TkDocVisibility, // public private protected package
 }
