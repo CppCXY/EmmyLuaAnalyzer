@@ -72,7 +72,7 @@ public class CallExprInfer
             var document = context.Compilation.Workspace.ModuleGraph.FindModule(modulePath);
             if (document is not null)
             {
-                context.Infer(document.SyntaxTree.SyntaxRoot);
+                return context.Infer(document.SyntaxTree.SyntaxRoot);
             }
         }
 

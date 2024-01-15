@@ -222,9 +222,9 @@ public static class ExpressionInfer
         if (declarationTree is not null)
         {
             var nameDecl = declarationTree.FindDeclaration(nameExpr);
+
             if (nameDecl?.Type is null && declarationTree.Id is { } id)
             {
-                // 可能当前变量尚未开始分析
                 context.Compilation.BindAnalyzer.Analyze(id);
             }
 
