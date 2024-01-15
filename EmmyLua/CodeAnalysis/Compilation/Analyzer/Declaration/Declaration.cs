@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 
@@ -95,6 +96,7 @@ public enum DeclarationFlag : ushort
     EnumMember = 0x0080,
     Virtual = 0x0100,
     GenericParameter = 0x0200,
+    ForRange = 0x0400,
 }
 
 public class Declaration(
@@ -104,16 +106,27 @@ public class Declaration(
     DeclarationFlag flag,
     DeclarationNodeContainer? parent,
     Declaration? prev,
-    ILuaType? type)
+    ILuaType? type,
+    LuaExprSyntax? expr = null,
+    int exprRetId = 0
+    )
     : DeclarationNode(position, parent)
 {
     public string Name { get; } = name;
 
     public LuaSyntaxElement SyntaxElement { get; } = syntaxElement;
 
-    public DeclarationFlag Flags { get; set; } = flag;
+    public DeclarationFlag Flags { get; } = flag;
 
-    public ILuaType? Type { get; set; } = type;
+    public ILuaType? Type
+    {
+        get => FirstDeclaration.Type ?? type;
+        set => type = value;
+    }
+
+    public LuaExprSyntax? RelatedExpr { get; } = expr;
+
+    public int ExprRetId { get; } = exprRetId;
 
     public Declaration? PrevDeclaration { get; set; } = prev;
 
@@ -141,6 +154,4 @@ public class Declaration(
 }
 
 public class VirtualDeclaration(ILuaType? type)
-    : Declaration("", 0, null, DeclarationFlag.Virtual, null, null, type)
-{
-}
+    : Declaration("", 0, null, DeclarationFlag.Virtual, null, null, type);

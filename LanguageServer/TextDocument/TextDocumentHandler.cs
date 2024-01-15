@@ -58,8 +58,9 @@ public class TextDocumentHandler(
     public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
     {
         var changes = request.ContentChanges.ToList();
-        workspace.UpdateDocument(request.TextDocument.Uri.ToUnencodedString(), changes[0].Text);
-        PushDiagnostic(request.TextDocument, workspace.GetDocument(request.TextDocument.Uri.ToUnencodedString())!);
+        var uri = request.TextDocument.Uri.ToUnencodedString();
+        workspace.UpdateDocument(uri, changes[0].Text);
+        PushDiagnostic(request.TextDocument, workspace.GetDocument(uri)!);
         return Unit.Task;
     }
 

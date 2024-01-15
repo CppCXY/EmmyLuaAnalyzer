@@ -7,16 +7,11 @@ using System.Threading;
 
 public class GreenTokenFactory
 {
-    private static readonly ThreadLocal<Dictionary<LuaTokenKind, Dictionary<int, GreenNode>>> ThreadCaches =
-        new(() => new Dictionary<LuaTokenKind, Dictionary<int, GreenNode>>());
-
-    public static GreenTokenFactory Instance { get; } = new();
+    private static readonly Dictionary<LuaTokenKind, Dictionary<int, GreenNode>> Caches = new();
 
     public GreenNode Create(LuaTokenKind kind, int length)
     {
-        var caches = ThreadCaches.Value;
-
-        if (caches!.TryGetValue(kind, out var cache))
+        if (Caches!.TryGetValue(kind, out var cache))
         {
             if (cache.TryGetValue(length, out var node))
             {
@@ -26,7 +21,7 @@ public class GreenTokenFactory
         else
         {
             cache = new Dictionary<int, GreenNode>();
-            caches.Add(kind, cache);
+            Caches.Add(kind, cache);
         }
 
         var greenNode = new GreenNode(kind, length);

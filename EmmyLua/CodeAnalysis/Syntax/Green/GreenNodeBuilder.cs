@@ -15,6 +15,8 @@ public class GreenNodeBuilder
 
     private List<GreenNode> Children { get; } = new();
 
+    private GreenTokenFactory Factory { get; } = new();
+
     public void StartNode(LuaSyntaxKind kind)
     {
         var position = Children.Count;
@@ -95,7 +97,7 @@ public class GreenNodeBuilder
 
     public void EatToken(LuaTokenKind kind, SourceRange range)
     {
-        Children.Add(GreenTokenFactory.Instance.Create(kind, range.Length));
+        Children.Add(Factory.Create(kind, range.Length));
     }
 
     public GreenNode Finish()

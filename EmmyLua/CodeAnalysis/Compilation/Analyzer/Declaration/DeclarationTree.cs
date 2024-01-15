@@ -1,12 +1,15 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 
 public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
 {
     public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
+
+    public DocumentId? Id => (LuaSyntaxTree.Source as LuaDocument)?.Id;
 
     public DeclarationScope? RootScope { get; internal set; }
 

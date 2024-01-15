@@ -4,6 +4,7 @@ using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
 
@@ -17,7 +18,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public LuaSyntaxTree Tree { get; } = tree;
 
-    public SourceRange Range { get; } = new (startOffset, green.Length);
+    public SourceRange Range { get; } = new(startOffset, green.Length);
 
     public int ChildPosition { get; internal set; } = 0;
 
@@ -28,7 +29,8 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public IEnumerable<LuaSyntaxElement> ChildrenWithTokens => ChildrenElements ?? Enumerable.Empty<LuaSyntaxElement>();
 
-    private ImmutableArray<LuaSyntaxElement> ChildrenWithTokenArray => ChildrenElements ?? throw new UnreachableException();
+    private ImmutableArray<LuaSyntaxElement> ChildrenWithTokenArray =>
+        ChildrenElements ?? throw new UnreachableException();
 
     // 遍历所有后代, 包括自己
     public IEnumerable<LuaSyntaxElement> DescendantsAndSelf
@@ -200,7 +202,8 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
             : ChildrenElements.OfType<LuaSyntaxToken>().FirstOrDefault(it => predicate(it.Kind));
     }
 
-    public IEnumerable<T> ChildNodes<T>() where T : LuaSyntaxElement => ChildrenElements?.OfType<T>() ?? Enumerable.Empty<T>();
+    public IEnumerable<T> ChildNodes<T>() where T : LuaSyntaxElement =>
+        ChildrenElements?.OfType<T>() ?? Enumerable.Empty<T>();
 
     public IEnumerable<T> ChildNodesBeforeToken<T>(LuaTokenKind kind) where T : LuaSyntaxElement
     {
@@ -309,9 +312,15 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
                 }
                 case LuaSyntaxToken token:
                 {
-                    var detail = token.Kind switch
+                    var detail = token switch
                     {
-                        LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine or LuaTokenKind.TkDocTrivia => "",
+                        {
+                            Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine or LuaTokenKind.TkDocTrivia
+                        } => "",
+                        LuaStringToken stringToken => $"\"{stringToken.Value}\"",
+                        LuaIntegerToken integerToken => $"{integerToken.Value}",
+                        LuaFloatToken floatToken => $"{floatToken.Value}",
+                        LuaNameToken nameToken => $"{nameToken.RepresentText}",
                         _ => $"\"{token.Text}\""
                     };
 

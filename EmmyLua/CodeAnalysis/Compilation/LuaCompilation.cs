@@ -33,6 +33,10 @@ public class LuaCompilation
 
     private List<ILuaAnalyzer> Analyzers { get; }
 
+    public DeclarationAnalyzer DeclarationAnalyzer => (DeclarationAnalyzer) Analyzers[0];
+
+    public BindAnalyzer BindAnalyzer => (BindAnalyzer) Analyzers[1];
+
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;

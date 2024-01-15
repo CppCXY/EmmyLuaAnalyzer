@@ -159,6 +159,17 @@ public static class ExpressionInfer
         {
             Declaration.Declaration? declaration = null;
             var prefixType = context.Infer(prefixExpr);
+            if (prefixType is Unknown)
+            {
+                var prefixDeclarationTree = DeclarationInfer.GetDeclarationTree(prefixExpr, context);
+                if (declaration?.Type is null && prefixDeclarationTree?.Id is { } id)
+                {
+                    // 可能当前变量尚未开始分析
+                    context.Compilation.BindAnalyzer.Analyze(id);
+                }
+                prefixType = declaration?.Type ?? context.Compilation.Builtin.Unknown;
+            }
+
             if (indexExpr is { DotOrColonIndexName: { } nameToken })
             {
                 declaration = prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
@@ -208,10 +219,19 @@ public static class ExpressionInfer
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
         var declarationTree = DeclarationInfer.GetDeclarationTree(nameExpr, context);
-        var nameDecl = declarationTree?.FindDeclaration(nameExpr);
-        if (nameDecl?.Type is { } ty)
+        if (declarationTree is not null)
         {
-            return ty;
+            var nameDecl = declarationTree.FindDeclaration(nameExpr);
+            if (nameDecl?.Type is null && declarationTree.Id is { } id)
+            {
+                // 可能当前变量尚未开始分析
+                context.Compilation.BindAnalyzer.Analyze(id);
+            }
+
+            if (nameDecl?.Type is { } ty)
+            {
+                return ty;
+            }
         }
 
         return context.Compilation.Builtin.Unknown;

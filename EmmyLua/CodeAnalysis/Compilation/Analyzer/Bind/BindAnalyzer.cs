@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
@@ -39,6 +40,11 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         LocalBindAnalysis(luaLocalStat, bindData);
                         break;
                     }
+                    case LuaAssignStatSyntax luaAssignStat:
+                    {
+                        AssignBindAnalysis(luaAssignStat, bindData);
+                        break;
+                    }
                 }
             }
         }
@@ -49,7 +55,6 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
     private void LocalBindAnalysis(LuaLocalStatSyntax localStat, BindData bindData)
     {
         var tree = bindData.Tree;
-        // tree.FindDeclaration()
         var nameList = localStat.NameList.ToList();
         var exprList = localStat.ExprList.ToList();
         var count = nameList.Count;
@@ -68,6 +73,37 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         DiagnosticCode.TypeNotMatch,
                         $"local {localName} type not match",
                         localName.Location
+                    ));
+                }
+            }
+            else
+            {
+                if (declaration != null) declaration.Type = exprType;
+            }
+        }
+    }
+
+    private void AssignBindAnalysis(LuaAssignStatSyntax assignStat, BindData bindData)
+    {
+        var tree = bindData.Tree;
+        var varList = assignStat.VarList.ToList();
+        var exprList = assignStat.ExprList.ToList();
+        var count = varList.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var var = varList[i];
+            var expr = exprList.ElementAtOrDefault(i);
+            var exprType = Compilation.SearchContext.Infer(expr);
+            var declaration = tree.FindDeclaration(var);
+            if (declaration is { Type: { } ty })
+            {
+                if (!exprType.SubTypeOf(ty, Context))
+                {
+                    assignStat.Tree.PushDiagnostic(new Diagnostic(
+                        DiagnosticSeverity.Warning,
+                        DiagnosticCode.TypeNotMatch,
+                        $"local {var} type not match",
+                        var.Location
                     ));
                 }
             }
