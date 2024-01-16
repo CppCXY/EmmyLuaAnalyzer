@@ -80,9 +80,7 @@ public class DeclarationBuilder : ILuaElementWalker
         string name,
         LuaSyntaxElement element,
         DeclarationFlag flag,
-        ILuaType? luaType,
-        LuaExprSyntax? relatedExpr = null,
-        int retId = 0
+        ILuaType? luaType
     )
     {
         var declaration = new Declaration(
@@ -92,9 +90,7 @@ public class DeclarationBuilder : ILuaElementWalker
             flag,
             _curScope,
             null,
-            luaType,
-            relatedExpr,
-            retId);
+            luaType);
         _curScope?.Add(declaration);
         return declaration;
     }
@@ -231,29 +227,15 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         var types = FindLocalOrAssignTypes(localStatSyntax);
         var nameList = localStatSyntax.NameList.ToList();
-        var exprList = localStatSyntax.ExprList.ToList();
         var count = nameList.Count;
-        LuaExprSyntax? lastValidExpr = null;
-        int retId = 0;
         for (var i = 0; i < count; i++)
         {
             var localName = nameList[i];
             var luaType = types.ElementAtOrDefault(i) ?? null;
-            var luaExpr = exprList.ElementAtOrDefault(i) ?? null;
-            if (luaExpr is not null)
-            {
-                lastValidExpr = luaExpr;
-                retId = 0;
-            }
-            else
-            {
-                retId++;
-            }
 
             if (localName is { Name: { } name })
             {
-                var declaration = CreateDeclaration(name.RepresentText, localName, DeclarationFlag.Local, luaType,
-                    lastValidExpr, retId);
+                var declaration = CreateDeclaration(name.RepresentText, localName, DeclarationFlag.Local, luaType);
                 if (i == 0)
                 {
                     var typeDeclaration = FindLocalOrAssignTagDeclaration(localStatSyntax);
@@ -331,21 +313,17 @@ public class DeclarationBuilder : ILuaElementWalker
     private void ForRangeStatDeclarationAnalysis(LuaForRangeStatSyntax forRangeStatSyntax)
     {
         var dic = FindParamDeclarations(forRangeStatSyntax);
-        var itExpr = forRangeStatSyntax.ExprList.FirstOrDefault();
-        var count = 0;
         foreach (var param in forRangeStatSyntax.IteratorNames)
         {
             if (param.Name is { } name)
             {
                 var declaration = CreateDeclaration(name.RepresentText, param,
-                    DeclarationFlag.Local | DeclarationFlag.ForRange, null, itExpr, count);
+                    DeclarationFlag.Local, null);
                 if (dic.TryGetValue(name.RepresentText, out var prevDeclaration))
                 {
                     declaration.PrevDeclaration = prevDeclaration;
                 }
             }
-
-            count++;
         }
     }
 
@@ -353,8 +331,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (forStatSyntax is { IteratorName.Name: { } name, InitExpr: { } initExpr })
         {
-            CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local, Compilation.Builtin.Integer, initExpr,
-                0);
+            CreateDeclaration(name.RepresentText, name, DeclarationFlag.Local, Compilation.Builtin.Integer);
         }
     }
 
@@ -498,8 +475,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     {
                         var prevDeclaration = FindDeclaration(nameExpr);
                         var flags = prevDeclaration?.Flags ?? DeclarationFlag.Global;
-                        var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, luaType, lastValidExpr,
-                            retId);
+                        var declaration = CreateDeclaration(name.RepresentText, nameExpr, flags, luaType);
                         if (prevDeclaration is not null)
                         {
                             declaration.PrevDeclaration = prevDeclaration;

@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 
@@ -96,37 +95,30 @@ public enum DeclarationFlag : ushort
     EnumMember = 0x0080,
     Virtual = 0x0100,
     GenericParameter = 0x0200,
-    ForRange = 0x0400,
 }
 
 public class Declaration(
     string name,
     int position,
-    LuaSyntaxElement syntaxElement,
+    LuaSyntaxElement? syntaxElement,
     DeclarationFlag flag,
     DeclarationNodeContainer? parent,
     Declaration? prev,
-    ILuaType? type,
-    LuaExprSyntax? expr = null,
-    int exprRetId = 0
+    ILuaType? type
     )
     : DeclarationNode(position, parent)
 {
     public string Name { get; } = name;
 
-    public LuaSyntaxElement SyntaxElement { get; } = syntaxElement;
+    public LuaSyntaxElement? SyntaxElement { get; } = syntaxElement;
 
     public DeclarationFlag Flags { get; } = flag;
 
     public ILuaType? Type
     {
-        get => FirstDeclaration.Type ?? type;
+        get => type ?? PrevDeclaration?.FirstDeclaration.Type;
         set => type = value;
     }
-
-    public LuaExprSyntax? RelatedExpr { get; } = expr;
-
-    public int ExprRetId { get; } = exprRetId;
 
     public Declaration? PrevDeclaration { get; set; } = prev;
 
@@ -142,9 +134,9 @@ public class Declaration(
 
     public Declaration FirstDeclaration => PrevDeclaration?.FirstDeclaration ?? this;
 
-    public Declaration WithType(ILuaType? type)
+    public Declaration WithType(ILuaType? luaType)
     {
-        return new Declaration(Name, Position, SyntaxElement, Flags, Parent, PrevDeclaration, type);
+        return new Declaration(Name, Position, SyntaxElement, Flags, Parent, PrevDeclaration, luaType);
     }
 
     public override string ToString()

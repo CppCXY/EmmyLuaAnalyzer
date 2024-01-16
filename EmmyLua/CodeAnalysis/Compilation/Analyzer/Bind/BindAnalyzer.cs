@@ -45,6 +45,16 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         AssignBindAnalysis(luaAssignStat, bindData);
                         break;
                     }
+                    case LuaForStatSyntax luaForStat:
+                    {
+                        ForStatBindAnalysis(luaForStat, bindData);
+                        break;
+                    }
+                    case LuaForRangeStatSyntax luaForRangeStat:
+                    {
+                        ForRangeBindAnalysis(luaForRangeStat, bindData);
+                        break;
+                    }
                 }
             }
         }
@@ -58,11 +68,32 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var nameList = localStat.NameList.ToList();
         var exprList = localStat.ExprList.ToList();
         var count = nameList.Count;
+        ILuaType currentExprType = Context.Compilation.Builtin.Unknown;
+        var retId = 0;
         for (var i = 0; i < count; i++)
         {
             var localName = nameList[i];
             var expr = exprList.ElementAtOrDefault(i);
-            var exprType = Compilation.SearchContext.Infer(expr);
+            if (expr is not null)
+            {
+                currentExprType = Compilation.SearchContext.Infer(expr);
+                retId = 0;
+            }
+            else
+            {
+                retId++;
+            }
+
+            ILuaType exprType = Context.Compilation.Builtin.Unknown;
+            if (currentExprType is LuaMultiRetType multiRetType)
+            {
+                exprType = multiRetType.GetRetType(retId) ?? exprType;
+            }
+            else if (retId == 0)
+            {
+                exprType = currentExprType;
+            }
+
             var declaration = tree.FindDeclaration(localName);
             if (declaration is { Type: { } ty })
             {
@@ -71,7 +102,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     localStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"local {localName} type not match",
+                        $"Local variable '{localName.Name?.RepresentText}' is type '{ty}' not match expr type '{exprType}'",
                         localName.Location
                     ));
                 }
@@ -89,11 +120,32 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var varList = assignStat.VarList.ToList();
         var exprList = assignStat.ExprList.ToList();
         var count = varList.Count;
+        ILuaType currentExprType = Context.Compilation.Builtin.Unknown;
+        var retId = 0;
         for (var i = 0; i < count; i++)
         {
             var var = varList[i];
             var expr = exprList.ElementAtOrDefault(i);
-            var exprType = Compilation.SearchContext.Infer(expr);
+            if (expr is not null)
+            {
+                currentExprType = Compilation.SearchContext.Infer(expr);
+                retId = 0;
+            }
+            else
+            {
+                retId++;
+            }
+
+            ILuaType exprType = Context.Compilation.Builtin.Unknown;
+            if (currentExprType is LuaMultiRetType multiRetType)
+            {
+                exprType = multiRetType.GetRetType(retId) ?? exprType;
+            }
+            else if (retId == 0)
+            {
+                exprType = currentExprType;
+            }
+
             var declaration = tree.FindDeclaration(var);
             if (declaration is { Type: { } ty })
             {
@@ -102,7 +154,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     assignStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"local {var} type not match",
+                        $"Variable {var} is type {ty} not match {exprType}",
                         var.Location
                     ));
                 }
@@ -111,6 +163,105 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             {
                 if (declaration != null) declaration.Type = exprType;
             }
+        }
+    }
+
+    private void ForStatBindAnalysis(LuaForStatSyntax forStat, BindData bindData)
+    {
+        var tree = bindData.Tree;
+        if (forStat.IteratorName is { } itName)
+        {
+            var declaration = tree.FindDeclaration(itName);
+            if (declaration is { Type: { } ty })
+            {
+                if (forStat.InitExpr is { } initExpr)
+                {
+                    var initTy = Context.Infer(initExpr);
+                    if (!initTy.SubTypeOf(ty, Context))
+                    {
+                        forStat.Tree.PushDiagnostic(new Diagnostic(
+                            DiagnosticSeverity.Warning,
+                            DiagnosticCode.TypeNotMatch,
+                            $"The initialization expression of the for statement must be an integer",
+                            initExpr.Location
+                        ));
+                    }
+                }
+
+                if (forStat.LimitExpr is { } limitExpr)
+                {
+                    var limitTy = Context.Infer(limitExpr);
+                    if (!limitTy.SubTypeOf(ty, Context))
+                    {
+                        forStat.Tree.PushDiagnostic(new Diagnostic(
+                            DiagnosticSeverity.Warning,
+                            DiagnosticCode.TypeNotMatch,
+                            $"The limit expression of the for statement must be an integer",
+                            limitExpr.Location
+                        ));
+                    }
+                }
+
+                if (forStat.Step is { } step)
+                {
+                    var stepTy = Context.Infer(step);
+                    if (!stepTy.SubTypeOf(ty, Context))
+                    {
+                        forStat.Tree.PushDiagnostic(new Diagnostic(
+                            DiagnosticSeverity.Warning,
+                            DiagnosticCode.TypeNotMatch,
+                            $"The step expression of the for statement must be an integer",
+                            step.Location
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    private void ForRangeBindAnalysis(LuaForRangeStatSyntax forRangeStat, BindData bindData)
+    {
+        var tree = bindData.Tree;
+        var iterNames = forRangeStat.IteratorNames.ToList();
+        var iterExpr = forRangeStat.ExprList.ToList().FirstOrDefault();
+        var iterExprType = Context.Infer(iterExpr);
+        if (iterExprType is LuaMethod luaMethod)
+        {
+            var multiReturn = LuaMultiRetType.FromType(luaMethod.ReturnType);
+            var tyList = multiReturn.Returns;
+            var count = iterNames.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var iterName = iterNames[i];
+                var ty = tyList.ElementAtOrDefault(i) ?? Context.Compilation.Builtin.Unknown;
+
+                var declaration = tree.FindDeclaration(iterName);
+                if (declaration is { Type: { } declTy })
+                {
+                    if (!ty.SubTypeOf(declTy, Context))
+                    {
+                        forRangeStat.Tree.PushDiagnostic(new Diagnostic(
+                            DiagnosticSeverity.Warning,
+                            DiagnosticCode.TypeNotMatch,
+                            $"The type {declTy} of the iterator variable {iterName} does not match ${ty}",
+                            iterName.Location
+                        ));
+                    }
+                }
+                else
+                {
+                    if (declaration != null) declaration.Type = ty;
+                }
+            }
+        }
+        else if (iterExpr is not null)
+        {
+            forRangeStat.Tree.PushDiagnostic(new Diagnostic(
+                DiagnosticSeverity.Warning,
+                DiagnosticCode.TypeNotMatch,
+                "The expression of the for-range-statement must return a function or be a function",
+                iterExpr.Location
+            ));
         }
     }
 

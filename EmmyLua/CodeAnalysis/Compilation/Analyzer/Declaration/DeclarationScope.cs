@@ -58,21 +58,10 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
 
     public Declaration? FindParamDef(LuaParamDefSyntax paramDef)
     {
-        if (paramDef.Name is { } name)
+        var position = Tree.GetPosition(paramDef);
+        var declarationNode = FindFirstChild(it => it.Position == position);
+        if (declarationNode is Declaration result)
         {
-            var nameText = name.RepresentText;
-            Declaration? result = null;
-            WalkUp(Tree.GetPosition(paramDef), 0, declaration =>
-            {
-                if (declaration.IsParam &&
-                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
-                {
-                    result = declaration;
-                    return false;
-                }
-
-                return true;
-            });
             return result;
         }
 
@@ -81,21 +70,10 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
 
     public Declaration? FindLocalName(LuaLocalNameSyntax localName)
     {
-        if (localName.Name is { } name)
+        var position = Tree.GetPosition(localName);
+        var declarationNode = FindFirstChild(it => it.Position == position);
+        if (declarationNode is Declaration result)
         {
-            var nameText = name.RepresentText;
-            Declaration? result = null;
-            WalkUp(Tree.GetPosition(localName), 0, declaration =>
-            {
-                if (declaration.IsLocal &&
-                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
-                {
-                    result = declaration;
-                    return false;
-                }
-
-                return true;
-            });
             return result;
         }
 
