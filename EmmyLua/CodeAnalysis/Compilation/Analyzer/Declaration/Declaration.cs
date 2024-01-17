@@ -145,5 +145,11 @@ public class Declaration(
     }
 }
 
-public class VirtualDeclaration(ILuaType? type)
-    : Declaration("", 0, null, DeclarationFlag.Virtual, null, null, type);
+public class VirtualDeclaration(string name, ILuaType? type)
+    : Declaration(name, 0, null, DeclarationFlag.Virtual, null, null, type)
+{
+    public VirtualDeclaration( ILuaType? type)
+        : this("", type)
+    {
+    }
+}

@@ -45,7 +45,7 @@ public class LuaDocFuncTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 {
     public IEnumerable<LuaDocTagTypedParamSyntax> ParamList => ChildNodes<LuaDocTagTypedParamSyntax>();
 
-    public LuaDocTypeSyntax? ReturnType => FirstChild<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildNodes<LuaDocTypeSyntax>();
 }
 
 public class LuaDocUnionTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

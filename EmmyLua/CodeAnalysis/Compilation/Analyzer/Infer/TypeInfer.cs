@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -76,13 +77,29 @@ public static class TypeInfer
 
     public static ILuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var method = context.Compilation.StubIndexImpl.Methods.Get(funcType).FirstOrDefault();
-        if (method is not null)
+        var paramDeclaration = new List<Declaration.Declaration>();
+        foreach (var typedParam in funcType.ParamList)
         {
-            return method;
+            if (typedParam is { Name: { } name })
+            {
+                var declaration = new VirtualDeclaration(name.RepresentText,
+                    typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
+                paramDeclaration.Add(declaration);
+            }
+            else if (typedParam is { VarArgs: { } varArgs })
+            {
+                var declaration = new VirtualDeclaration(varArgs.RepresentText,
+                    typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
+                paramDeclaration.Add(declaration);
+            }
         }
 
-        return context.Compilation.Builtin.Unknown;
+        var returnTypes = funcType.ReturnType.Select(it => new LuaTypeRef(it)).Cast<ILuaType>().ToList();
+        if (returnTypes.Count <= 1)
+        {
+            return new LuaMethod(false, paramDeclaration, returnTypes.FirstOrDefault());
+        }
+        return new LuaMethod(false, paramDeclaration, new LuaMultiRetType(returnTypes));
     }
 
     private static ILuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
@@ -93,10 +110,8 @@ public static class TypeInfer
             var ty = context.FindLuaType(name);
             return ty;
         }
-        else
-        {
-            return context.Compilation.Builtin.Unknown;
-        }
+
+        return context.Compilation.Builtin.Unknown;
     }
 
     private static ILuaType InferParenType(LuaDocParenTypeSyntax parenType, SearchContext context)

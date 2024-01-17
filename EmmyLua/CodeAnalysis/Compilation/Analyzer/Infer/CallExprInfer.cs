@@ -1,5 +1,4 @@
-﻿
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
@@ -56,7 +55,53 @@ public class CallExprInfer
         //     }
         // }
 
-        return ret;
+        return TryUnwrapReturn(callExpr, context, ret);
+    }
+
+    private static ILuaType TryUnwrapReturn(LuaCallExprSyntax callExprSyntax, SearchContext context, ILuaType ret)
+    {
+        while (true)
+        {
+            switch (ret)
+            {
+                case LuaTypeRef refTy:
+                {
+                    return refTy.GetType(context);
+                }
+                case LuaMultiRetType multiRetType:
+                {
+                    if (callExprSyntax.Parent is LuaTableFieldSyntax field)
+                    {
+                        var table = field.ParentTable;
+                        if (ReferenceEquals(table?.FieldList.LastOrDefault(), field))
+                        {
+                            return multiRetType;
+                        }
+                    }
+                    else if (callExprSyntax.Parent is LuaLocalStatSyntax localStat)
+                    {
+                        if (ReferenceEquals(localStat.ExprList.LastOrDefault(), callExprSyntax))
+                        {
+                            return multiRetType;
+                        }
+                    }
+                    else if (callExprSyntax.Parent is LuaAssignStatSyntax assignStat)
+                    {
+                        if (ReferenceEquals(assignStat.ExprList.LastOrDefault(), callExprSyntax))
+                        {
+                            return multiRetType;
+                        }
+                    }
+
+                    ret = multiRetType.GetRetType(0) ?? context.Compilation.Builtin.Unknown;
+                    continue;
+                }
+                default:
+                {
+                    return ret;
+                }
+            }
+        }
     }
 
     private static ILuaType InferRequire(LuaCallExprSyntax callExpr, SearchContext context)

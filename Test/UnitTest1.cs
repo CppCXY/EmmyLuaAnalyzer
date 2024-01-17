@@ -22,6 +22,5 @@ public class Tests
             print(a)
         end
         """, workspace.Features.Language));
-        Assert.Pass();
     }
 }

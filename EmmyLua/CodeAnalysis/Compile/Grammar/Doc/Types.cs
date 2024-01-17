@@ -287,7 +287,7 @@ public static class TypesParser
             if (p.Current is LuaTokenKind.TkColon)
             {
                 p.Bump();
-                Type(p);
+                TypeList(p);
             }
 
             return m.Complete(p, LuaSyntaxKind.TypeFun);

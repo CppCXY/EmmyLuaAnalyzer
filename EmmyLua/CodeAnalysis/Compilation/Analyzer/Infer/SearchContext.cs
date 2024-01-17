@@ -44,6 +44,11 @@ public class SearchContext
         return _caches.TryGetValue(element, out var symbol) ? symbol : _caches[element] = InferCore(element);
     }
 
+    public void ClearCache()
+    {
+        _caches.Clear();
+    }
+
     private ILuaType InferCore(LuaSyntaxElement element)
     {
         if (_currentDepth > MaxDepth)

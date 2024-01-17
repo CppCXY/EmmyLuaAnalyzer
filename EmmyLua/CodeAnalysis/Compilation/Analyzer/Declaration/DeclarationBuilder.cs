@@ -203,11 +203,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 LuaSourceAnalysis(luaSourceSyntax);
                 break;
             }
-            case LuaDocFuncTypeSyntax funcTypeSyntax:
-            {
-                LuaFuncTypeAnalysis(funcTypeSyntax);
-                break;
-            }
         }
     }
 
@@ -919,29 +914,5 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
             }
         }
-    }
-
-    private void LuaFuncTypeAnalysis(LuaDocFuncTypeSyntax funcTypeSyntax)
-    {
-        var paramDeclaration = new List<Declaration>();
-        foreach (var typedParam in funcTypeSyntax.ParamList)
-        {
-            if (typedParam is { Name: { } name })
-            {
-                var declaration = CreateDeclaration(name.RepresentText, name,
-                    DeclarationFlag.Parameter, typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
-                paramDeclaration.Add(declaration);
-            }
-            else if (typedParam is { VarArgs: { } varArgs })
-            {
-                var declaration = CreateDeclaration(varArgs.RepresentText, varArgs,
-                    DeclarationFlag.Parameter, typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
-                paramDeclaration.Add(declaration);
-            }
-        }
-
-        var retType = funcTypeSyntax.ReturnType is not null ? new LuaTypeRef(funcTypeSyntax.ReturnType) : null;
-        var luaMethod = new LuaMethod(false, paramDeclaration, retType);
-        StubIndexImpl.Methods.AddStub(DocumentId, funcTypeSyntax, luaMethod);
     }
 }

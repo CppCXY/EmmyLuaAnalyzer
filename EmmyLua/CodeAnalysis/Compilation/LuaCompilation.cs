@@ -80,6 +80,7 @@ public class LuaCompilation
     {
         _syntaxTrees.Remove(documentId);
         RemoveCache(documentId);
+        Analyze();
     }
 
     public void RemoveCache(DocumentId documentId)
@@ -117,6 +118,7 @@ public class LuaCompilation
 
     private void Analyze()
     {
+        SearchContext.ClearCache();
         if (DirtyDocuments.Count != 0)
         {
             try
@@ -168,5 +170,5 @@ public class LuaCompilation
             ? tree.Diagnostics.Select(it => it.WithLocation(
                 tree.Source.GetLocation(it.Range)
             ))
-            : [];
+            : Enumerable.Empty<Diagnostic>();
 }
