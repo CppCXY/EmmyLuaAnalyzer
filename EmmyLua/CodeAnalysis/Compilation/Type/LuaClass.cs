@@ -47,4 +47,9 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
                 string.Equals(Name, @class.Name, StringComparison.CurrentCulture)) ||
                GetSupers(context).Any(it => it.SubTypeOf(otherSubstitute, context));
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return Name;
+    }
 }

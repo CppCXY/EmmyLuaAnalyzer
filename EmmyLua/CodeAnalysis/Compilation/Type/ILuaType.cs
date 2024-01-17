@@ -23,6 +23,8 @@ public interface ILuaType
     public ILuaType Substitute(SearchContext context, Dictionary<string, ILuaType> env);
 
     public TypeKind Kind { get; }
+
+    public string ToDisplayString(SearchContext context);
 }
 
 public interface ILuaNamedType : ILuaType

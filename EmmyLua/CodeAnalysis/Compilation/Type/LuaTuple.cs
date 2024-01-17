@@ -50,4 +50,9 @@ public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 
         return false;
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return $"({string.Join(", ", Declarations.Select(it => it.Type?.ToDisplayString(context)))})";
+    }
 }

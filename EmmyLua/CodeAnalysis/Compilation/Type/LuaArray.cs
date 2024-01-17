@@ -32,4 +32,9 @@ public class LuaArray(ILuaType baseTy) : LuaType(TypeKind.Array)
 
         return new LuaArray(baseTySubstitute);
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return $"{Base.ToDisplayString(context)}[]";
+    }
 }

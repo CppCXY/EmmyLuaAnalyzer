@@ -35,5 +35,10 @@ public class LuaTypeRef(LuaSyntaxElement element) : LuaType(TypeKind.TypeRef)
     {
         return GetType(context).SubTypeOf(other, context);
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return GetType(context).ToDisplayString(context);
+    }
 }
 

@@ -26,4 +26,9 @@ public class LuaMultiRetType(List<ILuaType> rets) : LuaType(TypeKind.MultiRet)
     {
         return index < rets.Count ? rets[index] : null;
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return string.Join(", ", rets.Select(it => it.ToDisplayString(context)));
+    }
 }

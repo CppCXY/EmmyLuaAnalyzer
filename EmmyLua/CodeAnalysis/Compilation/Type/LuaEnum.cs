@@ -19,4 +19,9 @@ public class LuaEnum(string name, ILuaType luaType) : LuaType(TypeKind.Enum), IL
         return ReferenceEquals(this, other) ||
                other is LuaEnum @enum && string.Equals(Name, @enum.Name, StringComparison.CurrentCulture);
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return Name;
+    }
 }

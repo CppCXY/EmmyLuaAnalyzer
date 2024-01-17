@@ -17,11 +17,18 @@ public class DocumentId(string path, string uri)
         return new DocumentId(path, new Uri(path).AbsoluteUri);
     }
 
+    public static DocumentId VirtualDocumentId()
+    {
+        return new DocumentId(string.Empty, string.Empty);
+    }
+
     public string Path { get; } = path;
 
     public string Url { get; } = uri;
 
     public string Guid { get; } = System.Guid.NewGuid().ToString();
+
+    public bool IsVirtual => Path.Length == 0;
 }
 
 public class LuaDocument : LuaSource
@@ -37,7 +44,7 @@ public class LuaDocument : LuaSource
         return new LuaDocument(fileText, language, documentId);
     }
 
-    public static LuaDocument From(string path, string text, LuaLanguage language)
+    public static LuaDocument FromPath(string path, string text, LuaLanguage language)
     {
         var documentId = DocumentId.FromPath(path);
         return new LuaDocument(text, language, documentId);
@@ -46,6 +53,12 @@ public class LuaDocument : LuaSource
     public static LuaDocument FromUri(string uri, string text, LuaLanguage language)
     {
         var documentId = DocumentId.FromUri(uri);
+        return new LuaDocument(text, language, documentId);
+    }
+
+    public static LuaDocument FromText(string text, LuaLanguage language)
+    {
+        var documentId = DocumentId.VirtualDocumentId();
         return new LuaDocument(text, language, documentId);
     }
 

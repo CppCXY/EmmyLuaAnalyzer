@@ -9,7 +9,7 @@ public class LuaUnion() : LuaType(TypeKind.Union)
 
     private static bool IsValid(ILuaType ty)
     {
-        return ty.Kind is TypeKind.Unknown;
+        return ty is Unknown;
     }
 
     public static ILuaType UnionType(ILuaType a, ILuaType b)
@@ -118,6 +118,11 @@ public class LuaUnion() : LuaType(TypeKind.Union)
          }
 
          return false;
+    }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return string.Join("|", ChildrenType.Select(it => it.ToDisplayString(context)));
     }
 }
 

@@ -36,4 +36,9 @@ public class LuaInterface(string name) : LuaType(TypeKind.Interface), IGenericBa
                 string.Equals(Name, @interface.Name, StringComparison.CurrentCulture)) ||
                GetSupers(context).Any(it => it.SubTypeOf(otherSubstitute, context));
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return Name;
+    }
 }

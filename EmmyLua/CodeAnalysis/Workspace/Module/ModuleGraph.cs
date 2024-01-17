@@ -33,6 +33,11 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public void AddDocument(string workspace, LuaDocument document)
     {
         var documentId = document.Id;
+        if (documentId.IsVirtual)
+        {
+            return;
+        }
+
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             root = new ModuleNode();
@@ -80,6 +85,11 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public void RemoveDocument(string workspace, DocumentId documentId)
     {
+        if (documentId.IsVirtual)
+        {
+            return;
+        }
+
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
@@ -107,6 +117,11 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public string GetWorkspace(DocumentId documentId)
     {
         var workspace = string.Empty;
+        if (documentId.IsVirtual)
+        {
+            return workspace;
+        }
+
         foreach (var pair in WorkspaceModule)
         {
             if (documentId.Path.StartsWith(pair.Key))

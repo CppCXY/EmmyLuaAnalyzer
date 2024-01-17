@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -175,5 +176,38 @@ public class LuaMethod(
         }
 
         return true;
+    }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        var sb = new StringBuilder();
+        sb.Append("fun(");
+
+        var first = true;
+        if (ColonCall)
+        {
+            sb.Append("self");
+            first = false;
+        }
+
+        foreach (var parameter in Parameters)
+        {
+            if (!first)
+            {
+                sb.Append(", ");
+            }
+
+            first = false;
+            sb.Append($"{parameter.Name}: {parameter.Type?.ToDisplayString(context) ?? "any"}");
+        }
+
+        sb.Append(")");
+        if (ReturnType != null)
+        {
+            sb.Append("=> ");
+            sb.Append(ReturnType.ToDisplayString(context));
+        }
+
+        return sb.ToString();
     }
 }

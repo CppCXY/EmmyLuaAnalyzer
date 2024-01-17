@@ -54,4 +54,9 @@ public abstract class LuaType(TypeKind kind) : ILuaType
     }
 
     public TypeKind Kind { get; } = kind;
+
+    public virtual string ToDisplayString(SearchContext context)
+    {
+        return string.Empty;
+    }
 }

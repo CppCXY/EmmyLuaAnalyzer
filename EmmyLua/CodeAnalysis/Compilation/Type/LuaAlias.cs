@@ -38,4 +38,9 @@ public class LuaAlias(string name, ILuaType baseType) : LuaType(TypeKind.Alias),
     {
         return BaseType.Substitute(context);
     }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return Name;
+    }
 }

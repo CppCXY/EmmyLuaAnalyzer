@@ -19,6 +19,8 @@ public class LuaWorkspace
 
     public ModuleGraph ModuleGraph { get; }
 
+    public static LuaWorkspace Create() => Create("", new LuaFeatures());
+
     public static LuaWorkspace Create(string workspacePath)
     {
         return Create(workspacePath, new LuaFeatures());
@@ -80,6 +82,19 @@ public class LuaWorkspace
         UrlToDocument.Add(document.Id.Url, document.Id);
         PathToDocument.Add(document.Id.Path, document.Id);
         ModuleGraph.AddDocument(document);
+        Compilation.AddSyntaxTree(document.Id, document.SyntaxTree);
+    }
+
+    public void AddDocument(LuaDocument document)
+    {
+        Documents.Add(document.Id, document);
+        if (!document.Id.IsVirtual)
+        {
+            UrlToDocument.Add(document.Id.Url, document.Id);
+            PathToDocument.Add(document.Id.Path, document.Id);
+            ModuleGraph.AddDocument(document);
+        }
+
         Compilation.AddSyntaxTree(document.Id, document.SyntaxTree);
     }
 

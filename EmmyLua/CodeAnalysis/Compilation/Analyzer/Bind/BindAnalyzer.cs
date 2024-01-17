@@ -102,7 +102,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     localStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"Local variable '{localName.Name?.RepresentText}' is type '{ty}' not match expr type '{exprType}'",
+                        $"Local variable '{localName.Name?.RepresentText}' is type '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
                         localName.Location
                     ));
                 }
@@ -154,7 +154,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     assignStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"Variable {var} is type {ty} not match {exprType}",
+                        $"Variable {var} is type '{ty.ToDisplayString(Context)}' not match '{exprType.ToDisplayString(Context)}'",
                         var.Location
                     ));
                 }
@@ -182,7 +182,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         forStat.Tree.PushDiagnostic(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.TypeNotMatch,
-                            $"The initialization expression of the for statement must be an integer",
+                            "The initialization expression of the for statement must be an integer",
                             initExpr.Location
                         ));
                     }
@@ -196,7 +196,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         forStat.Tree.PushDiagnostic(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.TypeNotMatch,
-                            $"The limit expression of the for statement must be an integer",
+                            "The limit expression of the for statement must be an integer",
                             limitExpr.Location
                         ));
                     }
@@ -210,7 +210,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         forStat.Tree.PushDiagnostic(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.TypeNotMatch,
-                            $"The step expression of the for statement must be an integer",
+                            "The step expression of the for statement must be an integer",
                             step.Location
                         ));
                     }
@@ -243,7 +243,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                         forRangeStat.Tree.PushDiagnostic(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.TypeNotMatch,
-                            $"The type {declTy} of the iterator variable {iterName} does not match ${ty}",
+                            $"The type {declTy.ToDisplayString(Context)} of the iterator variable {iterName} does not match ${ty.ToDisplayString(Context)}",
                             iterName.Location
                         ));
                     }
