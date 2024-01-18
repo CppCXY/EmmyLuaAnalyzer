@@ -3,8 +3,6 @@ using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
 
@@ -53,6 +51,11 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     case LuaForRangeStatSyntax luaForRangeStat:
                     {
                         ForRangeBindAnalysis(luaForRangeStat, bindData);
+                        break;
+                    }
+                    case LuaCallExprSyntax luaCallExpr:
+                    {
+                        CallExprAnalysis(luaCallExpr, bindData);
                         break;
                     }
                 }
@@ -225,9 +228,9 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var iterNames = forRangeStat.IteratorNames.ToList();
         var iterExpr = forRangeStat.ExprList.ToList().FirstOrDefault();
         var iterExprType = Context.Infer(iterExpr);
-        if (iterExprType is LuaMethod luaMethod)
+        if (iterExprType is LuaMethod { MainSignature: {} signature })
         {
-            var multiReturn = LuaMultiRetType.FromType(luaMethod.ReturnType);
+            var multiReturn = LuaMultiRetType.FromType(signature.ReturnTypes);
             var tyList = multiReturn.Returns;
             var count = iterNames.Count;
             for (var i = 0; i < count; i++)
@@ -263,6 +266,72 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 iterExpr.Location
             ));
         }
+    }
+
+    private void CallExprAnalysis(LuaCallExprSyntax callExpr, BindData bindData)
+    {
+        var prefixTy = Context.Infer(callExpr.PrefixExpr);
+        // LuaUnion.Each(prefixTy, type =>
+        // {
+        //     if (type is LuaMethod luaMethod)
+        //     {
+        //         var args = callExpr.ArgList?.ArgList.ToList();
+        //         if (args == null) return;
+        //         var perfectSig = luaMethod.FindPerfectSignature(callExpr, Context);
+        //
+        //         // check colon call
+        //         if (callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true } indexExpr)
+        //         {
+        //             if (!luaMethod.ColonDefine)
+        //             {
+        //                 callExpr.Tree.PushDiagnostic(new Diagnostic(
+        //                     DiagnosticSeverity.Warning,
+        //                     DiagnosticCode.TypeNotMatch,
+        //                     "The method does not support colon call",
+        //                     indexExpr.Location
+        //                 ));
+        //             }
+        //         }
+        //         else
+        //         {
+        //             if (luaMethod.ColonDefine)
+        //             {
+        //                 callExpr.Tree.PushDiagnostic(new Diagnostic(
+        //                     DiagnosticSeverity.Warning,
+        //                     DiagnosticCode.TypeNotMatch,
+        //                     "The method must be called with a colon",
+        //                     callExpr.PrefixExpr.Location
+        //                 ));
+        //             }
+        //
+        //         }
+        //
+        //
+        //
+        //         if (perfectSig.Parameters is { } parameters)
+        //         {
+        //             var count = parameters.Count;
+        //             for (var i = 0; i < count; i++)
+        //             {
+        //                 var parameter = parameters[i];
+        //                 var arg = args.ElementAtOrDefault(i);
+        //                 if (arg is not null)
+        //                 {
+        //                     var argTy = Context.Infer(arg);
+        //                     if (!argTy.SubTypeOf(parameter.Type, Context))
+        //                     {
+        //                         callExpr.Tree.PushDiagnostic(new Diagnostic(
+        //                             DiagnosticSeverity.Warning,
+        //                             DiagnosticCode.TypeNotMatch,
+        //                             $"The type {argTy.ToDisplayString(Context)} of the argument does not match the type {parameter.Type.ToDisplayString(Context)} of the parameter",
+        //                             arg.Location
+        //                         ));
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
     }
 
     public override void RemoveCache(DocumentId documentId)

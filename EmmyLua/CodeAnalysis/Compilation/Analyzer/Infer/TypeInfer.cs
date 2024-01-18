@@ -97,9 +97,10 @@ public static class TypeInfer
         var returnTypes = funcType.ReturnType.Select(it => new LuaTypeRef(it)).Cast<ILuaType>().ToList();
         if (returnTypes.Count <= 1)
         {
-            return new LuaMethod(false, paramDeclaration, returnTypes.FirstOrDefault());
+            return new LuaMethod(new Signature(false, paramDeclaration, returnTypes.FirstOrDefault()));
         }
-        return new LuaMethod(false, paramDeclaration, new LuaMultiRetType(returnTypes));
+
+        return new LuaMethod(new Signature(false, paramDeclaration, new LuaMultiRetType(returnTypes)));
     }
 
     private static ILuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)

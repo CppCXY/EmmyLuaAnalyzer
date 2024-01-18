@@ -32,10 +32,8 @@ public class CallExprInfer
             {
                 case LuaMethod luaMethod:
                 {
-                    var args = callExpr.ArgList?.ArgList;
-                    if (args == null) return;
-                    var perfectSig = luaMethod.FindPerfectSignature(args, context);
-                    if (perfectSig.ReturnType is { } retTy)
+                    var perfectSig = luaMethod.FindPerfectSignature(callExpr, context);
+                    if (perfectSig.ReturnTypes is { } retTy)
                     {
                         ret = LuaUnion.UnionType(ret, retTy);
                     }

@@ -33,8 +33,8 @@ public class LuaDocTagClassSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
     public LuaDocTagBodySyntax? Body => FirstChild<LuaDocTagBodySyntax>();
 }
 
-public class LuaDocTagGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxElement(greenNode, tree, parent, startOffset)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -44,7 +44,7 @@ public class LuaDocTagGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree
 public class LuaDocTagGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {
-    public IEnumerable<LuaDocTagGenericParamSyntax> Params => ChildNodes<LuaDocTagGenericParamSyntax>();
+    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
 }
 
 public class LuaDocTagEnumSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

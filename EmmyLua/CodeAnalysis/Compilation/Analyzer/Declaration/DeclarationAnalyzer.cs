@@ -55,6 +55,15 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                     Compilation.StubIndexImpl.Members.AddStub(documentId, parentTyName, declaration);
                 }
             }
+
+            if (delayAnalyzeNode.LuaType is LuaMethod method && expr.IsColonIndex)
+            {
+                var declarationTree = Compilation.GetDeclarationTree(documentId);
+                if (declarationTree is not null)
+                {
+                    method.SelfType = prefixTy;
+                }
+            }
         }
     }
 

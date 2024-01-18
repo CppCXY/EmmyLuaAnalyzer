@@ -768,16 +768,30 @@ public class DeclarationBuilder : ILuaElementWalker
         var comment = stat.Comments.FirstOrDefault();
 
         ILuaType? retType = null;
-        List<LuaTypeRef>? overloads = null;
+        List<Signature>? overloads = null;
+        List<Declaration>? genericParams = null;
         if (comment?.DocList is { } docList)
         {
             var list = docList.ToList();
             retType = GetRetType(list);
             overloads = list
                 .OfType<LuaDocTagOverloadSyntax>()
-                .Select(it => it.TypeFunc is not null ? new LuaTypeRef(it.TypeFunc) : null)
-                .OfType<LuaTypeRef>()
+                .Select(Compilation.SearchContext.Infer)
+                .OfType<LuaMethod>()
+                .Select(it => it.MainSignature)
                 .ToList();
+
+            var generic = list.OfType<LuaDocTagGenericDeclareListSyntax>().FirstOrDefault();
+            if (generic is not null)
+            {
+                genericParams = generic.Params
+                    .Select(it =>
+                        new VirtualDeclaration(it.Name?.RepresentText ?? string.Empty,
+                            it.Type is not null ? new LuaTypeRef(it.Type) : null)
+                    )
+                    .Cast<Declaration>()
+                    .ToList();
+            }
         }
 
         var parameters = new List<Declaration>();
@@ -786,7 +800,7 @@ public class DeclarationBuilder : ILuaElementWalker
             parameters = GetParamListDeclaration(paramList);
         }
 
-        return new LuaMethod(colon, parameters, retType, overloads);
+        return new LuaMethod(new Signature(colon, parameters, retType), overloads, genericParams);
     }
 
     private void LuaTableTypeAnalysis(LuaDocTableTypeSyntax luaDocTableTypeSyntax)

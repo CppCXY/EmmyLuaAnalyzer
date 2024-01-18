@@ -6,17 +6,146 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaMethod(
-    bool colon,
-    List<Declaration> parameters,
-    ILuaType? returnType,
-    List<LuaTypeRef>? overloads = null)
+    Signature mainSignature,
+    List<Signature>? overloadSignatures = null,
+    List<Declaration>? genericParameters = null)
     : LuaType(TypeKind.Method)
 {
-    public List<LuaTypeRef>? Overloads { get; } = overloads;
+    public Signature MainSignature { get; } = mainSignature;
 
-    public bool ColonCall { get; } = colon;
+    public List<Declaration>? GenericParameters { get; } = genericParameters;
 
-    public ILuaType? ReturnType { get; } = returnType;
+    public List<Signature>? OverloadSignatures { get; } = overloadSignatures;
+
+    public ILuaType? SelfType { get; internal set; }
+
+    public void ProcessSignature(Func<Signature, bool> process, SearchContext context)
+    {
+        if (!process(MainSignature))
+        {
+            return;
+        }
+
+        if (OverloadSignatures is not null)
+        {
+            foreach (var signature in OverloadSignatures)
+            {
+                if (!process(signature))
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static int MatchCount(List<Declaration> parameters, List<LuaExprSyntax> arguments, SearchContext context)
+    {
+        var matched = 0;
+        for (; matched < parameters.Count; matched++)
+        {
+            if (arguments.Count <= matched)
+            {
+                return matched;
+            }
+
+            var arg = arguments.ElementAtOrDefault(matched);
+            var param = parameters[matched];
+            if (param.Type is { } type)
+            {
+                if (!type.AcceptExpr(arg, context))
+                {
+                    return matched;
+                }
+            }
+        }
+
+        return matched;
+    }
+
+    public Signature FindPerfectSignature(
+        LuaCallExprSyntax callExpr,
+        SearchContext context)
+    {
+        var isColonCall = false;
+        if (callExpr.PrefixExpr is LuaIndexExprSyntax indexExpr)
+        {
+            isColonCall = indexExpr.IsColonIndex;
+        }
+
+        var args = callExpr.ArgList?.ArgList.ToList() ?? [];
+        var perfectSignature = MainSignature;
+        var perfectCount = 0;
+        ProcessSignature(signature =>
+        {
+            var count = 0;
+            var isColonDefine = signature.ColonDefine;
+            switch ((isColonCall, isColonDefine))
+            {
+                case (true, false):
+                {
+                    if (signature.Parameters.FirstOrDefault() is { Name: "self" })
+                    {
+                        count++;
+                        count += MatchCount(signature.Parameters.Skip(1).ToList(), args, context);
+                    }
+
+                    break;
+                }
+                case (false, true):
+                {
+                    var declarations = new List<Declaration> { new VirtualDeclaration("self", SelfType) };
+                    declarations.AddRange(signature.Parameters);
+                    count += MatchCount(declarations, args, context);
+                    break;
+                }
+                case (true, true):
+                {
+                    count++;
+                    break;
+                }
+            }
+
+            if (count > perfectCount)
+            {
+                perfectSignature = signature;
+                perfectCount = count;
+            }
+
+            return true;
+        }, context);
+
+        return perfectSignature;
+    }
+
+    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is LuaMethod method)
+        {
+            if (MainSignature.SubTypeOf(method.MainSignature, context))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+public class Signature(
+    bool colon,
+    List<Declaration> parameters,
+    ILuaType? returnTypes)
+{
+    public bool ColonDefine { get; } = colon;
+
+    public ILuaType? ReturnTypes { get; } = returnTypes;
 
     public List<Declaration> Parameters { get; } = parameters;
 
@@ -33,158 +162,38 @@ public class LuaMethod(
         }
     }
 
-    public int Match(List<LuaExprSyntax> arguments, SearchContext context)
+    public bool SubTypeOf(Signature other, SearchContext context)
     {
-        var matched = 0;
-        for (; matched < Parameters.Count; matched++)
-        {
-            if (arguments.Count <= matched)
-            {
-                return matched;
-            }
-
-            var arg = arguments[matched];
-            var param = Parameters[matched];
-            if (param.Type is { } type)
-            {
-                if (!type.AcceptExpr(arg, context))
-                {
-                    return matched;
-                }
-            }
-        }
-
-        if (arguments.Count > matched && Variadic != null)
-        {
-            for (; matched < arguments.Count; matched++)
-            {
-                var arg = arguments[matched];
-                if (!Variadic.AcceptExpr(arg, context))
-                {
-                    return matched;
-                }
-            }
-        }
-
-        return matched;
-    }
-
-    public void ProcessSignature(Func<LuaMethod, bool> process, SearchContext context)
-    {
-        if (!process(this))
-        {
-            return;
-        }
-
-        if (Overloads is not null)
-        {
-            foreach (var signature in Overloads.Select(it => it.Substitute(context)).Cast<LuaMethod>())
-            {
-                if (!process(signature))
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    public LuaMethod FindPerfectSignature(
-        IEnumerable<LuaExprSyntax> arguments,
-        SearchContext context)
-    {
-        var perfectSignature = this;
-        var perfectCount = 0;
-        var argumentsList = arguments.ToList();
-        ProcessSignature(signature =>
-        {
-            var count = signature.Match(argumentsList, context);
-
-            if (count > perfectCount)
-            {
-                perfectSignature = signature;
-                perfectCount = count;
-            }
-
-            return true;
-        }, context);
-
-        return perfectSignature;
-    }
-
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
-
-    protected override ILuaType OnSubstitute(SearchContext context)
-    {
-        var same = true;
-        var parameters = new List<Declaration>();
-        foreach (var parameter in Parameters)
-        {
-            var type = parameter.Type;
-            if (type != null)
-            {
-                var substitute = type.Substitute(context);
-                if (ReferenceEquals(substitute, type))
-                {
-                    parameters.Add(parameter);
-                }
-                else
-                {
-                    parameters.Add(parameter.WithType(substitute));
-                    same = false;
-                }
-            }
-            else
-            {
-                parameters.Add(parameter);
-            }
-        }
-
-        var retType = ReturnType?.Substitute(context);
-        if (!ReferenceEquals(ReturnType, retType))
-        {
-            same = false;
-        }
-
-        return !same ? new LuaMethod(ColonCall, parameters, retType) : this;
-    }
-
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
-    {
-        var otherSubstitute = other.Substitute(context);
-
-        if (ReferenceEquals(this, otherSubstitute))
+        if (ReferenceEquals(this, other))
         {
             return true;
         }
 
-        if (otherSubstitute is LuaMethod otherMethod)
+        if (other.ColonDefine != ColonDefine)
         {
-            if (otherMethod.ColonCall != ColonCall)
+            return false;
+        }
+
+        for (var i = 0; i < Parameters.Count; i++)
+        {
+            var luaType = Parameters[i].Type;
+            var type = other.Parameters.ElementAtOrDefault(i)?.Type;
+            if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
             {
                 return false;
-            }
-
-            for (var i = 0; i < Parameters.Count; i++)
-            {
-                var luaType = Parameters[i].Type;
-                var type = otherMethod.Parameters[i].Type;
-                if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
-                {
-                    return false;
-                }
             }
         }
 
         return true;
     }
 
-    public override string ToDisplayString(SearchContext context)
+    public string ToDisplayString(SearchContext context)
     {
         var sb = new StringBuilder();
         sb.Append("fun(");
 
         var first = true;
-        if (ColonCall)
+        if (ColonDefine)
         {
             sb.Append("self");
             first = false;
@@ -202,10 +211,10 @@ public class LuaMethod(
         }
 
         sb.Append(")");
-        if (ReturnType != null)
+        if (ReturnTypes != null)
         {
             sb.Append("=> ");
-            sb.Append(ReturnType.ToDisplayString(context));
+            sb.Append(ReturnTypes.ToDisplayString(context));
         }
 
         return sb.ToString();
