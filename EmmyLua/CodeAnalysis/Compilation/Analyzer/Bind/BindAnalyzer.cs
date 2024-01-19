@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -228,7 +229,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var iterNames = forRangeStat.IteratorNames.ToList();
         var iterExpr = forRangeStat.ExprList.ToList().FirstOrDefault();
         var iterExprType = Context.Infer(iterExpr);
-        if (iterExprType is LuaMethod { MainSignature: {} signature })
+        if (iterExprType is LuaMethod { MainSignature: { } signature })
         {
             var multiReturn = LuaMultiRetType.FromType(signature.ReturnTypes);
             var tyList = multiReturn.Returns;
@@ -268,70 +269,107 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
+    private void CheckFuncCallParams(
+        LuaCallExprSyntax callExprSyntax,
+        List<Declaration.Declaration> parameters,
+        List<LuaExprSyntax> arguments
+    )
+    {
+        var count = parameters.Count;
+        var argCount = arguments.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var param = parameters[i];
+            var arg = arguments.ElementAtOrDefault(i);
+            if (arg is null)
+            {
+                if (param.Type is null or { IsNullable: true })
+                {
+                    continue;
+                }
+                else
+                {
+                    callExprSyntax.Tree.PushDiagnostic(new Diagnostic(
+                        DiagnosticSeverity.Warning,
+                        DiagnosticCode.MissingParameter,
+                        $"The number of parameters passed in is less than the number of parameters required by the function",
+                        callExprSyntax.ArgList?.RightParen?.Location ?? callExprSyntax.Location
+                    ));
+                    return;
+                }
+            }
+
+            var argTy = Context.Infer(arg);
+            if (param.Type is { } type)
+            {
+                if (!argTy.SubTypeOf(type, Context))
+                {
+                    callExprSyntax.Tree.PushDiagnostic(new Diagnostic(
+                        DiagnosticSeverity.Warning,
+                        DiagnosticCode.TypeNotMatch,
+                        $"The type '{argTy.ToDisplayString(Context)}' of the argument does not match the type '{type.ToDisplayString(Context)}' of the parameter",
+                        arg.Location
+                    ));
+                }
+            }
+            else
+            {
+                param.Type = argTy;
+            }
+        }
+    }
+
     private void CallExprAnalysis(LuaCallExprSyntax callExpr, BindData bindData)
     {
         var prefixTy = Context.Infer(callExpr.PrefixExpr);
-        // LuaUnion.Each(prefixTy, type =>
-        // {
-        //     if (type is LuaMethod luaMethod)
-        //     {
-        //         var args = callExpr.ArgList?.ArgList.ToList();
-        //         if (args == null) return;
-        //         var perfectSig = luaMethod.FindPerfectSignature(callExpr, Context);
-        //
-        //         // check colon call
-        //         if (callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true } indexExpr)
-        //         {
-        //             if (!luaMethod.ColonDefine)
-        //             {
-        //                 callExpr.Tree.PushDiagnostic(new Diagnostic(
-        //                     DiagnosticSeverity.Warning,
-        //                     DiagnosticCode.TypeNotMatch,
-        //                     "The method does not support colon call",
-        //                     indexExpr.Location
-        //                 ));
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (luaMethod.ColonDefine)
-        //             {
-        //                 callExpr.Tree.PushDiagnostic(new Diagnostic(
-        //                     DiagnosticSeverity.Warning,
-        //                     DiagnosticCode.TypeNotMatch,
-        //                     "The method must be called with a colon",
-        //                     callExpr.PrefixExpr.Location
-        //                 ));
-        //             }
-        //
-        //         }
-        //
-        //
-        //
-        //         if (perfectSig.Parameters is { } parameters)
-        //         {
-        //             var count = parameters.Count;
-        //             for (var i = 0; i < count; i++)
-        //             {
-        //                 var parameter = parameters[i];
-        //                 var arg = args.ElementAtOrDefault(i);
-        //                 if (arg is not null)
-        //                 {
-        //                     var argTy = Context.Infer(arg);
-        //                     if (!argTy.SubTypeOf(parameter.Type, Context))
-        //                     {
-        //                         callExpr.Tree.PushDiagnostic(new Diagnostic(
-        //                             DiagnosticSeverity.Warning,
-        //                             DiagnosticCode.TypeNotMatch,
-        //                             $"The type {argTy.ToDisplayString(Context)} of the argument does not match the type {parameter.Type.ToDisplayString(Context)} of the parameter",
-        //                             arg.Location
-        //                         ));
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // });
+        var isColonCall = false;
+        if (callExpr.PrefixExpr is LuaIndexExprSyntax indexExpr)
+        {
+            isColonCall = indexExpr.IsColonIndex;
+        }
+
+        LuaUnion.Each(prefixTy, type =>
+        {
+            if (type is LuaMethod luaMethod)
+            {
+                var args = callExpr.ArgList?.ArgList.ToList();
+                if (args == null) return;
+                var perfectSig = luaMethod.FindPerfectSignature(callExpr, Context);
+                var isColonDefine = perfectSig.ColonDefine;
+                switch ((isColonCall, isColonDefine))
+                {
+                    case (true, false):
+                    {
+                        if (perfectSig.Parameters.FirstOrDefault() is { Name: not "self" })
+                        {
+                            callExpr.Tree.PushDiagnostic(new Diagnostic(
+                                DiagnosticSeverity.Warning,
+                                DiagnosticCode.TypeNotMatch,
+                                "The first parameter of the method must be 'self'",
+                                callExpr.ArgList?.LeftParen?.Location ?? callExpr.Location
+                            ));
+                            return;
+                        }
+
+                        CheckFuncCallParams(callExpr, perfectSig.Parameters.Skip(1).ToList(), args);
+                        break;
+                    }
+                    case (false, true):
+                    {
+                        var declarations = new List<Declaration.Declaration>
+                            { new VirtualDeclaration("self", luaMethod.SelfType) };
+                        declarations.AddRange(perfectSig.Parameters);
+                        CheckFuncCallParams(callExpr, declarations, args);
+                        break;
+                    }
+                    default:
+                    {
+                        CheckFuncCallParams(callExpr, perfectSig.Parameters, args);
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     public override void RemoveCache(DocumentId documentId)

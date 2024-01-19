@@ -7,4 +7,5 @@ public enum DiagnosticCode
     TypeNotFound,
     MissingReturn,
     TypeNotMatch,
+    MissingParameter,
 }

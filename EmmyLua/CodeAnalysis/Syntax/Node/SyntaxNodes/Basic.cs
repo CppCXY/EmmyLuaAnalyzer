@@ -82,6 +82,10 @@ public class LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
     public bool IsSingleArgCall => FirstChildToken(LuaTokenKind.TkLeftParen) != null;
 
     public LuaExprSyntax? SingleArg => FirstChild<LuaExprSyntax>();
+
+    public LuaSyntaxToken? LeftParen => FirstChildToken(LuaTokenKind.TkLeftParen);
+
+    public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
 }
 
 public class LuaFuncBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

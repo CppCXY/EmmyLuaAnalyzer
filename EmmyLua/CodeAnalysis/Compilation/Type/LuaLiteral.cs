@@ -20,4 +20,18 @@ public class LuaLiteral(LuaSyntaxToken token) : LuaType(TypeKind.Literal)
         return Enumerable.Empty<Declaration>();
     }
 
+    public override string ToDisplayString(SearchContext context)
+    {
+        if (IsInteger)
+        {
+            return IntegerValue.ToString();
+        }
+        else if (IsString)
+        {
+            return $"'{StringValue}'";
+        }
+
+        return string.Empty;
+    }
+
 }

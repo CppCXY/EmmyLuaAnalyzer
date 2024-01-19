@@ -111,19 +111,21 @@ public class LuaUnion() : LuaType(TypeKind.Union)
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-         var otherSubstitute = other.Substitute(context);
-         if (otherSubstitute is LuaUnion otherUnion)
-         {
-             return ChildrenType.All(it => otherUnion.ChildrenType.Any(it2 => it.SubTypeOf(it2, context)));
-         }
+        var otherSubstitute = other.Substitute(context);
+        if (otherSubstitute is LuaUnion otherUnion)
+        {
+            return ChildrenType.All(it => otherUnion.ChildrenType.Any(it2 => it.SubTypeOf(it2, context)));
+        }
 
-         return false;
+        return false;
     }
 
     public override string ToDisplayString(SearchContext context)
     {
         return string.Join("|", ChildrenType.Select(it => it.ToDisplayString(context)));
     }
+
+    public override bool IsNullable => ChildrenType.Any(it => it.IsNullable);
 }
 
 public static class UnionTypeExtensions

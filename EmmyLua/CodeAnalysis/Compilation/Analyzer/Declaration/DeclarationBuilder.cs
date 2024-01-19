@@ -422,10 +422,16 @@ public class DeclarationBuilder : ILuaElementWalker
 
         foreach (var tagParamSyntax in docList.OfType<LuaDocTagParamSyntax>())
         {
-            if (tagParamSyntax is { Name: { } name, Type: { } type })
+            if (tagParamSyntax is { Name: { } name, Type: { } type, Nullable: { }nullable })
             {
+                ILuaType ty = new LuaTypeRef(type);
+                if (nullable)
+                {
+                    ty = LuaUnion.UnionType(ty, Compilation.Builtin.Nil);
+                }
+
                 var declaration = CreateDeclaration(name.RepresentText, name,
-                    DeclarationFlag.Parameter, new LuaTypeRef(type));
+                    DeclarationFlag.Parameter, ty);
                 dic.Add(name.RepresentText, declaration);
             }
             else if (tagParamSyntax is { VarArgs: { } varArgs, Type: { } type2 })

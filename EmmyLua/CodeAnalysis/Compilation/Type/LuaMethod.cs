@@ -49,10 +49,11 @@ public class LuaMethod(
             }
 
             var arg = arguments.ElementAtOrDefault(matched);
+            var argTy = context.Infer(arg);
             var param = parameters[matched];
             if (param.Type is { } type)
             {
-                if (!type.AcceptExpr(arg, context))
+                if (!argTy.SubTypeOf(type, context))
                 {
                     return matched;
                 }
@@ -101,6 +102,7 @@ public class LuaMethod(
                 case (true, true):
                 {
                     count++;
+                    count += MatchCount(signature.Parameters, args, context);
                     break;
                 }
             }
@@ -135,6 +137,11 @@ public class LuaMethod(
         }
 
         return false;
+    }
+
+    public override string ToDisplayString(SearchContext context)
+    {
+        return MainSignature.ToDisplayString(context);
     }
 }
 
@@ -210,7 +217,7 @@ public class Signature(
             sb.Append($"{parameter.Name}: {parameter.Type?.ToDisplayString(context) ?? "any"}");
         }
 
-        sb.Append(")");
+        sb.Append(')');
         if (ReturnTypes != null)
         {
             sb.Append("=> ");

@@ -59,4 +59,6 @@ public abstract class LuaType(TypeKind kind) : ILuaType
     {
         return string.Empty;
     }
+
+    public virtual bool IsNullable => false;
 }

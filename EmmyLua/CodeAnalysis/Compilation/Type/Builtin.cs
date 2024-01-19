@@ -7,7 +7,7 @@ public class Builtin
 {
     public readonly Unknown Unknown = new Unknown();
     public readonly Primitive Void = new Primitive("void");
-    public readonly Primitive Nil = new Primitive("nil");
+    public readonly Primitive Nil = new Nil();
     public readonly Primitive Number = new Primitive("number");
     public readonly Primitive Integer = new Primitive("integer");
     public readonly LuaClass String = new LuaClass("string");
@@ -30,9 +30,9 @@ public class Builtin
             "void" => Void,
             "nil" => Nil,
             "number" => Number,
-            "integer" => Integer,
+            "integer" or "int" => Integer,
             "string" => String,
-            "boolean" => Boolean,
+            "boolean" or "bool" => Boolean,
             "userdata" => Userdata,
             "io" => Io,
             "table" => Table,
@@ -67,7 +67,15 @@ public class Primitive(string name) : LuaClass(name)
         ReferenceEquals(this, other) || Super?.SubTypeOf(other, context) == true;
 }
 
-public class Unknown() : Primitive("unknown");
+public class Unknown() : Primitive("unknown")
+{
+    public override bool IsNullable { get; } = true;
+}
+
+public class Nil() : Primitive("nil")
+{
+    public override bool IsNullable { get; } = true;
+}
 
 public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table"), IGenericImpl
 {

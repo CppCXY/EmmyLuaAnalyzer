@@ -25,6 +25,8 @@ public interface ILuaType
     public TypeKind Kind { get; }
 
     public string ToDisplayString(SearchContext context);
+
+    public bool IsNullable { get; }
 }
 
 public interface ILuaNamedType : ILuaType
