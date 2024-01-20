@@ -5,7 +5,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaDocTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxElement(greenNode, tree, parent, startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public LuaSyntaxToken? Description => FirstChildToken(LuaTokenKind.TkDocDescription);
 }

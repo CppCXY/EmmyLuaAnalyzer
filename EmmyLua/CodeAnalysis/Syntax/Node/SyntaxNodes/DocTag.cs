@@ -7,7 +7,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaDocTagSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxElement(greenNode, tree, parent, startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public IEnumerable<LuaSyntaxToken> Descriptions => ImmutableArray<LuaSyntaxToken>.Empty;
     // Tree.BinderData?.GetDescriptions(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
@@ -34,7 +34,7 @@ public class LuaDocTagClassSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 }
 
 public class LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxElement(greenNode, tree, parent, startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
