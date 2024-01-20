@@ -279,7 +279,7 @@ public static class TagParser
             p.Bump();
             return;
         }
-        else if (p.Current is LuaTokenKind.TkEof or LuaTokenKind.TkEndOfLine)
+        else if (p.Current is LuaTokenKind.TkEof or LuaTokenKind.TkEndOfLine or LuaTokenKind.TkDocStart)
         {
             return;
         }

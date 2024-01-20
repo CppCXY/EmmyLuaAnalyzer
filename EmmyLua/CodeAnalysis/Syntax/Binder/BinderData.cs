@@ -13,7 +13,7 @@ public class BinderData(
 
     public LuaSyntaxElement? CommentOwner(LuaCommentSyntax comment)
     {
-        return commentOwners.TryGetValue(comment, out var owner) ? owner : null;
+        return commentOwners.GetValueOrDefault(comment);
     }
 
     public IEnumerable<LuaCommentSyntax> GetComments(LuaSyntaxElement nodeOrToken)

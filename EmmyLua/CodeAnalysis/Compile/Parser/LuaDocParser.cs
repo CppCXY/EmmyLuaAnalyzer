@@ -100,22 +100,28 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
             if (_invalid)
             {
                 _current = LexToken();
-                // ReSharper disable once ConvertIfStatementToSwitchStatement
-                if (Lexer.State == LuaDocLexerState.Normal)
+                switch (Lexer.State)
                 {
-                    while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
-                           or LuaTokenKind.TkDocContinue or LuaTokenKind.TkDocDescription)
+                    case LuaDocLexerState.Normal:
                     {
-                        Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                        _current = LexToken();
+                        while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
+                               or LuaTokenKind.TkDocContinue or LuaTokenKind.TkDocDescription)
+                        {
+                            Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                            _current = LexToken();
+                        }
+
+                        break;
                     }
-                }
-                else if (Lexer.State == LuaDocLexerState.FieldStart)
-                {
-                    while (_current.Kind is LuaTokenKind.TkWhitespace)
+                    case LuaDocLexerState.FieldStart:
                     {
-                        Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                        _current = LexToken();
+                        while (_current.Kind is LuaTokenKind.TkWhitespace)
+                        {
+                            Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                            _current = LexToken();
+                        }
+
+                        break;
                     }
                 }
 

@@ -59,7 +59,8 @@ public static class CommentParser
             }
 
             // ReSharper disable once InvertIf
-            if (!p.Lexer.Reader.IsEof)
+            if (!p.Lexer.Reader.IsEof
+                && p.Current is not (LuaTokenKind.TkDocStart or LuaTokenKind.TkDocLongStart))
             {
                 var rollback = p.GetRollbackPoint();
                 p.Rollback(rollback);

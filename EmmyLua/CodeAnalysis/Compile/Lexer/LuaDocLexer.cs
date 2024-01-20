@@ -271,11 +271,27 @@ public class LuaDocLexer(LuaSource source)
             case '-':
             {
                 var count = Reader.EatWhen('-');
-                return count switch
+                switch (count)
                 {
-                    1 => LuaTokenKind.TkMinus,
-                    3 => Reader.CurrentChar is '@' ? LuaTokenKind.TkDocStart : LuaTokenKind.TkDocContinue,
-                    _ => LuaTokenKind.TkDocTrivia
+                    case 1:
+                    {
+                        return LuaTokenKind.TkMinus;
+                    }
+                    case 3:
+                    {
+                        Reader.EatWhen(IsDocWhitespace);
+                        if (Reader.CurrentChar is '@')
+                        {
+                            Reader.Bump();
+                            return LuaTokenKind.TkDocStart;
+                        }
+
+                        return LuaTokenKind.TkDocContinue;
+                    }
+                    default:
+                    {
+                        return LuaTokenKind.TkDocTrivia;
+                    }
                 };
             }
             case '#' or '@':
