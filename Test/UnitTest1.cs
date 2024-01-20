@@ -1,5 +1,3 @@
-using EmmyLua.CodeAnalysis.Compile;
-using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
 namespace Test;

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Hover;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,7 @@ var server = await From(options =>
         )
         .WithHandler<TextDocumentHandler>()
         .WithHandler<DidChangeWatchedFilesHandler>()
+        .WithHandler<HoverHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
