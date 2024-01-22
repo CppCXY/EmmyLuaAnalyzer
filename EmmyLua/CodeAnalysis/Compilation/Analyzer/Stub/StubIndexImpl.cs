@@ -26,7 +26,7 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public StubIndex<LuaSyntaxElement, LuaMethod> Methods { get; } = new();
 
-    public StubIndex<LuaSourceSyntax, LuaExprSyntax> Modules { get; } = new();
+    public StubIndex<LuaBlockSyntax, List<LuaExprSyntax>> BlockReturns { get; } = new();
 
     public void Remove(DocumentId documentId)
     {
@@ -38,6 +38,6 @@ public class StubIndexImpl(LuaCompilation compilation)
         Supers.RemoveStub(documentId);
         GenericParams.RemoveStub(documentId);
         Methods.RemoveStub(documentId);
-        Modules.RemoveStub(documentId);
+        BlockReturns.RemoveStub(documentId);
     }
 }

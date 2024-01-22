@@ -209,6 +209,7 @@ public static class ExpressionInfer
         return literalExpr.Literal switch
         {
             LuaIntegerToken => context.Compilation.Builtin.Integer,
+            LuaFloatToken or LuaNumberToken => context.Compilation.Builtin.Number,
             LuaStringToken => context.Compilation.Builtin.String,
             LuaNilToken => context.Compilation.Builtin.Nil,
             LuaBoolToken => context.Compilation.Builtin.Boolean,

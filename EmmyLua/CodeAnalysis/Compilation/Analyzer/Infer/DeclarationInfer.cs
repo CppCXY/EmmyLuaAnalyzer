@@ -26,13 +26,9 @@ public static class DeclarationInfer
 
     public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        var expr = context.Compilation.StubIndexImpl.Modules.Get<LuaExprSyntax>(source).FirstOrDefault();
-        if (expr is null)
-        {
-            return context.Compilation.Builtin.Unknown;
-        }
-
-        return context.Infer(expr);
+        if (source.Block is null) return context.Compilation.Builtin.Unknown;
+        var expr = context.Compilation.StubIndexImpl.BlockReturns.Get(source.Block).FirstOrDefault();
+        return expr is null ? context.Compilation.Builtin.Unknown : context.Infer(expr.FirstOrDefault());
     }
 
     public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)

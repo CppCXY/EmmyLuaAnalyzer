@@ -90,7 +90,7 @@ public class Symbol(
     SymbolNodeContainer? parent,
     Symbol? prev,
     ILuaType? type
-    )
+)
     : SymbolNode(position, parent)
 {
     public string Name { get; } = name;
@@ -133,7 +133,7 @@ public class Symbol(
 public class VirtualSymbol(string name, ILuaType? type)
     : Symbol(name, 0, null, SymbolFlag.Virtual, null, null, type)
 {
-    public VirtualSymbol( ILuaType? type)
+    public VirtualSymbol(ILuaType? type)
         : this("", type)
     {
     }

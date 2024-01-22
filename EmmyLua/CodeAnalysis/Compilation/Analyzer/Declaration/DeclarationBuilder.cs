@@ -199,9 +199,9 @@ public class DeclarationBuilder : ILuaElementWalker
                 LuaTableTypeAnalysis(tableTypeSyntax);
                 break;
             }
-            case LuaSourceSyntax luaSourceSyntax:
+            case LuaBlockSyntax blockSyntax:
             {
-                LuaSourceAnalysis(luaSourceSyntax);
+                BlockReturnAnalysis(blockSyntax);
                 break;
             }
         }
@@ -423,7 +423,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         foreach (var tagParamSyntax in docList.OfType<LuaDocTagParamSyntax>())
         {
-            if (tagParamSyntax is { Name: { } name, Type: { } type, Nullable: { }nullable })
+            if (tagParamSyntax is { Name: { } name, Type: { } type, Nullable: { } nullable })
             {
                 ILuaType ty = new LuaTypeRef(type);
                 if (nullable)
@@ -843,14 +843,8 @@ public class DeclarationBuilder : ILuaElementWalker
         StubIndexImpl.NamedTypeIndex.AddStub(DocumentId, className, new LuaClass(className));
     }
 
-    private void LuaSourceAnalysis(LuaSourceSyntax sourceSyntax)
+    private void BlockReturnAnalysis(LuaBlockSyntax mainBlock)
     {
-        var mainBlock = sourceSyntax.Block;
-        if (mainBlock is null)
-        {
-            return;
-        }
-
         var queue = new Queue<LuaBlockSyntax>();
         queue.Enqueue(mainBlock);
         while (queue.Count != 0)
@@ -924,13 +918,8 @@ public class DeclarationBuilder : ILuaElementWalker
                     }
                     case LuaReturnStatSyntax returnStatSyntax:
                     {
-                        var firstReturn = returnStatSyntax.ExprList.FirstOrDefault();
-                        if (firstReturn is not null)
-                        {
-                            StubIndexImpl.Modules.AddStub(DocumentId, sourceSyntax, firstReturn);
-                        }
-
-                        return;
+                        StubIndexImpl.BlockReturns.AddStub(DocumentId, block, returnStatSyntax.ExprList.ToList());
+                        break;
                     }
                 }
             }
