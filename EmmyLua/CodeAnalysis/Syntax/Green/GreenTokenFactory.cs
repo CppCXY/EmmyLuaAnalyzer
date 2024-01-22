@@ -3,7 +3,6 @@
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
 using System.Collections.Generic;
-using System.Threading;
 
 public class GreenTokenFactory
 {

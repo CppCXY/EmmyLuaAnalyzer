@@ -1,9 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 

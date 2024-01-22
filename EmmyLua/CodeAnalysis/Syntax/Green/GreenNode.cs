@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 

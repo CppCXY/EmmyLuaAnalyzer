@@ -1,7 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
 

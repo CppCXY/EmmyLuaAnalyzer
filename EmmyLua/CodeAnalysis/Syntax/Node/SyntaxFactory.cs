@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
-using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;

@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compile;
-using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 

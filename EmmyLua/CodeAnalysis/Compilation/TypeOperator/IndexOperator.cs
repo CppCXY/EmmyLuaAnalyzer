@@ -1,7 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.TypeOperator;
 

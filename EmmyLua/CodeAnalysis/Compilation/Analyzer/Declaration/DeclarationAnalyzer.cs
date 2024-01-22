@@ -1,7 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 

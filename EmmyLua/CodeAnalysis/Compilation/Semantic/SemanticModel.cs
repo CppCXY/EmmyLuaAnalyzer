@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 

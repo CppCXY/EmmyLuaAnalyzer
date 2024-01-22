@@ -2,10 +2,19 @@
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 
+var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    ---@param b number
-    ---@param a string
+    ---@param a? string
+    function f(a, b, c)
+        print(a, b, c)
+    end
+    
+    f(nil, 2, 3)
     """, new LuaLanguage());
-var tree = document.SyntaxTree;
-Console.Write(tree.SyntaxRoot.DebugSyntaxInspect());
+workspace.AddDocument(document);
+var diagnostics = workspace.Compilation.GetDiagnostic(document.Id);
+foreach (var diagnostic in diagnostics)
+{
+    Console.WriteLine(diagnostic);
+}

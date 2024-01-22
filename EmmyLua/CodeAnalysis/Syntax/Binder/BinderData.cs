@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using EmmyLua.CodeAnalysis.Syntax.Node;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Binder;

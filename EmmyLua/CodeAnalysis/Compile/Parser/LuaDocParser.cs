@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
-using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 

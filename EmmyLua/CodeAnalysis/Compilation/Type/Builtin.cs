@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
@@ -71,11 +70,16 @@ public class Primitive(string name) : LuaClass(name)
 public class Unknown() : Primitive("unknown")
 {
     public override bool IsNullable { get; } = true;
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context) => true;
 }
 
 public class Nil() : Primitive("nil")
 {
     public override bool IsNullable { get; } = true;
+
+    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
+        ReferenceEquals(this, other) || other.IsNullable;
 }
 
 public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table"), IGenericImpl

@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 

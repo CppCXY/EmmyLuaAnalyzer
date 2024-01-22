@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compile.Lexer;
+﻿using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Kind;
 
