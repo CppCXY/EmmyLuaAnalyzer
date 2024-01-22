@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -88,12 +89,12 @@ public class SearchContext
         return Compilation.Builtin.Unknown;
     }
 
-    public IEnumerable<Declaration.Declaration> FindMembers(string name)
+    public IEnumerable<Symbol.Symbol> FindMembers(string name)
     {
         return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
     }
 
-    public IEnumerable<Declaration.Declaration> FindGenericParams(string name)
+    public IEnumerable<Symbol.Symbol> FindGenericParams(string name)
     {
         return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
     }
@@ -105,11 +106,11 @@ public class SearchContext
 
     public string GetUniqueId(LuaSyntaxElement element)
     {
-        var source = element.Tree.Source;
+        var source = element.Tree.Document;
         if (source is LuaDocument document)
         {
             var documentId = document.Id;
-            return $"{documentId.Guid}:{Compilation.DeclarationTrees[documentId].GetPosition(element)}";
+            return $"{documentId.Guid}:{Compilation.SymbolTrees[documentId].GetPosition(element)}";
         }
 
         return string.Empty;

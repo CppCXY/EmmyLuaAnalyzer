@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Parser;
@@ -12,7 +13,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 {
     private LuaParser OwnerParser { get; } = luaParser;
 
-    public LuaDocLexer Lexer { get; } = new(luaParser.Lexer.Source);
+    public LuaDocLexer Lexer { get; } = new(luaParser.Lexer.Document);
 
     private LuaTokenData _current = new(LuaTokenKind.TkEof, new SourceRange());
 

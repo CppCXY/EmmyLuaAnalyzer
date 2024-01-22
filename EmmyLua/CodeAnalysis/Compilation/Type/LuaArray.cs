@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -7,13 +8,13 @@ public class LuaArray(ILuaType baseTy) : LuaType(TypeKind.Array)
 {
     public ILuaType Base { get; } = baseTy;
 
-    private VirtualDeclaration BaseDeclaration { get; } = new(baseTy);
+    private VirtualSymbol BaseSymbol { get; } = new(baseTy);
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
-        yield return BaseDeclaration;
+        yield return BaseSymbol;
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

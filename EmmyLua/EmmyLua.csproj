@@ -6,13 +6,4 @@
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
     </PropertyGroup>
-    
-    <ItemGroup>
-        
-<!--        <ItemGroup>-->
-<!--            <Folder Include="CodeAnalysis\Compilation\Declaration\"/>-->
-<!--            <Folder Include="CodeAnalysis\Compilation\Reference\"/>-->
-<!--        </ItemGroup>-->
-
-    </ItemGroup>
 </Project>

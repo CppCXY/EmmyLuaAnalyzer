@@ -4,8 +4,10 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -29,7 +31,7 @@ public class LuaCompilation
 
     private HashSet<DocumentId> DirtyDocuments { get; } = [];
 
-    internal Dictionary<DocumentId, DeclarationTree> DeclarationTrees { get; } = new();
+    internal Dictionary<DocumentId, SymbolTree> SymbolTrees { get; } = new();
 
     private List<ILuaAnalyzer> Analyzers { get; }
 
@@ -143,9 +145,9 @@ public class LuaCompilation
         DirtyDocuments.Add(documentId);
     }
 
-    public DeclarationTree? GetDeclarationTree(DocumentId documentId)
+    public SymbolTree? GetSymbolTree(DocumentId documentId)
     {
-        return DeclarationTrees.GetValueOrDefault(documentId);
+        return SymbolTrees.GetValueOrDefault(documentId);
     }
 
     public void AddDiagnostic(DocumentId documentId, Diagnostic diagnostic)
@@ -161,14 +163,14 @@ public class LuaCompilation
 
     public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
         tree => tree.Diagnostics.Select(it => it.WithLocation(
-            tree.Source.GetLocation(it.Range)
+            tree.Document.GetLocation(it.Range)
         ))
     );
 
     public IEnumerable<Diagnostic> GetDiagnostic(DocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
             ? tree.Diagnostics.Select(it => it.WithLocation(
-                tree.Source.GetLocation(it.Range)
+                tree.Document.GetLocation(it.Range)
             ))
             : Enumerable.Empty<Diagnostic>();
 }

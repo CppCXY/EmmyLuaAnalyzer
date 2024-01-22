@@ -1,21 +1,22 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
-public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
+public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, SymbolScope> scopeOwners)
 {
     public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
 
-    public DocumentId? Id => (LuaSyntaxTree.Source as LuaDocument)?.Id;
+    public DocumentId Id => LuaSyntaxTree.Document.Id;
 
-    public DeclarationScope? RootScope { get; internal set; }
+    public SymbolScope? RootScope { get; internal set; }
 
     public int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
 
-    public Declaration? FindDeclaration(LuaSyntaxElement element)
+    public Symbol? FindDeclaration(LuaSyntaxElement element)
     {
         switch (element)
         {
@@ -39,7 +40,7 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
         return null;
     }
 
-    public DeclarationScope? FindScope(LuaSyntaxElement element)
+    public SymbolScope? FindScope(LuaSyntaxElement element)
     {
         var cur = element;
         while (cur != null)
@@ -55,13 +56,13 @@ public class DeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxEl
         return null;
     }
 
-    public void WalkUp(LuaSyntaxElement element, Func<Declaration, bool> process)
+    public void WalkUp(LuaSyntaxElement element, Func<Symbol, bool> process)
     {
         var scope = FindScope(element);
         scope?.WalkUp(GetPosition(element), 0, process);
     }
 
-    public void WalkUpLocal(LuaSyntaxElement element, Func<Declaration, bool> process)
+    public void WalkUpLocal(LuaSyntaxElement element, Func<Symbol, bool> process)
     {
         WalkUp(element, declaration =>
         {

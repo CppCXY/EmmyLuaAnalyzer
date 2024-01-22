@@ -1,3 +1,4 @@
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 
 namespace Test;

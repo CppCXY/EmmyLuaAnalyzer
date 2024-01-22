@@ -1,49 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Compile.Source;
+﻿namespace EmmyLua.CodeAnalysis.Document;
 
-public class LuaSource
-{
-    public static LuaSource From(string text, LuaLanguage language)
-    {
-        return new LuaSource(text, language);
-    }
-
-    public string Text { get; set; }
-
-    public LuaLanguage Language { get; set; }
-
-    private LineIndex LineIndex { get; set; }
-
-    public virtual string Name => string.Empty;
-
-    internal LuaSource(string text, LuaLanguage language)
-    {
-        Text = text;
-        Language = language;
-        LineIndex = LineIndex.Parse(text);
-    }
-
-    public int GetCol(int offset)
-    {
-        return LineIndex.GetCol(offset, Text);
-    }
-
-    public int GetLine(int offset)
-    {
-        return LineIndex.GetLine(offset);
-    }
-
-    public int GetOffset(int line, int col)
-    {
-        return LineIndex.GetOffset(line, col, Text);
-    }
-
-    public virtual LuaLocation GetLocation(SourceRange range)
-    {
-        return new LuaLocation(this, range);
-    }
-}
-
-internal class LineIndex
+public class LineIndex
 {
     public static LineIndex Parse(string text)
     {
@@ -96,11 +53,7 @@ internal class LineIndex
         public bool ExistSurrogate { get; set; }
     }
 
-    private List<LineOffset> _indexs = new List<LineOffset>();
-
-    private LineIndex()
-    {
-    }
+    private List<LineOffset> _indexs = new();
 
     public int GetLine(int offset)
     {

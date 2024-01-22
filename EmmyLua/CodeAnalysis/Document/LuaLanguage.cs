@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compile;
+﻿namespace EmmyLua.CodeAnalysis.Document;
 
 public enum LuaLanguageLevel : short
 {

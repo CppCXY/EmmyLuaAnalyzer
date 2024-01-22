@@ -1,14 +1,15 @@
 ﻿using System.Globalization;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
 
-public class LuaLexer(LuaSource source)
+public class LuaLexer(LuaDocument document)
 {
-    public LuaSource Source { get; } = source;
-    private SourceReader Reader { get; } = new(source.Text);
+    public LuaDocument Document { get; } = document;
+    private SourceReader Reader { get; } = new(document.Text);
 
     public List<Diagnostic.Diagnostic> Diagnostics { get; } = new();
 
@@ -66,7 +67,7 @@ public class LuaLexer(LuaSource source)
             "false" => LuaTokenKind.TkFalse,
             "for" => LuaTokenKind.TkFor,
             "function" => LuaTokenKind.TkFunction,
-            "goto" => Source.Language.LanguageLevel > LuaLanguageLevel.Lua51
+            "goto" => Document.Language.LanguageLevel > LuaLanguageLevel.Lua51
                 ? LuaTokenKind.TkGoto
                 : LuaTokenKind.TkName,
             "if" => LuaTokenKind.TkIf,

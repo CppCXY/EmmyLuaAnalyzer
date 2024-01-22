@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using MediatR;
 using Microsoft.Extensions.Logging;

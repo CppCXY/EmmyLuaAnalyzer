@@ -1,4 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -9,8 +11,8 @@ public class DelayAnalyzeNode(
     LuaSyntaxNode node,
     DocumentId documentId,
     ILuaType? luaType,
-    Declaration? prev,
-    DeclarationScope? scope,
+    Symbol.Symbol? prev,
+    SymbolScope? scope,
     LuaExprSyntax? expr,
     int retId = 0
     )
@@ -21,9 +23,9 @@ public class DelayAnalyzeNode(
 
     public ILuaType? LuaType => luaType;
 
-    public Declaration? Prev => prev;
+    public Symbol.Symbol? Prev => prev;
 
-    public DeclarationScope? Scope => scope;
+    public SymbolScope? Scope => scope;
 
     public LuaExprSyntax? Expr => expr;
 

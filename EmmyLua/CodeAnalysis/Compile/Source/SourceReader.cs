@@ -1,4 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Compile.Source;
+﻿using EmmyLua.CodeAnalysis.Document;
+
+namespace EmmyLua.CodeAnalysis.Compile.Source;
 
 public class SourceReader
 {

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -77,18 +78,18 @@ public static class TypeInfer
 
     public static ILuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var paramDeclaration = new List<Declaration.Declaration>();
+        var paramDeclaration = new List<Symbol.Symbol>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name })
             {
-                var declaration = new VirtualDeclaration(name.RepresentText,
+                var declaration = new VirtualSymbol(name.RepresentText,
                     typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
                 paramDeclaration.Add(declaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var declaration = new VirtualDeclaration(varArgs.RepresentText,
+                var declaration = new VirtualSymbol(varArgs.RepresentText,
                     typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
                 paramDeclaration.Add(declaration);
             }

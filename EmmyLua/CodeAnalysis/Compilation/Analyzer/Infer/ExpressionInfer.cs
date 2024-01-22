@@ -157,11 +157,11 @@ public static class ExpressionInfer
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
-            Declaration.Declaration? declaration = null;
+            Symbol.Symbol? declaration = null;
             var prefixType = context.Infer(prefixExpr);
             if (prefixType is Unknown)
             {
-                var prefixDeclarationTree = DeclarationInfer.GetDeclarationTree(prefixExpr, context);
+                var prefixDeclarationTree = DeclarationInfer.GetSymbolTree(prefixExpr, context);
                 if (declaration?.Type is null && prefixDeclarationTree?.Id is { } id)
                 {
                     // 可能当前变量尚未开始分析
@@ -218,7 +218,7 @@ public static class ExpressionInfer
 
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        var declarationTree = DeclarationInfer.GetDeclarationTree(nameExpr, context);
+        var declarationTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
         if (declarationTree is not null)
         {
             var nameDecl = declarationTree.FindDeclaration(nameExpr);

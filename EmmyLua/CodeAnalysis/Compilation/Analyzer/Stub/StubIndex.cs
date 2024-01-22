@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
 

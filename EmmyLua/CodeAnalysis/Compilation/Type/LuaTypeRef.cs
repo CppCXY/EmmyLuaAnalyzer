@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
@@ -11,22 +12,22 @@ public class LuaTypeRef(LuaSyntaxElement element) : LuaType(TypeKind.TypeRef)
         return context.Infer(element);
     }
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
         return GetType(context).GetMembers(context);
     }
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
     {
         return GetType(context).IndexMember(name, context);
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         return GetType(context).IndexMember(index, context);
     }
 
-    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context)
     {
         return GetType(context).IndexMember(ty, context);
     }

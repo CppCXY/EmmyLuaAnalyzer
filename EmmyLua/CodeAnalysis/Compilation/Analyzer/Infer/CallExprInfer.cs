@@ -5,7 +5,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 
 public class CallExprInfer
 {
-    public Dictionary<string, Func<LuaCallExprSyntax, SearchContext, ILuaType>> CallExprHandles = new();
+    public Dictionary<string, Func<LuaCallExprSyntax, SearchContext, ILuaType>> CallExprHandles { get; } = new();
 
     public CallExprInfer()
     {

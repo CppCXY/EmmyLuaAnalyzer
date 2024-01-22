@@ -1,8 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compile;
-using EmmyLua.CodeAnalysis.Compile.Source;
-using EmmyLua.CodeAnalysis.Syntax.Tree;
+﻿using EmmyLua.CodeAnalysis.Syntax.Tree;
 
-namespace EmmyLua.CodeAnalysis.Workspace;
+namespace EmmyLua.CodeAnalysis.Document;
 
 public class DocumentId(string path, string uri)
 {
@@ -31,11 +29,32 @@ public class DocumentId(string path, string uri)
     public bool IsVirtual => Path.Length == 0;
 }
 
-public class LuaDocument : LuaSource
+public class LuaDocument
 {
     public DocumentId Id { get; }
 
     private LuaSyntaxTree? _syntaxTree;
+
+    public string Text { get; set; }
+
+    public LuaLanguage Language { get; set; }
+
+    private LineIndex LineIndex { get; set; }
+
+    public int GetCol(int offset)
+    {
+        return LineIndex.GetCol(offset, Text);
+    }
+
+    public int GetLine(int offset)
+    {
+        return LineIndex.GetLine(offset);
+    }
+
+    public int GetOffset(int line, int col)
+    {
+        return LineIndex.GetOffset(line, col, Text);
+    }
 
     public static LuaDocument OpenDocument(string path, LuaLanguage language)
     {
@@ -63,16 +82,18 @@ public class LuaDocument : LuaSource
     }
 
     private LuaDocument(string text, LuaLanguage language, DocumentId id)
-        : base(text, language)
     {
         Id = id;
+        Text = text;
+        Language = language;
+        LineIndex = LineIndex.Parse(text);
     }
 
     public LuaSyntaxTree SyntaxTree => _syntaxTree ??= LuaSyntaxTree.Create(this);
 
-    public override LuaDocumentLocation GetLocation(SourceRange range)
+    public LuaLocation GetLocation(SourceRange range, int baseLine = 0)
     {
-        return new LuaDocumentLocation(this, range);
+        return new LuaLocation(this, range, baseLine);
     }
 
     public LuaDocument WithText(string text)
@@ -80,3 +101,4 @@ public class LuaDocument : LuaSource
         return new LuaDocument(text, Language, Id);
     }
 }
+

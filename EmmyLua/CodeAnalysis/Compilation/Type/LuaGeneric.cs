@@ -1,11 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public interface IGenericBase : ILuaNamedType
 {
-    public IEnumerable<Declaration> GetGenericParams(SearchContext context)
+    public IEnumerable<Symbol.Symbol> GetGenericParams(SearchContext context)
     {
         return context.FindGenericParams(Name);
     }
@@ -24,7 +25,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
 
     public List<ILuaType> GenericArgs { get; } = genericArgs;
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
         foreach (var memberDeclaration in BaseType.GetMembers(context))
         {
@@ -39,7 +40,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
         }
     }
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
     {
         foreach (var memberDeclaration in BaseType.IndexMember(name, context))
         {
@@ -54,7 +55,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
         }
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         foreach (var memberDeclaration in BaseType.IndexMember(index, context))
         {
@@ -69,7 +70,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
         }
     }
 
-    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context)
     {
         foreach (var memberDeclaration in BaseType.IndexMember(ty, context))
         {

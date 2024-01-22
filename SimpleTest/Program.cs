@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compile;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 
 var document = LuaDocument.FromText(

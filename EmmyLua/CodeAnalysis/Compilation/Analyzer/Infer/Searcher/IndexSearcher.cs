@@ -19,15 +19,15 @@ public class IndexSearcher : LuaSearcher
         }
     }
 
-    public override IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> SearchMembers(string className, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        return stubIndexImpl.Members.Get<Declaration.Declaration>(className);
+        return stubIndexImpl.Members.Get<Symbol.Symbol>(className);
     }
 
-    public override IEnumerable<Declaration.Declaration> SearchGenericParams(string className, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> SearchGenericParams(string className, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.StubIndexImpl;
-        return stubIndexImpl.GenericParams.Get<Declaration.Declaration>(className);
+        return stubIndexImpl.GenericParams.Get<Symbol.Symbol>(className);
     }
 }

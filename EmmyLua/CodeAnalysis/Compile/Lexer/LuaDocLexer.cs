@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
@@ -14,11 +15,11 @@ public enum LuaDocLexerState
     Trivia
 }
 
-public class LuaDocLexer(LuaSource source)
+public class LuaDocLexer(LuaDocument document)
 {
-    public LuaSource Source { get; } = source;
+    public LuaDocument Document { get; } = document;
 
-    internal SourceReader Reader { get; } = new(source.Text);
+    internal SourceReader Reader { get; } = new(document.Text);
 
     private LuaTokenKind OriginTokenKind { get; set; }
 

@@ -10,7 +10,7 @@ public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
 {
     public LuaTokenKind Kind => Green.TokenKind;
 
-    public ReadOnlySpan<char> Text => Tree.Source.Text.AsSpan(Range.StartOffset, Range.Length);
+    public ReadOnlySpan<char> Text => Tree.Document.Text.AsSpan(Range.StartOffset, Range.Length);
 
     public string RepresentText => Text.ToString();
 }

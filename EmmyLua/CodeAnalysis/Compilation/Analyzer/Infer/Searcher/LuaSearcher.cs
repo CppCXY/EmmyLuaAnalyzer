@@ -10,14 +10,14 @@ public abstract class LuaSearcher : ILuaSearcher
         return Enumerable.Empty<ILuaNamedType>();
     }
 
-    public virtual IEnumerable<Declaration.Declaration> SearchMembers(string className, SearchContext context)
+    public virtual IEnumerable<Symbol.Symbol> SearchMembers(string className, SearchContext context)
     {
-        return Enumerable.Empty<Declaration.Declaration>();
+        return Enumerable.Empty<Symbol.Symbol>();
     }
 
-    public virtual IEnumerable<Declaration.Declaration> SearchGenericParams(string className, SearchContext context)
+    public virtual IEnumerable<Symbol.Symbol> SearchGenericParams(string className, SearchContext context)
     {
-        return Enumerable.Empty<Declaration.Declaration>();
+        return Enumerable.Empty<Symbol.Symbol>();
     }
 
     public virtual IEnumerable<ILuaType> SearchSupers(string className, SearchContext context)

@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 
@@ -97,7 +98,7 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                     else
                     {
                         Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
-                            Parser.Lexer.Source.Text.Length
+                            Parser.Lexer.Document.Text.Length
                         )));
                     }
 

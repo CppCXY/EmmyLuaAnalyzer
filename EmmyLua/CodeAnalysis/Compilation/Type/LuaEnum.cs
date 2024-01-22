@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -9,9 +10,9 @@ public class LuaEnum(string name, ILuaType luaType) : LuaType(TypeKind.Enum), IL
 
     public ILuaType BaseType { get; } = luaType;
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
-        return Enumerable.Empty<Declaration>();
+        return Enumerable.Empty<Symbol.Symbol>();
     }
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)

@@ -1,9 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
 
@@ -19,7 +21,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             return;
         }
 
-        var declarationTree = Compilation.GetDeclarationTree(documentId);
+        var declarationTree = Compilation.GetSymbolTree(documentId);
         if (declarationTree is null)
         {
             return;
@@ -271,7 +273,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 
     private void CheckFuncCallParams(
         LuaCallExprSyntax callExprSyntax,
-        List<Declaration.Declaration> parameters,
+        List<Symbol.Symbol> parameters,
         List<LuaExprSyntax> arguments
     )
     {
@@ -356,8 +358,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     }
                     case (false, true):
                     {
-                        var declarations = new List<Declaration.Declaration>
-                            { new VirtualDeclaration("self", luaMethod.SelfType) };
+                        var declarations = new List<Symbol.Symbol>
+                            { new VirtualSymbol("self", luaMethod.SelfType) };
                         declarations.AddRange(perfectSig.Parameters);
                         CheckFuncCallParams(callExpr, declarations, args);
                         break;

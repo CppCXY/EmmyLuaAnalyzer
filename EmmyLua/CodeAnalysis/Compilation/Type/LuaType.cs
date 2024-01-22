@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 
@@ -7,16 +8,16 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public abstract class LuaType(TypeKind kind) : ILuaType
 {
-    public abstract IEnumerable<Declaration> GetMembers(SearchContext context);
+    public abstract IEnumerable<Symbol.Symbol> GetMembers(SearchContext context);
 
-    public virtual IEnumerable<Declaration> IndexMember(string name, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public virtual IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
-    public virtual IEnumerable<Declaration> IndexMember(long index, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public virtual IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
-    public virtual IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public virtual IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
     public virtual bool SubTypeOf(ILuaType other, SearchContext context)
     {

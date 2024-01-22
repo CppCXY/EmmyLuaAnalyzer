@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
-using EmmyLua.CodeAnalysis.Compile;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
-using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Binder;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -12,7 +11,7 @@ namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
 public class LuaSyntaxTree
 {
-    public LuaSource Source { get; }
+    public LuaDocument Document { get; }
 
     public GreenNode GreenRoot { get; }
 
@@ -24,7 +23,7 @@ public class LuaSyntaxTree
 
     public static LuaSyntaxTree ParseText(string text, LuaLanguage language)
     {
-        var source = LuaSource.From(text, language);
+        var source = LuaDocument.FromText(text, language);
         return Create(source);
     }
 
@@ -33,18 +32,18 @@ public class LuaSyntaxTree
         return ParseText(text, LuaLanguage.Default);
     }
 
-    public static LuaSyntaxTree Create(LuaSource source)
+    public static LuaSyntaxTree Create(LuaDocument document)
     {
-        var parser = new LuaParser(new LuaLexer(source));
+        var parser = new LuaParser(new LuaLexer(document));
         var builder = new LuaGreenTreeBuilder(parser);
         var (root, diagnostics) = builder.Build();
 
-        return new LuaSyntaxTree(source, root, diagnostics);
+        return new LuaSyntaxTree(document, root, diagnostics);
     }
 
-    private LuaSyntaxTree(LuaSource source, GreenNode root, List<Compile.Diagnostic.Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaDocument document, GreenNode root, List<Compile.Diagnostic.Diagnostic> diagnostics)
     {
-        Source = source;
+        Document = document;
         GreenRoot = root;
         Diagnostics = diagnostics;
     }

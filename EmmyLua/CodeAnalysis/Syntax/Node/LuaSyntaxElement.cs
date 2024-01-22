@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -416,7 +417,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         }
     }
 
-    public LuaLocation Location => Tree.Source.GetLocation(Range);
+    public LuaLocation Location => Tree.Document.GetLocation(Range);
 
     public LuaSyntaxToken TokenAt(int offset)
     {
@@ -438,7 +439,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
     // 0 based line and col
     public LuaSyntaxToken TokenAt(int line, int col)
     {
-        var offset = Tree.Source.GetOffset(line, col);
+        var offset = Tree.Document.GetOffset(line, col);
         return TokenAt(offset);
     }
 

@@ -1,28 +1,28 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
-public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
-    : DeclarationNodeContainer(pos, parent)
+public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+    : SymbolNodeContainer(pos, parent)
 {
-    public DeclarationTree Tree { get; } = tree;
+    public SymbolTree Tree { get; } = tree;
 
-    public new DeclarationScope? Parent { get; } = parent;
+    public new SymbolScope? Parent { get; } = parent;
 
-    public virtual bool WalkOver(Func<Declaration, bool> process)
+    public virtual bool WalkOver(Func<Symbol, bool> process)
     {
         return true;
     }
 
-    public virtual void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public virtual void WalkUp(int position, int level, Func<Symbol, bool> process)
     {
         var cur = FindLastChild(it => it.Position < position);
         while (cur != null)
         {
             switch (cur)
             {
-                case Declaration declaration when !process(declaration):
-                case DeclarationScope scope when !scope.WalkOver(process):
+                case Symbol declaration when !process(declaration):
+                case SymbolScope scope when !scope.WalkOver(process):
                     return;
                 default:
                     cur = cur.Prev;
@@ -33,12 +33,12 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         Parent?.WalkUp(position, level + 1, process);
     }
 
-    public Declaration? FindNameExpr(LuaNameExprSyntax nameExpr)
+    public Symbol? FindNameExpr(LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { } name)
         {
             var nameText = name.RepresentText;
-            Declaration? result = null;
+            Symbol? result = null;
             WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
             {
                 if ((declaration.IsGlobal || declaration.IsLocal) &&
@@ -56,11 +56,11 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         return null;
     }
 
-    public Declaration? FindParamDef(LuaParamDefSyntax paramDef)
+    public Symbol? FindParamDef(LuaParamDefSyntax paramDef)
     {
         var position = Tree.GetPosition(paramDef);
         var declarationNode = FindFirstChild(it => it.Position == position);
-        if (declarationNode is Declaration result)
+        if (declarationNode is Symbol result)
         {
             return result;
         }
@@ -68,11 +68,11 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         return null;
     }
 
-    public Declaration? FindLocalName(LuaLocalNameSyntax localName)
+    public Symbol? FindLocalName(LuaLocalNameSyntax localName)
     {
         var position = Tree.GetPosition(localName);
         var declarationNode = FindFirstChild(it => it.Position == position);
-        if (declarationNode is Declaration result)
+        if (declarationNode is Symbol result)
         {
             return result;
         }
@@ -80,21 +80,21 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
         return null;
     }
 
-    public IEnumerable<Declaration> DescendantDeclarations
+    public IEnumerable<Symbol> DescendantDeclarations
     {
         get
         {
-            var stack = new Stack<DeclarationNode>();
+            var stack = new Stack<SymbolNode>();
             stack.Push(this);
             while (stack.Count > 0)
             {
                 var node = stack.Pop();
                 // ReSharper disable once InvertIf
-                if (node is Declaration declaration)
+                if (node is Symbol declaration)
                 {
                     yield return declaration;
                 }
-                else if (node is DeclarationNodeContainer n)
+                else if (node is SymbolNodeContainer n)
                 {
                     foreach (var child in n.Children.AsEnumerable().Reverse())
                     {
@@ -106,26 +106,26 @@ public class DeclarationScope(DeclarationTree tree, int pos, DeclarationScope? p
     }
 }
 
-public class LocalStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
-    : DeclarationScope(tree, pos, parent)
+public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+    : SymbolScope(tree, pos, parent)
 {
-    public override bool WalkOver(Func<Declaration, bool> process)
+    public override bool WalkOver(Func<Symbol, bool> process)
     {
         return ProcessNode(process);
     }
 
-    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
     {
         Parent?.WalkUp(Position, level, process);
     }
 }
 
-public class RepeatStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
-    : DeclarationScope(tree, pos, parent)
+public class RepeatStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+    : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
     {
-        if (Children.FirstOrDefault() is DeclarationScope scope && level == 0)
+        if (Children.FirstOrDefault() is SymbolScope scope && level == 0)
         {
             scope.WalkUp(position, level, process);
         }
@@ -136,10 +136,10 @@ public class RepeatStatDeclarationScope(DeclarationTree tree, int pos, Declarati
     }
 }
 
-public class ForRangeStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
-    : DeclarationScope(tree, pos, parent)
+public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+    : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
     {
         if (level == 0)
         {
@@ -152,10 +152,10 @@ public class ForRangeStatDeclarationScope(DeclarationTree tree, int pos, Declara
     }
 }
 
-public class MethodStatDeclarationScope(DeclarationTree tree, int pos, DeclarationScope? parent)
-    : DeclarationScope(tree, pos, parent)
+public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+    : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Declaration, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
     {
         if (level == 0)
         {

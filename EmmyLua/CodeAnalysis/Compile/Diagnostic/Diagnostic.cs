@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compile.Diagnostic;
 

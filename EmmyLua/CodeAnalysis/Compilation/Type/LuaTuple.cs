@@ -1,18 +1,19 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 {
-    public List<Declaration> Declarations => types.Select(it=>new VirtualDeclaration(it)).Cast<Declaration>().ToList();
+    public List<Symbol.Symbol> Declarations => types.Select(it=>new VirtualSymbol(it)).Cast<Symbol.Symbol>().ToList();
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
         return Declarations;
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         if (index < Declarations.Count)
         {

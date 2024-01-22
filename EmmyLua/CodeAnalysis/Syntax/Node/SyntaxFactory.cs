@@ -2,6 +2,7 @@
 using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Compile.Source;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -119,7 +120,7 @@ public static class SyntaxFactory
     private static LuaIntegerToken CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     {
         var hex = false;
-        var text = tree.Source.Text.AsSpan(startOffset, greenNode.Length);
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
             hex = true;
@@ -155,7 +156,7 @@ public static class SyntaxFactory
     private static LuaFloatToken CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     {
         double value = 0;
-        var text = tree.Source.Text.AsSpan(startOffset, greenNode.Length);
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         // 支持16进制浮点数, C# 不能原生支持
         if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
@@ -203,7 +204,7 @@ public static class SyntaxFactory
     // luajit 支持复数干嘛?
     private static LuaComplexToken CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     {
-        var text = tree.Source.Text.AsSpan(startOffset, greenNode.Length);
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         // 裁剪掉complex的i
         text = text[..^1];
         return new LuaComplexToken(text.ToString(), greenNode, tree, parent, startOffset);
@@ -211,7 +212,7 @@ public static class SyntaxFactory
 
     private static LuaStringToken CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     {
-        var text = tree.Source.Text.AsSpan(startOffset, greenNode.Length);
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         if (text.Length < 2)
         {
             return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
@@ -429,7 +430,7 @@ public static class SyntaxFactory
     private static LuaStringToken CalculateLongString(GreenNode greenNode, LuaSyntaxTree tree,
         LuaSyntaxElement? parent, int startOffset)
     {
-        var text = tree.Source.Text.AsSpan(startOffset, greenNode.Length);
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         if (text.Length < 4)
         {
             return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);

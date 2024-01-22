@@ -2,6 +2,8 @@
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 
@@ -14,7 +16,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
         {
             var builder = new DeclarationBuilder(documentId, syntaxTree, this);
-            Compilation.DeclarationTrees[documentId] = builder.Build();
+            Compilation.SymbolTrees[documentId] = builder.Build();
         }
 
         DelayAnalyze();
@@ -44,12 +46,12 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             var prefixTy = Compilation.SearchContext.Infer(expr.PrefixExpr);
             if (prefixTy is ILuaNamedType namedType)
             {
-                var declarationTree = Compilation.GetDeclarationTree(documentId);
+                var declarationTree = Compilation.GetSymbolTree(documentId);
                 if (declarationTree is not null)
                 {
                     var parentTyName = namedType.Name;
-                    var declaration = new Declaration(indexName, declarationTree.GetPosition(keyElement), keyElement,
-                        DeclarationFlag.ClassMember, delayAnalyzeNode.Scope, delayAnalyzeNode.Prev,
+                    var declaration = new Symbol.Symbol(indexName, declarationTree.GetPosition(keyElement), keyElement,
+                        SymbolFlag.ClassMember, delayAnalyzeNode.Scope, delayAnalyzeNode.Prev,
                         delayAnalyzeNode.LuaType);
                     delayAnalyzeNode.Scope?.Add(declaration);
                     Compilation.StubIndexImpl.Members.AddStub(documentId, parentTyName, declaration);
@@ -58,7 +60,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
 
             if (delayAnalyzeNode.LuaType is LuaMethod method && expr.IsColonIndex)
             {
-                var declarationTree = Compilation.GetDeclarationTree(documentId);
+                var declarationTree = Compilation.GetSymbolTree(documentId);
                 if (declarationTree is not null)
                 {
                     method.SelfType = prefixTy;
@@ -69,6 +71,6 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
 
     public override void RemoveCache(DocumentId documentId)
     {
-        Compilation.DeclarationTrees.Remove(documentId);
+        Compilation.SymbolTrees.Remove(documentId);
     }
 }

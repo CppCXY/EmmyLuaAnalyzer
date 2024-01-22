@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
@@ -8,12 +9,12 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 public class LuaMethod(
     Signature mainSignature,
     List<Signature>? overloadSignatures = null,
-    List<Declaration>? genericParameters = null)
+    List<Symbol.Symbol>? genericParameters = null)
     : LuaType(TypeKind.Method)
 {
     public Signature MainSignature { get; } = mainSignature;
 
-    public List<Declaration>? GenericParameters { get; } = genericParameters;
+    public List<Symbol.Symbol>? GenericParameters { get; } = genericParameters;
 
     public List<Signature>? OverloadSignatures { get; } = overloadSignatures;
 
@@ -38,7 +39,7 @@ public class LuaMethod(
         }
     }
 
-    private static int MatchCount(List<Declaration> parameters, List<LuaExprSyntax> arguments, SearchContext context)
+    private static int MatchCount(List<Symbol.Symbol> parameters, List<LuaExprSyntax> arguments, SearchContext context)
     {
         var matched = 0;
         for (; matched < parameters.Count; matched++)
@@ -94,7 +95,7 @@ public class LuaMethod(
                 }
                 case (false, true):
                 {
-                    var declarations = new List<Declaration> { new VirtualDeclaration("self", SelfType) };
+                    var declarations = new List<Symbol.Symbol> { new VirtualSymbol("self", SelfType) };
                     declarations.AddRange(signature.Parameters);
                     count += MatchCount(declarations, args, context);
                     break;
@@ -119,7 +120,7 @@ public class LuaMethod(
         return perfectSignature;
     }
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
 
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
@@ -147,14 +148,14 @@ public class LuaMethod(
 
 public class Signature(
     bool colon,
-    List<Declaration> parameters,
+    List<Symbol.Symbol> parameters,
     ILuaType? returnTypes)
 {
     public bool ColonDefine { get; } = colon;
 
     public ILuaType? ReturnTypes { get; } = returnTypes;
 
-    public List<Declaration> Parameters { get; } = parameters;
+    public List<Symbol.Symbol> Parameters { get; } = parameters;
 
     public ILuaType? Variadic
     {
@@ -162,7 +163,7 @@ public class Signature(
         {
             if (Parameters.LastOrDefault() is { Name: "..." } lastParam)
             {
-                return lastParam.FirstDeclaration.Type;
+                return lastParam.FirstSymbol.Type;
             }
 
             return null;

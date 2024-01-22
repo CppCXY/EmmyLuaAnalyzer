@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -52,16 +53,16 @@ public class Primitive(string name) : LuaClass(name)
         return this;
     }
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
-    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context) =>
-        Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context) =>
+        Enumerable.Empty<Symbol.Symbol>();
 
     public override bool SubTypeOf(ILuaType other, SearchContext context) =>
         ReferenceEquals(this, other) || Super?.SubTypeOf(other, context) == true;
@@ -87,37 +88,37 @@ public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table"), IGene
 
     public List<ILuaType> GenericArgs { get; } = [];
 
-    public VirtualDeclaration MemberDeclaration { get; } = new(value);
+    public VirtualSymbol MemberSymbol { get; } = new(value);
 
     public static LuaTable WithGeneric(ILuaType key, ILuaType value)
     {
         return new LuaTable(key, value);
     }
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context) => Enumerable.Empty<Declaration>();
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
     {
         if (ReferenceEquals(Key, context.Compilation.Builtin.String))
         {
-            yield return MemberDeclaration;
+            yield return MemberSymbol;
         }
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         if (ReferenceEquals(Key, context.Compilation.Builtin.Integer)
             || ReferenceEquals(Key, context.Compilation.Builtin.Number))
         {
-            yield return MemberDeclaration;
+            yield return MemberSymbol;
         }
     }
 
-    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context)
     {
         if (Key is not null && ty.SubTypeOf(Key, context))
         {
-            yield return MemberDeclaration;
+            yield return MemberSymbol;
         }
     }
 

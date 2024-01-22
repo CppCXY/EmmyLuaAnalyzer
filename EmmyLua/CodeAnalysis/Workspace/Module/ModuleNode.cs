@@ -1,4 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Workspace.Module;
+﻿using EmmyLua.CodeAnalysis.Document;
+
+namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
 public class ModuleNode
 {

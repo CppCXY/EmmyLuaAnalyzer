@@ -34,7 +34,7 @@ public class HoverHandler(
         if (document is not null)
         {
             var pos = request.Position;
-            var declarationTree = workspace.Compilation.GetDeclarationTree(document.Id);
+            var declarationTree = workspace.Compilation.GetSymbolTree(document.Id);
             var node = declarationTree?.LuaSyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
             if (node is not null)
             {

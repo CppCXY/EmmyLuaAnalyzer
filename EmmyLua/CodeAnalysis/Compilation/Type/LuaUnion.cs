@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -89,22 +90,22 @@ public class LuaUnion() : LuaType(TypeKind.Union)
         return this;
     }
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
         return ChildrenType.SelectMany(it => it.GetMembers(context));
     }
 
-    public override IEnumerable<Declaration> IndexMember(ILuaType ty, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context)
     {
         return ChildrenType.SelectMany(it => it.IndexMember(ty, context));
     }
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
     {
         return ChildrenType.SelectMany(it => it.IndexMember(name, context));
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         return ChildrenType.SelectMany(it => it.IndexMember(index, context));
     }

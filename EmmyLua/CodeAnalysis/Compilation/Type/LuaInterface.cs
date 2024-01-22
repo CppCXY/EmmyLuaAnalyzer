@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -7,17 +8,17 @@ public class LuaInterface(string name) : LuaType(TypeKind.Interface), IGenericBa
 {
     public string Name { get; } = name;
 
-    public override IEnumerable<Declaration> GetMembers(SearchContext context)
+    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
     {
         return context.FindMembers(Name);
     }
 
-    public override IEnumerable<Declaration> IndexMember(string name, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
     {
         return GetMembers(context).Where(it => string.Compare(it.Name, name, StringComparison.CurrentCulture) == 0);
     }
 
-    public override IEnumerable<Declaration> IndexMember(long index, SearchContext context)
+    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
     {
         var key = $"[{index}]";
         return GetMembers(context).Where(it => string.Compare(it.Name, key, StringComparison.CurrentCulture) == 0);

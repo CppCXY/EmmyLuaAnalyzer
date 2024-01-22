@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compile.Source;
+﻿namespace EmmyLua.CodeAnalysis.Document;
 
 public struct SourceRange(int startOffset = 0, int length = 0)
 {
