@@ -106,6 +106,7 @@ public class DeclarationBuilder : ILuaElementWalker
             LuaRepeatStatSyntax => Push(new RepeatStatSymbolScope(_tree, position, _curScope),
                 element),
             LuaForRangeStatSyntax => Push(new ForRangeStatSymbolScope(_tree, position, _curScope), element),
+            LuaFuncStatSyntax => Push(new MethodStatSymbolScope(_tree, position, _curScope), element),
             _ => Push(new SymbolScope(_tree, position, _curScope), element)
         };
     }
@@ -217,7 +218,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private static bool IsScopeOwner(LuaSyntaxElement node)
         => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
-            or LuaForStatSyntax;
+            or LuaForStatSyntax or LuaFuncStatSyntax;
 
     private void LocalStatDeclarationAnalysis(LuaLocalStatSyntax localStatSyntax)
     {
@@ -325,7 +326,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void ForStatDeclarationAnalysis(LuaForStatSyntax forStatSyntax)
     {
-        if (forStatSyntax is { IteratorName.Name: { } name, InitExpr: { } initExpr })
+        if (forStatSyntax is { IteratorName.Name: { } name })
         {
             CreateDeclaration(name.RepresentText, name, SymbolFlag.Local, Compilation.Builtin.Integer);
         }

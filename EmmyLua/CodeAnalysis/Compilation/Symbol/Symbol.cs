@@ -59,20 +59,6 @@ public abstract class SymbolNodeContainer(int position, SymbolNodeContainer? par
         }
     }
 
-    public bool ProcessNode<T>(Func<T, bool> process)
-    {
-        // ReSharper disable once LoopCanBeConvertedToQuery
-        foreach (var child in Children.OfType<T>())
-        {
-            if (!process(child))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public SymbolNode? FirstChild => Children.FirstOrDefault();
 
     public SymbolNode? LastChild => Children.LastOrDefault();

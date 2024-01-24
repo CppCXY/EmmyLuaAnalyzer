@@ -55,23 +55,4 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    public void WalkUp(LuaSyntaxElement element, Func<Symbol, bool> process)
-    {
-        var scope = FindScope(element);
-        scope?.WalkUp(GetPosition(element), 0, process);
-    }
-
-    public void WalkUpLocal(LuaSyntaxElement element, Func<Symbol, bool> process)
-    {
-        WalkUp(element, declaration =>
-        {
-            // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (declaration.IsLocal)
-            {
-                return process(declaration);
-            }
-
-            return true;
-        });
-    }
 }

@@ -10,8 +10,6 @@ public class StubIndexImpl(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public StubIndex<string, Symbol.Symbol> ShortNameIndex { get; } = new();
-
     public StubIndex<string, Symbol.Symbol> Members { get; } = new();
 
     public StubIndex<string, ILuaNamedType> NamedTypeIndex { get; } = new();
@@ -30,7 +28,6 @@ public class StubIndexImpl(LuaCompilation compilation)
 
     public void Remove(DocumentId documentId)
     {
-        ShortNameIndex.RemoveStub(documentId);
         Members.RemoveStub(documentId);
         NamedTypeIndex.RemoveStub(documentId);
         GlobalDeclaration.RemoveStub(documentId);

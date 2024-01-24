@@ -2,6 +2,12 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
+public enum ScopeFoundState
+{
+    Founded,
+    NotFounded,
+}
+
 public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     : SymbolNodeContainer(pos, parent)
 {
@@ -9,20 +15,21 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
 
     public new SymbolScope? Parent { get; } = parent;
 
-    public virtual bool WalkOver(Func<Symbol, bool> process)
+    public virtual ScopeFoundState WalkOver(Func<Symbol, ScopeFoundState> process)
     {
-        return true;
+        return ScopeFoundState.NotFounded;
     }
 
-    public virtual void WalkUp(int position, int level, Func<Symbol, bool> process)
+    public virtual void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
     {
         var cur = FindLastChild(it => it.Position < position);
         while (cur != null)
         {
             switch (cur)
             {
-                case Symbol declaration when !process(declaration):
-                case SymbolScope scope when !scope.WalkOver(process):
+                case Symbol symbol when process(symbol) == ScopeFoundState.Founded:
+                    return;
+                case SymbolScope scope when scope.WalkOver(process) == ScopeFoundState.Founded:
                     return;
                 default:
                     cur = cur.Prev;
@@ -31,6 +38,20 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
         }
 
         Parent?.WalkUp(position, level + 1, process);
+    }
+
+    public ScopeFoundState ProcessNode<T>(Func<T, ScopeFoundState> process)
+    {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var child in Children.OfType<T>())
+        {
+            if (process(child) == ScopeFoundState.Founded)
+            {
+                return ScopeFoundState.Founded;
+            }
+        }
+
+        return ScopeFoundState.NotFounded;
     }
 
     public Symbol? FindNameExpr(LuaNameExprSyntax nameExpr)
@@ -45,10 +66,10 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
                     string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
                 {
                     result = declaration;
-                    return false;
+                    return ScopeFoundState.Founded;
                 }
 
-                return true;
+                return ScopeFoundState.NotFounded;
             });
             return result;
         }
@@ -80,7 +101,7 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
         return null;
     }
 
-    public IEnumerable<Symbol> DescendantDeclarations
+    public IEnumerable<Symbol> Descendants
     {
         get
         {
@@ -109,12 +130,12 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
 public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     : SymbolScope(tree, pos, parent)
 {
-    public override bool WalkOver(Func<Symbol, bool> process)
+    public override ScopeFoundState WalkOver(Func<Symbol, ScopeFoundState> process)
     {
         return ProcessNode(process);
     }
 
-    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
     {
         Parent?.WalkUp(Position, level, process);
     }
@@ -123,7 +144,7 @@ public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
 public class RepeatStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
     {
         if (Children.FirstOrDefault() is SymbolScope scope && level == 0)
         {
@@ -139,7 +160,7 @@ public class RepeatStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent
 public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
+    public override void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
     {
         if (level == 0)
         {
@@ -155,15 +176,13 @@ public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? pare
 public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     : SymbolScope(tree, pos, parent)
 {
-    public override void WalkUp(int position, int level, Func<Symbol, bool> process)
+    public override ScopeFoundState WalkOver(Func<Symbol, ScopeFoundState> process)
     {
-        if (level == 0)
-        {
-            Parent?.WalkUp(position, level, process);
-        }
-        else
-        {
-            base.WalkUp(position, level, process);
-        }
+        return ProcessNode(process);
+    }
+
+    public override void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
+    {
+        Parent?.WalkUp(Position, level, process);
     }
 }
