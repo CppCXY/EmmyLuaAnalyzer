@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
@@ -18,5 +19,15 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         }
 
         return null;
+    }
+
+    public IEnumerable<Diagnostic> GetDiagnostic()
+    {
+        var tree = Compilation.GetSyntaxTree(Document.Id);
+
+        return tree?.Diagnostics.Select(it => it.WithLocation(
+                   tree.Document.GetLocation(it.Range)
+               ))
+               ?? Enumerable.Empty<Diagnostic>();
     }
 }

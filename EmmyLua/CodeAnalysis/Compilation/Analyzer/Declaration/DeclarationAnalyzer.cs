@@ -56,8 +56,4 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         IndexNodes.Clear();
     }
 
-    public override void RemoveCache(DocumentId documentId)
-    {
-        Compilation.SymbolTrees.Remove(documentId);
-    }
 }

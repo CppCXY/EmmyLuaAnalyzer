@@ -88,6 +88,7 @@ public class LuaCompilation
             luaAnalyzer.RemoveCache(documentId);
         }
 
+        SymbolTrees.Remove(documentId);
         Stub.Remove(documentId);
     }
 

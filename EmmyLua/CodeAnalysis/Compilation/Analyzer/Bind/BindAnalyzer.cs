@@ -150,8 +150,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 exprType = currentExprType;
             }
 
-            var declaration = tree.FindDeclaration(var, Context);
-            if (declaration is { DeclarationType: { } ty })
+            var symbol = tree.FindDeclaration(var, Context);
+            if (symbol is { DeclarationType: { } ty })
             {
                 if (!exprType.SubTypeOf(ty, Context))
                 {
@@ -165,7 +165,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             }
             else
             {
-                if (declaration != null) declaration.DeclarationType = exprType;
+                if (symbol != null) symbol.DeclarationType = exprType;
             }
         }
     }
@@ -175,8 +175,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var tree = bindData.Tree;
         if (forStat.IteratorName is { } itName)
         {
-            var declaration = tree.FindDeclaration(itName, Context);
-            if (declaration is { DeclarationType: { } ty })
+            var symbol = tree.FindDeclaration(itName, Context);
+            if (symbol is { DeclarationType: { } ty })
             {
                 if (forStat.InitExpr is { } initExpr)
                 {

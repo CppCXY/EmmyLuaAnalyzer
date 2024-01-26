@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using MediatR;
@@ -52,7 +53,7 @@ public class TextDocumentHandler(
             return Unit.Task;
         }
         workspace.UpdateDocument(uri, request.TextDocument.Text);
-        PushDiagnostic(request.TextDocument, workspace.GetDocument(uri)!);
+        PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
         return Unit.Task;
     }
 
@@ -61,7 +62,7 @@ public class TextDocumentHandler(
         var changes = request.ContentChanges.ToList();
         var uri = request.TextDocument.Uri.ToUnencodedString();
         workspace.UpdateDocument(uri, changes[0].Text);
-        PushDiagnostic(request.TextDocument, workspace.GetDocument(uri)!);
+        PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
         return Unit.Task;
     }
 
@@ -76,10 +77,10 @@ public class TextDocumentHandler(
         return Unit.Task;
     }
 
-    private void PushDiagnostic(TextDocumentIdentifier identifier, LuaDocument document)
+    private void PushDiagnostic(TextDocumentIdentifier identifier, SemanticModel semanticModel)
     {
-        var diagnostics = workspace.Compilation.GetDiagnostic(document.Id).Select(it => it.ToLspDiagnostic(document))
-            .ToList();
+        var diagnostics = semanticModel?.GetDiagnostic().Select(it => ToLspDiagnostic(it, semanticModel.Document))
+            .ToList() ?? [];
 
         languageServerFacade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
         {
@@ -87,12 +88,8 @@ public class TextDocumentHandler(
             Uri = identifier.Uri,
         });
     }
-}
-
-public static class DiagnosticExtensions
-{
-    public static Diagnostic ToLspDiagnostic(
-        this LuaDiagnostic diagnostic, LuaDocument document)
+    
+    public static Diagnostic ToLspDiagnostic(LuaDiagnostic diagnostic, LuaDocument document)
     {
         return new()
         {
