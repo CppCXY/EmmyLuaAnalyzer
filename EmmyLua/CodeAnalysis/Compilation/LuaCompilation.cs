@@ -25,7 +25,7 @@ public class LuaCompilation
 
     public Builtin Builtin { get; } = new();
 
-    public StubIndexImpl StubIndexImpl { get; }
+    public Stub Stub { get; }
 
     public SearchContext SearchContext { get; }
 
@@ -35,14 +35,10 @@ public class LuaCompilation
 
     private List<ILuaAnalyzer> Analyzers { get; }
 
-    public DeclarationAnalyzer DeclarationAnalyzer => (DeclarationAnalyzer) Analyzers[0];
-
-    public BindAnalyzer BindAnalyzer => (BindAnalyzer) Analyzers[1];
-
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        StubIndexImpl = new StubIndexImpl(this);
+        Stub = new Stub(this);
         SearchContext = new SearchContext(this);
         Analyzers =
         [
@@ -92,7 +88,7 @@ public class LuaCompilation
             luaAnalyzer.RemoveCache(documentId);
         }
 
-        StubIndexImpl.Remove(documentId);
+        Stub.Remove(documentId);
     }
 
     public LuaSyntaxTree? GetSyntaxTree(DocumentId documentId)

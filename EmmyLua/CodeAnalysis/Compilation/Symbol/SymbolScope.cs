@@ -125,6 +125,19 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
             }
         }
     }
+
+    public IEnumerable<SymbolScope> Ancestors
+    {
+        get
+        {
+            var cur = Parent;
+            while (cur != null)
+            {
+                yield return cur;
+                cur = cur.Parent;
+            }
+        }
+    }
 }
 
 public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
@@ -173,7 +186,7 @@ public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? pare
     }
 }
 
-public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
+public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent, Symbol? self)
     : SymbolScope(tree, pos, parent)
 {
     public override ScopeFoundState WalkOver(Func<Symbol, ScopeFoundState> process)
@@ -183,6 +196,17 @@ public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent
 
     public override void WalkUp(int position, int level, Func<Symbol, ScopeFoundState> process)
     {
-        Parent?.WalkUp(Position, level, process);
+        if (level == 0)
+        {
+            Parent?.WalkUp(position, level, process);
+        }
+        else
+        {
+            if (self is not null && process(self) == ScopeFoundState.Founded)
+            {
+                return;
+            }
+            base.WalkUp(position, level, process);
+        }
     }
 }

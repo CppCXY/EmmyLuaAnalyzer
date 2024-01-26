@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -9,20 +10,29 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
 {
     public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
 
-    public DocumentId Id => LuaSyntaxTree.Document.Id;
-
     public SymbolScope? RootScope { get; internal set; }
 
     public int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
 
-    public Symbol? FindDeclaration(LuaSyntaxElement element)
+    public Symbol? FindDeclaration(LuaSyntaxElement element, SearchContext context)
     {
         switch (element)
         {
             case LuaNameExprSyntax nameExpr:
             {
-                var scope = FindScope(nameExpr);
-                return scope?.FindNameExpr(nameExpr);
+                if (nameExpr.Name is { } name)
+                {
+                    var scope = FindScope(nameExpr);
+                    var symbol = scope?.FindNameExpr(nameExpr);
+                    if (symbol is not null)
+                    {
+                        return symbol;
+                    }
+                    return context.Compilation.Stub.GlobalDeclaration
+                        .Get(name.RepresentText).FirstOrDefault();;
+                }
+
+                break;
             }
             case LuaParamDefSyntax paramDef:
             {
@@ -33,6 +43,39 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
             {
                 var scope = FindScope(localName);
                 return scope?.FindLocalName(localName);
+            }
+            case LuaIndexExprSyntax indexExpr:
+            {
+                return FindIndexDeclaration(indexExpr, context);
+            }
+        }
+
+        return null;
+    }
+
+    private Symbol? FindIndexDeclaration(LuaIndexExprSyntax indexExpr, SearchContext context)
+    {
+        if (indexExpr.PrefixExpr is { } prefixExpr)
+        {
+            var prefixType = context.Infer(prefixExpr);
+            if (indexExpr is { DotOrColonIndexName: { } nameToken })
+            {
+                return prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
+            }
+            else if (indexExpr is { IndexKeyExpr: LuaLiteralExprSyntax literal })
+            {
+                return literal.Literal switch
+                {
+                    LuaStringToken stringToken => prefixType.IndexMember(stringToken.Value, context).FirstOrDefault(),
+                    LuaIntegerToken luaIntegerToken => prefixType.IndexMember(luaIntegerToken.Value, context)
+                        .FirstOrDefault(),
+                    _ => prefixType.IndexMember(literal.Literal.RepresentText, context).FirstOrDefault()
+                };
+            }
+            else if (indexExpr is { IndexKeyExpr: { } expr })
+            {
+                var indexType = context.Infer(expr);
+                return prefixType.IndexMember(indexType, context).FirstOrDefault();
             }
         }
 

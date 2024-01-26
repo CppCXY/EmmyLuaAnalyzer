@@ -98,8 +98,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 exprType = currentExprType;
             }
 
-            var declaration = tree.FindDeclaration(localName);
-            if (declaration is { Type: { } ty })
+            var symbol = tree.FindDeclaration(localName, Context);
+            if (symbol is { DeclarationType: { } ty })
             {
                 if (!exprType.SubTypeOf(ty, Context))
                 {
@@ -113,7 +113,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             }
             else
             {
-                if (declaration != null) declaration.Type = exprType;
+                if (symbol != null) symbol.DeclarationType = exprType;
             }
         }
     }
@@ -150,8 +150,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 exprType = currentExprType;
             }
 
-            var declaration = tree.FindDeclaration(var);
-            if (declaration is { Type: { } ty })
+            var declaration = tree.FindDeclaration(var, Context);
+            if (declaration is { DeclarationType: { } ty })
             {
                 if (!exprType.SubTypeOf(ty, Context))
                 {
@@ -165,7 +165,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             }
             else
             {
-                if (declaration != null) declaration.Type = exprType;
+                if (declaration != null) declaration.DeclarationType = exprType;
             }
         }
     }
@@ -175,8 +175,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         var tree = bindData.Tree;
         if (forStat.IteratorName is { } itName)
         {
-            var declaration = tree.FindDeclaration(itName);
-            if (declaration is { Type: { } ty })
+            var declaration = tree.FindDeclaration(itName, Context);
+            if (declaration is { DeclarationType: { } ty })
             {
                 if (forStat.InitExpr is { } initExpr)
                 {
@@ -239,8 +239,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 var iterName = iterNames[i];
                 var ty = tyList.ElementAtOrDefault(i) ?? Context.Compilation.Builtin.Unknown;
 
-                var declaration = tree.FindDeclaration(iterName);
-                if (declaration is { Type: { } declTy })
+                var declaration = tree.FindDeclaration(iterName, Context);
+                if (declaration is { DeclarationType: { } declTy })
                 {
                     if (!ty.SubTypeOf(declTy, Context))
                     {
@@ -254,7 +254,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 }
                 else
                 {
-                    if (declaration != null) declaration.Type = ty;
+                    if (declaration != null) declaration.DeclarationType = ty;
                 }
             }
         }
@@ -283,7 +283,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             var arg = arguments.ElementAtOrDefault(i);
             if (arg is null)
             {
-                if (param.Type is null or { IsNullable: true })
+                if (param.DeclarationType is null or { IsNullable: true })
                 {
                     continue;
                 }
@@ -300,7 +300,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             }
 
             var argTy = Context.Infer(arg);
-            if (param.Type is { } type)
+            if (param.DeclarationType is { } type)
             {
                 if (!argTy.SubTypeOf(type, Context))
                 {
@@ -314,7 +314,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
             }
             else
             {
-                param.Type = argTy;
+                param.DeclarationType = argTy;
             }
         }
     }

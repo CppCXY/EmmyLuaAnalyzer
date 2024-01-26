@@ -51,7 +51,7 @@ public class LuaMethod(
             var arg = arguments.ElementAtOrDefault(matched);
             var argTy = context.Infer(arg);
             var param = parameters[matched];
-            if (param.Type is { } type)
+            if (param.DeclarationType is { } type)
             {
                 if (!argTy.SubTypeOf(type, context))
                 {
@@ -162,7 +162,7 @@ public class Signature(
         {
             if (Parameters.LastOrDefault() is { Name: "..." } lastParam)
             {
-                return lastParam.FirstSymbol.Type;
+                return lastParam.FirstSymbol.DeclarationType;
             }
 
             return null;
@@ -183,8 +183,8 @@ public class Signature(
 
         for (var i = 0; i < Parameters.Count; i++)
         {
-            var luaType = Parameters[i].Type;
-            var type = other.Parameters.ElementAtOrDefault(i)?.Type;
+            var luaType = Parameters[i].DeclarationType;
+            var type = other.Parameters.ElementAtOrDefault(i)?.DeclarationType;
             if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
             {
                 return false;
@@ -214,7 +214,7 @@ public class Signature(
             }
 
             first = false;
-            sb.Append($"{parameter.Name}: {parameter.Type?.ToDisplayString(context) ?? "any"}");
+            sb.Append($"{parameter.Name}: {parameter.DeclarationType?.ToDisplayString(context) ?? "any"}");
         }
 
         sb.Append(')');

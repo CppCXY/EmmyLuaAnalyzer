@@ -13,7 +13,7 @@ public static class ExpressionInfer
         {
             LuaUnaryExprSyntax unaryExpr => InferUnaryExpr(unaryExpr, context),
             LuaBinaryExprSyntax binaryExpr => InferBinaryExpr(binaryExpr, context),
-            LuaCallExprSyntax callExpr => context.CallExprInfer.InferCallExpr(callExpr, context),
+            LuaCallExprSyntax callExpr => CallExprInfer.InferCallExpr(callExpr, context),
             LuaClosureExprSyntax closureExpr => InferClosureExpr(closureExpr, context),
             LuaTableExprSyntax tableExpr => InferTableExpr(tableExpr, context),
             LuaParenExprSyntax parenExpr => InferParenExpr(parenExpr, context),
@@ -93,7 +93,7 @@ public static class ExpressionInfer
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var method = context.Compilation.StubIndexImpl.Methods.Get(closureExpr).FirstOrDefault();
+        var method = context.Compilation.Stub.Methods.Get(closureExpr).FirstOrDefault();
         if (method is not null)
         {
             return method;
@@ -155,50 +155,24 @@ public static class ExpressionInfer
 
     private static ILuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
-        if (indexExpr.PrefixExpr is { } prefixExpr)
+        var declaration = DeclarationInfer.GetSymbolTree(indexExpr, context)?.FindDeclaration(indexExpr, context);
+
+        if (declaration is { DeclarationType: null, RelatedExpr: { } relatedExpr })
         {
-            Symbol.Symbol? declaration = null;
-            var prefixType = context.Infer(prefixExpr);
-            if (prefixType is Unknown)
+            var exprTy = context.Infer(relatedExpr);
+            if (exprTy is LuaMultiRetType retType)
             {
-                var prefixDeclarationTree = DeclarationInfer.GetSymbolTree(prefixExpr, context);
-                if (declaration?.Type is null && prefixDeclarationTree?.Id is { } id)
-                {
-                    // 可能当前变量尚未开始分析
-                    context.Compilation.BindAnalyzer.Analyze(id);
-                }
-                prefixType = declaration?.Type ?? context.Compilation.Builtin.Unknown;
+                declaration.DeclarationType = retType.GetRetType(declaration.RelatedExprReturnIndex);
             }
+            else
+            {
+                declaration.DeclarationType = exprTy;
+            }
+        }
 
-            if (indexExpr is { DotOrColonIndexName: { } nameToken })
-            {
-                declaration = prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
-            }
-            else if (indexExpr is { IndexKeyExpr: LuaLiteralExprSyntax literal })
-            {
-                if (literal.Literal is LuaStringToken stringToken)
-                {
-                    declaration = prefixType.IndexMember(stringToken.Value, context).FirstOrDefault();
-                }
-                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
-                {
-                    declaration = prefixType.IndexMember(luaIntegerToken.Value, context).FirstOrDefault();
-                }
-                else
-                {
-                    declaration = prefixType.IndexMember(literal.Literal.RepresentText, context).FirstOrDefault();
-                }
-            }
-            else if (indexExpr is { IndexKeyExpr: { } expr })
-            {
-                var indexType = context.Infer(expr);
-                declaration = prefixType.IndexMember(indexType, context).FirstOrDefault();
-            }
-
-            if (declaration is { Type: { } ty2 })
-            {
-                return ty2;
-            }
+        if (declaration is { DeclarationType: { } ty2 })
+        {
+            return ty2;
         }
 
         return context.Compilation.Builtin.Unknown;
@@ -219,17 +193,30 @@ public static class ExpressionInfer
 
     private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        var declarationTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
-        if (declarationTree is not null)
+        if (nameExpr.Name is null)
         {
-            var nameDecl = declarationTree.FindDeclaration(nameExpr);
+            return context.Compilation.Builtin.Unknown;
+        }
 
-            if (nameDecl?.Type is null && declarationTree.Id is { } id)
+        var symbolTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
+        if (symbolTree is not null)
+        {
+            var nameDecl = symbolTree.FindDeclaration(nameExpr, context);
+
+            if (nameDecl is { DeclarationType: null, RelatedExpr: { } relatedExpr })
             {
-                context.Compilation.BindAnalyzer.Analyze(id);
+                var exprTy = context.Infer(relatedExpr);
+                if (exprTy is LuaMultiRetType retType)
+                {
+                    nameDecl.DeclarationType = retType.GetRetType(nameDecl.RelatedExprReturnIndex);
+                }
+                else
+                {
+                    nameDecl.DeclarationType = exprTy;
+                }
             }
 
-            if (nameDecl?.Type is { } ty)
+            if (nameDecl?.DeclarationType is { } ty)
             {
                 return ty;
             }

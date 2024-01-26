@@ -11,10 +11,10 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 
     public Symbol.Symbol? GetSymbol(LuaSyntaxElement element)
     {
-        var declarationTree = Compilation.GetSymbolTree(Document.Id);
-        if (declarationTree?.FindDeclaration(element) is { } declaration)
+        var symbolTree = Compilation.GetSymbolTree(Document.Id);
+        if (symbolTree?.FindDeclaration(element, Compilation.SearchContext) is { } symbol)
         {
-            return declaration;
+            return symbol;
         }
 
         return null;

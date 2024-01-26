@@ -26,4 +26,9 @@ public class LuaFeatures
     {
         { "socket.core", "xxx.lua" }
     };
+
+    public HashSet<string> RequireLikeFunction { get; set; } =
+    [
+        "require"
+    ];
 }

@@ -27,7 +27,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
     {
         foreach (var memberDeclaration in BaseType.GetMembers(context))
         {
-            if (memberDeclaration.Type is { } ty)
+            if (memberDeclaration.DeclarationType is { } ty)
             {
                 yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
             }
@@ -42,7 +42,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
     {
         foreach (var memberDeclaration in BaseType.IndexMember(name, context))
         {
-            if (memberDeclaration.Type is { } ty)
+            if (memberDeclaration.DeclarationType is { } ty)
             {
                 yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
             }
@@ -57,7 +57,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
     {
         foreach (var memberDeclaration in BaseType.IndexMember(index, context))
         {
-            if (memberDeclaration.Type is { } ty)
+            if (memberDeclaration.DeclarationType is { } ty)
             {
                 yield return memberDeclaration.WithType(ty.Substitute(context, GetGenericEnv(context)));
             }
@@ -72,7 +72,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
     {
         foreach (var memberDeclaration in BaseType.IndexMember(ty, context))
         {
-            if (memberDeclaration.Type is { } ty2)
+            if (memberDeclaration.DeclarationType is { } ty2)
             {
                 yield return memberDeclaration.WithType(ty2.Substitute(context, GetGenericEnv(context)));
             }
@@ -93,7 +93,7 @@ public class LuaGenericImpl(IGenericBase baseType, List<ILuaType> genericArgs) :
             {
                 env[genericParams[i].Name] = GenericArgs[i];
             }
-            else if (genericParams[i].Type is { } ty)
+            else if (genericParams[i].DeclarationType is { } ty)
             {
                 env[genericParams[i].Name] = ty;
             }

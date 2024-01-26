@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
@@ -75,7 +76,9 @@ public class Symbol(
     SymbolFlag flag,
     SymbolNodeContainer? parent,
     Symbol? prev,
-    ILuaType? type
+    ILuaType? declarationType,
+    LuaExprSyntax? relatedExpr = null,
+    int relatedExprReturnIndex = 0
 )
     : SymbolNode(position, parent)
 {
@@ -85,11 +88,17 @@ public class Symbol(
 
     public SymbolFlag Flags { get; } = flag;
 
-    public ILuaType? Type
+    private ILuaType? _declarationType = declarationType;
+
+    public ILuaType? DeclarationType
     {
-        get => type ?? PrevSymbol?.FirstSymbol.Type;
-        set => type = value;
+        get => _declarationType ?? PrevSymbol?.FirstSymbol._declarationType;
+        set => _declarationType = value;
     }
+
+    public LuaExprSyntax? RelatedExpr { get; } = relatedExpr;
+
+    public int RelatedExprReturnIndex { get; } = relatedExprReturnIndex;
 
     public Symbol? PrevSymbol { get; set; } = prev;
 
@@ -116,11 +125,11 @@ public class Symbol(
     }
 }
 
-public class VirtualSymbol(string name, ILuaType? type)
-    : Symbol(name, 0, null, SymbolFlag.Virtual, null, null, type)
+public class VirtualSymbol(string name, ILuaType? declarationType)
+    : Symbol(name, 0, null, SymbolFlag.Virtual, null, null, declarationType)
 {
-    public VirtualSymbol(ILuaType? type)
-        : this("", type)
+    public VirtualSymbol(ILuaType? declarationType)
+        : this("", declarationType)
     {
     }
 }

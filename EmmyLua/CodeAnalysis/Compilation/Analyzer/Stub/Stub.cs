@@ -6,7 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
 
-public class StubIndexImpl(LuaCompilation compilation)
+public class Stub(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 

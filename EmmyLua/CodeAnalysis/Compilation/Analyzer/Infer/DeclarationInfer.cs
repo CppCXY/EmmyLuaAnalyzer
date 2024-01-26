@@ -20,26 +20,26 @@ public static class DeclarationInfer
             return context.Compilation.Builtin.Unknown;
         }
 
-        var declaration = declarationTree.FindDeclaration(localName);
-        return declaration?.FirstSymbol.Type ?? context.Compilation.Builtin.Unknown;
+        var declaration = declarationTree.FindDeclaration(localName, context);
+        return declaration?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 
     public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
         if (source.Block is null) return context.Compilation.Builtin.Unknown;
-        var expr = context.Compilation.StubIndexImpl.BlockReturns.Get(source.Block).FirstOrDefault();
+        var expr = context.Compilation.Stub.BlockReturns.Get(source.Block).FirstOrDefault();
         return expr is null ? context.Compilation.Builtin.Unknown : context.Infer(expr.FirstOrDefault());
     }
 
     public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
     {
-        var declarationTree = GetSymbolTree(paramDef, context);
-        if (declarationTree is null)
+        var symbolTree = GetSymbolTree(paramDef, context);
+        if (symbolTree is null)
         {
             return context.Compilation.Builtin.Unknown;
         }
 
-        var declaration = declarationTree.FindDeclaration(paramDef);
-        return declaration?.FirstSymbol.Type ?? context.Compilation.Builtin.Unknown;
+        var declaration = symbolTree.FindDeclaration(paramDef, context);
+        return declaration?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 }

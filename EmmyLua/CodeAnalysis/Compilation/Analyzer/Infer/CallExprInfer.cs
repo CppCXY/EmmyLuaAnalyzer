@@ -3,26 +3,16 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
 
-public class CallExprInfer
+public static class CallExprInfer
 {
-    public Dictionary<string, Func<LuaCallExprSyntax, SearchContext, ILuaType>> CallExprHandles { get; } = new();
-
-    public CallExprInfer()
-    {
-        CallExprHandles.Add("require", InferRequire);
-        // TODO
-        // CallExprHandles.Add("pcall", InferPcall);
-        // CallExprHandles.Add("type", InferType);
-    }
-
-    public ILuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
+    public static ILuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
     {
         ILuaType ret = context.Compilation.Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var accessPath = callExpr.AccessPath;
-        if (CallExprHandles.TryGetValue(accessPath, out var handle))
+        if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(accessPath))
         {
-            return handle(callExpr, context);
+            return InferRequire(callExpr, context);
         }
 
         var luaType = context.Infer(prefixExpr);

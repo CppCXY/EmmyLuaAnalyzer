@@ -12,7 +12,7 @@ public class IndexSearcher : LuaSearcher
             yield return buildIn;
         }
 
-        var stubIndexImpl = context.Compilation.StubIndexImpl;
+        var stubIndexImpl = context.Compilation.Stub;
         if (stubIndexImpl.NamedTypeIndex.Get<ILuaNamedType>(className).FirstOrDefault() is { } ty)
         {
             yield return ty;
@@ -21,13 +21,13 @@ public class IndexSearcher : LuaSearcher
 
     public override IEnumerable<Symbol.Symbol> SearchMembers(string className, SearchContext context)
     {
-        var stubIndexImpl = context.Compilation.StubIndexImpl;
+        var stubIndexImpl = context.Compilation.Stub;
         return stubIndexImpl.Members.Get<Symbol.Symbol>(className);
     }
 
     public override IEnumerable<Symbol.Symbol> SearchGenericParams(string className, SearchContext context)
     {
-        var stubIndexImpl = context.Compilation.StubIndexImpl;
+        var stubIndexImpl = context.Compilation.Stub;
         return stubIndexImpl.GenericParams.Get<Symbol.Symbol>(className);
     }
 }

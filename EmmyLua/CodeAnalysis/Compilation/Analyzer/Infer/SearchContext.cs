@@ -16,12 +16,12 @@ public class SearchContext
 
     private HashSet<ILuaType> _substituteGuard = new();
 
+    private HashSet<LuaSyntaxElement> _inferGuard = new();
+
     private const int MaxDepth = 1000;
 
     // 推断深度
     private int _currentDepth = 0;
-
-    public CallExprInfer CallExprInfer { get; } = new();
 
     public EnvSearcher EnvSearcher { get; } = new();
 
@@ -56,6 +56,11 @@ public class SearchContext
             return Compilation.Builtin.Unknown;
         }
 
+        if (!_inferGuard.Add(element))
+        {
+            return Compilation.Builtin.Unknown;
+        }
+
         try
         {
             _currentDepth++;
@@ -72,6 +77,7 @@ public class SearchContext
         finally
         {
             _currentDepth--;
+            _inferGuard.Remove(element);
         }
     }
 

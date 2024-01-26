@@ -29,28 +29,25 @@ public class HoverHandler(
         CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        var document = workspace.GetDocument(uri);
-
-        if (document is not null)
+        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
+        if (semanticModel is not null)
         {
+            var document = semanticModel.Document;
             var pos = request.Position;
-            var declarationTree = workspace.Compilation.GetSymbolTree(document.Id);
-            var node = declarationTree?.LuaSyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
-            if (node is not null)
+            var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+            
+            var symbol = semanticModel.GetSymbol(node);
+            if (symbol is not null)
             {
-                var declaration = declarationTree?.FindDeclaration(node);
-                if (declaration is not null)
+                var hoverResult = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover()
                 {
-                    var hoverResult = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover()
+                    Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                     {
-                        Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
-                        {
-                            Kind = MarkupKind.Markdown,
-                            Value = $"{declaration.Type?.ToDisplayString(workspace.Compilation.SearchContext)}"
-                        })
-                    };
-                    return Task.FromResult(hoverResult)!;
-                }
+                        Kind = MarkupKind.Markdown,
+                        Value = $"{symbol.DeclarationType?.ToDisplayString(workspace.Compilation.SearchContext)}"
+                    })
+                };
+                return Task.FromResult(hoverResult)!;
             }
         }
 

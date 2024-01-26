@@ -37,8 +37,8 @@ public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 
             for (var i = 0; i < Declarations.Count; i++)
             {
-                var luaType = Declarations[i].Type;
-                var type = tuple.Declarations[i].Type;
+                var luaType = Declarations[i].DeclarationType;
+                var type = tuple.Declarations[i].DeclarationType;
                 if (type != null && luaType != null && !luaType.SubTypeOf(type, context))
                 {
                     return false;
@@ -53,6 +53,6 @@ public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 
     public override string ToDisplayString(SearchContext context)
     {
-        return $"({string.Join(", ", Declarations.Select(it => it.Type?.ToDisplayString(context)))})";
+        return $"({string.Join(", ", Declarations.Select(it => it.DeclarationType?.ToDisplayString(context)))})";
     }
 }
