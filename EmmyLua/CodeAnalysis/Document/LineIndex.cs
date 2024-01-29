@@ -143,8 +143,5 @@ public class LineIndex
         return offset;
     }
 
-    public int GetTotalLine()
-    {
-        return _indexs.Count;
-    }
+    public int TotalLine => _indexs.Count;
 }

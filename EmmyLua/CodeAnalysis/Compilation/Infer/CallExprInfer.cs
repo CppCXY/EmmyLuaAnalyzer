@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class CallExprInfer
 {

@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -8,7 +8,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, SymbolScope> scopeOwners)
 {
-    public LuaSyntaxTree LuaSyntaxTree { get; } = tree;
+    public LuaSyntaxTree SyntaxTree { get; } = tree;
 
     public SymbolScope? RootScope { get; internal set; }
 
@@ -58,24 +58,23 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
             var prefixType = context.Infer(prefixExpr);
-            if (indexExpr is { DotOrColonIndexName: { } nameToken })
+            switch (indexExpr)
             {
-                return prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
-            }
-            else if (indexExpr is { IndexKeyExpr: LuaLiteralExprSyntax literal })
-            {
-                return literal.Literal switch
+                case { DotOrColonIndexName: { } nameToken }:
+                    return prefixType.IndexMember(nameToken.RepresentText, context).FirstOrDefault();
+                case { IndexKeyExpr: LuaLiteralExprSyntax literal }:
+                    return literal.Literal switch
+                    {
+                        LuaStringToken stringToken => prefixType.IndexMember(stringToken.Value, context).FirstOrDefault(),
+                        LuaIntegerToken luaIntegerToken => prefixType.IndexMember(luaIntegerToken.Value, context)
+                            .FirstOrDefault(),
+                        _ => prefixType.IndexMember(literal.Literal.RepresentText, context).FirstOrDefault()
+                    };
+                case { IndexKeyExpr: { } expr }:
                 {
-                    LuaStringToken stringToken => prefixType.IndexMember(stringToken.Value, context).FirstOrDefault(),
-                    LuaIntegerToken luaIntegerToken => prefixType.IndexMember(luaIntegerToken.Value, context)
-                        .FirstOrDefault(),
-                    _ => prefixType.IndexMember(literal.Literal.RepresentText, context).FirstOrDefault()
-                };
-            }
-            else if (indexExpr is { IndexKeyExpr: { } expr })
-            {
-                var indexType = context.Infer(expr);
-                return prefixType.IndexMember(indexType, context).FirstOrDefault();
+                    var indexType = context.Infer(expr);
+                    return prefixType.IndexMember(indexType, context).FirstOrDefault();
+                }
             }
         }
 
@@ -98,4 +97,5 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
+    public IEnumerable<Symbol> Symbols => RootScope?.Descendants ?? Enumerable.Empty<Symbol>();
 }

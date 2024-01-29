@@ -62,8 +62,7 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
             Symbol? result = null;
             WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
             {
-                if ((declaration.IsGlobal || declaration.IsLocal) &&
-                    string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
+                if (string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
                 {
                     result = declaration;
                     return ScopeFoundState.Founded;

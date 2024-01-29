@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 

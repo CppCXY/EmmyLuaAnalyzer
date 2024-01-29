@@ -1,11 +1,12 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
-
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
+public class LuaClass(string name, bool anonymous = false) : LuaType(TypeKind.Class), IGenericBase
 {
     public string Name { get; } = name;
+
+    public bool IsAnonymous { get; } = anonymous;
 
     public IEnumerable<Symbol.Symbol> GetRawMembers(SearchContext context)
     {

@@ -1,10 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public class SearchContext
 {

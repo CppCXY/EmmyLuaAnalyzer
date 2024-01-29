@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
+namespace EmmyLua.CodeAnalysis.Compilation.Stub;
 
 public class StubIndex<TKey, TStubElement>
     where TKey : notnull

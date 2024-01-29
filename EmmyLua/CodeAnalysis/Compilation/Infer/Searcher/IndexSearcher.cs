@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer.Searcher;
+namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
 public class IndexSearcher : LuaSearcher
 {

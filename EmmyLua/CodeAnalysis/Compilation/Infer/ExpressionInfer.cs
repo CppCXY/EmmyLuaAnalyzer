@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class ExpressionInfer
 {
@@ -93,10 +93,13 @@ public static class ExpressionInfer
 
     private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var method = context.Compilation.Stub.Methods.Get(closureExpr).FirstOrDefault();
-        if (method is not null)
+        if (closureExpr.FuncBody is not null)
         {
-            return method;
+            var method = context.Compilation.Stub.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
+            if (method is not null)
+            {
+                return method;
+            }
         }
 
         return context.Compilation.Builtin.Unknown;
@@ -157,19 +160,6 @@ public static class ExpressionInfer
     {
         var declaration = DeclarationInfer.GetSymbolTree(indexExpr, context)?.FindDeclaration(indexExpr, context);
 
-        if (declaration is { DeclarationType: null, RelatedExpr: { } relatedExpr })
-        {
-            var exprTy = context.Infer(relatedExpr);
-            if (exprTy is LuaMultiRetType retType)
-            {
-                declaration.DeclarationType = retType.GetRetType(declaration.RelatedExprReturnIndex);
-            }
-            else
-            {
-                declaration.DeclarationType = exprTy;
-            }
-        }
-
         if (declaration is { DeclarationType: { } ty2 })
         {
             return ty2;
@@ -202,19 +192,6 @@ public static class ExpressionInfer
         if (symbolTree is not null)
         {
             var nameDecl = symbolTree.FindDeclaration(nameExpr, context);
-
-            if (nameDecl is { DeclarationType: null, RelatedExpr: { } relatedExpr })
-            {
-                var exprTy = context.Infer(relatedExpr);
-                if (exprTy is LuaMultiRetType retType)
-                {
-                    nameDecl.DeclarationType = retType.GetRetType(nameDecl.RelatedExprReturnIndex);
-                }
-                else
-                {
-                    nameDecl.DeclarationType = exprTy;
-                }
-            }
 
             if (nameDecl?.DeclarationType is { } ty)
             {

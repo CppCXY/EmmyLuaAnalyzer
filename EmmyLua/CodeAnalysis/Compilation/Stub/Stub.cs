@@ -1,10 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.TypeOperator;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
+namespace EmmyLua.CodeAnalysis.Compilation.Stub;
 
 public class Stub(LuaCompilation compilation)
 {
@@ -22,9 +21,9 @@ public class Stub(LuaCompilation compilation)
 
     public StubIndex<string, Symbol.Symbol> GenericParams { get; } = new();
 
-    public StubIndex<LuaSyntaxElement, LuaMethod> Methods { get; } = new();
+    public StubIndex<LuaFuncBodySyntax, LuaMethod> Methods { get; } = new();
 
-    public StubIndex<LuaBlockSyntax, List<LuaExprSyntax>> BlockReturns { get; } = new();
+    public StubIndex<LuaBlockSyntax, List<LuaExprSyntax>> MainBlockReturns { get; } = new();
 
     public void Remove(DocumentId documentId)
     {
@@ -35,6 +34,6 @@ public class Stub(LuaCompilation compilation)
         Supers.RemoveStub(documentId);
         GenericParams.RemoveStub(documentId);
         Methods.RemoveStub(documentId);
-        BlockReturns.RemoveStub(documentId);
+        MainBlockReturns.RemoveStub(documentId);
     }
 }

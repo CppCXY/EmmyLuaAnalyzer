@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
@@ -69,16 +68,22 @@ public abstract class SymbolNodeContainer(int position, SymbolNodeContainer? par
     public SymbolNode? FindLastChild(Func<SymbolNode, bool> predicate) => Children.LastOrDefault(predicate);
 }
 
+public enum SymbolFeature
+{
+    None,
+    Local,
+    Global,
+}
+
 public class Symbol(
     string name,
     int position,
     LuaSyntaxElement? syntaxElement,
-    SymbolFlag flag,
+    SymbolKind kind,
     SymbolNodeContainer? parent,
     Symbol? prev,
     ILuaType? declarationType,
-    LuaExprSyntax? relatedExpr = null,
-    int relatedExprReturnIndex = 0
+    SymbolFeature feature = SymbolFeature.None
 )
     : SymbolNode(position, parent)
 {
@@ -86,7 +91,7 @@ public class Symbol(
 
     public LuaSyntaxElement? SyntaxElement { get; } = syntaxElement;
 
-    public SymbolFlag Flags { get; } = flag;
+    public SymbolKind Kind { get; } = kind;
 
     private ILuaType? _declarationType = declarationType;
 
@@ -96,40 +101,20 @@ public class Symbol(
         set => _declarationType = value;
     }
 
-    public LuaExprSyntax? RelatedExpr { get; } = relatedExpr;
-
-    public int RelatedExprReturnIndex { get; } = relatedExprReturnIndex;
+    public SymbolFeature Feature { get; internal set; } = feature;
 
     public Symbol? PrevSymbol { get; set; } = prev;
-
-    public bool IsLocal => (Flags & SymbolFlag.Local) != 0;
-
-    public bool IsMethod => (Flags & SymbolFlag.Method) != 0;
-
-    public bool IsClassMember => (Flags & SymbolFlag.ClassMember) != 0;
-
-    public bool IsGlobal => (Flags & SymbolFlag.Global) != 0;
-
-    public bool IsParam => (Flags & SymbolFlag.Parameter) != 0;
 
     public Symbol FirstSymbol => PrevSymbol?.FirstSymbol ?? this;
 
     public Symbol WithType(ILuaType? luaType)
     {
-        return new Symbol(Name, Position, SyntaxElement, Flags, Parent, PrevSymbol, luaType);
+        return new Symbol(Name, Position, SyntaxElement, Kind, Parent, PrevSymbol, luaType);
     }
 
     public override string ToString()
     {
-        return $"{Flags} {Name}";
+        return $"{Kind} {Name}";
     }
 }
 
-public class VirtualSymbol(string name, ILuaType? declarationType)
-    : Symbol(name, 0, null, SymbolFlag.Virtual, null, null, declarationType)
-{
-    public VirtualSymbol(ILuaType? declarationType)
-        : this("", declarationType)
-    {
-    }
-}

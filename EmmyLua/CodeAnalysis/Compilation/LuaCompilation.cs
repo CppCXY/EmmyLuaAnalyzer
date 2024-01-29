@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Stub;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.Members;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -25,7 +25,7 @@ public class LuaCompilation
 
     public Builtin Builtin { get; } = new();
 
-    public Stub Stub { get; }
+    public Stub.Stub Stub { get; }
 
     public SearchContext SearchContext { get; }
 
@@ -38,11 +38,12 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        Stub = new Stub(this);
+        Stub = new Stub.Stub(this);
         SearchContext = new SearchContext(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
+            new MembersAnalyzer(this),
             new BindAnalyzer(this)
         ];
     }

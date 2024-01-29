@@ -35,11 +35,11 @@ public class LuaDocument
 
     private LuaSyntaxTree? _syntaxTree;
 
-    public string Text { get; set; }
+    public string Text { get; }
 
-    public LuaLanguage Language { get; set; }
+    public LuaLanguage Language { get; }
 
-    private LineIndex LineIndex { get; set; }
+    private LineIndex LineIndex { get; }
 
     public int GetCol(int offset)
     {
@@ -59,8 +59,7 @@ public class LuaDocument
     public static LuaDocument OpenDocument(string path, LuaLanguage language)
     {
         var fileText = File.ReadAllText(path);
-        var documentId = DocumentId.FromPath(path);
-        return new LuaDocument(fileText, language, documentId);
+        return FromPath(path, fileText, language);
     }
 
     public static LuaDocument FromPath(string path, string text, LuaLanguage language)

@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class GenericInfer
 {

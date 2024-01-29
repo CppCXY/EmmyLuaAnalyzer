@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -8,7 +8,8 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 public class LuaMethod(
     Signature mainSignature,
     List<Signature>? overloadSignatures = null,
-    List<Symbol.Symbol>? genericParameters = null)
+    List<Symbol.Symbol>? genericParameters = null
+    )
     : LuaType(TypeKind.Method)
 {
     public Signature MainSignature { get; } = mainSignature;
