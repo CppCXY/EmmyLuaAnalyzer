@@ -39,7 +39,7 @@ public class LuaMethod(
         }
     }
 
-    private static int MatchCount(List<Symbol.Symbol> parameters, List<LuaExprSyntax> arguments, SearchContext context)
+    private static int MatchCount(List<ParameterDeclaration> parameters, List<LuaExprSyntax> arguments, SearchContext context)
     {
         var matched = 0;
         for (; matched < parameters.Count; matched++)
@@ -95,7 +95,7 @@ public class LuaMethod(
                 }
                 case (false, true):
                 {
-                    var declarations = new List<Symbol.Symbol> { new VirtualSymbol("self", SelfType) };
+                    var declarations = new List<ParameterDeclaration> { ParameterDeclaration.SelfParameter(SelfType) };
                     declarations.AddRange(signature.Parameters);
                     count += MatchCount(declarations, args, context);
                     break;
@@ -148,14 +148,14 @@ public class LuaMethod(
 
 public class Signature(
     bool colon,
-    List<Symbol.Symbol> parameters,
+    List<ParameterDeclaration> parameters,
     ILuaType? returnTypes)
 {
     public bool ColonDefine { get; } = colon;
 
     public ILuaType? ReturnTypes { get; } = returnTypes;
 
-    public List<Symbol.Symbol> Parameters { get; } = parameters;
+    public List<ParameterDeclaration> Parameters { get; } = parameters;
 
     public ILuaType? Variadic
     {

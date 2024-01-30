@@ -77,18 +77,24 @@ public static class TypeInfer
 
     public static ILuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var paramDeclaration = new List<Symbol.Symbol>();
+        var symbolTree = context.Compilation.GetSymbolTree(funcType.Tree.Document.Id);
+        var paramDeclaration = new List<ParameterDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name })
             {
-                var declaration = new VirtualSymbol(name.RepresentText,
+                var declaration = new ParameterDeclaration(
+                    name.RepresentText,
+                    symbolTree!.GetPosition(typedParam),
+                    typedParam,
                     typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
                 paramDeclaration.Add(declaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var declaration = new VirtualSymbol(varArgs.RepresentText,
+                var declaration = new ParameterDeclaration(varArgs.RepresentText,
+                    symbolTree!.GetPosition(typedParam),
+                    typedParam,
                     typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
                 paramDeclaration.Add(declaration);
             }

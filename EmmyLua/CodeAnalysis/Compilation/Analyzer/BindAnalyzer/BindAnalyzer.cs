@@ -271,7 +271,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 
     private void CheckFuncCallParams(
         LuaCallExprSyntax callExprSyntax,
-        List<Symbol.Symbol> parameters,
+        List<ParameterDeclaration> parameters,
         List<LuaExprSyntax> arguments
     )
     {
@@ -356,8 +356,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     }
                     case (false, true):
                     {
-                        var declarations = new List<Symbol.Symbol>
-                            { new VirtualSymbol("self", luaMethod.SelfType) };
+                        var declarations = new List<ParameterDeclaration>
+                            { ParameterDeclaration.SelfParameter(luaMethod.SelfType) };
                         declarations.AddRange(perfectSig.Parameters);
                         CheckFuncCallParams(callExpr, declarations, args);
                         break;

@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -17,22 +18,29 @@ public class LocalDeclaration(
     string name,
     int position,
     LuaLocalNameSyntax localName,
-    ILuaType? declarationType) : Declaration(name, position, localName, declarationType, SymbolFeature.Local)
+    ILuaType? declarationType,
+    LuaExprRef? exprRef
+    ) : Declaration(name, position, localName, declarationType, SymbolFeature.Local)
 {
     public LuaLocalNameSyntax LocalName => localName;
 
     public bool IsConst => localName.Attribute?.IsConst == true;
 
     public bool IsClose => localName.Attribute?.IsClose == true;
+
+    public LuaExprRef? ExprRef => exprRef;
 }
 
 public class GlobalDeclaration(
     string name,
     int position,
     LuaNameExprSyntax nameExpr,
-    ILuaType? declarationType) : Declaration(name, position, nameExpr, declarationType, SymbolFeature.Global)
+    ILuaType? declarationType,
+    LuaExprRef? exprRef) : Declaration(name, position, nameExpr, declarationType, SymbolFeature.Global)
 {
     public LuaNameExprSyntax NameSyntax => nameExpr;
+
+    public LuaExprRef? ExprRef => exprRef;
 }
 
 public class DocParameterDeclaration(
@@ -49,10 +57,14 @@ public class DocParameterDeclaration(
 public class ParameterDeclaration(
     string name,
     int position,
-    LuaParamDefSyntax paramDef,
-    ILuaType? declarationType) : Declaration(name, position, paramDef, declarationType, SymbolFeature.Local)
+    LuaSyntaxElement? element,
+    ILuaType? declarationType) : Declaration(name, position, element, declarationType, SymbolFeature.Local)
 {
-    public LuaParamDefSyntax ParamDef => paramDef;
+    public LuaParamDefSyntax? ParamDef => SyntaxElement as LuaParamDefSyntax;
+
+    public LuaDocTagTypedParamSyntax? TypedParamDef => SyntaxElement as LuaDocTagTypedParamSyntax;
+
+    public static ParameterDeclaration SelfParameter(ILuaType? declarationType) => new("self", 0, null, declarationType);
 }
 
 public class MethodDeclaration(
@@ -156,9 +168,12 @@ public class IndexDeclaration(
     string name,
     int position,
     LuaIndexExprSyntax indexExpr,
-    ILuaType? declarationType) : Declaration(name, position, indexExpr, declarationType)
+    ILuaType? declarationType,
+    LuaExprRef? exprRef) : Declaration(name, position, indexExpr, declarationType)
 {
     public LuaIndexExprSyntax IndexExpr => indexExpr;
+
+    public LuaExprRef? ExprRef => exprRef;
 }
 
 public class LabelDeclaration(

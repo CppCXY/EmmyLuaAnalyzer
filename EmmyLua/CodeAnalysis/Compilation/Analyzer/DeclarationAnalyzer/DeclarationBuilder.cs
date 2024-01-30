@@ -30,7 +30,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private Compilation.Stub.Stub Stub => Compilation.Stub;
 
-    private Dictionary<string, Symbol.Declaration> _typeDeclarations = new();
+    private Dictionary<string, Declaration> _typeDeclarations = new();
 
     private DocumentId DocumentId { get; }
 
@@ -70,7 +70,7 @@ public class DeclarationBuilder : ILuaElementWalker
         return null;
     }
 
-    private int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
+    private static int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
 
     private string GetUniqueId(LuaSyntaxElement element)
     {
@@ -99,13 +99,12 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private SymbolScope PushMethod(int position, LuaFuncStatSyntax funcStat)
     {
-        Symbol.Symbol? virtualSelf = null;
+        ParameterDeclaration? self = null;
         if (funcStat.IndexExpr is { PrefixExpr: { } prefixExpr })
         {
-            virtualSelf = new VirtualSymbol("self", new LuaExprRef(prefixExpr));
+            self = ParameterDeclaration.SelfParameter(new LuaExprRef(prefixExpr));
         }
-
-        return Push(new MethodStatSymbolScope(_tree, position, _curScope, virtualSelf), funcStat);
+        return Push(new MethodStatSymbolScope(_tree, position, _curScope, self), funcStat);
     }
 
     private SymbolScope Push(SymbolScope scope, LuaSyntaxElement element)
@@ -249,15 +248,16 @@ public class DeclarationBuilder : ILuaElementWalker
                 retId++;
             }
 
-            if (luaType is null && lastValidExpr is not null)
+            LuaExprRef? relatedExpr = null;
+            if (lastValidExpr is not null)
             {
-                luaType = new LuaExprRef(lastValidExpr, retId);
+                relatedExpr = new LuaExprRef(lastValidExpr, retId);
             }
 
             if (localName is { Name: { } name })
             {
                 var symbol = new LocalDeclaration(
-                    name.RepresentText, GetPosition(localName), localName, luaType);
+                    name.RepresentText, GetPosition(localName), localName, luaType, relatedExpr);
                 AddSymbol(symbol);
                 if (i == 0)
                 {
@@ -268,9 +268,9 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private List<Symbol.Symbol> GetParamListDeclaration(LuaParamListSyntax paramListSyntax)
+    private List<ParameterDeclaration> GetParamListDeclaration(LuaParamListSyntax paramListSyntax)
     {
-        var declarations = new List<Symbol.Symbol>();
+        var declarations = new List<ParameterDeclaration>();
         var dic = FindParamDeclarations(paramListSyntax);
         foreach (var param in paramListSyntax.Params)
         {
@@ -499,9 +499,10 @@ public class DeclarationBuilder : ILuaElementWalker
                 retId++;
             }
 
-            if (luaType is null && lastValidExpr is not null)
+            LuaExprRef? relatedExpr = null;
+            if (lastValidExpr is not null)
             {
-                luaType = new LuaExprRef(lastValidExpr, retId);
+                relatedExpr = new LuaExprRef(lastValidExpr, retId);
             }
 
             switch (varExpr)
@@ -519,7 +520,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         else
                         {
                             var declaration = new GlobalDeclaration(name.RepresentText, GetPosition(name), nameExpr,
-                                luaType);
+                                luaType, relatedExpr);
                             Stub.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
 
                             if (i == 0)
@@ -536,7 +537,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    var declaration = new IndexDeclaration(indexExpr.Name, GetPosition(indexExpr), indexExpr, luaType);
+                    var declaration = new IndexDeclaration(indexExpr.Name, GetPosition(indexExpr), indexExpr, luaType,
+                        relatedExpr);
                     if (i == 0)
                     {
                         var typeDeclaration = FindLocalOrAssignTypeDeclaration(luaAssignStat);
@@ -598,7 +600,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 if (luaMethod is not null && indexExpr is { Name: { } name })
                 {
                     var declaration =
-                        new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod, luaFuncStat.FuncBody!);
+                        new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod,
+                            luaFuncStat.FuncBody!);
                     AddSymbol(declaration);
                 }
 
@@ -861,7 +864,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
         }
 
-        var parameters = new List<Symbol.Symbol>();
+        var parameters = new List<ParameterDeclaration>();
         if (funcBody?.ParamList is { } paramList)
         {
             parameters = GetParamListDeclaration(paramList);

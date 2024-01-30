@@ -185,7 +185,7 @@ public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? pare
     }
 }
 
-public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent, Symbol? self)
+public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent, ParameterDeclaration? self)
     : SymbolScope(tree, pos, parent)
 {
     public override ScopeFoundState WalkOver(Func<Symbol, ScopeFoundState> process)
