@@ -5,7 +5,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaTypeRef(LuaSyntaxElement element) : LuaType(TypeKind.TypeRef)
 {
-    public ILuaType GetType(SearchContext context)
+    public virtual ILuaType GetType(SearchContext context)
     {
         return context.Infer(element);
     }
@@ -40,4 +40,3 @@ public class LuaTypeRef(LuaSyntaxElement element) : LuaType(TypeKind.TypeRef)
         return GetType(context).ToDisplayString(context);
     }
 }
-

@@ -1,11 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Compile.Diagnostic;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.BindAnalyzer;
 
 public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {

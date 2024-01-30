@@ -14,7 +14,7 @@ public class Builtin
     public readonly Primitive Boolean = new Primitive("boolean");
     public readonly Primitive Userdata = new Primitive("userdata");
     public readonly LuaClass Io = new LuaClass("io");
-    public readonly LuaTable Table = new LuaTable(null, null);
+    public readonly LuaTable Table = new LuaTable();
     public readonly LuaClass Global = new LuaClass("global");
 
     public Builtin()
@@ -36,7 +36,7 @@ public class Builtin
             "userdata" => Userdata,
             "io" => Io,
             "table" => Table,
-            "_G" => Global,
+            "_G" or "global" => Global,
             _ => null
         };
     }
@@ -82,7 +82,7 @@ public class Nil() : Primitive("nil")
         ReferenceEquals(this, other) || other.IsNullable;
 }
 
-public class LuaTable(ILuaType? key, ILuaType? value) : LuaClass("table"), IGenericImpl
+public class LuaTable(ILuaType? key = null, ILuaType? value = null) : LuaClass("table"), IGenericImpl
 {
     public ILuaType? Key { get; } = key;
 

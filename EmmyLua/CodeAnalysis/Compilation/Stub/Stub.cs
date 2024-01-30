@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.TypeOperator;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -13,13 +14,13 @@ public class Stub(LuaCompilation compilation)
 
     public StubIndex<string, ILuaNamedType> NamedTypeIndex { get; } = new();
 
-    public StubIndex<string, Symbol.Symbol> GlobalDeclaration { get; } = new();
+    public StubIndex<string, Declaration> GlobalDeclaration { get; } = new();
 
     public StubIndex<string, ILuaOperator> TypeOperators { get; } = new();
 
     public StubIndex<string, ILuaType> Supers { get; } = new();
 
-    public StubIndex<string, Symbol.Symbol> GenericParams { get; } = new();
+    public StubIndex<string, GenericParameterDeclaration> NamedTypeGenericParams { get; } = new();
 
     public StubIndex<LuaFuncBodySyntax, LuaMethod> Methods { get; } = new();
 
@@ -32,7 +33,7 @@ public class Stub(LuaCompilation compilation)
         GlobalDeclaration.RemoveStub(documentId);
         TypeOperators.RemoveStub(documentId);
         Supers.RemoveStub(documentId);
-        GenericParams.RemoveStub(documentId);
+        NamedTypeGenericParams.RemoveStub(documentId);
         Methods.RemoveStub(documentId);
         MainBlockReturns.RemoveStub(documentId);
     }

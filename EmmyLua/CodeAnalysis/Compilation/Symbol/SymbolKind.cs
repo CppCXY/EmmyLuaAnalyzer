@@ -4,7 +4,5 @@ public enum SymbolKind
 {
     Declaration,
     Virtual,
-    TableField,
     Assign,
-    Label,
 }

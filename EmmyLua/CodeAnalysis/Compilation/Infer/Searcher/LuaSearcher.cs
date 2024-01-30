@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
@@ -14,9 +15,9 @@ public abstract class LuaSearcher : ILuaSearcher
         return Enumerable.Empty<Symbol.Symbol>();
     }
 
-    public virtual IEnumerable<Symbol.Symbol> SearchGenericParams(string className, SearchContext context)
+    public virtual IEnumerable<GenericParameterDeclaration> SearchGenericParams(string className, SearchContext context)
     {
-        return Enumerable.Empty<Symbol.Symbol>();
+        return Enumerable.Empty<GenericParameterDeclaration>();
     }
 
     public virtual IEnumerable<ILuaType> SearchSupers(string className, SearchContext context)

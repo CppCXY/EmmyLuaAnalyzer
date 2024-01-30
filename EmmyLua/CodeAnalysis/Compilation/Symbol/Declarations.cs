@@ -59,13 +59,17 @@ public class MethodDeclaration(
     string name,
     int position,
     LuaSyntaxElement element,
-    LuaMethod declarationType) : Declaration(name, position, element, declarationType)
+    LuaMethod declarationType,
+    LuaFuncBodySyntax funcBodySyntax
+    ) : Declaration(name, position, element, declarationType)
 {
     public LuaFuncStatSyntax? MethodDef => SyntaxElement?.Parent as LuaFuncStatSyntax;
 
     public LuaIndexExprSyntax? IndexExprSyntax => SyntaxElement as LuaIndexExprSyntax;
 
     public LuaMethod MethodType => declarationType;
+
+    public LuaFuncBodySyntax FuncBodySyntax => funcBodySyntax;
 }
 
 public class ClassDeclaration(
@@ -155,4 +159,12 @@ public class IndexDeclaration(
     ILuaType? declarationType) : Declaration(name, position, indexExpr, declarationType)
 {
     public LuaIndexExprSyntax IndexExpr => indexExpr;
+}
+
+public class LabelDeclaration(
+    string name,
+    int position,
+    LuaLabelStatSyntax labelStat) : Declaration(name, position, labelStat, null)
+{
+    public LuaLabelStatSyntax LabelStat => labelStat;
 }

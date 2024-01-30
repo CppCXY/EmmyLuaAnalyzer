@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.Members;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.BindAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
@@ -23,6 +23,8 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
+    public IEnumerable<Symbol.Symbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
+
     public Builtin Builtin { get; } = new();
 
     public Stub.Stub Stub { get; }
@@ -43,7 +45,7 @@ public class LuaCompilation
         Analyzers =
         [
             new DeclarationAnalyzer(this),
-            new MembersAnalyzer(this),
+            new SymbolAnalyzer(this),
             new BindAnalyzer(this)
         ];
     }

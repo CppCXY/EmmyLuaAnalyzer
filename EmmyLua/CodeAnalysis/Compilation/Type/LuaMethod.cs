@@ -8,13 +8,13 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 public class LuaMethod(
     Signature mainSignature,
     List<Signature>? overloadSignatures = null,
-    List<Symbol.Symbol>? genericParameters = null
+    List<GenericParameterDeclaration>? genericParameters = null
     )
     : LuaType(TypeKind.Method)
 {
     public Signature MainSignature { get; } = mainSignature;
 
-    public List<Symbol.Symbol>? GenericParameters { get; } = genericParameters;
+    public List<GenericParameterDeclaration>? GenericParameters { get; } = genericParameters;
 
     public List<Signature>? OverloadSignatures { get; } = overloadSignatures;
 

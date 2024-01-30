@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Bind;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.BindAnalyzer;
 
 public class BindData(DocumentId documentId, SymbolTree tree)
 {

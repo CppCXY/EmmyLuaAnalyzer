@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.TypeOperator;
 using EmmyLua.CodeAnalysis.Document;
@@ -7,7 +8,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationBuilder : ILuaElementWalker
 {
@@ -29,7 +30,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private Compilation.Stub.Stub Stub => Compilation.Stub;
 
-    private Dictionary<string, Symbol.Symbol> _typeDeclarations = new();
+    private Dictionary<string, Symbol.Declaration> _typeDeclarations = new();
 
     private DocumentId DocumentId { get; }
 
@@ -513,22 +514,22 @@ public class DeclarationBuilder : ILuaElementWalker
                         Symbol.Symbol declarationOrSymbol = null!;
                         if (prevDeclaration is not null)
                         {
-                            declarationOrSymbol = new AssignSymbol(name.RepresentText, prevDeclaration);
+                            AddSymbol(new AssignSymbol(name.RepresentText, prevDeclaration));
                         }
                         else
                         {
-                            declarationOrSymbol = new GlobalDeclaration(name.RepresentText, GetPosition(name), nameExpr,
+                            var declaration = new GlobalDeclaration(name.RepresentText, GetPosition(name), nameExpr,
                                 luaType);
-                            Stub.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declarationOrSymbol);
+                            Stub.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
 
                             if (i == 0)
                             {
                                 var typeDeclaration = FindLocalOrAssignTypeDeclaration(luaAssignStat);
                                 declarationOrSymbol.PrevSymbol = typeDeclaration;
                             }
-                        }
 
-                        AddSymbol(declarationOrSymbol);
+                            AddSymbol(declaration);
+                        }
                     }
 
                     break;
@@ -559,7 +560,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 if (luaMethod is not null)
                 {
                     var methodDeclaration =
-                        new MethodDeclaration(name.RepresentText, GetPosition(luaFuncStat.LocalName), luaFuncStat.LocalName, luaMethod);
+                        new MethodDeclaration(name.RepresentText, GetPosition(luaFuncStat.LocalName),
+                            luaFuncStat.LocalName, luaMethod, luaFuncStat.FuncBody!);
                     AddSymbol(methodDeclaration);
                 }
 
@@ -571,20 +573,21 @@ public class DeclarationBuilder : ILuaElementWalker
                 if (luaMethod is not null)
                 {
                     var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
-                    Symbol.Symbol declarationOrSymbol = null!;
                     if (prevDeclaration is not null)
                     {
-                        declarationOrSymbol = new AssignSymbol(name2.RepresentText, prevDeclaration);
+                        AddSymbol(new AssignSymbol(name2.RepresentText, prevDeclaration));
                     }
                     else
                     {
-                        declarationOrSymbol = new MethodDeclaration(name2.RepresentText, GetPosition(luaFuncStat.NameExpr),
-                            luaFuncStat.NameExpr, luaMethod);
-                        declarationOrSymbol.Feature = SymbolFeature.Global;
-                        Stub.GlobalDeclaration.AddStub(DocumentId, name2.RepresentText, declarationOrSymbol);
+                        var declaration = new MethodDeclaration(name2.RepresentText,
+                            GetPosition(luaFuncStat.NameExpr),
+                            luaFuncStat.NameExpr, luaMethod, luaFuncStat.FuncBody!)
+                        {
+                            Feature = SymbolFeature.Global
+                        };
+                        Stub.GlobalDeclaration.AddStub(DocumentId, name2.RepresentText, declaration);
+                        AddSymbol(declaration);
                     }
-
-                    AddSymbol(declarationOrSymbol);
                 }
 
                 break;
@@ -595,7 +598,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 if (luaMethod is not null && indexExpr is { Name: { } name })
                 {
                     var declaration =
-                        new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod);
+                        new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod, luaFuncStat.FuncBody!);
                     AddSymbol(declaration);
                 }
 
@@ -799,7 +802,7 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 var declaration = new GenericParameterDeclaration(name.RepresentText, GetPosition(name), param,
                     param.Type != null ? new LuaTypeRef(param.Type) : null);
-                Stub.GenericParams.AddStub(DocumentId, namedType.Name, declaration);
+                Stub.NamedTypeGenericParams.AddStub(DocumentId, namedType.Name, declaration);
             }
         }
     }
@@ -829,14 +832,16 @@ public class DeclarationBuilder : ILuaElementWalker
 
         ILuaType? retType = null;
         List<Signature>? overloads = null;
-        List<Symbol.Symbol>? genericParams = null;
+        List<GenericParameterDeclaration>? genericParams = null;
         if (comment?.DocList is { } docList)
         {
             var list = docList.ToList();
             retType = GetRetType(list);
             overloads = list
                 .OfType<LuaDocTagOverloadSyntax>()
-                .Select(Compilation.SearchContext.Infer)
+                .Select(it => it.TypeFunc)
+                .Where(it => it is not null)
+                .Select(it => TypeInfer.InferFuncType(it!, Compilation.SearchContext))
                 .OfType<LuaMethod>()
                 .Select(it => it.MainSignature)
                 .ToList();
@@ -846,10 +851,12 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 genericParams = generic.Params
                     .Select(it =>
-                        new VirtualSymbol(it.Name?.RepresentText ?? string.Empty,
+                        new GenericParameterDeclaration(
+                            it.Name?.RepresentText ?? string.Empty,
+                            GetPosition(it),
+                            it,
                             it.Type is not null ? new LuaTypeRef(it.Type) : null)
                     )
-                    .Cast<Symbol.Symbol>()
                     .ToList();
             }
         }
@@ -996,9 +1003,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void LuaLabelAnalysis(LuaLabelStatSyntax labelStatSyntax)
     {
-        // var label = labelStatSyntax.Name;
-        // var labelName = labelStatSyntax.LabelName;
-        // var labelDeclaration = new LabelSymbol(label, GetPosition(labelName), labelName);
-        // AddSymbol(labelDeclaration);
+        if (labelStatSyntax is { Name: { } name })
+        {
+            var labelDeclaration =
+                new LabelDeclaration(name.RepresentText, GetPosition(labelStatSyntax), labelStatSyntax);
+            AddSymbol(labelDeclaration);
+        }
     }
 }

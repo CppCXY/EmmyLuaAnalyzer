@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
@@ -25,9 +26,9 @@ public class IndexSearcher : LuaSearcher
         return stubIndexImpl.Members.Get<Symbol.Symbol>(className);
     }
 
-    public override IEnumerable<Symbol.Symbol> SearchGenericParams(string className, SearchContext context)
+    public override IEnumerable<GenericParameterDeclaration> SearchGenericParams(string className, SearchContext context)
     {
         var stubIndexImpl = context.Compilation.Stub;
-        return stubIndexImpl.GenericParams.Get<Symbol.Symbol>(className);
+        return stubIndexImpl.NamedTypeGenericParams.Get(className);
     }
 }

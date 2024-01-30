@@ -1,8 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.Declaration;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
@@ -14,7 +12,6 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             Compilation.SymbolTrees[documentId] = builder.Build();
         }
     }
-
 
     // foreach (var node in IndexNodes)
     // {
