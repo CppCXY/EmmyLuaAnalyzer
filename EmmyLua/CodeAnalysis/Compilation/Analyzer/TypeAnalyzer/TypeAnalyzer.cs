@@ -5,30 +5,22 @@ using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.BindAnalyzer;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
-public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
+public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
     private SearchContext Context => Compilation.SearchContext;
-    private Dictionary<DocumentId, BindData> BindData { get; } = new();
 
     public override void Analyze(DocumentId documentId)
     {
-        if (BindData.ContainsKey(documentId))
-        {
-            return;
-        }
-
         var declarationTree = Compilation.GetSymbolTree(documentId);
         if (declarationTree is null)
         {
             return;
         }
 
-        var bindData = new BindData(documentId, declarationTree);
-        BindData.Add(documentId, bindData);
-
-        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
+        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree &&
+            Compilation.GetSymbolTree(documentId) is { } symbolTree)
         {
             foreach (var node in syntaxTree.SyntaxRoot.Descendants)
             {
@@ -36,146 +28,94 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 {
                     case LuaLocalStatSyntax luaLocalStat:
                     {
-                        LocalBindAnalysis(luaLocalStat, bindData);
+                        LocalTypeAnalysis(luaLocalStat, symbolTree);
                         break;
                     }
                     case LuaAssignStatSyntax luaAssignStat:
                     {
-                        AssignBindAnalysis(luaAssignStat, bindData);
+                        AssignTypeAnalysis(luaAssignStat, symbolTree);
                         break;
                     }
                     case LuaForStatSyntax luaForStat:
                     {
-                        ForStatBindAnalysis(luaForStat, bindData);
+                        ForStatBindAnalysis(luaForStat, symbolTree);
                         break;
                     }
                     case LuaForRangeStatSyntax luaForRangeStat:
                     {
-                        ForRangeBindAnalysis(luaForRangeStat, bindData);
+                        ForRangeBindAnalysis(luaForRangeStat, symbolTree);
                         break;
                     }
                     case LuaCallExprSyntax luaCallExpr:
                     {
-                        CallExprAnalysis(luaCallExpr, bindData);
+                        CallExprAnalysis(luaCallExpr, symbolTree);
                         break;
                     }
                 }
             }
         }
-
-        bindData.Step = BindAnalyzeStep.Finish;
     }
 
-    private void LocalBindAnalysis(LuaLocalStatSyntax localStat, BindData bindData)
+    private void LocalTypeAnalysis(LuaLocalStatSyntax localStat, SymbolTree tree)
     {
-        var tree = bindData.Tree;
-        var nameList = localStat.NameList.ToList();
-        var exprList = localStat.ExprList.ToList();
-        var count = nameList.Count;
-        ILuaType currentExprType = Context.Compilation.Builtin.Unknown;
-        var retId = 0;
-        for (var i = 0; i < count; i++)
+        foreach (var localName in localStat.NameList)
         {
-            var localName = nameList[i];
-            var expr = exprList.ElementAtOrDefault(i);
-            if (expr is not null)
+            var symbol = tree.FindSymbol(localName);
+            if (symbol is LocalDeclaration { DeclarationType: LuaTypeRef ty } localDeclaration)
             {
-                currentExprType = Compilation.SearchContext.Infer(expr);
-                retId = 0;
-            }
-            else
-            {
-                retId++;
-            }
-
-            ILuaType exprType = Context.Compilation.Builtin.Unknown;
-            if (currentExprType is LuaMultiRetType multiRetType)
-            {
-                exprType = multiRetType.GetRetType(retId) ?? exprType;
-            }
-            else if (retId == 0)
-            {
-                exprType = currentExprType;
-            }
-
-            var symbol = tree.FindDeclaration(localName, Context);
-            if (symbol is { DeclarationType: { } ty })
-            {
+                var exprType = localDeclaration.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
                 if (!exprType.SubTypeOf(ty, Context))
                 {
                     localStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"Local variable '{localName.Name?.RepresentText}' is type '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
+                        $"Local variable '{localName.Name?.RepresentText}' declaration type is '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
                         localName.Location
                     ));
                 }
             }
-            else
-            {
-                if (symbol != null) symbol.DeclarationType = exprType;
-            }
         }
     }
 
-    private void AssignBindAnalysis(LuaAssignStatSyntax assignStat, BindData bindData)
+    private void AssignTypeAnalysis(LuaAssignStatSyntax assignStat, SymbolTree tree)
     {
-        var tree = bindData.Tree;
-        var varList = assignStat.VarList.ToList();
-        var exprList = assignStat.ExprList.ToList();
-        var count = varList.Count;
-        ILuaType currentExprType = Context.Compilation.Builtin.Unknown;
-        var retId = 0;
-        for (var i = 0; i < count; i++)
+        foreach (var varExpr in assignStat.VarList)
         {
-            var var = varList[i];
-            var expr = exprList.ElementAtOrDefault(i);
-            if (expr is not null)
+            var symbol = tree.FindSymbol(varExpr);
+            switch (symbol)
             {
-                currentExprType = Compilation.SearchContext.Infer(expr);
-                retId = 0;
-            }
-            else
-            {
-                retId++;
-            }
-
-            ILuaType exprType = Context.Compilation.Builtin.Unknown;
-            if (currentExprType is LuaMultiRetType multiRetType)
-            {
-                exprType = multiRetType.GetRetType(retId) ?? exprType;
-            }
-            else if (retId == 0)
-            {
-                exprType = currentExprType;
-            }
-
-            var symbol = tree.FindDeclaration(var, Context);
-            if (symbol is { DeclarationType: { } ty })
-            {
-                if (!exprType.SubTypeOf(ty, Context))
+                case GlobalDeclaration { DeclarationType: { } ty } globalDeclaration:
                 {
-                    assignStat.Tree.PushDiagnostic(new Diagnostic(
-                        DiagnosticSeverity.Warning,
-                        DiagnosticCode.TypeNotMatch,
-                        $"Variable {var} is type '{ty.ToDisplayString(Context)}' not match '{exprType.ToDisplayString(Context)}'",
-                        var.Location
-                    ));
+                    var exprType = globalDeclaration.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                    if (!exprType.SubTypeOf(ty, Context))
+                    {
+                        assignStat.Tree.PushDiagnostic(new Diagnostic(
+                            DiagnosticSeverity.Warning,
+                            DiagnosticCode.TypeNotMatch,
+                            $"Global {globalDeclaration.Name} declaration type '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
+                            varExpr.Location
+                        ));
+                    }
+
+                    break;
+                }
+                case IndexDeclaration indexDeclaration:
+                {
+                    break;
+                }
+                case AssignSymbol assignSymbol:
+                {
+                    break;
                 }
             }
-            else
-            {
-                if (symbol != null) symbol.DeclarationType = exprType;
-            }
         }
     }
 
-    private void ForStatBindAnalysis(LuaForStatSyntax forStat, BindData bindData)
+    private void ForStatBindAnalysis(LuaForStatSyntax forStat, SymbolTree tree)
     {
-        var tree = bindData.Tree;
         if (forStat.IteratorName is { } itName)
         {
-            var symbol = tree.FindDeclaration(itName, Context);
+            var symbol = tree.FindSymbol(itName);
             if (symbol is { DeclarationType: { } ty })
             {
                 if (forStat.InitExpr is { } initExpr)
@@ -223,9 +163,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
-    private void ForRangeBindAnalysis(LuaForRangeStatSyntax forRangeStat, BindData bindData)
+    private void ForRangeBindAnalysis(LuaForRangeStatSyntax forRangeStat, SymbolTree tree)
     {
-        var tree = bindData.Tree;
         var iterNames = forRangeStat.IteratorNames.ToList();
         var iterExpr = forRangeStat.ExprList.ToList().FirstOrDefault();
         var iterExprType = Context.Infer(iterExpr);
@@ -239,8 +178,8 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 var iterName = iterNames[i];
                 var ty = tyList.ElementAtOrDefault(i) ?? Context.Compilation.Builtin.Unknown;
 
-                var declaration = tree.FindDeclaration(iterName, Context);
-                if (declaration is { DeclarationType: { } declTy })
+                var symbol = tree.FindSymbol(iterName);
+                if (symbol is { DeclarationType: { } declTy })
                 {
                     if (!ty.SubTypeOf(declTy, Context))
                     {
@@ -254,7 +193,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 }
                 else
                 {
-                    if (declaration != null) declaration.DeclarationType = ty;
+                    if (symbol != null) symbol.DeclarationType = ty;
                 }
             }
         }
@@ -319,7 +258,7 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
-    private void CallExprAnalysis(LuaCallExprSyntax callExpr, BindData bindData)
+    private void CallExprAnalysis(LuaCallExprSyntax callExpr, SymbolTree tree)
     {
         var prefixTy = Context.Infer(callExpr.PrefixExpr);
         var isColonCall = false;
@@ -370,10 +309,5 @@ public class BindAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 }
             }
         });
-    }
-
-    public override void RemoveCache(DocumentId documentId)
-    {
-        BindData.Remove(documentId);
     }
 }

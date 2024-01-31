@@ -30,6 +30,11 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
                         IndexDeclarationAnalyze(indexDeclaration, documentId);
                         break;
                     }
+                    case MethodDeclaration methodDeclaration:
+                    {
+                        MethodDeclarationAnalyze(methodDeclaration, documentId);
+                        break;
+                    }
                 }
             }
         }
@@ -42,7 +47,9 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             localDeclaration.DeclarationType = new LuaVarRef(localDeclaration.LocalName, localDeclaration.ExprRef);
         }
         else if (localDeclaration is
-            { DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 } })
+                 {
+                     DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
+                 })
         {
             NamedTypeMerge(namedType, tableExpr, documentId);
         }
@@ -65,62 +72,62 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             globalDeclaration.DeclarationType = new LuaVarRef(globalDeclaration.NameSyntax, globalDeclaration.ExprRef);
         }
         else if (globalDeclaration is
-            { DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 } })
+                 {
+                     DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
+                 })
         {
             NamedTypeMerge(namedType, tableExpr, documentId);
         }
     }
 
-    //     var expr = node.IndexExpr;
-    //     var documentId = node.DocumentId;
-    //     if (node.IndexExpr is { Name: { } indexName, KeyElement: { } keyElement })
-    //     {
-    //         var prefixTy = Compilation.SearchContext.Infer(expr.PrefixExpr);
-    //         if (prefixTy is ILuaNamedType namedType)
-    //         {
-    //             var symbolTree = Compilation.GetSymbolTree(documentId);
-    //             if (symbolTree is not null)
-    //             {
-    //                 var parentTyName = namedType.Name;
-    //                 var declaration;
-    //                 Compilation.Stub.Members.AddStub(documentId, parentTyName, declaration);
-    //             }
-    //         }
-    //
-    //         if (node.LuaType is LuaMethod method && expr.IsColonIndex)
-    //         {
-    //             var declarationTree = Compilation.GetSymbolTree(documentId);
-    //             if (declarationTree is not null)
-    //             {
-    //                 method.SelfType = prefixTy;
-    //             }
-    //         }
-    //     }
-
     private void IndexDeclarationAnalyze(IndexDeclaration indexDeclaration, DocumentId documentId)
     {
-        // if (indexDeclaration.DeclarationType is null)
-        // {
-        //     var prefixTy = Compilation.SearchContext.Infer(indexDeclaration.IndexExpr.PrefixExpr);
-        //     if (prefixTy is ILuaNamedType namedType)
-        //     {
-        //         var symbolTree = Compilation.GetSymbolTree(documentId);
-        //         if (symbolTree is not null)
-        //         {
-        //             var parentTyName = namedType.Name;
-        //             var declaration = new GlobalDeclaration(indexDeclaration.Name, indexDeclaration.Position, indexDeclaration.IndexExpr.Name, null, null);
-        //             Compilation.Stub.Members.AddStub(documentId, parentTyName, declaration);
-        //         }
-        //     }
-        // }
-        //
-        // if (indexDeclaration.LuaType is LuaMethod method && indexDeclaration.IndexExpr.IsColonIndex)
-        // {
-        //     var declarationTree = Compilation.GetSymbolTree(documentId);
-        //     if (declarationTree is not null)
-        //     {
-        //         method.SelfType = Compilation.SearchContext.Infer(indexDeclaration.IndexExpr.PrefixExpr);
-        //     }
-        // }
+        var indexExpr = indexDeclaration.IndexExpr;
+        if (indexExpr is { PrefixExpr: { } prefixExpr })
+        {
+            var ty = Compilation.SearchContext.Infer(prefixExpr);
+            if (ty is ILuaNamedType namedType)
+            {
+                Compilation.Stub.Members.AddStub(documentId, namedType.Name, indexDeclaration);
+            }
+        }
+    }
+
+    private void MethodDeclarationAnalyze(MethodDeclaration methodDeclaration, DocumentId documentId)
+    {
+        var luaMethod = methodDeclaration.MethodType;
+        if (luaMethod.MainSignature.ReturnTypes is null)
+        {
+            var block = methodDeclaration.MethodDef?.FuncBody?.Block;
+            if (block is not null)
+            {
+                var returns = Compilation.Stub.MainBlockReturns.Get(block).FirstOrDefault();
+                if (returns is not null)
+                {
+                    ILuaType retTy = Compilation.Builtin.Unknown;
+                    foreach (var retExpr in returns)
+                    {
+                        retTy = LuaUnion.UnionType(retTy, Compilation.SearchContext.Infer(retExpr));
+                    }
+
+                    luaMethod.MainSignature.ReturnTypes = retTy;
+                }
+            }
+        }
+
+        var indexExpr = methodDeclaration.IndexExprSyntax;
+        if (indexExpr is { PrefixExpr: { } prefixExpr })
+        {
+            var ty = Compilation.SearchContext.Infer(prefixExpr);
+            if (ty is ILuaNamedType namedType)
+            {
+                Compilation.Stub.Members.AddStub(documentId, namedType.Name, methodDeclaration);
+            }
+
+            if (indexExpr.IsColonIndex)
+            {
+                luaMethod.SelfType = ty;
+            }
+        }
     }
 }

@@ -37,8 +37,7 @@ public static class TypeInfer
     private static ILuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
     {
         var className = context.GetUniqueId(tableType);
-        var ty = context.FindLuaType(className);
-        return ty;
+        return new LuaTable(className);
     }
 
     private static ILuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)

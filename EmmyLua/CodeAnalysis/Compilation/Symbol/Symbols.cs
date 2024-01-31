@@ -14,5 +14,6 @@ public class VirtualSymbol(string name, ILuaType? declarationType)
 
 public class AssignSymbol(
     string name,
+    int position,
     Symbol? prev)
-    : Symbol(name, 0, null, SymbolKind.Assign, null, prev, null);
+    : Symbol(name, position, null, SymbolKind.Assign, null, prev, null);

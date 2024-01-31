@@ -51,7 +51,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private Symbol.Symbol? FindDeclaration(LuaNameExprSyntax nameExpr)
     {
-        return FindScope(nameExpr)?.FindNameExpr(nameExpr)?.FirstSymbol;
+        return FindScope(nameExpr)?.FindNameDeclaration(nameExpr)?.FirstSymbol;
     }
 
     private SymbolScope? FindScope(LuaSyntaxNode element)
@@ -104,6 +104,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             self = ParameterDeclaration.SelfParameter(new LuaExprRef(prefixExpr));
         }
+
         return Push(new MethodStatSymbolScope(_tree, position, _curScope, self), funcStat);
     }
 
@@ -515,11 +516,11 @@ public class DeclarationBuilder : ILuaElementWalker
                         Symbol.Symbol declarationOrSymbol = null!;
                         if (prevDeclaration is not null)
                         {
-                            AddSymbol(new AssignSymbol(name.RepresentText, prevDeclaration));
+                            AddSymbol(new AssignSymbol(name.RepresentText, GetPosition(nameExpr), prevDeclaration));
                         }
                         else
                         {
-                            var declaration = new GlobalDeclaration(name.RepresentText, GetPosition(name), nameExpr,
+                            var declaration = new GlobalDeclaration(name.RepresentText, GetPosition(nameExpr), nameExpr,
                                 luaType, relatedExpr);
                             Stub.GlobalDeclaration.AddStub(DocumentId, name.RepresentText, declaration);
 
@@ -577,7 +578,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                     if (prevDeclaration is not null)
                     {
-                        AddSymbol(new AssignSymbol(name2.RepresentText, prevDeclaration));
+                        AddSymbol(new AssignSymbol(name2.RepresentText, GetPosition(luaFuncStat.NameExpr), prevDeclaration));
                     }
                     else
                     {

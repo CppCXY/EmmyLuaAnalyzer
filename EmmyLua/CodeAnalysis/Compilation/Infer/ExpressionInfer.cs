@@ -138,7 +138,7 @@ public static class ExpressionInfer
         {
             case (Unknown, Unknown):
             {
-                return new LuaTable(keyType, elementType);
+                return new GenericTable(keyType, elementType);
             }
             case (Unknown, _):
             {
@@ -146,7 +146,7 @@ public static class ExpressionInfer
             }
             default:
             {
-                return new LuaTable(keyType, elementType);
+                return new GenericTable(keyType, elementType);
             }
         }
     }
@@ -189,14 +189,11 @@ public static class ExpressionInfer
         }
 
         var symbolTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
-        if (symbolTree is not null)
-        {
-            var nameDecl = symbolTree.FindDeclaration(nameExpr, context);
+        var nameDecl = symbolTree?.FindDeclaration(nameExpr, context);
 
-            if (nameDecl?.DeclarationType is { } ty)
-            {
-                return ty;
-            }
+        if (nameDecl?.DeclarationType is { } ty)
+        {
+            return ty;
         }
 
         return context.Compilation.Builtin.Unknown;

@@ -11,9 +11,9 @@ public static class GenericInfer
             switch (args.Count)
             {
                 case 1:
-                    return new LuaTable(context.Compilation.Builtin.Unknown, args[0]);
+                    return new GenericTable(context.Compilation.Builtin.Unknown, args[0]);
                 case 2:
-                    return new LuaTable(args[0], args[1]);
+                    return new GenericTable(args[0], args[1]);
             }
         }
 

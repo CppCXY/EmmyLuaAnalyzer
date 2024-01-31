@@ -1,31 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public abstract class LuaType(TypeKind kind) : ILuaType
 {
-    public abstract IEnumerable<Symbol.Symbol> GetMembers(SearchContext context);
-
-    public virtual IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
-    public virtual IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
-    public virtual IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
     public virtual bool SubTypeOf(ILuaType other, SearchContext context)
     {
         return ReferenceEquals(this, other);
-    }
-
-    public virtual bool AcceptExpr(LuaExprSyntax expr, SearchContext context)
-    {
-        var ty = context.Infer(expr);
-        return SubTypeOf(ty, context);
     }
 
     public ILuaType Substitute(SearchContext context)

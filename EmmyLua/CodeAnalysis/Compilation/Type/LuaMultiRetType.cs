@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -14,11 +15,6 @@ public class LuaMultiRetType(List<ILuaType> rets) : LuaType(TypeKind.MultiRet)
         }
 
         return ty is null ? new LuaMultiRetType([]) : new LuaMultiRetType([ty]);
-    }
-
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
-    {
-        return Enumerable.Empty<Symbol.Symbol>();
     }
 
     public ILuaType? GetRetType(int index)

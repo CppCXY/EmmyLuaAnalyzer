@@ -14,7 +14,7 @@ public class Builtin
     public readonly Primitive Boolean = new Primitive("boolean");
     public readonly Primitive Userdata = new Primitive("userdata");
     public readonly LuaClass Io = new LuaClass("io");
-    public readonly LuaTable Table = new LuaTable();
+    public readonly LuaTable Table = new LuaTable(string.Empty);
     public readonly LuaClass Global = new LuaClass("global");
 
     public Builtin()
@@ -52,17 +52,6 @@ public class Primitive(string name) : LuaClass(name)
         return this;
     }
 
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
-
-    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
-    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
-    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context) =>
-        Enumerable.Empty<Symbol.Symbol>();
-
     public override bool SubTypeOf(ILuaType other, SearchContext context) =>
         ReferenceEquals(this, other) || Super?.SubTypeOf(other, context) == true;
 }
@@ -82,52 +71,37 @@ public class Nil() : Primitive("nil")
         ReferenceEquals(this, other) || other.IsNullable;
 }
 
-public class LuaTable(ILuaType? key = null, ILuaType? value = null) : LuaClass("table"), IGenericImpl
+public class LuaTable(string uniqueId) : LuaType(TypeKind.Table), IGenericBase
 {
-    public ILuaType? Key { get; } = key;
+    public string Name { get; } = uniqueId;
 
-    public ILuaType? Value { get; } = value;
-
-    public IGenericBase BaseType => this;
-
-    public List<ILuaType> GenericArgs { get; } = [];
-
-    public VirtualSymbol MemberSymbol { get; } = new(value);
-
-    public static LuaTable WithGeneric(ILuaType key, ILuaType value)
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        return new LuaTable(key, value);
+        var otherSubstitute = other.Substitute(context);
+        return otherSubstitute is ILuaNamedType;
     }
+}
 
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
+public class GenericTable(ILuaType key, ILuaType value) : LuaTable(string.Empty), IGenericImpl
+{
+    public ILuaType Key { get; } = key;
+    public ILuaType Value { get; } = value;
 
-    public override IEnumerable<Symbol.Symbol> IndexMember(string name, SearchContext context)
+    public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        if (ReferenceEquals(Key, context.Compilation.Builtin.String))
+        var otherSubstitute = other.Substitute(context);
+        if (otherSubstitute is GenericTable { Key: { } key, Value: { } value })
         {
-            yield return MemberSymbol;
+            return Key.SubTypeOf(key, context) && Value.SubTypeOf(value, context);
         }
+
+        return base.SubTypeOf(other, context);
     }
 
-    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
+    public IGenericBase GetBaseType(SearchContext context)
     {
-        if (ReferenceEquals(Key, context.Compilation.Builtin.Integer)
-            || ReferenceEquals(Key, context.Compilation.Builtin.Number))
-        {
-            yield return MemberSymbol;
-        }
+        return context.Compilation.Builtin.Table;
     }
 
-    public override IEnumerable<Symbol.Symbol> IndexMember(ILuaType ty, SearchContext context)
-    {
-        if (Key is not null && ty.SubTypeOf(Key, context))
-        {
-            yield return MemberSymbol;
-        }
-    }
-
-    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
-        ReferenceEquals(this, other) || other is LuaTable;
-
-    public override IEnumerable<ILuaType> GetSupers(SearchContext context) => Enumerable.Empty<ILuaType>();
+    public List<ILuaType> GenericArgs { get; } = [key, value];
 }

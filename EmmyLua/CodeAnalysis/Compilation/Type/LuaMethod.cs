@@ -120,8 +120,6 @@ public class LuaMethod(
         return perfectSignature;
     }
 
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
-
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
         if (ReferenceEquals(this, other))
@@ -153,7 +151,7 @@ public class Signature(
 {
     public bool ColonDefine { get; } = colon;
 
-    public ILuaType? ReturnTypes { get; } = returnTypes;
+    public ILuaType? ReturnTypes { get; internal set; } = returnTypes;
 
     public List<ParameterDeclaration> Parameters { get; } = parameters;
 

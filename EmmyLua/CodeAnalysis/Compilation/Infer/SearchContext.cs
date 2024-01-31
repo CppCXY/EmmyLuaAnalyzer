@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -94,12 +95,23 @@ public class SearchContext
         return Compilation.Builtin.Unknown;
     }
 
-    public IEnumerable<Symbol.Symbol> FindMembers(string name)
+    public IEnumerable<Declaration> GetMembers(string name)
     {
         return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
     }
 
-    public IEnumerable<Symbol.Symbol> FindGenericParams(string name)
+    public IEnumerable<Declaration> FindMember(ILuaType luaType, string memberName)
+    {
+        if (luaType is ILuaNamedType namedType)
+        {
+            return GetMembers(namedType.Name)
+                .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
+        }
+
+        return Enumerable.Empty<Declaration>();
+    }
+
+    public IEnumerable<GenericParameterDeclaration> FindGenericParams(string name)
     {
         return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
     }
@@ -111,14 +123,9 @@ public class SearchContext
 
     public string GetUniqueId(LuaSyntaxElement element)
     {
-        var source = element.Tree.Document;
-        if (source is LuaDocument document)
-        {
-            var documentId = document.Id;
-            return $"{documentId.Guid}:{Compilation.SymbolTrees[documentId].GetPosition(element)}";
-        }
-
-        return string.Empty;
+        var document = element.Tree.Document;
+        var documentId = document.Id;
+        return $"{documentId.Guid}|{Compilation.SymbolTrees[documentId].GetPosition(element)}";
     }
 
     public bool TryAddSubstitute(ILuaType type)

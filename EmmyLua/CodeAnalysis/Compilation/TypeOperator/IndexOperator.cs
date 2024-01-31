@@ -8,6 +8,7 @@ public class IndexOperator(ILuaType key, ILuaType ret) : ILuaOperator
 {
     ILuaType? GetMemberType(LuaExprSyntax expr, SearchContext context)
     {
-        return key.AcceptExpr(expr, context) ? ret : null;
+        // return key.AcceptExpr(expr, context) ? ret : null;
+        throw new NotImplementedException();
     }
 }

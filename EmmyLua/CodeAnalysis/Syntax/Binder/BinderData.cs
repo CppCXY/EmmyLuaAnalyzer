@@ -8,8 +8,6 @@ public class BinderData(
     Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments,
     Dictionary<LuaSyntaxElement, List<LuaSyntaxToken>> docDescriptions)
 {
-    private readonly Dictionary<LuaSyntaxElement, List<LuaSyntaxToken>> _docDescriptions = docDescriptions;
-
     public LuaSyntaxElement? CommentOwner(LuaCommentSyntax comment)
     {
         return commentOwners.GetValueOrDefault(comment);

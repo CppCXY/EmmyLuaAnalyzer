@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.BindAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
@@ -46,7 +46,7 @@ public class LuaCompilation
         [
             new DeclarationAnalyzer(this),
             new SymbolAnalyzer(this),
-            new BindAnalyzer(this)
+            new TypeAnalyzer(this)
         ];
     }
 

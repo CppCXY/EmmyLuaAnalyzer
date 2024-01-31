@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -13,11 +14,6 @@ public class LuaLiteral(LuaSyntaxToken token) : LuaType(TypeKind.Literal)
     public long IntegerValue => (token as LuaIntegerToken)?.Value ?? 0;
 
     public string StringValue => (token as LuaStringToken)?.Value ?? "";
-
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context)
-    {
-        return Enumerable.Empty<Symbol.Symbol>();
-    }
 
     public override string ToDisplayString(SearchContext context)
     {

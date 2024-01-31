@@ -7,19 +7,10 @@ public class LuaArray(ILuaType baseTy) : LuaType(TypeKind.Array)
 {
     public ILuaType Base { get; } = baseTy;
 
-    private VirtualSymbol BaseSymbol { get; } = new(baseTy);
-
-    public override IEnumerable<Symbol.Symbol> GetMembers(SearchContext context) => Enumerable.Empty<Symbol.Symbol>();
-
-    public override IEnumerable<Symbol.Symbol> IndexMember(long index, SearchContext context)
-    {
-        yield return BaseSymbol;
-    }
-
     public override bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        return ReferenceEquals(this, other) ||
-               other is LuaArray array && Base.SubTypeOf(array.Base, context);
+        var otherSubstitute = other.Substitute(context);
+        return otherSubstitute is LuaArray array && Base.SubTypeOf(array.Base, context);
     }
 
     protected override ILuaType OnSubstitute(SearchContext context)

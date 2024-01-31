@@ -20,8 +20,8 @@ public static class DeclarationInfer
             return context.Compilation.Builtin.Unknown;
         }
 
-        var declaration = declarationTree.FindDeclaration(localName, context);
-        return declaration?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        var symbol = declarationTree.FindSymbol(localName);
+        return symbol?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 
     public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
@@ -39,7 +39,7 @@ public static class DeclarationInfer
             return context.Compilation.Builtin.Unknown;
         }
 
-        var declaration = symbolTree.FindDeclaration(paramDef, context);
-        return declaration?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        var symbol = symbolTree.FindSymbol(paramDef);
+        return symbol?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 }

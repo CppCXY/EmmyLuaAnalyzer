@@ -15,4 +15,5 @@ public enum TypeKind
     Method,
     TypeRef,
     Literal,
+    Table
 }

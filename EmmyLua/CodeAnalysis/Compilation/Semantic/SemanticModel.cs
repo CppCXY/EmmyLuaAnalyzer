@@ -13,7 +13,7 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
     public Symbol.Symbol? GetSymbol(LuaSyntaxElement element)
     {
         var symbolTree = Compilation.GetSymbolTree(Document.Id);
-        if (symbolTree?.FindDeclaration(element, Compilation.SearchContext) is { } symbol)
+        if (symbolTree?.FindSymbol(element) is { } symbol)
         {
             return symbol;
         }

@@ -14,7 +14,7 @@ public class LuaExprRef(LuaExprSyntax expr, int retId = 0) : LuaTypeRef(expr)
         var ty = base.GetType(context);
         if (ty is LuaMultiRetType multiRetType)
         {
-            return multiRetType.GetRetType(RetId) ?? context.Compilation.Builtin.Unknown;
+            return multiRetType.GetRetType(RetId) ?? context.Compilation.Builtin.Nil;
         }
 
         return ty;

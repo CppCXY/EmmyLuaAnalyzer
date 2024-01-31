@@ -10,7 +10,7 @@ public class Stub(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public StubIndex<string, Symbol.Symbol> Members { get; } = new();
+    public StubIndex<string, Declaration> Members { get; } = new();
 
     public StubIndex<string, ILuaNamedType> NamedTypeIndex { get; } = new();
 
