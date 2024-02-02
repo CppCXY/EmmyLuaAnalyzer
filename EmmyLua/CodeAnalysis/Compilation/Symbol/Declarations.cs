@@ -11,8 +11,11 @@ public class Declaration(
     LuaSyntaxElement? syntaxElement,
     ILuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
-    )
-    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, null, declarationType, feature);
+)
+    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, null, declarationType, feature)
+{
+    public string VarRefId { get; set; } = string.Empty;
+}
 
 public class LocalDeclaration(
     string name,

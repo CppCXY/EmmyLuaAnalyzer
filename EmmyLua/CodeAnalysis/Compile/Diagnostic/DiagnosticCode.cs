@@ -8,4 +8,5 @@ public enum DiagnosticCode
     MissingReturn,
     TypeNotMatch,
     MissingParameter,
+    InjectFieldFail,
 }

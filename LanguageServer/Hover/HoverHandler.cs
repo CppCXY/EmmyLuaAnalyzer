@@ -35,6 +35,10 @@ public class HoverHandler(
             var document = semanticModel.Document;
             var pos = request.Position;
             var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+            if (node is null)
+            {
+                return Task.FromResult<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?>(null);
+            }
             
             var symbol = semanticModel.GetSymbol(node);
             if (symbol is not null)

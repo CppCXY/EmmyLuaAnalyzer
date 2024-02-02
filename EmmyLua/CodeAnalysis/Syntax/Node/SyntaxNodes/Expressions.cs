@@ -250,7 +250,7 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
         }
     }
 
-    public LuaSyntaxElement? KeyElement
+    public LuaSyntaxElement KeyElement
     {
         get
         {
@@ -259,7 +259,7 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
                 return DotOrColonIndexName;
             }
 
-            return IndexKeyExpr;
+            return IndexKeyExpr ?? PrefixExpr!;
         }
     }
 }

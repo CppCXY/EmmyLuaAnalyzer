@@ -139,76 +139,76 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             case LuaLocalStatSyntax localStatSyntax:
             {
-                LocalStatDeclarationAnalysis(localStatSyntax);
+                AnalyzeLocalStatDeclaration(localStatSyntax);
                 break;
             }
             case LuaForRangeStatSyntax forRangeStatSyntax:
             {
-                ForRangeStatDeclarationAnalysis(forRangeStatSyntax);
+                AnalyzeForRangeStatDeclaration(forRangeStatSyntax);
                 break;
             }
             case LuaForStatSyntax forStatSyntax:
             {
-                ForStatDeclarationAnalysis(forStatSyntax);
+                AnalyzeForStatDeclaration(forStatSyntax);
                 break;
             }
             case LuaFuncStatSyntax funcStatSyntax:
             {
-                MethodDeclarationAnalysis(funcStatSyntax);
+                AnalyzeMethodDeclaration(funcStatSyntax);
                 break;
             }
             case LuaClosureExprSyntax closureExprSyntax:
             {
-                ClosureExprDeclarationAnalysis(closureExprSyntax);
+                AnalyzeClosureExprDeclaration(closureExprSyntax);
                 break;
             }
             case LuaAssignStatSyntax assignStatSyntax:
             {
-                AssignStatDeclarationAnalysis(assignStatSyntax);
+                AnalyzeAssignStatDeclaration(assignStatSyntax);
                 break;
             }
             case LuaDocTagClassSyntax tagClassSyntax:
             {
-                ClassTagDeclarationAnalysis(tagClassSyntax);
+                AnalyzeClassTagDeclaration(tagClassSyntax);
                 break;
             }
             case LuaDocTagAliasSyntax tagAliasSyntax:
             {
-                AliasTagDeclarationAnalysis(tagAliasSyntax);
+                AnalyzeAliasTagDeclaration(tagAliasSyntax);
                 break;
             }
             case LuaDocTagEnumSyntax tagEnumSyntax:
             {
-                EnumTagDeclarationAnalysis(tagEnumSyntax);
+                AnalyzeEnumTagDeclaration(tagEnumSyntax);
                 break;
             }
             case LuaDocTagInterfaceSyntax tagInterfaceSyntax:
             {
-                InterfaceTagDeclarationAnalysis(tagInterfaceSyntax);
+                AnalyzeInterfaceTagDeclaration(tagInterfaceSyntax);
                 break;
             }
             case LuaTableFieldSyntax tableFieldSyntax:
             {
-                TableFieldDeclarationAnalysis(tableFieldSyntax);
+                AnalyzeTableFieldDeclaration(tableFieldSyntax);
                 break;
             }
             case LuaDocTableTypeSyntax tableTypeSyntax:
             {
-                LuaTableTypeAnalysis(tableTypeSyntax);
+                AnalyzeLuaTableType(tableTypeSyntax);
                 break;
             }
             case LuaSourceSyntax sourceSyntax:
             {
                 if (sourceSyntax.Block is not null)
                 {
-                    BlockReturnAnalysis(sourceSyntax.Block);
+                    AnalyzeBlockReturn(sourceSyntax.Block);
                 }
 
                 break;
             }
             case LuaLabelStatSyntax labelStatSyntax:
             {
-                LuaLabelAnalysis(labelStatSyntax);
+                AnalyzeLuaLabel(labelStatSyntax);
                 break;
             }
         }
@@ -226,7 +226,7 @@ public class DeclarationBuilder : ILuaElementWalker
         => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
             or LuaForStatSyntax or LuaFuncStatSyntax;
 
-    private void LocalStatDeclarationAnalysis(LuaLocalStatSyntax localStatSyntax)
+    private void AnalyzeLocalStatDeclaration(LuaLocalStatSyntax localStatSyntax)
     {
         var types = FindLocalOrAssignTypes(localStatSyntax);
         var nameList = localStatSyntax.NameList.ToList();
@@ -334,7 +334,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void ForRangeStatDeclarationAnalysis(LuaForRangeStatSyntax forRangeStatSyntax)
+    private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
     {
         var dic = FindParamDeclarations(forRangeStatSyntax);
         foreach (var param in forRangeStatSyntax.IteratorNames)
@@ -352,7 +352,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void ForStatDeclarationAnalysis(LuaForStatSyntax forStatSyntax)
+    private void AnalyzeForStatDeclaration(LuaForStatSyntax forStatSyntax)
     {
         if (forStatSyntax is { IteratorName.Name: { } name })
         {
@@ -477,7 +477,7 @@ public class DeclarationBuilder : ILuaElementWalker
         return dic;
     }
 
-    private void AssignStatDeclarationAnalysis(LuaAssignStatSyntax luaAssignStat)
+    private void AnalyzeAssignStatDeclaration(LuaAssignStatSyntax luaAssignStat)
     {
         var types = FindLocalOrAssignTypes(luaAssignStat);
         var varList = luaAssignStat.VarList.ToList();
@@ -513,10 +513,9 @@ public class DeclarationBuilder : ILuaElementWalker
                     if (nameExpr.Name is { } name)
                     {
                         var prevDeclaration = FindDeclaration(nameExpr);
-                        Symbol.Symbol declarationOrSymbol = null!;
                         if (prevDeclaration is not null)
                         {
-                            AddSymbol(new AssignSymbol(name.RepresentText, GetPosition(nameExpr), prevDeclaration));
+                            AddSymbol(new AssignSymbol(name.RepresentText, GetPosition(nameExpr), prevDeclaration, relatedExpr));
                         }
                         else
                         {
@@ -527,7 +526,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             if (i == 0)
                             {
                                 var typeDeclaration = FindLocalOrAssignTypeDeclaration(luaAssignStat);
-                                declarationOrSymbol.PrevSymbol = typeDeclaration;
+                                declaration.PrevSymbol = typeDeclaration;
                             }
 
                             AddSymbol(declaration);
@@ -553,7 +552,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void MethodDeclarationAnalysis(LuaFuncStatSyntax luaFuncStat)
+    private void AnalyzeMethodDeclaration(LuaFuncStatSyntax luaFuncStat)
     {
         switch (luaFuncStat)
         {
@@ -578,7 +577,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                     if (prevDeclaration is not null)
                     {
-                        AddSymbol(new AssignSymbol(name2.RepresentText, GetPosition(luaFuncStat.NameExpr), prevDeclaration));
+                        AddSymbol(new AssignSymbol(name2.RepresentText, GetPosition(luaFuncStat.NameExpr), prevDeclaration, null));
                     }
                     else
                     {
@@ -611,13 +610,13 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void ClosureExprDeclarationAnalysis(LuaClosureExprSyntax closureExprSyntax)
+    private void AnalyzeClosureExprDeclaration(LuaClosureExprSyntax closureExprSyntax)
     {
         var funcBody = closureExprSyntax.FuncBody;
         FuncBodyMethodType(funcBody, false);
     }
 
-    private void ClassTagDeclarationAnalysis(LuaDocTagClassSyntax tagClassSyntax)
+    private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
     {
         if (tagClassSyntax is { Name: { } name })
         {
@@ -644,7 +643,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void AliasTagDeclarationAnalysis(LuaDocTagAliasSyntax tagAliasSyntax)
+    private void AnalyzeAliasTagDeclaration(LuaDocTagAliasSyntax tagAliasSyntax)
     {
         if (tagAliasSyntax is { Name: { } name, Type: { } type })
         {
@@ -656,7 +655,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void EnumTagDeclarationAnalysis(LuaDocTagEnumSyntax tagEnumSyntax)
+    private void AnalyzeEnumTagDeclaration(LuaDocTagEnumSyntax tagEnumSyntax)
     {
         if (tagEnumSyntax is { Name: { } name })
         {
@@ -680,7 +679,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void InterfaceTagDeclarationAnalysis(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
+    private void AnalyzeInterfaceTagDeclaration(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
     {
         if (tagInterfaceSyntax is { Name: { } name })
         {
@@ -811,7 +810,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void TableFieldDeclarationAnalysis(LuaTableFieldSyntax tableFieldSyntax)
+    private void AnalyzeTableFieldDeclaration(LuaTableFieldSyntax tableFieldSyntax)
     {
         if (tableFieldSyntax is { Name: { } fieldName, ParentTable: { } table, Value: { } value })
         {
@@ -873,7 +872,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         if (funcBody?.Block is not null)
         {
-            BlockReturnAnalysis(funcBody.Block);
+            AnalyzeBlockReturn(funcBody.Block);
         }
 
         var method = new LuaMethod(new Signature(colon, parameters, retType), overloads, genericParams);
@@ -886,7 +885,7 @@ public class DeclarationBuilder : ILuaElementWalker
         return method;
     }
 
-    private void LuaTableTypeAnalysis(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
+    private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     {
         var className = GetUniqueId(luaDocTableTypeSyntax);
         foreach (var fieldSyntax in luaDocTableTypeSyntax.FieldList)
@@ -922,7 +921,7 @@ public class DeclarationBuilder : ILuaElementWalker
         Stub.NamedTypeIndex.AddStub(DocumentId, className, new LuaClass(className));
     }
 
-    private void BlockReturnAnalysis(LuaBlockSyntax mainBlock)
+    private void AnalyzeBlockReturn(LuaBlockSyntax mainBlock)
     {
         var queue = new Queue<LuaBlockSyntax>();
         queue.Enqueue(mainBlock);
@@ -1005,7 +1004,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void LuaLabelAnalysis(LuaLabelStatSyntax labelStatSyntax)
+    private void AnalyzeLuaLabel(LuaLabelStatSyntax labelStatSyntax)
     {
         if (labelStatSyntax is { Name: { } name })
         {

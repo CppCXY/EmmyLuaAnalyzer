@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -7,6 +8,8 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
 
 public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
+    private SearchContext Context => Compilation.SearchContext;
+
     public override void Analyze(DocumentId documentId)
     {
         if (Compilation.GetSymbolTree(documentId) is { } tree)
@@ -17,22 +20,27 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
                 {
                     case LocalDeclaration localDeclaration:
                     {
-                        LocalDeclarationAnalyze(localDeclaration, documentId);
+                        AnalyzeLocalDeclaration(localDeclaration, documentId);
                         break;
                     }
                     case GlobalDeclaration globalDeclaration:
                     {
-                        GlobalDeclarationAnalyze(globalDeclaration, documentId);
+                        AnalyzeGlobalDeclaration(globalDeclaration, documentId);
+                        break;
+                    }
+                    case TableFieldDeclaration tableFieldDeclaration:
+                    {
+                        AnalyzeTableFieldDeclaration(tableFieldDeclaration, documentId);
                         break;
                     }
                     case IndexDeclaration indexDeclaration:
                     {
-                        IndexDeclarationAnalyze(indexDeclaration, documentId);
+                        AnalyzeIndexDeclaration(indexDeclaration, documentId);
                         break;
                     }
                     case MethodDeclaration methodDeclaration:
                     {
-                        MethodDeclarationAnalyze(methodDeclaration, documentId);
+                        AnalyzeMethodDeclaration(methodDeclaration, documentId);
                         break;
                     }
                 }
@@ -40,11 +48,11 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         }
     }
 
-    private void LocalDeclarationAnalyze(LocalDeclaration localDeclaration, DocumentId documentId)
+    private void AnalyzeLocalDeclaration(LocalDeclaration localDeclaration, DocumentId documentId)
     {
         if (localDeclaration.DeclarationType is null)
         {
-            localDeclaration.DeclarationType = new LuaVarRef(localDeclaration.LocalName, localDeclaration.ExprRef);
+            localDeclaration.VarRefId = Context.GetUniqueId(localDeclaration.LocalName);
         }
         else if (localDeclaration is
                  {
@@ -65,11 +73,11 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         }
     }
 
-    private void GlobalDeclarationAnalyze(GlobalDeclaration globalDeclaration, DocumentId documentId)
+    private void AnalyzeGlobalDeclaration(GlobalDeclaration globalDeclaration, DocumentId documentId)
     {
         if (globalDeclaration.DeclarationType is null)
         {
-            globalDeclaration.DeclarationType = new LuaVarRef(globalDeclaration.NameSyntax, globalDeclaration.ExprRef);
+            globalDeclaration.VarRefId = Context.GetUniqueId(globalDeclaration.NameSyntax);
         }
         else if (globalDeclaration is
                  {
@@ -80,20 +88,35 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         }
     }
 
-    private void IndexDeclarationAnalyze(IndexDeclaration indexDeclaration, DocumentId documentId)
+    private void AnalyzeTableFieldDeclaration(TableFieldDeclaration tableFieldDeclaration, DocumentId documentId)
+    {
+        tableFieldDeclaration.VarRefId = Context.GetUniqueId(tableFieldDeclaration.TableField);
+    }
+
+    private void AnalyzeIndexDeclaration(IndexDeclaration indexDeclaration, DocumentId documentId)
     {
         var indexExpr = indexDeclaration.IndexExpr;
+        AnalyzeIndexExpr(indexDeclaration, indexExpr, documentId);
+    }
+
+    private void AnalyzeIndexExpr(Declaration declaration, LuaIndexExprSyntax indexExpr, DocumentId documentId)
+    {
         if (indexExpr is { PrefixExpr: { } prefixExpr })
         {
-            var ty = Compilation.SearchContext.Infer(prefixExpr);
-            if (ty is ILuaNamedType namedType)
+            var prefixDeclaration =
+                Compilation.GetSymbolTree(documentId)?.FindDeclaration(prefixExpr, Context);
+            if (prefixDeclaration is { DeclarationType: ILuaNamedType namedType })
             {
-                Compilation.Stub.Members.AddStub(documentId, namedType.Name, indexDeclaration);
+                Compilation.Stub.Members.AddStub(documentId, namedType.Name, declaration);
+            }
+            else if (prefixDeclaration?.VarRefId is { } varRefId && varRefId.Length != 0)
+            {
+                Compilation.Stub.Members.AddStub(documentId, varRefId, declaration);
             }
         }
     }
 
-    private void MethodDeclarationAnalyze(MethodDeclaration methodDeclaration, DocumentId documentId)
+    private void AnalyzeMethodDeclaration(MethodDeclaration methodDeclaration, DocumentId documentId)
     {
         var luaMethod = methodDeclaration.MethodType;
         if (luaMethod.MainSignature.ReturnTypes is null)
@@ -116,18 +139,9 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         }
 
         var indexExpr = methodDeclaration.IndexExprSyntax;
-        if (indexExpr is { PrefixExpr: { } prefixExpr })
+        if (indexExpr is not null)
         {
-            var ty = Compilation.SearchContext.Infer(prefixExpr);
-            if (ty is ILuaNamedType namedType)
-            {
-                Compilation.Stub.Members.AddStub(documentId, namedType.Name, methodDeclaration);
-            }
-
-            if (indexExpr.IsColonIndex)
-            {
-                luaMethod.SelfType = ty;
-            }
+            AnalyzeIndexExpr(methodDeclaration, indexExpr, documentId);
         }
     }
 }

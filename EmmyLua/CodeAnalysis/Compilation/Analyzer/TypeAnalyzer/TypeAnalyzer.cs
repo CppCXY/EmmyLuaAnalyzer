@@ -28,27 +28,27 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 {
                     case LuaLocalStatSyntax luaLocalStat:
                     {
-                        LocalTypeAnalysis(luaLocalStat, symbolTree);
+                        AnalyzeLocalType(luaLocalStat, symbolTree);
                         break;
                     }
                     case LuaAssignStatSyntax luaAssignStat:
                     {
-                        AssignTypeAnalysis(luaAssignStat, symbolTree);
+                        AnalyzeAssignType(luaAssignStat, symbolTree);
                         break;
                     }
                     case LuaForStatSyntax luaForStat:
                     {
-                        ForStatBindAnalysis(luaForStat, symbolTree);
+                        AnalyzeForStat(luaForStat, symbolTree);
                         break;
                     }
                     case LuaForRangeStatSyntax luaForRangeStat:
                     {
-                        ForRangeBindAnalysis(luaForRangeStat, symbolTree);
+                        AnalyzeForRange(luaForRangeStat, symbolTree);
                         break;
                     }
                     case LuaCallExprSyntax luaCallExpr:
                     {
-                        CallExprAnalysis(luaCallExpr, symbolTree);
+                        AnalyzeCallExpr(luaCallExpr, symbolTree);
                         break;
                     }
                 }
@@ -56,7 +56,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
-    private void LocalTypeAnalysis(LuaLocalStatSyntax localStat, SymbolTree tree)
+    private void AnalyzeLocalType(LuaLocalStatSyntax localStat, SymbolTree tree)
     {
         foreach (var localName in localStat.NameList)
         {
@@ -69,49 +69,114 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     localStat.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.TypeNotMatch,
-                        $"Local variable '{localName.Name?.RepresentText}' declaration type is '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
+                        $"Cannot convert initializer type '{exprType.ToDisplayString(Context)}' to target type '{ty.ToDisplayString(Context)}'",
                         localName.Location
                     ));
                 }
             }
+            else if (symbol is LocalDeclaration { DeclarationType: null } localDeclaration2)
+            {
+                var exprType = localDeclaration2.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                localDeclaration2.DeclarationType = exprType;
+            }
         }
     }
 
-    private void AssignTypeAnalysis(LuaAssignStatSyntax assignStat, SymbolTree tree)
+    private void AnalyzeAssignType(LuaAssignStatSyntax assignStat, SymbolTree tree)
     {
         foreach (var varExpr in assignStat.VarList)
         {
             var symbol = tree.FindSymbol(varExpr);
             switch (symbol)
             {
-                case GlobalDeclaration { DeclarationType: { } ty } globalDeclaration:
+                case GlobalDeclaration globalDeclaration:
                 {
-                    var exprType = globalDeclaration.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
-                    if (!exprType.SubTypeOf(ty, Context))
+                    if (globalDeclaration is { DeclarationType: LuaTypeRef typeRef })
+                    {
+                        var exprType = globalDeclaration.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                        if (!exprType.SubTypeOf(typeRef, Context))
+                        {
+                            assignStat.Tree.PushDiagnostic(new Diagnostic(
+                                DiagnosticSeverity.Warning,
+                                DiagnosticCode.TypeNotMatch,
+                                $"Cannot convert initializer type '{exprType.ToDisplayString(Context)}' to target type '{typeRef.ToDisplayString(Context)}'",
+                                varExpr.Location
+                            ));
+                        }
+                    }
+                    else if (globalDeclaration is { DeclarationType: null })
+                    {
+                        var exprType = globalDeclaration.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                        globalDeclaration.DeclarationType = exprType;
+                    }
+
+                    break;
+                }
+                case IndexDeclaration originIndex:
+                {
+                    var indexExpr = originIndex.IndexExpr;
+                    var indexDeclaration = tree.FindDeclaration(varExpr, Context);
+                    if (indexDeclaration is not null)
+                    {
+                        indexDeclaration.DeclarationType ??=
+                            originIndex.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                        var declarationType = indexDeclaration.DeclarationType;
+                        if (declarationType is not null)
+                        {
+                            var exprType = originIndex.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                            if (!exprType.SubTypeOf(declarationType, Context))
+                            {
+                                assignStat.Tree.PushDiagnostic(new Diagnostic(
+                                    DiagnosticSeverity.Warning,
+                                    DiagnosticCode.TypeNotMatch,
+                                    $"Cannot convert source type '{exprType.ToDisplayString(Context)}' to target type '{declarationType.ToDisplayString(Context)}'",
+                                    indexExpr.KeyElement.Location
+                                ));
+                            }
+                        }
+                    }
+                    else
                     {
                         assignStat.Tree.PushDiagnostic(new Diagnostic(
                             DiagnosticSeverity.Warning,
-                            DiagnosticCode.TypeNotMatch,
-                            $"Global {globalDeclaration.Name} declaration type '{ty.ToDisplayString(Context)}' not match expr type '{exprType.ToDisplayString(Context)}'",
-                            varExpr.Location
+                            DiagnosticCode.InjectFieldFail,
+                            $"Cannot resolve symbol '{(varExpr as LuaIndexExprSyntax)!.Name}'",
+                            indexExpr.KeyElement.Location
                         ));
                     }
 
                     break;
                 }
-                case IndexDeclaration indexDeclaration:
-                {
-                    break;
-                }
                 case AssignSymbol assignSymbol:
                 {
+                    var declarationType = assignSymbol.DeclarationType;
+                    if (declarationType is null)
+                    {
+                        var declaration = assignSymbol.PrevSymbol as Declaration;
+                        declarationType = declaration?.DeclarationType;
+                    }
+
+                    if (declarationType is not null)
+                    {
+                        var exprType = assignSymbol.ExprRef?.GetType(Context) ?? Compilation.Builtin.Nil;
+                        if (!exprType.SubTypeOf(declarationType, Context))
+                        {
+                            assignStat.Tree.PushDiagnostic(new Diagnostic(
+                                DiagnosticSeverity.Warning,
+                                DiagnosticCode.TypeNotMatch,
+                                $"Cannot convert source type '{exprType.ToDisplayString(Context)}' to target type '{declarationType.ToDisplayString(Context)}'",
+                                varExpr.Location
+                            ));
+                        }
+                    }
+
                     break;
                 }
             }
         }
     }
 
-    private void ForStatBindAnalysis(LuaForStatSyntax forStat, SymbolTree tree)
+    private void AnalyzeForStat(LuaForStatSyntax forStat, SymbolTree tree)
     {
         if (forStat.IteratorName is { } itName)
         {
@@ -163,7 +228,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
-    private void ForRangeBindAnalysis(LuaForRangeStatSyntax forRangeStat, SymbolTree tree)
+    private void AnalyzeForRange(LuaForRangeStatSyntax forRangeStat, SymbolTree tree)
     {
         var iterNames = forRangeStat.IteratorNames.ToList();
         var iterExpr = forRangeStat.ExprList.ToList().FirstOrDefault();
@@ -231,7 +296,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     callExprSyntax.Tree.PushDiagnostic(new Diagnostic(
                         DiagnosticSeverity.Warning,
                         DiagnosticCode.MissingParameter,
-                        $"The number of parameters passed in is less than the number of parameters required by the function",
+                        "The number of parameters passed in is less than the number of parameters required by the function",
                         callExprSyntax.ArgList?.RightParen?.Location ?? callExprSyntax.Location
                     ));
                     return;
@@ -258,7 +323,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
         }
     }
 
-    private void CallExprAnalysis(LuaCallExprSyntax callExpr, SymbolTree tree)
+    private void AnalyzeCallExpr(LuaCallExprSyntax callExpr, SymbolTree tree)
     {
         var prefixTy = Context.Infer(callExpr.PrefixExpr);
         var isColonCall = false;

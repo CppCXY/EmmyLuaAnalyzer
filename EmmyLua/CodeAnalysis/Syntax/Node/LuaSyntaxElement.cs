@@ -418,7 +418,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public LuaLocation Location => Tree.Document.GetLocation(Range);
 
-    public LuaSyntaxToken TokenAt(int offset)
+    public LuaSyntaxToken? TokenAt(int offset)
     {
         var node = this;
         while (node != null)
@@ -432,20 +432,20 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
             node = nodeElement;
         }
 
-        throw new ArgumentOutOfRangeException();
+        return null;
     }
 
     // 0 based line and col
-    public LuaSyntaxToken TokenAt(int line, int col)
+    public LuaSyntaxToken? TokenAt(int line, int col)
     {
         var offset = Tree.Document.GetOffset(line, col);
         return TokenAt(offset);
     }
 
-    public LuaSyntaxNode NodeAt(int line, int col)
+    public LuaSyntaxNode? NodeAt(int line, int col)
     {
         var token = TokenAt(line, col);
-        return (token.Parent as LuaSyntaxNode)!;
+        return token?.Parent as LuaSyntaxNode;
     }
 
     public override int GetHashCode()

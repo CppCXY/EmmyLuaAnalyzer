@@ -19,8 +19,6 @@ public class LuaCompilation
 
     private readonly Dictionary<DocumentId, LuaSyntaxTree> _syntaxTrees = new();
 
-    private Dictionary<DocumentId, SemanticModel> SemanticModels { get; } = new();
-
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
     public IEnumerable<Symbol.Symbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
@@ -108,14 +106,7 @@ public class LuaCompilation
             return null;
         }
 
-        if (SemanticModels.TryGetValue(document.Id, out var semanticModel))
-        {
-            return semanticModel;
-        }
-
-        semanticModel = new SemanticModel(this, document);
-        SemanticModels.Add(document.Id, semanticModel);
-        return semanticModel;
+        return new SemanticModel(this, document);
     }
 
     private void Analyze()
