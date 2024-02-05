@@ -115,7 +115,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                 case IndexDeclaration originIndex:
                 {
                     var indexExpr = originIndex.IndexExpr;
-                    var indexDeclaration = tree.FindDeclaration(varExpr, Context);
+                    var indexDeclaration = tree.FindDeclaration(indexExpr, Context);
                     if (indexDeclaration is not null)
                     {
                         indexDeclaration.DeclarationType ??=

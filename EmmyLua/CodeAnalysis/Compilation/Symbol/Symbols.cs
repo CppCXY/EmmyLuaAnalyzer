@@ -8,7 +8,7 @@ public class AssignSymbol(
     Symbol? prev,
     LuaExprRef? exprRef
 )
-    : Symbol(name, position, null, SymbolKind.Assign, null, prev, null)
+    : Symbol(name, position, null, SymbolKind.Assign, prev, null)
 {
     public LuaExprRef? ExprRef => exprRef;
 }

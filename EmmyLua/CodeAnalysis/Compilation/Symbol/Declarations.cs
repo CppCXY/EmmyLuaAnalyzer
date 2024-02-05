@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -12,7 +11,7 @@ public class Declaration(
     ILuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
 )
-    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, null, declarationType, feature)
+    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, declarationType, feature)
 {
     public string VarRefId { get; set; } = string.Empty;
 }

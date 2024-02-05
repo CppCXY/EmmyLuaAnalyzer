@@ -3,19 +3,19 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
-public class SymbolNode(int position, SymbolNodeContainer? parent)
+public class SymbolNode(int position)
 {
     public SymbolNode? Prev { get; set; }
 
     public SymbolNode? Next { get; set; }
 
-    public SymbolNodeContainer? Parent { get; set; } = parent;
+    public SymbolNodeContainer? Parent { get; set; } = null;
 
     public int Position { get; } = position;
 }
 
-public abstract class SymbolNodeContainer(int position, SymbolNodeContainer? parent)
-    : SymbolNode(position, parent)
+public abstract class SymbolNodeContainer(int position)
+    : SymbolNode(position)
 {
     public List<SymbolNode> Children { get; } = [];
 
@@ -80,12 +80,11 @@ public class Symbol(
     int position,
     LuaSyntaxElement? syntaxElement,
     SymbolKind kind,
-    SymbolNodeContainer? parent,
     Symbol? prev,
     ILuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
 )
-    : SymbolNode(position, parent)
+    : SymbolNode(position)
 {
     public string Name { get; } = name;
 
@@ -107,14 +106,8 @@ public class Symbol(
 
     public Symbol FirstSymbol => PrevSymbol?.FirstSymbol ?? this;
 
-    public Symbol WithType(ILuaType? luaType)
-    {
-        return new Symbol(Name, Position, SyntaxElement, Kind, Parent, PrevSymbol, luaType);
-    }
-
     public override string ToString()
     {
         return $"{Kind} {Name}";
     }
 }
-

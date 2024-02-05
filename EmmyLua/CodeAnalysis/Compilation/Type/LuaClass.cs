@@ -6,15 +6,14 @@ public class LuaClass(string name) : LuaType(TypeKind.Class), IGenericBase
 {
     public string Name { get; } = name;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        var otherSubstitute = other.Substitute(context);
-        if (otherSubstitute is ILuaNamedType namedType)
+        if (other is ILuaNamedType namedType)
         {
             return string.Equals(Name, namedType.Name, StringComparison.CurrentCulture);
         }
 
-        return context.FindSupers(Name).Any(it => it.SubTypeOf(otherSubstitute, context));
+        return context.FindSupers(Name).Any(it => it.SubTypeOf(other, context));
     }
 
     public override string ToDisplayString(SearchContext context)

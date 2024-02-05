@@ -11,7 +11,7 @@ public class LuaTypeRef(LuaSyntaxElement element) : LuaType(TypeKind.TypeRef)
         return context.Infer(element);
     }
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
         return GetType(context).SubTypeOf(other, context);
     }

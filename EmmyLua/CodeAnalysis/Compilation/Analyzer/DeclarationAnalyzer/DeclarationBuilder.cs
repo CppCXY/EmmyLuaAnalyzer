@@ -16,7 +16,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private SymbolScope? _curScope = null;
 
-    private Stack<SymbolScope> _scopes = new();
+    private Stack<SymbolScope> _scopeStack = new();
 
     private Dictionary<LuaSyntaxElement, SymbolScope> _scopeOwners = new();
 
@@ -82,22 +82,47 @@ public class DeclarationBuilder : ILuaElementWalker
         _curScope?.Add(symbol);
     }
 
-    private SymbolScope Push(LuaSyntaxElement element)
+    private void PushScope(LuaSyntaxElement element)
     {
-        var position = GetPosition(element);
-        return element switch
+        if (_scopeOwners.TryGetValue(element, out var scope))
         {
-            LuaLocalStatSyntax => Push(new LocalStatSymbolScope(_tree, position, _curScope),
-                element),
-            LuaRepeatStatSyntax => Push(new RepeatStatSymbolScope(_tree, position, _curScope),
-                element),
-            LuaForRangeStatSyntax => Push(new ForRangeStatSymbolScope(_tree, position, _curScope), element),
-            LuaFuncStatSyntax funcStat => PushMethod(position, funcStat),
-            _ => Push(new SymbolScope(_tree, position, _curScope), element)
-        };
+            _scopeStack.Push(scope);
+            _curScope = scope;
+            return;
+        }
+
+        var position = GetPosition(element);
+        switch (element)
+        {
+            case LuaLocalStatSyntax:
+            {
+                SetScope(new LocalStatSymbolScope(_tree, position), element);
+                break;
+            }
+            case LuaRepeatStatSyntax:
+            {
+                SetScope(new RepeatStatSymbolScope(_tree, position), element);
+                break;
+            }
+            case LuaForRangeStatSyntax:
+            {
+                SetScope(new ForRangeStatSymbolScope(_tree, position), element);
+                break;
+            }
+            case LuaFuncStatSyntax funcStat:
+            {
+                PushMethod(position, funcStat);
+                break;
+            }
+            default:
+            {
+                SetScope(new SymbolScope(_tree, position), element);
+                break;
+            }
+        }
     }
 
-    private SymbolScope PushMethod(int position, LuaFuncStatSyntax funcStat)
+    private void PushMethod(int position, LuaFuncStatSyntax funcStat)
     {
         ParameterDeclaration? self = null;
         if (funcStat.IndexExpr is { PrefixExpr: { } prefixExpr })
@@ -105,34 +130,33 @@ public class DeclarationBuilder : ILuaElementWalker
             self = ParameterDeclaration.SelfParameter(new LuaExprRef(prefixExpr));
         }
 
-        return Push(new MethodStatSymbolScope(_tree, position, _curScope, self), funcStat);
+        SetScope(new MethodStatSymbolScope(_tree, position, self), funcStat);
     }
 
-    private SymbolScope Push(SymbolScope scope, LuaSyntaxElement element)
+    private void SetScope(SymbolScope scope, LuaSyntaxElement element)
     {
-        _scopes.Push(scope);
+        _scopeStack.Push(scope);
         _topScope ??= scope;
         _scopeOwners.Add(element, scope);
         _curScope?.Add(scope);
         _curScope = scope;
-        return scope;
     }
 
-    private void Pop()
+    private void PopScope()
     {
-        if (_scopes.Count != 0)
+        if (_scopeStack.Count != 0)
         {
-            _scopes.Pop();
+            _scopeStack.Pop();
         }
 
-        _curScope = _scopes.Count != 0 ? _scopes.Peek() : _topScope;
+        _curScope = _scopeStack.Count != 0 ? _scopeStack.Peek() : _topScope;
     }
 
     public void WalkIn(LuaSyntaxElement node)
     {
         if (IsScopeOwner(node))
         {
-            Push(node);
+            PushScope(node);
         }
 
         switch (node)
@@ -218,13 +242,13 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (IsScopeOwner(node))
         {
-            Pop();
+            PopScope();
         }
     }
 
-    private static bool IsScopeOwner(LuaSyntaxElement node)
-        => node is LuaBlockSyntax or LuaFuncBodySyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax
-            or LuaForStatSyntax or LuaFuncStatSyntax;
+    private static bool IsScopeOwner(LuaSyntaxElement element)
+        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax
+            or LuaFuncStatSyntax or LuaFuncBodySyntax;
 
     private void AnalyzeLocalStatDeclaration(LuaLocalStatSyntax localStatSyntax)
     {
@@ -269,7 +293,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private List<ParameterDeclaration> GetParamListDeclaration(LuaParamListSyntax paramListSyntax)
+    private List<ParameterDeclaration> AnalyzeParamListDeclaration(LuaParamListSyntax paramListSyntax)
     {
         var declarations = new List<ParameterDeclaration>();
         var dic = FindParamDeclarations(paramListSyntax);
@@ -515,7 +539,8 @@ public class DeclarationBuilder : ILuaElementWalker
                         var prevDeclaration = FindDeclaration(nameExpr);
                         if (prevDeclaration is not null)
                         {
-                            AddSymbol(new AssignSymbol(name.RepresentText, GetPosition(nameExpr), prevDeclaration, relatedExpr));
+                            AddSymbol(new AssignSymbol(name.RepresentText, GetPosition(nameExpr), prevDeclaration,
+                                relatedExpr));
                         }
                         else
                         {
@@ -558,12 +583,14 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             case { IsLocal: true, LocalName.Name: { } name }:
             {
-                var luaMethod = FuncBodyMethodType(luaFuncStat.FuncBody, false);
+                var luaMethod = AnalyzeFuncBody(luaFuncStat.FuncBody, false);
                 if (luaMethod is not null)
                 {
-                    var methodDeclaration =
-                        new MethodDeclaration(name.RepresentText, GetPosition(luaFuncStat.LocalName),
-                            luaFuncStat.LocalName, luaMethod, luaFuncStat.FuncBody!);
+                    var methodDeclaration = new MethodDeclaration(name.RepresentText,
+                        GetPosition(luaFuncStat.LocalName), luaFuncStat.LocalName, luaMethod, luaFuncStat.FuncBody!)
+                    {
+                        Feature = SymbolFeature.Local
+                    };
                     AddSymbol(methodDeclaration);
                 }
 
@@ -571,13 +598,14 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsLocal: false, NameExpr.Name: { } name2 }:
             {
-                var luaMethod = FuncBodyMethodType(luaFuncStat.FuncBody, false);
+                var luaMethod = AnalyzeFuncBody(luaFuncStat.FuncBody, false);
                 if (luaMethod is not null)
                 {
                     var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                     if (prevDeclaration is not null)
                     {
-                        AddSymbol(new AssignSymbol(name2.RepresentText, GetPosition(luaFuncStat.NameExpr), prevDeclaration, null));
+                        AddSymbol(new AssignSymbol(name2.RepresentText, GetPosition(luaFuncStat.NameExpr),
+                            prevDeclaration, null));
                     }
                     else
                     {
@@ -596,12 +624,11 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsMethod: true, IndexExpr: { } indexExpr }:
             {
-                var luaMethod = FuncBodyMethodType(luaFuncStat.FuncBody, indexExpr.IsColonIndex);
+                var luaMethod = AnalyzeFuncBody(luaFuncStat.FuncBody, indexExpr.IsColonIndex);
                 if (luaMethod is not null && indexExpr is { Name: { } name })
                 {
-                    var declaration =
-                        new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod,
-                            luaFuncStat.FuncBody!);
+                    var declaration = new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod,
+                        luaFuncStat.FuncBody!);
                     AddSymbol(declaration);
                 }
 
@@ -613,7 +640,7 @@ public class DeclarationBuilder : ILuaElementWalker
     private void AnalyzeClosureExprDeclaration(LuaClosureExprSyntax closureExprSyntax)
     {
         var funcBody = closureExprSyntax.FuncBody;
-        FuncBodyMethodType(funcBody, false);
+        AnalyzeFuncBody(funcBody, false);
     }
 
     private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
@@ -823,7 +850,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private LuaMethod? FuncBodyMethodType(LuaFuncBodySyntax? funcBody, bool colon)
+    private LuaMethod? AnalyzeFuncBody(LuaFuncBodySyntax? funcBody, bool colon)
     {
         var stat = funcBody?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
         if (stat is null)
@@ -864,25 +891,27 @@ public class DeclarationBuilder : ILuaElementWalker
             }
         }
 
-        var parameters = new List<ParameterDeclaration>();
-        if (funcBody?.ParamList is { } paramList)
-        {
-            parameters = GetParamListDeclaration(paramList);
-        }
-
-        if (funcBody?.Block is not null)
-        {
-            AnalyzeBlockReturn(funcBody.Block);
-        }
-
-        var method = new LuaMethod(new Signature(colon, parameters, retType), overloads, genericParams);
-
         if (funcBody is not null)
         {
+            PushScope(funcBody);
+            var parameters = new List<ParameterDeclaration>();
+            if (funcBody.ParamList is { } paramList)
+            {
+                parameters = AnalyzeParamListDeclaration(paramList);
+            }
+
+            if (funcBody.Block is not null)
+            {
+                AnalyzeBlockReturn(funcBody.Block);
+            }
+
+            var method = new LuaMethod(new Signature(colon, parameters, retType), overloads, genericParams);
             Stub.Methods.AddStub(DocumentId, funcBody, method);
+            PopScope();
+            return method;
         }
 
-        return method;
+        return null;
     }
 
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)

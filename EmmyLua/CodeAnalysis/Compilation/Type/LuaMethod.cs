@@ -120,14 +120,15 @@ public class LuaMethod(
         return perfectSignature;
     }
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        if (ReferenceEquals(this, other))
+        var otherSubstitute = other.Substitute(context);
+        if (ReferenceEquals(this, otherSubstitute))
         {
             return true;
         }
 
-        if (other is LuaMethod method)
+        if (otherSubstitute is LuaMethod method)
         {
             if (MainSignature.SubTypeOf(method.MainSignature, context))
             {

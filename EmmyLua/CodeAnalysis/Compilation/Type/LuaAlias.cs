@@ -9,7 +9,7 @@ public class LuaAlias(string name, ILuaType baseType) : LuaType(TypeKind.Alias),
 
     public ILuaType BaseType { get; } = baseType;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
         return BaseType.SubTypeOf(other, context);
     }

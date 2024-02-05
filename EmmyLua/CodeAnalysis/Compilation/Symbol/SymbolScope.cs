@@ -9,12 +9,12 @@ public enum ScopeFoundState
     NotFounded,
 }
 
-public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
-    : SymbolNodeContainer(pos, parent)
+public class SymbolScope(SymbolTree tree, int pos)
+    : SymbolNodeContainer(pos)
 {
     public SymbolTree Tree { get; } = tree;
 
-    public new SymbolScope? Parent { get; } = parent;
+    public SymbolScope? ParentScope => Parent as SymbolScope;
 
     public virtual ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
     {
@@ -38,7 +38,7 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
             }
         }
 
-        Parent?.WalkUp(position, level + 1, process);
+        ParentScope?.WalkUp(position, level + 1, process);
     }
 
     public ScopeFoundState ProcessNode<T>(Func<T, ScopeFoundState> process)
@@ -119,18 +119,18 @@ public class SymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
     {
         get
         {
-            var cur = Parent;
+            var cur = ParentScope;
             while (cur != null)
             {
                 yield return cur;
-                cur = cur.Parent;
+                cur = cur.ParentScope;
             }
         }
     }
 }
 
-public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
-    : SymbolScope(tree, pos, parent)
+public class LocalStatSymbolScope(SymbolTree tree, int pos)
+    : SymbolScope(tree, pos)
 {
     public override ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
     {
@@ -139,12 +139,12 @@ public class LocalStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
 
     public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
     {
-        Parent?.WalkUp(Position, level, process);
+        ParentScope?.WalkUp(Position, level, process);
     }
 }
 
-public class RepeatStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
-    : SymbolScope(tree, pos, parent)
+public class RepeatStatSymbolScope(SymbolTree tree, int pos)
+    : SymbolScope(tree, pos)
 {
     public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
     {
@@ -159,14 +159,14 @@ public class RepeatStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent
     }
 }
 
-public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent)
-    : SymbolScope(tree, pos, parent)
+public class ForRangeStatSymbolScope(SymbolTree tree, int pos)
+    : SymbolScope(tree, pos)
 {
     public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
     {
         if (level == 0)
         {
-            Parent?.WalkUp(position, level, process);
+            ParentScope?.WalkUp(position, level, process);
         }
         else
         {
@@ -175,8 +175,8 @@ public class ForRangeStatSymbolScope(SymbolTree tree, int pos, SymbolScope? pare
     }
 }
 
-public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent, ParameterDeclaration? self)
-    : SymbolScope(tree, pos, parent)
+public class MethodStatSymbolScope(SymbolTree tree, int pos, ParameterDeclaration? self)
+    : SymbolScope(tree, pos)
 {
     public override ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
     {
@@ -187,7 +187,7 @@ public class MethodStatSymbolScope(SymbolTree tree, int pos, SymbolScope? parent
     {
         if (level == 0)
         {
-            Parent?.WalkUp(position, level, process);
+            ParentScope?.WalkUp(position, level, process);
         }
         else
         {

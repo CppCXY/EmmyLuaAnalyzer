@@ -17,6 +17,8 @@ public class SearchContext
 
     private HashSet<ILuaType> _substituteGuard = new();
 
+    private HashSet<ILuaType> _subTypesGuard = new();
+
     private HashSet<LuaSyntaxElement> _inferGuard = new();
 
     private const int MaxDepth = 1000;
@@ -136,5 +138,15 @@ public class SearchContext
     public void RemoveSubstitute(ILuaType type)
     {
         _substituteGuard.Remove(type);
+    }
+
+    public bool TryAddSubType(ILuaType type)
+    {
+        return _subTypesGuard.Add(type);
+    }
+
+    public void RemoveSubType(ILuaType type)
+    {
+        _subTypesGuard.Remove(type);
     }
 }

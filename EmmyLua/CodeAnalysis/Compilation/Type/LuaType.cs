@@ -6,7 +6,19 @@ public abstract class LuaType(TypeKind kind) : ILuaType
 {
     public virtual bool SubTypeOf(ILuaType other, SearchContext context)
     {
-        return ReferenceEquals(this, other);
+        var otherSubstitute = other.Substitute(context);
+        if (otherSubstitute is Unknown) return true;
+        if (!context.TryAddSubType(this)) return false;
+
+        var result = OnSubTypeOf(otherSubstitute, context);
+
+        context.RemoveSubType(this);
+        return result;
+    }
+
+    protected virtual bool OnSubTypeOf(ILuaType other, SearchContext context)
+    {
+        return false;
     }
 
     public ILuaType Substitute(SearchContext context)

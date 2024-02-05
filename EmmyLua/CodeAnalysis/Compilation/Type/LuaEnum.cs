@@ -9,10 +9,9 @@ public class LuaEnum(string name, ILuaType luaType) : LuaType(TypeKind.Enum), IL
 
     public ILuaType BaseType { get; } = luaType;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        var otherSubstitute = other.Substitute(context);
-        return otherSubstitute is LuaEnum @enum && string.Equals(Name, @enum.Name, StringComparison.CurrentCulture);
+        return other is LuaEnum @enum && string.Equals(Name, @enum.Name, StringComparison.CurrentCulture);
     }
 
     public override string ToDisplayString(SearchContext context)

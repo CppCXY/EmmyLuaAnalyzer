@@ -47,14 +47,10 @@ public static class CommentParser
                     p.Accept(LuaTokenKind.TkDocDescription);
                     break;
                 }
-                case LuaTokenKind.TkEndOfLine or LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocTrivia:
+                default:
                 {
                     p.Bump();
                     break;
-                }
-                default:
-                {
-                    throw new UnreachableException();
                 }
             }
 

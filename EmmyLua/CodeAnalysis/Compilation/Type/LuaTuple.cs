@@ -7,10 +7,9 @@ public class LuaTuple(IEnumerable<ILuaType> types) : LuaType(TypeKind.Tuple)
 {
     public List<ILuaType> Types => types.ToList();
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        var otherSubstitute = other.Substitute(context);
-        if (otherSubstitute is LuaTuple tuple)
+        if (other is LuaTuple tuple)
         {
             if (tuple.Types.Count != Types.Count)
             {

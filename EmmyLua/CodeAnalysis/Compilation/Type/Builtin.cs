@@ -26,7 +26,7 @@ public class Builtin
     {
         return name switch
         {
-            "unknown" => Unknown,
+            "unknown" or "any" => Unknown,
             "void" => Void,
             "nil" => Nil,
             "number" => Number,
@@ -52,30 +52,29 @@ public class Primitive(string name) : LuaClass(name)
         return this;
     }
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
-        ReferenceEquals(this, other) || Super?.SubTypeOf(other, context) == true;
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context) =>
+        base.OnSubTypeOf(other, context) || Super?.SubTypeOf(other, context) == true;
 }
 
 public class Unknown() : Primitive("unknown")
 {
     public override bool IsNullable { get; } = true;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context) => true;
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context) => true;
 }
 
 public class Nil() : Primitive("nil")
 {
     public override bool IsNullable { get; } = true;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context) =>
-        ReferenceEquals(this, other) || other.IsNullable;
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context) => other.IsNullable;
 }
 
 public class LuaTable(string uniqueId) : LuaType(TypeKind.Table), IGenericBase
 {
     public string Name { get; } = uniqueId;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
         var otherSubstitute = other.Substitute(context);
         return otherSubstitute is ILuaNamedType;
@@ -87,15 +86,14 @@ public class GenericTable(ILuaType key, ILuaType value) : LuaTable(string.Empty)
     public ILuaType Key { get; } = key;
     public ILuaType Value { get; } = value;
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        var otherSubstitute = other.Substitute(context);
-        if (otherSubstitute is GenericTable { Key: { } key, Value: { } value })
+        if (other is GenericTable { Key: { } key, Value: { } value })
         {
             return Key.SubTypeOf(key, context) && Value.SubTypeOf(value, context);
         }
 
-        return base.SubTypeOf(other, context);
+        return base.OnSubTypeOf(other, context);
     }
 
     public IGenericBase GetBaseType(SearchContext context)

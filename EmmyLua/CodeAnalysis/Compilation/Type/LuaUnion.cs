@@ -89,10 +89,9 @@ public class LuaUnion() : LuaType(TypeKind.Union)
         return this;
     }
 
-    public override bool SubTypeOf(ILuaType other, SearchContext context)
+    protected override bool OnSubTypeOf(ILuaType other, SearchContext context)
     {
-        var otherSubstitute = other.Substitute(context);
-        if (otherSubstitute is LuaUnion otherUnion)
+        if (other is LuaUnion otherUnion)
         {
             return ChildrenType.All(it => otherUnion.ChildrenType.Any(it2 => it.SubTypeOf(it2, context)));
         }
