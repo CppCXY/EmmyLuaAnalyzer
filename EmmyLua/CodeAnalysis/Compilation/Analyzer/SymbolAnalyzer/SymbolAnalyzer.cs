@@ -52,7 +52,10 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
     {
         if (localDeclaration.DeclarationType is null)
         {
-            localDeclaration.VarRefId = Context.GetUniqueId(localDeclaration.LocalName);
+            if (localDeclaration.ExprRef is not null)
+            {
+                BindExprType(localDeclaration, localDeclaration.ExprRef, documentId);
+            }
         }
         else if (localDeclaration is
                  {
@@ -77,7 +80,10 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
     {
         if (globalDeclaration.DeclarationType is null)
         {
-            globalDeclaration.VarRefId = Context.GetUniqueId(globalDeclaration.NameSyntax);
+            if (globalDeclaration.ExprRef is not null)
+            {
+                BindExprType(globalDeclaration, globalDeclaration.ExprRef, documentId);
+            }
         }
         else if (globalDeclaration is
                  {
@@ -90,7 +96,10 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
 
     private void AnalyzeTableFieldDeclaration(TableFieldDeclaration tableFieldDeclaration, DocumentId documentId)
     {
-        tableFieldDeclaration.VarRefId = Context.GetUniqueId(tableFieldDeclaration.TableField);
+        if (tableFieldDeclaration.TableField.Value is not null)
+        {
+            BindExprType(tableFieldDeclaration, new LuaExprRef(tableFieldDeclaration.TableField.Value), documentId);
+        }
     }
 
     private void AnalyzeIndexDeclaration(IndexDeclaration indexDeclaration, DocumentId documentId)
@@ -108,10 +117,6 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             if (prefixDeclaration is { DeclarationType: ILuaNamedType namedType })
             {
                 Compilation.Stub.Members.AddStub(documentId, namedType.Name, declaration);
-            }
-            else if (prefixDeclaration?.VarRefId is { } varRefId && varRefId.Length != 0)
-            {
-                Compilation.Stub.Members.AddStub(documentId, varRefId, declaration);
             }
         }
     }
@@ -143,5 +148,29 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         {
             AnalyzeIndexExpr(methodDeclaration, indexExpr, documentId);
         }
+    }
+
+
+    private void BindExprType(Declaration declaration, LuaExprRef expr, DocumentId documentId)
+    {
+        // var ty = Compilation.SearchContext.Infer(expr.Expr);
+        // declaration.DeclarationType = ty;
+        // if (expr.RetId == 0)
+        // {
+        //     var name = expr.Expr switch
+        //     {
+        //         LuaNameExprSyntax nameExpr => nameExpr.Name.RepresentText,
+        //         LuaIndexExprSyntax indexExpr => indexExpr.PrefixExpr switch
+        //         {
+        //             LuaNameExprSyntax nameExpr => nameExpr.Name.RepresentText,
+        //             _ => null
+        //         },
+        //         _ => null
+        //     };
+        //     if (name is not null)
+        //     {
+        //         Compilation.Stub.GlobalDeclaration.AddStub(documentId, name, declaration);
+        //     }
+        // }
     }
 }

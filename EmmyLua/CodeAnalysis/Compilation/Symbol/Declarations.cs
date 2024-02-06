@@ -13,7 +13,6 @@ public class Declaration(
 )
     : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, declarationType, feature)
 {
-    public string VarRefId { get; set; } = string.Empty;
 }
 
 public class LocalDeclaration(

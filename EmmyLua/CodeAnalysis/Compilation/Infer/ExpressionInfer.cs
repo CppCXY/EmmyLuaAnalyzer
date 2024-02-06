@@ -107,48 +107,49 @@ public static class ExpressionInfer
 
     private static ILuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        ILuaType keyType = context.Compilation.Builtin.Unknown;
-        ILuaType elementType = context.Compilation.Builtin.Unknown;
-        foreach (var field in tableExpr.FieldList)
-        {
-            if (field.IsValue)
-            {
-                elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
-            }
-            else
-            {
-                if (field.IsNameKey || field.IsStringKey)
-                {
-                    keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.String);
-                }
-                else if (field.IsNumberKey)
-                {
-                    keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.Number);
-                }
-                else
-                {
-                    keyType = LuaUnion.UnionType(keyType, context.Infer(field.ExprKey));
-                }
-
-                elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
-            }
-        }
-
-        switch ((keyType, elementType))
-        {
-            case (Unknown, Unknown):
-            {
-                return new GenericTable(keyType, elementType);
-            }
-            case (Unknown, _):
-            {
-                return new LuaArray(elementType);
-            }
-            default:
-            {
-                return new GenericTable(keyType, elementType);
-            }
-        }
+        // ILuaType keyType = context.Compilation.Builtin.Unknown;
+        // ILuaType elementType = context.Compilation.Builtin.Unknown;
+        // foreach (var field in tableExpr.FieldList)
+        // {
+        //     if (field.IsValue)
+        //     {
+        //         elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
+        //     }
+        //     else
+        //     {
+        //         if (field.IsNameKey || field.IsStringKey)
+        //         {
+        //             keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.String);
+        //         }
+        //         else if (field.IsNumberKey)
+        //         {
+        //             keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.Number);
+        //         }
+        //         else
+        //         {
+        //             keyType = LuaUnion.UnionType(keyType, context.Infer(field.ExprKey));
+        //         }
+        //
+        //         elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
+        //     }
+        // }
+        //
+        // switch ((keyType, elementType))
+        // {
+        //     case (Unknown, Unknown):
+        //     {
+        //         return new GenericTable(keyType, elementType);
+        //     }
+        //     case (Unknown, _):
+        //     {
+        //         return new LuaArray(elementType);
+        //     }
+        //     default:
+        //     {
+        //         return new GenericTable(keyType, elementType);
+        //     }
+        // }
+        return new LuaTable(context.GetUniqueId(tableExpr));
     }
 
     private static ILuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
