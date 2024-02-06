@@ -11,9 +11,7 @@ public class Declaration(
     ILuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
 )
-    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, declarationType, feature)
-{
-}
+    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, null, declarationType, feature);
 
 public class LocalDeclaration(
     string name,
