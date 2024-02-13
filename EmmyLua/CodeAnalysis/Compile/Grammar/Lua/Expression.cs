@@ -13,10 +13,10 @@ public static class ExpressionParser
     private static CompleteMarker SubExpression(LuaParser p, int limit)
     {
         var m = p.Marker();
-        CompleteMarker cm;
         try
         {
             var uop = OperatorKind.ToUnaryOperator(p.Current);
+            CompleteMarker cm;
             if (uop != OperatorKind.UnaryOperator.OpNop)
             {
                 p.Bump();

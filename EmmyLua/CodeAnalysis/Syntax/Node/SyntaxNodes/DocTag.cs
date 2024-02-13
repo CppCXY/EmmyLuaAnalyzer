@@ -8,8 +8,7 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 public class LuaDocTagSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
-    public IEnumerable<LuaSyntaxToken> Descriptions => ImmutableArray<LuaSyntaxToken>.Empty;
-    // Tree.BinderData?.GetDescriptions(new LuaSyntaxNodeOrToken.Node(this)) ?? Enumerable.Empty<LuaCommentSyntax>();
+    public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
 }
 
 public class LuaDocTagBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

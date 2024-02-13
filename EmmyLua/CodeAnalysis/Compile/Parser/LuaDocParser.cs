@@ -16,8 +16,6 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 
     private LuaTokenData _current = new(LuaTokenKind.TkEof, new SourceRange());
 
-    private bool _invalid = true;
-
     private int _originTokenIndex = 0;
 
     private List<LuaTokenData> OriginLuaTokenList { get; set; } = new();
@@ -31,8 +29,8 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
         OriginLuaTokenList.Clear();
         OriginLuaTokenList.AddRange(luaTokenData);
         _originTokenIndex = 0;
-        _invalid = true;
         Lexer.State = LuaDocLexerState.Invalid;
+        CalcCurrent();
         CommentParser.Comment(this);
     }
 
@@ -84,7 +82,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
     public void Bump()
     {
         Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-        _invalid = true;
+        CalcCurrent();
     }
 
     public void SetState(LuaDocLexerState state)
@@ -92,45 +90,55 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
         Lexer.State = state;
     }
 
-    public LuaTokenKind Current
+    public LuaDocLexerState GetState() => Lexer.State;
+
+    private void CalcCurrent()
     {
-        get
+        _current = LexToken();
+        switch (Lexer.State)
         {
-            // ReSharper disable once InvertIf
-            if (_invalid)
+            case LuaDocLexerState.Normal:
             {
-                _current = LexToken();
-                switch (Lexer.State)
+                while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
+                       or LuaTokenKind.TkDocContinue)
                 {
-                    case LuaDocLexerState.Normal:
-                    {
-                        while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
-                               or LuaTokenKind.TkDocContinue or LuaTokenKind.TkDocDescription)
-                        {
-                            Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                            _current = LexToken();
-                        }
-
-                        break;
-                    }
-                    case LuaDocLexerState.FieldStart:
-                    {
-                        while (_current.Kind is LuaTokenKind.TkWhitespace)
-                        {
-                            Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                            _current = LexToken();
-                        }
-
-                        break;
-                    }
+                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                    _current = LexToken();
                 }
 
-                _invalid = false;
+                break;
             }
+            case LuaDocLexerState.FieldStart:
+            {
+                while (_current.Kind is LuaTokenKind.TkWhitespace)
+                {
+                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                    _current = LexToken();
+                }
 
-            return _current.Kind;
+                break;
+            }
+            case LuaDocLexerState.Description:
+            {
+                while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
+                       or LuaTokenKind.TkDocContinue)
+                {
+                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                    _current = LexToken();
+                }
+
+                break;
+            }
         }
     }
+
+    public void ReCalcCurrent()
+    {
+        var kind = Lexer.ReLex();
+        _current = new LuaTokenData(kind, Lexer.Reader.SavedRange);
+    }
+
+    public LuaTokenKind Current => _current.Kind;
 
     public ReadOnlySpan<char> CurrentNameText =>
         Current is not LuaTokenKind.TkName ? ReadOnlySpan<char>.Empty : Lexer.Reader.CurrentSavedText;
@@ -142,7 +150,6 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
         public int LexerPosition { get; set; }
         public LuaDocLexerState LexerState { get; set; }
         public LuaTokenData Current { get; set; }
-        public bool Invalid { get; set; }
 
         public bool ReaderIsEof { get; set; }
     }
@@ -156,16 +163,8 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
             LexerPosition = Lexer.Reader.CurrentPosition,
             LexerState = Lexer.State,
             Current = _current,
-            Invalid = true,
             ReaderIsEof = Lexer.Reader.IsEof
         };
-
-        // ReSharper disable once InvertIf
-        if (!_invalid)
-        {
-            rollbackPoint.LexerPosition -= rollbackPoint.Current.Range.Length;
-            rollbackPoint.ReaderIsEof = false;
-        }
 
         return rollbackPoint;
     }
@@ -180,7 +179,6 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
         Lexer.Reader.ResetBuff();
         Lexer.State = rollbackPoint.LexerState;
         _current = rollbackPoint.Current;
-        _invalid = rollbackPoint.Invalid;
         Lexer.Reader.IsEof = rollbackPoint.ReaderIsEof;
     }
 }

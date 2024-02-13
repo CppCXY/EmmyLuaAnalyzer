@@ -95,5 +95,8 @@ public enum LuaSyntaxKind : ushort
     TypedField,
 
     // docOther
-    GenericDeclareList
+    GenericDeclareList,
+
+    // start with '#' or '@'
+    Description
 }
