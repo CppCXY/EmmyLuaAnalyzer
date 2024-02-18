@@ -73,6 +73,12 @@ public class LuaDocLexer(LuaDocument document)
         Reader.Reset(tokenData.Range);
     }
 
+    public LuaTokenKind ReLex()
+    {
+        Reader.RecoverLastState();
+        return Lex();
+    }
+
     public LuaTokenKind Lex()
     {
         Reader.ResetBuff();
@@ -298,7 +304,7 @@ public class LuaDocLexer(LuaDocument document)
             case '#' or '@':
             {
                 Reader.EatWhen(_ => true);
-                return LuaTokenKind.TkDocDescription;
+                return LuaTokenKind.TkDocDetail;
             }
             case var ch when char.IsDigit(ch):
             {
@@ -343,10 +349,32 @@ public class LuaDocLexer(LuaDocument document)
                 Reader.EatWhen(IsDocWhitespace);
                 return LuaTokenKind.TkWhitespace;
             }
+            case '-':
+            {
+                var count = Reader.EatWhen('-');
+                switch (count)
+                {
+                    case 3:
+                    {
+                        Reader.EatWhen(IsDocWhitespace);
+                        if (Reader.CurrentChar is '@')
+                        {
+                            Reader.Bump();
+                            return LuaTokenKind.TkDocStart;
+                        }
+
+                        return LuaTokenKind.TkDocContinue;
+                    }
+                    default:
+                    {
+                        return LuaTokenKind.TkDocTrivia;
+                    }
+                };
+            }
             default:
             {
                 Reader.EatWhen(_ => true);
-                return LuaTokenKind.TkDocDescription;
+                return LuaTokenKind.TkDocDetail;
             }
         }
     }

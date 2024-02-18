@@ -6,12 +6,9 @@ using EmmyLua.CodeAnalysis.Workspace;
 var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    ---@param a? string
-    function f(a, b, c)
-        print(a, b, c)
-    end
-    
-    f(nil, 2, 3)
+    ---@enum A : B @好了好了
+    ---| yes @是的
+    ---| no @不是
     """, new LuaLanguage());
 workspace.AddDocument(document);
     

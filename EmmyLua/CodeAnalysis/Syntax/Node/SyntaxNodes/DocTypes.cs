@@ -7,7 +7,7 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 public class LuaDocTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
-    public LuaSyntaxToken? Description => FirstChildToken(LuaTokenKind.TkDocDescription);
+    public LuaSyntaxToken? Description => FirstChildToken(LuaTokenKind.TkDocDetail);
 }
 
 public class LuaDocLiteralTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

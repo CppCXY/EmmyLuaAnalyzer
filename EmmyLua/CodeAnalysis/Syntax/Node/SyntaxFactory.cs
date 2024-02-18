@@ -92,6 +92,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.FuncBody => new LuaFuncBodySyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }

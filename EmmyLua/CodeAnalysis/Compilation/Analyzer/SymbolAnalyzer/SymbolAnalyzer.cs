@@ -151,26 +151,11 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
     }
 
 
-    private void BindExprType(Declaration declaration, LuaExprRef expr, DocumentId documentId)
+    private void BindExprType(Declaration declaration, LuaExprRef exprRef, DocumentId documentId)
     {
-        // var ty = Compilation.SearchContext.Infer(expr.Expr);
-        // declaration.DeclarationType = ty;
-        // if (expr.RetId == 0)
-        // {
-        //     var name = expr.Expr switch
-        //     {
-        //         LuaNameExprSyntax nameExpr => nameExpr.Name.RepresentText,
-        //         LuaIndexExprSyntax indexExpr => indexExpr.PrefixExpr switch
-        //         {
-        //             LuaNameExprSyntax nameExpr => nameExpr.Name.RepresentText,
-        //             _ => null
-        //         },
-        //         _ => null
-        //     };
-        //     if (name is not null)
-        //     {
-        //         Compilation.Stub.GlobalDeclaration.AddStub(documentId, name, declaration);
-        //     }
-        // }
+        if (exprRef.Expr is LuaTableExprSyntax)
+        {
+            declaration.DeclarationType = exprRef.GetType(Context);
+        }
     }
 }

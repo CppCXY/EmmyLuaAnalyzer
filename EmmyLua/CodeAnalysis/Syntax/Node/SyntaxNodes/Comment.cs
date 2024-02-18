@@ -11,7 +11,9 @@ public class LuaCommentSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntax
 
     public IEnumerable<LuaDocTagSyntax> DocList => ChildNodes<LuaDocTagSyntax>();
 
-    public IEnumerable<LuaSyntaxToken> Descriptions => ChildTokens(LuaTokenKind.TkDocDescription);
+    public IEnumerable<LuaDescriptionSyntax> Descriptions => ChildNodes<LuaDescriptionSyntax>();
+
+    public string CommentText => string.Join("\n\n", Descriptions.Select(it => it.CommentText));
 
     public LuaSyntaxElement? Owner => Tree.BinderData?.CommentOwner(this);
 }

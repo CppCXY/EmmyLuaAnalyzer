@@ -128,4 +128,14 @@ public class SourceReader
 
         return count;
     }
+
+    public void RecoverLastState()
+    {
+        if (IsSavedText)
+        {
+            CurrentPosition = StartPosition;
+            IsSavedText = false;
+            IsEof = false;
+        }
+    }
 }

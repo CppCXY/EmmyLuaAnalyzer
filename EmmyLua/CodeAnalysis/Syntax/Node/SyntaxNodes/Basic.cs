@@ -100,3 +100,11 @@ public interface IFuncBodyOwner
 {
     public LuaFuncBodySyntax? FuncBody { get; }
 }
+
+public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaSyntaxToken> Details => ChildTokens(LuaTokenKind.TkDocDetail);
+
+    public string CommentText => string.Join("\n", Details.Select(it => it.RepresentText));
+}

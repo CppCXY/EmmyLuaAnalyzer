@@ -5,8 +5,7 @@ namespace EmmyLua.CodeAnalysis.Syntax.Binder;
 
 public class BinderData(
     Dictionary<LuaCommentSyntax, LuaSyntaxElement> commentOwners,
-    Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments,
-    Dictionary<LuaSyntaxElement, List<LuaSyntaxToken>> docDescriptions)
+    Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments)
 {
     public LuaSyntaxElement? CommentOwner(LuaCommentSyntax comment)
     {
@@ -18,8 +17,8 @@ public class BinderData(
         return comments.TryGetValue(nodeOrToken, out var value) ? value : Enumerable.Empty<LuaCommentSyntax>();
     }
 
-    public IEnumerable<LuaSyntaxToken> GetDescriptions(LuaSyntaxElement nodeOrToken)
-    {
-        return GetComments(nodeOrToken).SelectMany(it => it.Descriptions);
-    }
+    // public LuaDescriptionSyntax GetDescriptions(LuaSyntaxElement nodeOrToken)
+    // {
+    //     return GetComments(nodeOrToken).SelectMany(it => it.Descriptions);
+    // }
 }

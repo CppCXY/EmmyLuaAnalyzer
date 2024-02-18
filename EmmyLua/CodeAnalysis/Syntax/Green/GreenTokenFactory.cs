@@ -10,7 +10,7 @@ public class GreenTokenFactory
 
     public GreenNode Create(LuaTokenKind kind, int length)
     {
-        if (Caches!.TryGetValue(kind, out var cache))
+        if (Caches.TryGetValue(kind, out var cache))
         {
             if (cache.TryGetValue(length, out var node))
             {

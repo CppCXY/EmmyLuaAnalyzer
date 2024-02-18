@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compile.Lexer;
+﻿using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Kind;
 
@@ -24,27 +23,23 @@ public static class CommentParser
             {
                 case LuaTokenKind.TkDocStart:
                 {
+                    p.SetState(LuaDocLexerState.Tag);
                     p.Bump();
                     TagParser.Tag(p);
                     break;
                 }
-                case LuaTokenKind.TkDocEnumField:
-                {
-                    p.Bump();
-                    TagParser.EnumField(p);
-                    break;
-                }
                 case LuaTokenKind.TkDocLongStart:
                 {
+                    p.SetState(LuaDocLexerState.Tag);
                     p.Bump();
                     TagParser.LongDocTag(p);
                     break;
                 }
                 case LuaTokenKind.TkNormalStart or LuaTokenKind.TkLongCommentStart:
                 {
-                    p.Bump();
                     p.SetState(LuaDocLexerState.Description);
-                    p.Accept(LuaTokenKind.TkDocDescription);
+                    p.Bump();
+                    DescriptionParser.Description(p);
                     break;
                 }
                 default:
@@ -58,9 +53,8 @@ public static class CommentParser
             if (!p.Lexer.Reader.IsEof
                 && p.Current is not (LuaTokenKind.TkDocStart or LuaTokenKind.TkDocLongStart))
             {
-                var rollback = p.GetRollbackPoint();
-                p.Rollback(rollback);
                 p.SetState(LuaDocLexerState.Trivia);
+                p.ReCalcCurrent();
                 p.Accept(LuaTokenKind.TkDocTrivia);
             }
 
