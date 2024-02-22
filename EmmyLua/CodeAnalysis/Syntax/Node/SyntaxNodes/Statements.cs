@@ -62,7 +62,7 @@ public class LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
 public class LuaGotoStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaStatSyntax(greenNode, tree, parent, startOffset)
 {
-    public LuaSyntaxToken? Goto => FirstChildToken(LuaTokenKind.TkGoto);
+    public LuaSyntaxToken Goto => FirstChildToken(LuaTokenKind.TkGoto)!;
 
     public LuaNameToken? LabelName => FirstChild<LuaNameToken>();
 }

@@ -3,40 +3,29 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
-// TODO: ControlFlowGraph
 public class ControlFlowGraph
 {
-    private BasicBlock FirstBlock { get; } = new();
+    public CfgNode EntryNode { get; } = new(CfgNodeKind.Entry);
+    public CfgNode ExitNode { get; } = new(CfgNodeKind.Exit);
 
-    public void Parse(LuaSyntaxTree tree)
+    public List<CfgNode> Nodes { get; } = new();
+
+    private List<CfgEdge> Edges { get; } = new();
+
+    public void AddEdge(CfgNode source, CfgNode target, LuaExprSyntax? condition = null)
     {
-        BasicBlock previousBlock = FirstBlock;
-
-        if (tree.SyntaxRoot.Block?.StatList is { } statList)
-        {
-            foreach (var stat in statList)
-            {
-                if (stat is LuaIfStatSyntax)
-                {
-                    var block = new BasicBlock();
-                    previousBlock.Successors.Add(block);
-                    previousBlock = block;
-                }
-                else
-                {
-                    previousBlock.Statements.Add(stat);
-                }
-            }
-        }
+        var edge = new CfgEdge(source, target, condition);
+        Edges.Add(edge);
+        source.AddOutgoing(edge);
+        target.AddIncoming(edge);
     }
 
-    private BasicBlock ParseSyntaxBlock(LuaBlockSyntax block)
+    public CfgNode CreateNode(CfgNodeKind kind = CfgNodeKind.BasicBlock)
     {
-        var basicBlock = new BasicBlock();
-        foreach (var stat in block.StatList)
-        {
-            basicBlock.Statements.Add(stat);
-        }
-        return basicBlock;
+        var block = new CfgNode(kind);
+        Nodes.Add(block);
+        return block;
     }
+
+
 }

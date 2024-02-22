@@ -6,6 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
 
+// TODO refactor
 public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
     private SearchContext Context => Compilation.SearchContext;
@@ -50,19 +51,21 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
 
     private void AnalyzeLocalDeclaration(LocalDeclaration localDeclaration, DocumentId documentId)
     {
-        if (localDeclaration.DeclarationType is null)
+        switch (localDeclaration)
         {
-            if (localDeclaration.ExprRef is not null)
+            case { DeclarationType: null, ExprRef: { } exprRef }:
             {
-                BindExprType(localDeclaration, localDeclaration.ExprRef, documentId);
+                BindExprType(localDeclaration, exprRef, documentId);
+                break;
             }
-        }
-        else if (localDeclaration is
-                 {
-                     DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
-                 })
-        {
-            NamedTypeMerge(namedType, tableExpr, documentId);
+            case
+            {
+                DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
+            }:
+            {
+                NamedTypeMerge(namedType, tableExpr, documentId);
+                break;
+            }
         }
     }
 
@@ -78,19 +81,21 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
 
     private void AnalyzeGlobalDeclaration(GlobalDeclaration globalDeclaration, DocumentId documentId)
     {
-        if (globalDeclaration.DeclarationType is null)
+        switch (globalDeclaration)
         {
-            if (globalDeclaration.ExprRef is not null)
+            case { DeclarationType: null, ExprRef: { } exprRef }:
             {
-                BindExprType(globalDeclaration, globalDeclaration.ExprRef, documentId);
+                BindExprType(globalDeclaration, exprRef, documentId);
+                break;
             }
-        }
-        else if (globalDeclaration is
-                 {
-                     DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
-                 })
-        {
-            NamedTypeMerge(namedType, tableExpr, documentId);
+            case
+            {
+                DeclarationType: ILuaNamedType namedType, ExprRef: { Expr: LuaTableExprSyntax tableExpr, RetId: 0 }
+            }:
+            {
+                NamedTypeMerge(namedType, tableExpr, documentId);
+                break;
+            }
         }
     }
 

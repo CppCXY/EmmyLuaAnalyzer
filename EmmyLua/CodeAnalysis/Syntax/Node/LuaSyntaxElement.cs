@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
@@ -448,13 +449,9 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         return token?.Parent as LuaSyntaxNode;
     }
 
-    public override int GetHashCode()
+    public void PushDiagnostic(DiagnosticSeverity severity, string message)
     {
-        return Green.GetHashCode();
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is LuaSyntaxElement other && Green.Equals(other.Green);
+        var diagnostic = new Diagnostic(severity, message, Range);
+        Tree.PushDiagnostic(diagnostic);
     }
 }

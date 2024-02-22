@@ -275,7 +275,7 @@ public static class SyntaxFactory
                         {
                             if (i + 2 >= text.Length)
                             {
-                                tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
                                     "Unexpected end of string", new SourceRange(startOffset + i, 1)));
                                 break;
                             }

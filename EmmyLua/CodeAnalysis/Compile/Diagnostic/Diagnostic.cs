@@ -2,7 +2,12 @@
 
 namespace EmmyLua.CodeAnalysis.Compile.Diagnostic;
 
-public class Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, SourceRange range)
+public class Diagnostic(
+    DiagnosticSeverity severity,
+    DiagnosticCode code,
+    string message,
+    SourceRange range,
+    DiagnosticTag tag = DiagnosticTag.None)
 {
     public DiagnosticSeverity Severity { get; } = severity;
 
@@ -13,6 +18,8 @@ public class Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string
     public DiagnosticCode Code { get; } = code;
 
     public LuaLocation? Location { get; private set; }
+
+    public DiagnosticTag Tag { get; } = tag;
 
     public Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, LuaLocation location)
         : this(severity, code, message, location.Range)

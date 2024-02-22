@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
@@ -8,6 +9,7 @@ using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -32,6 +34,8 @@ public class LuaCompilation
     private HashSet<DocumentId> DirtyDocuments { get; } = [];
 
     internal Dictionary<DocumentId, SymbolTree> SymbolTrees { get; } = new();
+
+    internal Dictionary<DocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
 
     private List<ILuaAnalyzer> Analyzers { get; }
 
@@ -91,6 +95,7 @@ public class LuaCompilation
 
         SymbolTrees.Remove(documentId);
         Stub.Remove(documentId);
+        ControlFlowGraphs.Remove(documentId);
     }
 
     public LuaSyntaxTree? GetSyntaxTree(DocumentId documentId)

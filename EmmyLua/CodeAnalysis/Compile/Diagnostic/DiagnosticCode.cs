@@ -9,4 +9,5 @@ public enum DiagnosticCode
     TypeNotMatch,
     MissingParameter,
     InjectFieldFail,
+    UnreachableCode,
 }
