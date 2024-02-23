@@ -1,72 +1,58 @@
 ﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaType
+public class LuaType(TypeKind kind)
 {
-
+    public TypeKind Kind { get; } = kind;
 }
 
-public class LuaBoolType : LuaType
+public class LuaNamedType(string name, TypeKind kind) : LuaType(kind)
 {
-
+    public virtual string Name { get; } = name;
 }
 
-public class LuaNilType : LuaType
-{
+public class LuaNilType() : LuaType(TypeKind.Nil);
 
+public class LuaUnionType() : LuaType(TypeKind.Union)
+{
+    private List<LuaType> UnionTypes { get; } = new();
+
+    public IEnumerable<LuaType> Types => UnionTypes;
+
+    public void AddType(LuaType type)
+    {
+        UnionTypes.Add(type);
+    }
 }
 
-public class LuaNumberType : LuaType
+public class LuaAliasType(string name, LuaType type) : LuaNamedType(name, TypeKind.Alias)
 {
-
+    public LuaType Type { get; } = type;
 }
 
-public class LuaStringType : LuaType
+public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple)
 {
-
+    public List<LuaType> TupleTypes { get; } = tupleTypes;
 }
 
-public class LuaNamedType : LuaType
+public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array)
 {
-
+    public LuaType BaseType { get; } = baseType;
 }
 
-public class LuaUnionType : LuaType
+public class LuaGenericType(LuaType baseType, List<LuaType> genericArgs) : LuaType(TypeKind.Generic)
 {
+    public LuaType BaseType { get; } = baseType;
 
+    public List<LuaType> GenericArgs { get; } = genericArgs;
 }
 
-public class LuaAliasType : LuaType
+public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiteral)
 {
-
+    public string Content { get; } = content;
 }
 
-public class LuaTupleType : LuaType
+public class LuaIntegerLiteralType(int value) : LuaType(TypeKind.IntegerLiteral)
 {
-
-}
-
-public class LuaArrayType : LuaType
-{
-
-}
-
-public class LuaTableType : LuaType
-{
-
-}
-
-public class LuaGenericType : LuaType
-{
-
-}
-
-public class LuaAnyType : LuaType
-{
-
-}
-
-public class LuaLiteralType : LuaType
-{
-
+    public long Value { get; } = value;
 }
 
