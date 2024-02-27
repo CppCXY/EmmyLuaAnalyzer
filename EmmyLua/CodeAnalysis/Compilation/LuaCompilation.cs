@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
@@ -27,7 +28,7 @@ public class LuaCompilation
 
     public Builtin Builtin { get; } = new();
 
-    public Stub.Stub Stub { get; }
+    public ProjectIndex ProjectIndex { get; }
 
     public SearchContext SearchContext { get; }
 
@@ -42,7 +43,7 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        Stub = new Stub.Stub(this);
+        ProjectIndex = new ProjectIndex(this);
         SearchContext = new SearchContext(this);
         Analyzers =
         [
@@ -94,7 +95,7 @@ public class LuaCompilation
         }
 
         SymbolTrees.Remove(documentId);
-        Stub.Remove(documentId);
+        ProjectIndex.Remove(documentId);
         ControlFlowGraphs.Remove(documentId);
     }
 
@@ -105,7 +106,7 @@ public class LuaCompilation
 
     public SemanticModel? GetSemanticModel(string url)
     {
-        var document = Workspace.GetDocument(url);
+        var document = Workspace.GetDocumentByUri(url);
         if (document is null)
         {
             return null;

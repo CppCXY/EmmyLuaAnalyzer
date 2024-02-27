@@ -7,7 +7,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class ExpressionInfer
 {
-    public static ILuaType InferExpr(LuaExprSyntax expr, SearchContext context)
+    public static LuaType InferExpr(LuaExprSyntax expr, SearchContext context)
     {
         return expr switch
         {
@@ -24,7 +24,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
+    private static LuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
         return unaryExpr.Operator switch
         {
@@ -35,7 +35,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaType InferBinaryExpr(LuaBinaryExprSyntax binaryExpr, SearchContext context)
+    private static LuaType InferBinaryExpr(LuaBinaryExprSyntax binaryExpr, SearchContext context)
     {
         var op = binaryExpr.Operator;
         return op switch
@@ -64,7 +64,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaType GuessAndOrType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
+    private static LuaType GuessAndOrType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
         var rhs = binaryExpr.RightExpr;
@@ -81,7 +81,7 @@ public static class ExpressionInfer
         return rhs != null ? LuaUnion.UnionType(lty, context.Infer(rhs)) : lty;
     }
 
-    private static ILuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
+    private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
         var lhs = binaryExpr.LeftExpr;
@@ -91,11 +91,11 @@ public static class ExpressionInfer
         return lhsTy;
     }
 
-    private static ILuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
+    private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
         if (closureExpr.FuncBody is not null)
         {
-            var method = context.Compilation.Stub.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
+            var method = context.Compilation.ProjectIndex.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
             if (method is not null)
             {
                 return method;
@@ -105,7 +105,7 @@ public static class ExpressionInfer
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
+    private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
         // ILuaType keyType = context.Compilation.Builtin.Unknown;
         // ILuaType elementType = context.Compilation.Builtin.Unknown;
@@ -152,12 +152,12 @@ public static class ExpressionInfer
         return new LuaTable(context.GetUniqueId(tableExpr));
     }
 
-    private static ILuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
+    private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
     {
         return context.Infer(parenExpr.Inner);
     }
 
-    private static ILuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
+    private static LuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
         var declaration = DeclarationInfer.GetSymbolTree(indexExpr, context)?.FindDeclaration(indexExpr, context);
 
@@ -169,7 +169,7 @@ public static class ExpressionInfer
         return context.Compilation.Builtin.Unknown;
     }
 
-    private static ILuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
+    private static LuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
     {
         return literalExpr.Literal switch
         {
@@ -182,7 +182,7 @@ public static class ExpressionInfer
         };
     }
 
-    private static ILuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
+    private static LuaType InferNameExpr(LuaNameExprSyntax nameExpr, SearchContext context)
     {
         if (nameExpr.Name is null)
         {

@@ -80,8 +80,7 @@ public class Symbol(
     int position,
     LuaSyntaxElement? syntaxElement,
     SymbolKind kind,
-    Symbol? prev,
-    ILuaType? declarationType,
+    LuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
 )
     : SymbolNode(position)
@@ -92,19 +91,9 @@ public class Symbol(
 
     public SymbolKind Kind { get; } = kind;
 
-    private ILuaType? _declarationType = declarationType;
-
-    public ILuaType? DeclarationType
-    {
-        get => _declarationType ?? PrevSymbol?.FirstSymbol._declarationType;
-        set => _declarationType = value;
-    }
+    public LuaType? DeclarationType = declarationType;
 
     public SymbolFeature Feature { get; internal set; } = feature;
-
-    public Symbol? PrevSymbol { get; set; } = prev;
-
-    public Symbol FirstSymbol => PrevSymbol?.FirstSymbol ?? this;
 
     public override string ToString()
     {

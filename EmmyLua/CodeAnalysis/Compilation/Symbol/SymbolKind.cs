@@ -3,6 +3,5 @@
 public enum SymbolKind
 {
     Declaration,
-    Virtual,
     Assign,
 }

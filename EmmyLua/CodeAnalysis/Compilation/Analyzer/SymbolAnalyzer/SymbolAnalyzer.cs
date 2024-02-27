@@ -72,10 +72,10 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
     private void NamedTypeMerge(ILuaNamedType namedType, LuaTableExprSyntax tableExpr, DocumentId documentId)
     {
         var name = namedType.Name;
-        var members = Compilation.Stub.Members.Get(Compilation.SearchContext.GetUniqueId(tableExpr));
+        var members = Compilation.ProjectIndex.Members.Get(Compilation.SearchContext.GetUniqueId(tableExpr));
         foreach (var symbol in members)
         {
-            Compilation.Stub.Members.AddStub(documentId, name, symbol);
+            Compilation.ProjectIndex.Members.AddStub(documentId, name, symbol);
         }
     }
 
@@ -121,7 +121,7 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
                 Compilation.GetSymbolTree(documentId)?.FindDeclaration(prefixExpr, Context);
             if (prefixDeclaration is { DeclarationType: ILuaNamedType namedType })
             {
-                Compilation.Stub.Members.AddStub(documentId, namedType.Name, declaration);
+                Compilation.ProjectIndex.Members.AddStub(documentId, namedType.Name, declaration);
             }
         }
     }
@@ -134,7 +134,7 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             var block = methodDeclaration.MethodDef?.FuncBody?.Block;
             if (block is not null)
             {
-                var returns = Compilation.Stub.MainBlockReturns.Get(block).FirstOrDefault();
+                var returns = Compilation.ProjectIndex.MainBlockReturns.Get(block).FirstOrDefault();
                 if (returns is not null)
                 {
                     ILuaType retTy = Compilation.Builtin.Unknown;

@@ -12,7 +12,7 @@ public static class DeclarationInfer
         return context.Compilation.GetSymbolTree(element.Tree.Document.Id);
     }
 
-    public static ILuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
+    public static LuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
     {
         var declarationTree = GetSymbolTree(localName, context);
         if (declarationTree is null)
@@ -24,14 +24,14 @@ public static class DeclarationInfer
         return symbol?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 
-    public static ILuaType InferSource(LuaSourceSyntax source, SearchContext context)
+    public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
         if (source.Block is null) return context.Compilation.Builtin.Unknown;
-        var expr = context.Compilation.Stub.MainBlockReturns.Get(source.Block).FirstOrDefault();
+        var expr = context.Compilation.ProjectIndex.MainBlockReturns.Get(source.Block).FirstOrDefault();
         return expr is null ? context.Compilation.Builtin.Unknown : context.Infer(expr.FirstOrDefault());
     }
 
-    public static ILuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
+    public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
     {
         var symbolTree = GetSymbolTree(paramDef, context);
         if (symbolTree is null)

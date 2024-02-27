@@ -1,37 +1,45 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Tree;
+using System;
 
 namespace EmmyLua.CodeAnalysis.Document;
 
-public class DocumentId(string path, string uri)
+public readonly struct DocumentId(int id)
 {
-    public static DocumentId FromUri(string url)
+    public static DocumentId VirtualDocumentId { get; } = new(0);
+
+    public int Id { get; } = id;
+
+    public bool IsVirtual => Id == 0;
+
+    public override int GetHashCode()
     {
-        var uri = new Uri(url);
-        return new DocumentId(uri.AbsolutePath, url);
+        return Id.GetHashCode();
     }
 
-    public static DocumentId FromPath(string path)
+    public override bool Equals(object? obj)
     {
-        return new DocumentId(path, new Uri(path).AbsoluteUri);
+        return obj is DocumentId other && other.Id == Id;
     }
 
-    public static DocumentId VirtualDocumentId()
+    public static bool operator ==(DocumentId left, DocumentId right)
     {
-        return new DocumentId(string.Empty, string.Empty);
+        return left.Equals(right);
     }
 
-    public string Path { get; } = path;
+    public static bool operator !=(DocumentId left, DocumentId right)
+    {
+        return !(left == right);
+    }
 
-    public string Url { get; } = uri;
-
-    public string Guid { get; } = System.Guid.NewGuid().ToString();
-
-    public bool IsVirtual => Path.Length == 0;
 }
 
 public class LuaDocument
 {
-    public DocumentId Id { get; }
+    public DocumentId Id { get; set; }
+
+    public string Uri { get; set; }
+
+    public string Path { get; set; }
 
     private LuaSyntaxTree? _syntaxTree;
 
@@ -59,33 +67,35 @@ public class LuaDocument
     public static LuaDocument OpenDocument(string path, LuaLanguage language)
     {
         var fileText = File.ReadAllText(path);
-        return FromPath(path, fileText, language);
-    }
-
-    public static LuaDocument FromPath(string path, string text, LuaLanguage language)
-    {
-        var documentId = DocumentId.FromPath(path);
-        return new LuaDocument(text, language, documentId);
-    }
-
-    public static LuaDocument FromUri(string uri, string text, LuaLanguage language)
-    {
-        var documentId = DocumentId.FromUri(uri);
-        return new LuaDocument(text, language, documentId);
+        var uri = new Uri(path);
+        return new LuaDocument(fileText, language, DocumentId.VirtualDocumentId, uri.AbsoluteUri, uri.LocalPath);
     }
 
     public static LuaDocument FromText(string text, LuaLanguage language)
     {
-        var documentId = DocumentId.VirtualDocumentId();
-        return new LuaDocument(text, language, documentId);
+        return new LuaDocument(text, language, DocumentId.VirtualDocumentId, string.Empty, string.Empty);
     }
 
-    private LuaDocument(string text, LuaLanguage language, DocumentId id)
+    public static LuaDocument FromUri(string uri, string text, LuaLanguage language)
+    {
+        var uri2 = new Uri(uri);
+        return  new LuaDocument(text, language, DocumentId.VirtualDocumentId, uri2.AbsoluteUri, uri2.LocalPath);
+    }
+
+    public static LuaDocument FromPath(string path, string text, LuaLanguage language)
+    {
+        var uri = new Uri(path);
+        return new LuaDocument(text, language, DocumentId.VirtualDocumentId, uri.AbsoluteUri, uri.LocalPath);
+    }
+
+    private LuaDocument(string text, LuaLanguage language, DocumentId id, string uri, string path)
     {
         Id = id;
         Text = text;
         Language = language;
         LineIndex = LineIndex.Parse(text);
+        Uri = uri;
+        Path = path;
     }
 
     public LuaSyntaxTree SyntaxTree => _syntaxTree ??= LuaSyntaxTree.Create(this);
@@ -97,7 +107,6 @@ public class LuaDocument
 
     public LuaDocument WithText(string text)
     {
-        return new LuaDocument(text, Language, Id);
+        return new LuaDocument(text, Language, Id, Uri, Path);
     }
 }
-

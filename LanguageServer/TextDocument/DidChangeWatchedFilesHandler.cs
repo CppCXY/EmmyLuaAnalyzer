@@ -19,14 +19,14 @@ public class DidChangeWatchedFilesHandler(LuaWorkspace workspace) : IDidChangeWa
             {
                 case FileChangeType.Created:
                 {
-                    workspace.AddDocument(fileEvent.Uri.ToUnencodedString(), string.Empty);
+                    workspace.AddDocumentByUri(fileEvent.Uri.ToUnencodedString(), string.Empty);
                     break;
                 }
                 case FileChangeType.Changed:
                     break;
                 case FileChangeType.Deleted:
                 {
-                    workspace.RemoveDocument(fileEvent.Uri.ToUnencodedString());
+                    workspace.RemoveDocumentByUri(fileEvent.Uri.ToUnencodedString());
                     break;
                 }
             }

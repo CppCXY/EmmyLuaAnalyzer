@@ -11,13 +11,13 @@ public class SearchContext
 {
     public LuaCompilation Compilation { get; }
 
-    private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
+    private Dictionary<LuaSyntaxElement, LuaType> _caches = new();
 
     private List<ILuaSearcher> _searchers = new();
 
-    private HashSet<ILuaType> _substituteGuard = new();
+    private HashSet<LuaType> _substituteGuard = new();
 
-    private HashSet<ILuaType> _subTypesGuard = new();
+    private HashSet<LuaType> _subTypesGuard = new();
 
     private HashSet<LuaSyntaxElement> _inferGuard = new();
 
@@ -37,7 +37,7 @@ public class SearchContext
         _searchers.Add(IndexSearcher);
     }
 
-    public ILuaType Infer(LuaSyntaxElement? element)
+    public LuaType Infer(LuaSyntaxElement? element)
     {
         if (element is null)
         {
@@ -52,7 +52,7 @@ public class SearchContext
         _caches.Clear();
     }
 
-    private ILuaType InferCore(LuaSyntaxElement element)
+    private LuaType InferCore(LuaSyntaxElement element)
     {
         if (_currentDepth > MaxDepth)
         {
@@ -84,7 +84,7 @@ public class SearchContext
         }
     }
 
-    public ILuaType FindLuaType(string name)
+    public LuaType FindLuaType(string name)
     {
         foreach (var searcher in _searchers)
         {
@@ -102,9 +102,9 @@ public class SearchContext
         return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
     }
 
-    public IEnumerable<Declaration> FindMember(ILuaType luaType, string memberName)
+    public IEnumerable<Declaration> FindMember(LuaType luaType, string memberName)
     {
-        if (luaType is ILuaNamedType namedType)
+        if (luaType is LuaNamedType namedType)
         {
             return GetMembers(namedType.Name)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
@@ -118,7 +118,7 @@ public class SearchContext
         return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
     }
 
-    public IEnumerable<ILuaType> FindSupers(string name)
+    public IEnumerable<LuaType> FindSupers(string name)
     {
         return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
     }
@@ -127,25 +127,25 @@ public class SearchContext
     {
         var document = element.Tree.Document;
         var documentId = document.Id;
-        return $"{documentId.Guid}|{Compilation.SymbolTrees[documentId].GetPosition(element)}";
+        return $"{documentId.Id}|{Compilation.SymbolTrees[documentId].GetPosition(element)}";
     }
 
-    public bool TryAddSubstitute(ILuaType type)
+    public bool TryAddSubstitute(LuaType type)
     {
         return _substituteGuard.Add(type);
     }
 
-    public void RemoveSubstitute(ILuaType type)
+    public void RemoveSubstitute(LuaType type)
     {
         _substituteGuard.Remove(type);
     }
 
-    public bool TryAddSubType(ILuaType type)
+    public bool TryAddSubType(LuaType type)
     {
         return _subTypesGuard.Add(type);
     }
 
-    public void RemoveSubType(ILuaType type)
+    public void RemoveSubType(LuaType type)
     {
         _subTypesGuard.Remove(type);
     }

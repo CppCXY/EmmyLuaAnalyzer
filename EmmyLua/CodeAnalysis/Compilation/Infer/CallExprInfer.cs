@@ -5,9 +5,9 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class CallExprInfer
 {
-    public static ILuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
+    public static LuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
     {
-        ILuaType ret = context.Compilation.Builtin.Unknown;
+        LuaType ret = context.Compilation.Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var accessPath = callExpr.AccessPath;
         if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(accessPath))
@@ -46,7 +46,7 @@ public static class CallExprInfer
         return TryUnwrapReturn(callExpr, context, ret);
     }
 
-    private static ILuaType TryUnwrapReturn(LuaCallExprSyntax callExprSyntax, SearchContext context, ILuaType ret)
+    private static LuaType TryUnwrapReturn(LuaCallExprSyntax callExprSyntax, SearchContext context, ILuaType ret)
     {
         while (true)
         {
@@ -92,7 +92,7 @@ public static class CallExprInfer
         }
     }
 
-    private static ILuaType InferRequire(LuaCallExprSyntax callExpr, SearchContext context)
+    private static LuaType InferRequire(LuaCallExprSyntax callExpr, SearchContext context)
     {
         var firstArg = callExpr.ArgList?.ArgList.FirstOrDefault();
         if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { Value: { } modulePath } })

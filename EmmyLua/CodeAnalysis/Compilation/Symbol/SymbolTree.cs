@@ -55,7 +55,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
             {
                 return declaration;
             }
-            return context.Compilation.Stub.GlobalDeclaration
+            return context.Compilation.ProjectIndex.GlobalDeclaration
                 .Get(name.RepresentText).FirstOrDefault();;
         }
 

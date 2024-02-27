@@ -11,7 +11,7 @@ public class LuaLocation(LuaDocument document, SourceRange range, int baseLine =
 
     public int BaseLine { get;} = baseLine;
 
-    public string FilePath => Document.Id.Path;
+    public string FilePath => Document.Path;
 
     public override string ToString()
     {

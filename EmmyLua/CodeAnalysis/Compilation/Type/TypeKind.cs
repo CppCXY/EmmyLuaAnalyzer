@@ -3,6 +3,7 @@
 public enum TypeKind
 {
     Unknown,
+    NamedType,
     Nil,
     Alias,
     Tuple,
@@ -12,4 +13,5 @@ public enum TypeKind
     Method,
     StringLiteral,
     IntegerLiteral,
+    TableLiteral
 }
