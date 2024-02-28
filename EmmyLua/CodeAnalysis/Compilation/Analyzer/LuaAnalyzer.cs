@@ -2,11 +2,11 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer;
 
-public abstract class LuaAnalyzer(LuaCompilation compilation) : ILuaAnalyzer
+public abstract class LuaAnalyzer(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public virtual void Analyze(DocumentId documentId)
+    public virtual void Analyze(AnalyzeContext analyzeContext)
     {
     }
 

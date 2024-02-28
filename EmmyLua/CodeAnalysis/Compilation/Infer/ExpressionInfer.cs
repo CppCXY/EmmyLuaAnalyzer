@@ -78,7 +78,8 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var lty = context.Infer(lhs);
-        return rhs != null ? LuaUnion.UnionType(lty, context.Infer(rhs)) : lty;
+        // return rhs != null ? LuaUnion.UnionType(lty, context.Infer(rhs)) : lty;
+        throw new NotImplementedException();
     }
 
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
@@ -93,63 +94,22 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        if (closureExpr.FuncBody is not null)
-        {
-            var method = context.Compilation.ProjectIndex.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
-            if (method is not null)
-            {
-                return method;
-            }
-        }
-
-        return context.Compilation.Builtin.Unknown;
+        // if (closureExpr.FuncBody is not null)
+        // {
+        //     var method = context.Compilation.ProjectIndex.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
+        //     if (method is not null)
+        //     {
+        //         return method;
+        //     }
+        // }
+        //
+        // return context.Compilation.Builtin.Unknown;
+        throw new NotImplementedException();
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        // ILuaType keyType = context.Compilation.Builtin.Unknown;
-        // ILuaType elementType = context.Compilation.Builtin.Unknown;
-        // foreach (var field in tableExpr.FieldList)
-        // {
-        //     if (field.IsValue)
-        //     {
-        //         elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
-        //     }
-        //     else
-        //     {
-        //         if (field.IsNameKey || field.IsStringKey)
-        //         {
-        //             keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.String);
-        //         }
-        //         else if (field.IsNumberKey)
-        //         {
-        //             keyType = LuaUnion.UnionType(keyType, context.Compilation.Builtin.Number);
-        //         }
-        //         else
-        //         {
-        //             keyType = LuaUnion.UnionType(keyType, context.Infer(field.ExprKey));
-        //         }
-        //
-        //         elementType = LuaUnion.UnionType(elementType, context.Infer(field.Value));
-        //     }
-        // }
-        //
-        // switch ((keyType, elementType))
-        // {
-        //     case (Unknown, Unknown):
-        //     {
-        //         return new GenericTable(keyType, elementType);
-        //     }
-        //     case (Unknown, _):
-        //     {
-        //         return new LuaArray(elementType);
-        //     }
-        //     default:
-        //     {
-        //         return new GenericTable(keyType, elementType);
-        //     }
-        // }
-        return new LuaTable(context.GetUniqueId(tableExpr));
+        return new LuaTableLiteralType(context.GetUniqueId(tableExpr));
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

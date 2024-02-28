@@ -38,7 +38,7 @@ public class LuaCompilation
 
     internal Dictionary<DocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
 
-    private List<ILuaAnalyzer> Analyzers { get; }
+    private List<LuaAnalyzer> Analyzers { get; }
 
     public LuaCompilation(LuaWorkspace workspace)
     {
@@ -122,12 +122,20 @@ public class LuaCompilation
         {
             try
             {
+                var list = new List<LuaDocument>();
+                foreach (var documentId in DirtyDocuments)
+                {
+                    var document = Workspace.GetDocument(documentId);
+                    if (document is not null)
+                    {
+                        list.Add(document);
+                    }
+                }
+
+                var analyzeContext = new AnalyzeContext(list);
                 foreach (var analyzer in Analyzers)
                 {
-                    foreach (var documentId in DirtyDocuments)
-                    {
-                        analyzer.Analyze(documentId);
-                    }
+                    analyzer.Analyze(analyzeContext);
                 }
             }
             finally

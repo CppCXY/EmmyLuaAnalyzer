@@ -11,45 +11,49 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
     private SearchContext Context => Compilation.SearchContext;
 
-    public override void Analyze(DocumentId documentId)
+    public override void Analyze(AnalyzeContext analyzeContext)
     {
-        var declarationTree = Compilation.GetSymbolTree(documentId);
-        if (declarationTree is null)
+        foreach (var document in analyzeContext.LuaDocuments)
         {
-            return;
-        }
-
-        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree &&
-            Compilation.GetSymbolTree(documentId) is { } symbolTree)
-        {
-            foreach (var node in syntaxTree.SyntaxRoot.Descendants)
+            var documentId = document.Id;
+            var declarationTree = Compilation.GetSymbolTree(documentId);
+            if (declarationTree is null)
             {
-                switch (node)
+                return;
+            }
+
+            if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree &&
+                Compilation.GetSymbolTree(documentId) is { } symbolTree)
+            {
+                foreach (var node in syntaxTree.SyntaxRoot.Descendants)
                 {
-                    case LuaLocalStatSyntax luaLocalStat:
+                    switch (node)
                     {
-                        AnalyzeLocalType(luaLocalStat, symbolTree);
-                        break;
-                    }
-                    case LuaAssignStatSyntax luaAssignStat:
-                    {
-                        AnalyzeAssignType(luaAssignStat, symbolTree);
-                        break;
-                    }
-                    case LuaForStatSyntax luaForStat:
-                    {
-                        AnalyzeForStat(luaForStat, symbolTree);
-                        break;
-                    }
-                    case LuaForRangeStatSyntax luaForRangeStat:
-                    {
-                        AnalyzeForRange(luaForRangeStat, symbolTree);
-                        break;
-                    }
-                    case LuaCallExprSyntax luaCallExpr:
-                    {
-                        AnalyzeCallExpr(luaCallExpr, symbolTree);
-                        break;
+                        case LuaLocalStatSyntax luaLocalStat:
+                        {
+                            AnalyzeLocalType(luaLocalStat, symbolTree);
+                            break;
+                        }
+                        case LuaAssignStatSyntax luaAssignStat:
+                        {
+                            AnalyzeAssignType(luaAssignStat, symbolTree);
+                            break;
+                        }
+                        case LuaForStatSyntax luaForStat:
+                        {
+                            AnalyzeForStat(luaForStat, symbolTree);
+                            break;
+                        }
+                        case LuaForRangeStatSyntax luaForRangeStat:
+                        {
+                            AnalyzeForRange(luaForRangeStat, symbolTree);
+                            break;
+                        }
+                        case LuaCallExprSyntax luaCallExpr:
+                        {
+                            AnalyzeCallExpr(luaCallExpr, symbolTree);
+                            break;
+                        }
                     }
                 }
             }

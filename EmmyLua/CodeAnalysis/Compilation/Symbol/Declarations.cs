@@ -65,26 +65,27 @@ public class MethodDeclaration(
     string name,
     int position,
     LuaSyntaxElement element,
-    LuaMethodType declarationType,
+    List<LuaMethodType> methods,
     LuaFuncBodySyntax funcBodySyntax
-) : Declaration(name, position, element, declarationType)
+) : Declaration(name, position, element, null)
 {
     public LuaFuncStatSyntax? MethodDef => SyntaxElement?.Parent as LuaFuncStatSyntax;
 
     public LuaIndexExprSyntax? IndexExprSyntax => SyntaxElement as LuaIndexExprSyntax;
 
-    public LuaMethodType MethodType => declarationType;
+    public List<LuaMethodType> Methods => methods;
 
     public LuaFuncBodySyntax FuncBodySyntax => funcBodySyntax;
 }
 
-public class AliasDeclaration(
+public class NamedTypeDeclaration(
     string name,
     int position,
-    LuaDocTagAliasSyntax aliasDef,
-    LuaAliasType? declarationType) : Declaration(name, position, aliasDef, declarationType)
+    LuaNameToken nameToken,
+    LuaType type)
+    : Declaration(name, position, nameToken, type)
 {
-    public LuaDocTagAliasSyntax AliasDef => aliasDef;
+    public LuaNameToken NameToken => nameToken;
 }
 
 public class DocFieldDeclaration(
@@ -142,22 +143,3 @@ public class LabelDeclaration(
     public LuaLabelStatSyntax LabelStat => labelStat;
 }
 
-public class SuperDeclaration(
-    string name,
-    int position,
-    LuaDocTypeSyntax superExpr,
-    LuaType superType)
-    : Declaration(name, position, superExpr, superType)
-{
-    public LuaDocTypeSyntax SuperExpr => superExpr;
-}
-
-public class NamedTypeDeclaration(
-    string name,
-    int position,
-    LuaNameToken nameToken,
-    LuaType type)
-    : Declaration(name, position, nameToken, type)
-{
-    public LuaNameToken NameToken => nameToken;
-}

@@ -19,10 +19,13 @@ public class FlowAnalyzer : LuaAnalyzer
         AddAnalyzer(new ReachableAnalyzer(compilation));
     }
 
-    public override void Analyze(DocumentId documentId)
+    public override void Analyze(AnalyzeContext analyzeContext)
     {
-        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
+        foreach (var document in analyzeContext.LuaDocuments)
         {
+            var documentId = document.Id;
+            var syntaxTree = document.SyntaxTree;
+
             var builder = new CfgBuilder();
             var blocks = syntaxTree.SyntaxRoot.Descendants.OfType<LuaBlockSyntax>();
             foreach (var block in blocks)

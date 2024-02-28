@@ -5,11 +5,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
 public interface ILuaSearcher
 {
-    IEnumerable<ILuaType> SearchType(string className, SearchContext context);
+    IEnumerable<LuaType> SearchType(string className, SearchContext context);
 
     IEnumerable<Declaration> SearchMembers(string className, SearchContext context);
 
     IEnumerable<GenericParameterDeclaration> SearchGenericParams(string className, SearchContext context);
 
-    IEnumerable<ILuaType> SearchSupers(string className, SearchContext context);
+    IEnumerable<LuaType> SearchSupers(string className, SearchContext context);
 }

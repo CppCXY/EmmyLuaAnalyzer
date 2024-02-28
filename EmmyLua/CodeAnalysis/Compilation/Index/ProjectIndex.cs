@@ -16,17 +16,13 @@ public class ProjectIndex(LuaCompilation compilation)
 
     public IndexStorage<string, Declaration> GlobalDeclaration { get; } = new();
 
-    public IndexStorage<string, SuperDeclaration> Supers { get; } = new();
+    public IndexStorage<string, LuaType> Supers { get; } = new();
 
     public IndexStorage<string, NamedTypeDeclaration> NamedType { get; } = new();
 
     public IndexStorage<string, GenericParameterDeclaration> GenericParam { get; } = new();
 
     public TypeIndex TypeIndex { get; } = new(compilation);
-
-    public Dictionary<LuaBlockSyntax, List<LuaExprSyntax>> MainBlockReturns { get; } = new();
-
-    public Dictionary<LuaFuncBodySyntax, LuaMethodType> Methods { get; } = new();
 
     public void Remove(DocumentId documentId)
     {

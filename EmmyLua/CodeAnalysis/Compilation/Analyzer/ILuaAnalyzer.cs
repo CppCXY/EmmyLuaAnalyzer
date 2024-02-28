@@ -6,7 +6,7 @@ public interface ILuaAnalyzer
 {
     public LuaCompilation Compilation { get; }
 
-    public void Analyze(DocumentId documentId);
+    public void Analyze(AnalyzeContext analyzeContext);
 
     public void RemoveCache(DocumentId documentId);
 }

@@ -48,7 +48,7 @@ public class HoverHandler(
                     Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = $"{symbol.DeclarationType?.ToDisplayString(workspace.Compilation.SearchContext)}"
+                        Value = "" //$"{symbol.DeclarationType?.ToDisplayString(workspace.Compilation.SearchContext)}"
                     })
                 };
                 return Task.FromResult(hoverResult)!;

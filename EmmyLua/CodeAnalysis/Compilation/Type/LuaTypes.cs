@@ -5,6 +5,32 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 public class LuaType(TypeKind kind)
 {
     public TypeKind Kind { get; } = kind;
+
+    public LuaType Union(LuaType other)
+    {
+        if (Kind == TypeKind.Union)
+        {
+            var unionType = (LuaUnionType)this;
+            return unionType.AddType(other);
+        }
+        else
+        {
+            return new LuaUnionType([this, other]);
+        }
+    }
+
+    public LuaType Remove(LuaType other)
+    {
+        if (Kind == TypeKind.Union)
+        {
+            var unionType = (LuaUnionType)this;
+            return unionType.RemoveType(other);
+        }
+        else
+        {
+            return this;
+        }
+    }
 }
 
 public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : LuaType(kind)
@@ -20,19 +46,35 @@ public class LuaUnionType(List<LuaType> unionTypes) : LuaType(TypeKind.Union)
 
     public IEnumerable<LuaType> Types => UnionTypes;
 
-    public void AddType(LuaType type)
+    public LuaUnionType AddType(LuaType type)
     {
-        UnionTypes.Add(type);
+        var types = new List<LuaType>();
+        types.AddRange(UnionTypes);
+        types.Add(type);
+        return new LuaUnionType(types);
     }
 
-    public void AddTypes(IEnumerable<LuaType> types)
+    public LuaUnionType AddTypes(IEnumerable<LuaType> types)
     {
-        UnionTypes.AddRange(types);
+        var newTypes = new List<LuaType>();
+        newTypes.AddRange(UnionTypes);
+        newTypes.AddRange(types);
+        return new LuaUnionType(newTypes);
     }
 
-    public void RemoveType(LuaType type)
+    public LuaType RemoveType(LuaType type)
     {
-        UnionTypes.Remove(type);
+        var types = new List<LuaType>();
+        types.AddRange(UnionTypes);
+        types.Remove(type);
+        if (types.Count == 1)
+        {
+            return types.First();
+        }
+        else
+        {
+            return new LuaUnionType(types);
+        }
     }
 }
 

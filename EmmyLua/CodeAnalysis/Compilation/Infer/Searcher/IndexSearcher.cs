@@ -5,7 +5,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
 public class IndexSearcher : LuaSearcher
 {
-    public override IEnumerable<ILuaType> SearchType(string className, SearchContext context)
+    public override IEnumerable<LuaType> SearchType(string className, SearchContext context)
     {
         var buildIn = context.Compilation.Builtin.FromName(className);
         if (buildIn is not null)
@@ -14,7 +14,7 @@ public class IndexSearcher : LuaSearcher
         }
 
         var stubIndexImpl = context.Compilation.ProjectIndex;
-        if (stubIndexImpl.NamedType.Get<ILuaNamedType>(className).FirstOrDefault() is { } ty)
+        if (stubIndexImpl.NamedType.Get<LuaNamedType>(className).FirstOrDefault() is { } ty)
         {
             yield return ty;
         }

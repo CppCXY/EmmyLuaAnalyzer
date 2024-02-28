@@ -4,9 +4,9 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
 
 public class EnvSearcher : LuaSearcher
 {
-    private Stack<Dictionary<string, ILuaType>> _envStack = new();
+    private Stack<Dictionary<string, LuaType>> _envStack = new();
 
-    public override IEnumerable<ILuaType> SearchType(string className, SearchContext context)
+    public override IEnumerable<LuaType> SearchType(string className, SearchContext context)
     {
         if (_envStack.Count == 0)
         {
@@ -19,7 +19,7 @@ public class EnvSearcher : LuaSearcher
         }
     }
 
-    public void PushEnv(Dictionary<string, ILuaType> env)
+    public void PushEnv(Dictionary<string, LuaType> env)
     {
         _envStack.Push(env);
     }
