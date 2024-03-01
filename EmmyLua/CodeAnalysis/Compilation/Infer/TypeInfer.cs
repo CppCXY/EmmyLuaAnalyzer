@@ -84,7 +84,7 @@ public static class TypeInfer
         }
 
         var returnTypes = funcType.ReturnType.Select(context.Infer).ToList();
-        return new LuaMethodType(returnTypes, typedParameters);
+        return new LuaMethodType(new LuaReturnType(returnTypes), typedParameters);
     }
 
     private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)

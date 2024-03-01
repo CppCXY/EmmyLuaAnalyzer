@@ -6,8 +6,4 @@
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-      <Folder Include="CodeAnalysis\Compilation\Constexpr\" />
-    </ItemGroup>
 </Project>

@@ -26,6 +26,15 @@ public static class ExpressionInfer
 
     private static LuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
+        var exprTy = context.Infer(unaryExpr.Expression);
+        var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(unaryExpr.Operator);
+        var op = context.Compilation.ProjectIndex.TypeIndex.GetBestMatchedUnaryOperator(opKind, exprTy);
+
+        if (op is not null)
+        {
+            return op.Ret;
+        }
+
         return unaryExpr.Operator switch
         {
             OperatorKind.UnaryOperator.OpNot or OperatorKind.UnaryOperator.OpUnm
@@ -38,7 +47,7 @@ public static class ExpressionInfer
     private static LuaType InferBinaryExpr(LuaBinaryExprSyntax binaryExpr, SearchContext context)
     {
         var op = binaryExpr.Operator;
-        return op switch
+        return binaryExpr.Operator switch
         {
             // logic
             OperatorKind.BinaryOperator.OpLe or OperatorKind.BinaryOperator.OpGt
@@ -78,18 +87,21 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var lty = context.Infer(lhs);
-        // return rhs != null ? LuaUnion.UnionType(lty, context.Infer(rhs)) : lty;
-        throw new NotImplementedException();
+        return rhs != null ? lty.Union(context.Infer(rhs)) : lty;
     }
 
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
-        var lhs = binaryExpr.LeftExpr;
-        // var rhs = binaryExpr.RightExpr;
-        var lhsTy = context.Infer(lhs);
-        // TODO: for override
-        return lhsTy;
+        var leftTy = context.Infer(binaryExpr.LeftExpr);
+        var rightTy = context.Infer(binaryExpr.RightExpr);
+        var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
+        var bop = context.Compilation.ProjectIndex.TypeIndex.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
+        if (bop is not null)
+        {
+            return bop.Ret;
+        }
+        return leftTy;
     }
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)

@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaType(TypeKind kind)
+public class LuaType(TypeKind kind) : IEquatable<LuaType>
 {
     public TypeKind Kind { get; } = kind;
 
@@ -31,11 +31,71 @@ public class LuaType(TypeKind kind)
             return this;
         }
     }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj);
+    }
+
+    public bool Equals(LuaType? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is null)
+        {
+            return false;
+        }
+
+        return Kind == other.Kind;
+    }
+
+    public override int GetHashCode()
+    {
+        return (int)Kind;
+    }
 }
 
-public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : LuaType(kind)
+public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : LuaType(kind), IEquatable<LuaNamedType>
 {
     public string Name { get; } = name;
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (obj is LuaNamedType other)
+        {
+            return Name == other.Name;
+        }
+
+        return false;
+    }
+
+    public bool Equals(LuaNamedType? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is not null)
+        {
+            return Name == other.Name;
+        }
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(base.GetHashCode(), Name);
+    }
 }
 
 public class LuaNilType() : LuaNamedType("nil", TypeKind.Nil);
@@ -119,11 +179,14 @@ public class TypedParameter(string name, LuaType? type)
     public LuaType? Type { get; } = type;
 }
 
-public class LuaMethodType(List<LuaType> retTypes, List<TypedParameter> parameters) : LuaType(TypeKind.Method)
+public class LuaReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return)
 {
     public List<LuaType> RetTypes { get; } = retTypes;
+}
 
-    public LuaType? FirstRetType => RetTypes.FirstOrDefault();
+public class LuaMethodType(LuaReturnType returnType, List<TypedParameter> parameters) : LuaType(TypeKind.Method)
+{
+    public LuaReturnType ReturnType { get; } = returnType;
 
     public List<TypedParameter> Parameters { get; } = parameters;
 }

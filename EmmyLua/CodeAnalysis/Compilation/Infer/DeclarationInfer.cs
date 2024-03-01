@@ -21,7 +21,7 @@ public static class DeclarationInfer
         }
 
         var symbol = declarationTree.FindSymbol(localName);
-        return symbol?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        return symbol?.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
@@ -40,6 +40,6 @@ public static class DeclarationInfer
         }
 
         var symbol = symbolTree.FindSymbol(paramDef);
-        return symbol?.FirstSymbol.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        return symbol?.DeclarationType ?? context.Compilation.Builtin.Unknown;
     }
 }

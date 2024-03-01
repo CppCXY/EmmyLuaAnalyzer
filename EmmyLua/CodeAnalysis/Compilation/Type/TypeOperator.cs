@@ -1,7 +1,11 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Kind;
+
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public enum TypeOperatorKind
 {
+    None,
     // math
     Add, // +
     Sub, // -
@@ -30,6 +34,38 @@ public enum TypeOperatorKind
 
     // index
     Index, // []
+}
+
+public static class TypeOperatorKindHelper
+{
+    public static TypeOperatorKind ToTypeOperatorKind(OperatorKind.BinaryOperator kind) => kind switch
+    {
+        OperatorKind.BinaryOperator.OpAdd => TypeOperatorKind.Add,
+        OperatorKind.BinaryOperator.OpSub => TypeOperatorKind.Sub,
+        OperatorKind.BinaryOperator.OpMul => TypeOperatorKind.Mul,
+        OperatorKind.BinaryOperator.OpDiv => TypeOperatorKind.Div,
+        OperatorKind.BinaryOperator.OpMod => TypeOperatorKind.Mod,
+        OperatorKind.BinaryOperator.OpPow => TypeOperatorKind.Pow,
+        OperatorKind.BinaryOperator.OpIDiv => TypeOperatorKind.Idiv,
+        OperatorKind.BinaryOperator.OpBAnd => TypeOperatorKind.Band,
+        OperatorKind.BinaryOperator.OpBOr => TypeOperatorKind.Bor,
+        OperatorKind.BinaryOperator.OpBXor => TypeOperatorKind.Bxor,
+        OperatorKind.BinaryOperator.OpShl => TypeOperatorKind.Shl,
+        OperatorKind.BinaryOperator.OpShr => TypeOperatorKind.Shr,
+        OperatorKind.BinaryOperator.OpConcat => TypeOperatorKind.Concat,
+        OperatorKind.BinaryOperator.OpEq => TypeOperatorKind.Eq,
+        OperatorKind.BinaryOperator.OpLt => TypeOperatorKind.Lt,
+        OperatorKind.BinaryOperator.OpLe => TypeOperatorKind.Le,
+        _ => TypeOperatorKind.None
+    };
+
+    public static TypeOperatorKind ToTypeOperatorKind(OperatorKind.UnaryOperator kind) => kind switch
+    {
+        OperatorKind.UnaryOperator.OpUnm => TypeOperatorKind.Unm,
+        OperatorKind.UnaryOperator.OpBNot => TypeOperatorKind.Bnot,
+        OperatorKind.UnaryOperator.OpLen => TypeOperatorKind.Len,
+        _ => TypeOperatorKind.None
+    };
 }
 
 public class TypeOperator(TypeOperatorKind kind)

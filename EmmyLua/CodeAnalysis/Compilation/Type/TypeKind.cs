@@ -10,6 +10,7 @@ public enum TypeKind
     Union,
     Array,
     Generic,
+    Return,
     Method,
     StringLiteral,
     IntegerLiteral,

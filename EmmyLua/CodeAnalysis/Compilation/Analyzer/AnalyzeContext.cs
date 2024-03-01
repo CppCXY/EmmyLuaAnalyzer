@@ -15,6 +15,8 @@ public class UnResolveDeclaration(Declaration declaration, LuaExprRef? exprRef)
 {
     public Declaration Declaration { get; } = declaration;
     public LuaExprRef? ExprRef { get; } = exprRef;
+
+    public bool IsTypeDeclaration { get; set; } = false;
 }
 
 public class AnalyzeContext(List<LuaDocument> documents)
