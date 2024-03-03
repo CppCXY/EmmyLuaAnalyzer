@@ -36,7 +36,7 @@ public class LuaAssignStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 }
 
 public class LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaStatSyntax(greenNode, tree, parent, startOffset), IFuncBodyOwner
+    : LuaStatSyntax(greenNode, tree, parent, startOffset)
 {
     public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
 
@@ -50,7 +50,7 @@ public class LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
 
     public LuaIndexExprSyntax? IndexExpr => FirstChild<LuaIndexExprSyntax>();
 
-    public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
+    public LuaClosureExprSyntax? ClosureExpr => FirstChild<LuaClosureExprSyntax>();
 }
 
 public class LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

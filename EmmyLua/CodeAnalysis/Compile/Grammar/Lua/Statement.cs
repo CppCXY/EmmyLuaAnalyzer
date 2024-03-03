@@ -176,7 +176,7 @@ public static class StatementParser
         var kind = LuaSyntaxKind.ForStat;
         try
         {
-            var cm = ParamDef(p, false);
+            var cm = ExpressionParser.ParamDef(p, false);
             if (cm.IsComplete && p.Current == LuaTokenKind.TkAssign)
             {
                 p.Bump();
@@ -195,7 +195,7 @@ public static class StatementParser
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {
                     p.Bump();
-                    cm = ParamDef(p, false);
+                    cm = ExpressionParser.ParamDef(p, false);
                 }
 
                 p.Expect(LuaTokenKind.TkIn);
@@ -286,7 +286,7 @@ public static class StatementParser
         try
         {
             MethodName(p);
-            FunctionBody(p);
+            ExpressionParser.ClosureExpr(p);
             p.Accept(LuaTokenKind.TkSemicolon);
 
             return m.Complete(p, LuaSyntaxKind.FuncStat);
@@ -294,79 +294,6 @@ public static class StatementParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.FuncStat, e.Message);
-        }
-    }
-
-    private static CompleteMarker ParamDef(LuaParser p, bool allowDots = true)
-    {
-        var m = p.Marker();
-        try
-        {
-            if (allowDots)
-            {
-                if (p.Current is LuaTokenKind.TkName or LuaTokenKind.TkDots)
-                {
-                    p.Bump();
-                }
-                else
-                {
-                    throw new UnexpectedTokenException("expected name or '...'");
-                }
-            }
-            else
-            {
-                p.Expect(LuaTokenKind.TkName);
-            }
-
-            return m.Complete(p, LuaSyntaxKind.ParamName);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.ParamName, e.Message);
-        }
-    }
-
-    private static CompleteMarker ParamList(LuaParser p)
-    {
-        var m = p.Marker();
-        try
-        {
-            p.Expect(LuaTokenKind.TkLeftParen);
-            if (p.Current is not LuaTokenKind.TkRightParen)
-            {
-                var cm = ParamDef(p);
-                while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
-                {
-                    p.Bump();
-                    cm = ParamDef(p);
-                }
-            }
-
-            p.Expect(LuaTokenKind.TkRightParen);
-            return m.Complete(p, LuaSyntaxKind.ParamList);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.ParamList, e.Message);
-        }
-    }
-
-    public static CompleteMarker FunctionBody(LuaParser p)
-    {
-        var m = p.Marker();
-        try
-        {
-            if (ParamList(p).IsComplete)
-            {
-                BlockParser.Block(p);
-                p.Expect(LuaTokenKind.TkEnd);
-            }
-
-            return m.Complete(p, LuaSyntaxKind.FuncBody);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.FuncBody, e.Message);
         }
     }
 
@@ -401,7 +328,7 @@ public static class StatementParser
                 kind = LuaSyntaxKind.LocalFuncStat;
                 p.Bump();
                 LocalName(p, false);
-                FunctionBody(p);
+                ExpressionParser.ClosureExpr(p);
             }
             else
             {
@@ -421,7 +348,7 @@ public static class StatementParser
                     {
                         kind = LuaSyntaxKind.LocalFuncStat;
                         p.Bump();
-                        FunctionBody(p);
+                        ExpressionParser.ClosureExpr(p);
                     }
                     else
                     {

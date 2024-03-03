@@ -250,7 +250,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private static bool IsScopeOwner(LuaSyntaxElement element)
         => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax
-            or LuaFuncStatSyntax or LuaFuncBodySyntax;
+            or LuaFuncStatSyntax or LuaClosureExprSyntax;
 
     private void AnalyzeLocalStatDeclaration(LuaLocalStatSyntax localStatSyntax)
     {
@@ -336,7 +336,8 @@ public class DeclarationBuilder : ILuaElementWalker
     private LuaReturnType GetRetType(IEnumerable<LuaDocTagSyntax> docList)
     {
         var retTag = docList.OfType<LuaDocTagReturnSyntax>().ToList();
-        return new LuaReturnType(retTag.SelectMany(tag => tag.TypeList).Select(Compilation.SearchContext.Infer).ToList());
+        return new LuaReturnType(
+            retTag.SelectMany(tag => tag.TypeList).Select(Compilation.SearchContext.Infer).ToList());
     }
 
     private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
@@ -547,11 +548,11 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         switch (luaFuncStat)
         {
-            case { IsLocal: true, LocalName.Name: { } name }:
+            case { IsLocal: true, LocalName.Name: { } name, ClosureExpr: { } closureExpr }:
             {
-                var luaMethods = AnalyzeFuncBody(luaFuncStat.FuncBody, false);
+                var luaMethod = new LuaClosureLiteralType(GetUniqueId(closureExpr));
                 var methodDeclaration = new MethodDeclaration(name.RepresentText,
-                    GetPosition(luaFuncStat.LocalName), luaFuncStat.LocalName, luaMethods, luaFuncStat.FuncBody!)
+                    GetPosition(luaFuncStat.LocalName), luaFuncStat.LocalName, luaMethod, closureExpr)
                 {
                     Feature = SymbolFeature.Local
                 };
@@ -559,15 +560,15 @@ public class DeclarationBuilder : ILuaElementWalker
 
                 break;
             }
-            case { IsLocal: false, NameExpr.Name: { } name2 }:
+            case { IsLocal: false, NameExpr.Name: { } name2, ClosureExpr: { } closureExpr }:
             {
-                var luaMethods = AnalyzeFuncBody(luaFuncStat.FuncBody, false);
+                var luaMethod = new LuaClosureLiteralType(GetUniqueId(closureExpr));
                 var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                 if (prevDeclaration is null)
                 {
                     var declaration = new MethodDeclaration(name2.RepresentText,
                         GetPosition(luaFuncStat.NameExpr),
-                        luaFuncStat.NameExpr, luaMethods, luaFuncStat.FuncBody!)
+                        luaFuncStat.NameExpr, luaMethod, closureExpr)
                     {
                         Feature = SymbolFeature.Global
                     };
@@ -577,13 +578,13 @@ public class DeclarationBuilder : ILuaElementWalker
 
                 break;
             }
-            case { IsMethod: true, IndexExpr: { } indexExpr }:
+            case { IsMethod: true, IndexExpr: { } indexExpr, ClosureExpr: { } closureExpr }:
             {
-                var luaMethod = AnalyzeFuncBody(luaFuncStat.FuncBody, indexExpr.IsColonIndex);
+                var luaMethod = new LuaClosureLiteralType(GetUniqueId(closureExpr));
                 if (indexExpr is { Name: { } name })
                 {
                     var declaration = new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, luaMethod,
-                        luaFuncStat.FuncBody!);
+                        closureExpr);
                     AddDeclaration(declaration);
                     var unResolveDeclaration = new UnResolveDeclaration(declaration, null);
                     AddUnResolvedSymbol(unResolveDeclaration);
@@ -596,8 +597,53 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeClosureExprDeclaration(LuaClosureExprSyntax closureExprSyntax)
     {
-        var funcBody = closureExprSyntax.FuncBody;
-        AnalyzeFuncBody(funcBody, false);
+        var uniqueId = GetUniqueId(closureExprSyntax);
+        var comment = closureExprSyntax?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments
+            .FirstOrDefault();
+        if (comment is null)
+        {
+            return;
+        }
+
+        var docList = comment.DocList.ToList();
+        var generic = docList.OfType<LuaDocTagGenericDeclareListSyntax>().FirstOrDefault();
+        if (generic is not null)
+        {
+            foreach (var param in generic.Params)
+            {
+                if (param is { Name: { } name })
+                {
+                    var declaration =
+                        new GenericParameterDeclaration(name.RepresentText, GetPosition(param), param, null);
+                    AddDeclaration(declaration);
+                }
+            }
+        }
+
+        foreach (var overloadMethod in docList
+                     .OfType<LuaDocTagOverloadSyntax>()
+                     .Select(it => Compilation.SearchContext.Infer(it.TypeFunc))
+                     .Cast<LuaMethodType>())
+        {
+            ProjectIndex.Methods.AddStub(DocumentId, uniqueId, overloadMethod);
+        }
+
+        PushScope(closureExprSyntax!);
+        var parameters = new List<TypedParameter>();
+        if (closureExprSyntax!.ParamList is { } paramList)
+        {
+            parameters = AnalyzeParamListDeclaration(paramList);
+        }
+
+        if (closureExprSyntax.Block is not null)
+        {
+            AnalyzeBlockReturn(closureExprSyntax.Block);
+        }
+
+        var mainRetType = GetRetType(docList);
+        var method = new LuaMethodType(mainRetType, parameters);
+        ProjectIndex.Methods.AddStub(DocumentId, uniqueId, method);
+        PopScope();
     }
 
     private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
@@ -975,58 +1021,6 @@ public class DeclarationBuilder : ILuaElementWalker
             var unResolveDeclaration = new UnResolveDeclaration(declaration, new LuaExprRef(value));
             AddUnResolvedSymbol(unResolveDeclaration);
         }
-    }
-
-    private List<LuaMethodType> AnalyzeFuncBody(LuaFuncBodySyntax? funcBody, bool colon)
-    {
-        var comment = funcBody?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments.FirstOrDefault();
-        if (comment is null)
-        {
-            return [];
-        }
-
-        var docList = comment.DocList.ToList();
-        var results = new List<LuaMethodType>();
-
-        var generic = docList.OfType<LuaDocTagGenericDeclareListSyntax>().FirstOrDefault();
-        if (generic is not null)
-        {
-            foreach (var param in generic.Params)
-            {
-                if (param is { Name: { } name })
-                {
-                    var declaration =
-                        new GenericParameterDeclaration(name.RepresentText, GetPosition(param), param, null);
-                    AddDeclaration(declaration);
-                }
-            }
-        }
-
-        var overloads = docList
-            .OfType<LuaDocTagOverloadSyntax>()
-            .Select(it => Compilation.SearchContext.Infer(it.TypeFunc))
-            .Cast<LuaMethodType>().ToList();
-
-        PushScope(funcBody!);
-        var parameters = new List<TypedParameter>();
-        if (funcBody!.ParamList is { } paramList)
-        {
-            parameters = AnalyzeParamListDeclaration(paramList);
-        }
-
-        if (funcBody.Block is not null)
-        {
-            AnalyzeBlockReturn(funcBody.Block);
-        }
-
-        var mainRetType = GetRetType(docList);
-        var method = new LuaMethodType(mainRetType, parameters);
-        AnalyzeContext.Methods.Add(funcBody, method);
-        PopScope();
-
-        results.Add(method);
-        results.AddRange(overloads);
-        return results;
     }
 
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)

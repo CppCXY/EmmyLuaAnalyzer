@@ -65,17 +65,17 @@ public class MethodDeclaration(
     string name,
     int position,
     LuaSyntaxElement element,
-    List<LuaMethodType> methods,
-    LuaFuncBodySyntax funcBodySyntax
-) : Declaration(name, position, element, null)
+    LuaClosureLiteralType method,
+    LuaClosureExprSyntax closureExpr
+) : Declaration(name, position, element, method)
 {
     public LuaFuncStatSyntax? MethodDef => SyntaxElement?.Parent as LuaFuncStatSyntax;
 
-    public LuaIndexExprSyntax? IndexExprSyntax => SyntaxElement as LuaIndexExprSyntax;
+    public LuaIndexExprSyntax? IndexExpr => SyntaxElement as LuaIndexExprSyntax;
 
-    public List<LuaMethodType> Methods => methods;
+    // public List<LuaMethodType> Methods => methods;
 
-    public LuaFuncBodySyntax FuncBodySyntax => funcBodySyntax;
+    public LuaClosureExprSyntax ClosureExpr => closureExpr;
 }
 
 public class NamedTypeDeclaration(

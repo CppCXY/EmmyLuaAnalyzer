@@ -186,9 +186,11 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 }
 
 public class LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset), IFuncBodyOwner
+    : LuaExprSyntax(greenNode, tree, parent, startOffset)
 {
-    public LuaFuncBodySyntax? FuncBody => FirstChild<LuaFuncBodySyntax>();
+    public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
+
+    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 }
 
 public class LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

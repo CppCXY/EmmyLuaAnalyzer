@@ -173,6 +173,11 @@ public class LuaTableLiteralType(string tableId) : LuaNamedType(tableId, TypeKin
     public string TableId { get; } = tableId;
 }
 
+public class LuaClosureLiteralType(string closureId) : LuaNamedType(closureId, TypeKind.ClosureLiteral)
+{
+    public string ClosureId { get; } = closureId;
+}
+
 public class TypedParameter(string name, LuaType? type)
 {
     public string Name { get; } = name;

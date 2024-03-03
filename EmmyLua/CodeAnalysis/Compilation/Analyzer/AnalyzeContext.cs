@@ -27,5 +27,5 @@ public class AnalyzeContext(List<LuaDocument> documents)
 
     public Dictionary<LuaBlockSyntax, List<LuaExprSyntax>> MainBlockReturns { get; } = new();
 
-    public Dictionary<LuaFuncBodySyntax, LuaMethodType> Methods { get; } = new();
+    // public Dictionary<LuaFuncBodySyntax, LuaMethodType> Methods { get; } = new();
 }

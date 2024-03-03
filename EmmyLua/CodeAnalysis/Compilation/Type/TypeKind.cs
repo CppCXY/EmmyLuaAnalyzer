@@ -14,5 +14,6 @@ public enum TypeKind
     Method,
     StringLiteral,
     IntegerLiteral,
-    TableLiteral
+    TableLiteral,
+    ClosureLiteral
 }

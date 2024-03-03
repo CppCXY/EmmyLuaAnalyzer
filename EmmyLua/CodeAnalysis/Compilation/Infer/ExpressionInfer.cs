@@ -106,17 +106,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        // if (closureExpr.FuncBody is not null)
-        // {
-        //     var method = context.Compilation.ProjectIndex.Methods.Get(closureExpr.FuncBody).FirstOrDefault();
-        //     if (method is not null)
-        //     {
-        //         return method;
-        //     }
-        // }
-        //
-        // return context.Compilation.Builtin.Unknown;
-        throw new NotImplementedException();
+        return new LuaClosureLiteralType(context.GetUniqueId(closureExpr));
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)

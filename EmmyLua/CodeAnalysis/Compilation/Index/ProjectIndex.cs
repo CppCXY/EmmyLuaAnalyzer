@@ -22,6 +22,8 @@ public class ProjectIndex(LuaCompilation compilation)
 
     public IndexStorage<string, GenericParameterDeclaration> GenericParam { get; } = new();
 
+    public IndexStorage<string, LuaMethodType> Methods { get; } = new();
+
     public TypeIndex TypeIndex { get; } = new(compilation);
 
     public void Remove(DocumentId documentId)

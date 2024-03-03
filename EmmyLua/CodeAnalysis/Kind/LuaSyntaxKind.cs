@@ -44,7 +44,6 @@ public enum LuaSyntaxKind : ushort
     TableFieldAssign,
     TableFieldValue,
     Attribute,
-    FuncBody,
 
     // comment
     Comment,
