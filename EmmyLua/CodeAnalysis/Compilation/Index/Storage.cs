@@ -28,7 +28,7 @@ public class IndexStorage<TKey, TStubElement>
 {
     private readonly Dictionary<TKey, IndexEntry<TStubElement>> _indexMap = new();
 
-    public void AddStub(DocumentId documentId, TKey key, TStubElement syntax)
+    public void Add(DocumentId documentId, TKey key, TStubElement syntax)
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {

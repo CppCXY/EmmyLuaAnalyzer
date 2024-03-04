@@ -454,4 +454,8 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         var diagnostic = new Diagnostic(severity, message, Range);
         Tree.PushDiagnostic(diagnostic);
     }
+
+    public string UniqueId => $"{Tree.Document.Id}_{Range.StartOffset}_{Range.Length}";
+
+    public int Position => Range.StartOffset;
 }

@@ -138,11 +138,6 @@ public class LuaUnionType(List<LuaType> unionTypes) : LuaType(TypeKind.Union)
     }
 }
 
-public class LuaAliasType(string name, LuaType type) : LuaNamedType(name, TypeKind.Alias)
-{
-    public LuaType Type { get; } = type;
-}
-
 public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple)
 {
     public List<LuaType> TupleTypes { get; } = tupleTypes;

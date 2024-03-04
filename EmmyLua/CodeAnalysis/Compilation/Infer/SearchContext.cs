@@ -123,13 +123,6 @@ public class SearchContext
         return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
     }
 
-    public string GetUniqueId(LuaSyntaxElement element)
-    {
-        var document = element.Tree.Document;
-        var documentId = document.Id;
-        return $"{documentId.Id}|{Compilation.SymbolTrees[documentId].GetPosition(element)}";
-    }
-
     public bool TryAddSubstitute(LuaType type)
     {
         return _substituteGuard.Add(type);

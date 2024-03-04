@@ -61,7 +61,7 @@ public class SymbolScope(SymbolTree tree, int pos)
         {
             var nameText = name.RepresentText;
             Declaration? result = null;
-            WalkUp(Tree.GetPosition(nameExpr), 0, declaration =>
+            WalkUp(nameExpr.Position, 0, declaration =>
             {
                 if (declaration is { Feature: SymbolFeature.Global or SymbolFeature.Local}
                     && string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
@@ -80,7 +80,7 @@ public class SymbolScope(SymbolTree tree, int pos)
 
     public Symbol? FindSymbol(LuaSyntaxElement element)
     {
-        var position = Tree.GetPosition(element);
+        var position = element.Position;
         var symbolNode = FindFirstChild(it => it.Position == position);
         if (symbolNode is Symbol result)
         {

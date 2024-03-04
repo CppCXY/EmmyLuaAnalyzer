@@ -12,8 +12,6 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
 
     public SymbolScope? RootScope { get; internal set; }
 
-    public int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
-
     public Symbol? FindSymbol(LuaSyntaxElement element)
     {
         switch (element)

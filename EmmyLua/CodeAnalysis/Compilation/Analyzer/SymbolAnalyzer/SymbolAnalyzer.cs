@@ -14,24 +14,53 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         bool changed;
-        var unResolveDeclarations = analyzeContext.UnResolveDeclarations
-            .ToDictionary(it => it, it => false);
         do
         {
             changed = false;
-            foreach (var (unResolveDeclaration, resolved) in unResolveDeclarations)
+            foreach (var unResolveDeclaration in analyzeContext.UnResolveDeclarations)
             {
-                if (resolved) continue;
-                var declaration = unResolveDeclaration.Declaration;
-                var exprRef = unResolveDeclaration.ExprRef;
-                if (exprRef is not null)
+                if ((unResolveDeclaration.ResolvedState & ResolveState.UnResolvedType) != 0)
                 {
-                    var exprType = SearchContext.Infer(exprRef.Expr);
-                    if (!exprType.Equals(Compilation.Builtin.Unknown))
+                    var exprRef = unResolveDeclaration.ExprRef;
+                    if (exprRef is not null)
                     {
-                        MergeType(unResolveDeclaration, exprType);
-                        unResolveDeclarations[unResolveDeclaration] = true;
-                        changed = true;
+                        var exprType = SearchContext.Infer(exprRef.Expr);
+                        if (!exprType.Equals(Compilation.Builtin.Unknown))
+                        {
+                            MergeType(unResolveDeclaration, exprType);
+                            unResolveDeclaration.ResolvedState &= ~ResolveState.UnResolvedType;
+                            changed = true;
+                        }
+                    }
+                }
+                else if ((unResolveDeclaration.ResolvedState & ResolveState.UnResolvedIndex) != 0)
+                {
+                    var declaration = unResolveDeclaration.Declaration;
+                    if (declaration.SyntaxElement is LuaIndexExprSyntax indexExpr)
+                    {
+                        var documentId = indexExpr.Tree.Document.Id;
+                        var ty = SearchContext.Infer(indexExpr);
+                        if (ty is LuaNamedType namedType)
+                        {
+                            Compilation.ProjectIndex.Members.Add(documentId, namedType.Name, declaration);
+                            unResolveDeclaration.ResolvedState &= ~ResolveState.UnResolvedIndex;
+                            changed = true;
+                        }
+                    }
+                }
+                else if ((unResolveDeclaration.ResolvedState & ResolveState.UnResolveReturn) != 0)
+                {
+                    var declaration = unResolveDeclaration.Declaration;
+                    var exprRef = unResolveDeclaration.ExprRef;
+                    if (exprRef is not null)
+                    {
+                        var exprType = SearchContext.Infer(exprRef.Expr);
+                        if (!exprType.Equals(Compilation.Builtin.Unknown))
+                        {
+                            MergeType(unResolveDeclaration, exprType);
+                            unResolveDeclaration.ResolvedState &= ~ResolveState.UnResolveReturn;
+                            changed = true;
+                        }
                     }
                 }
             }
@@ -45,9 +74,17 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         {
             declaration.DeclarationType = type;
         }
-        else if (unResolveDeclaration.IsTypeDeclaration)
+        else if (unResolveDeclaration.IsTypeDeclaration && type is LuaTableLiteralType tableLiteralType)
         {
-            declaration.DeclarationType = declaration.DeclarationType.Union(type);
+            var members = Compilation.ProjectIndex.Members.Get(tableLiteralType.TableId);
+            var documentId = declaration.SyntaxElement?.Tree.Document.Id;
+            if (documentId is {} id)
+            {
+                foreach (var member in members)
+                {
+                    Compilation.ProjectIndex.Members.Add(id, member.Name, member);
+                }
+            }
         }
     }
 }

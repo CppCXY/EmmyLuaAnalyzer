@@ -106,12 +106,12 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        return new LuaClosureLiteralType(context.GetUniqueId(closureExpr));
+        return new LuaClosureLiteralType(closureExpr.UniqueId);
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        return new LuaTableLiteralType(context.GetUniqueId(tableExpr));
+        return new LuaTableLiteralType(tableExpr.UniqueId);
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
