@@ -168,25 +168,6 @@ public class LuaTableLiteralType(string tableId) : LuaNamedType(tableId, TypeKin
     public string TableId { get; } = tableId;
 }
 
-public class LuaClosureLiteralType(string closureId) : LuaNamedType(closureId, TypeKind.ClosureLiteral)
-{
-    public string ClosureId { get; } = closureId;
-}
 
-public class TypedParameter(string name, LuaType? type)
-{
-    public string Name { get; } = name;
-    public LuaType? Type { get; } = type;
-}
 
-public class LuaReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return)
-{
-    public List<LuaType> RetTypes { get; } = retTypes;
-}
 
-public class LuaMethodType(LuaReturnType returnType, List<TypedParameter> parameters) : LuaType(TypeKind.Method)
-{
-    public LuaReturnType ReturnType { get; } = returnType;
-
-    public List<TypedParameter> Parameters { get; } = parameters;
-}

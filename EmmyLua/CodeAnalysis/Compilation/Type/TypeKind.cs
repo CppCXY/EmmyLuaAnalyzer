@@ -15,5 +15,4 @@ public enum TypeKind
     StringLiteral,
     IntegerLiteral,
     TableLiteral,
-    ClosureLiteral
 }

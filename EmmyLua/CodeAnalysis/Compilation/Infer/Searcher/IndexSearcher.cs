@@ -22,13 +22,15 @@ public class IndexSearcher : LuaSearcher
 
     public override IEnumerable<Declaration> SearchMembers(string className, SearchContext context)
     {
-        var stubIndexImpl = context.Compilation.ProjectIndex;
-        return stubIndexImpl.Members.Get<Declaration>(className);
+        // var stubIndexImpl = context.Compilation.ProjectIndex;
+        // return stubIndexImpl.Members.Get<Declaration>(className);
+        throw new NotImplementedException();
     }
 
     public override IEnumerable<GenericParameterDeclaration> SearchGenericParams(string className, SearchContext context)
     {
-        var stubIndexImpl = context.Compilation.ProjectIndex;
-        return stubIndexImpl.GenericParam.Get(className);
+        // var stubIndexImpl = context.Compilation.ProjectIndex;
+        // return stubIndexImpl.GenericParam.Get(className);
+        throw new NotImplementedException();
     }
 }

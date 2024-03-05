@@ -12,7 +12,7 @@ public class LuaExprRef(LuaExprSyntax expr, int retId = 0)
 }
 
 [Flags]
-public enum ResolveState: int
+public enum ResolveState : int
 {
     Resolved = 0,
     UnResolvedIndex = 0x001,
@@ -20,21 +20,43 @@ public enum ResolveState: int
     UnResolveReturn = 0x004,
 }
 
-public class UnResolveDeclaration(Declaration declaration, LuaExprRef? exprRef, ResolveState state)
+public class UnResolved(ResolveState state)
+{
+    public ResolveState ResolvedState { get; set; } = state;
+}
+
+public class UnResolvedDeclaration(Declaration declaration, LuaExprRef? exprRef, ResolveState state) : UnResolved(state)
 {
     public Declaration Declaration { get; } = declaration;
+
     public LuaExprRef? ExprRef { get; } = exprRef;
 
     public bool IsTypeDeclaration { get; set; } = false;
 
-    public ResolveState ResolvedState { get; set; } = state;
+    public ResolveState State { get; } = state;
+}
+
+public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
+{
+    public LuaMethodType MethodType { get; } = methodType;
+
+    public LuaBlockSyntax Block { get; } = block;
+
+    public ResolveState State { get; } = state;
+}
+
+public class UnResolvedSource(DocumentId documentId, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
+{
+    public DocumentId DocumentId { get; } = documentId;
+
+    public LuaBlockSyntax Block { get; } = block;
+
+    public ResolveState State { get; } = state;
 }
 
 public class AnalyzeContext(List<LuaDocument> documents)
 {
     public List<LuaDocument> LuaDocuments { get; } = documents;
 
-    public List<UnResolveDeclaration> UnResolveDeclarations { get; } = new();
-
-    public Dictionary<LuaBlockSyntax, List<LuaExprSyntax>> MainBlockReturns { get; } = new();
+    public List<UnResolved> UnResolves { get; } = new();
 }

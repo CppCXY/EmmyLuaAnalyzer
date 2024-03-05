@@ -65,15 +65,13 @@ public class MethodDeclaration(
     string name,
     int position,
     LuaSyntaxElement element,
-    LuaClosureLiteralType method,
+    LuaMethodType? method,
     LuaClosureExprSyntax closureExpr
 ) : Declaration(name, position, element, method)
 {
     public LuaFuncStatSyntax? MethodDef => SyntaxElement?.Parent as LuaFuncStatSyntax;
 
     public LuaIndexExprSyntax? IndexExpr => SyntaxElement as LuaIndexExprSyntax;
-
-    // public List<LuaMethodType> Methods => methods;
 
     public LuaClosureExprSyntax ClosureExpr => closureExpr;
 }

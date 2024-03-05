@@ -5,4 +5,5 @@ public enum TypeFeature
     Class,
     Enum,
     Interface,
+    Alias
 }
