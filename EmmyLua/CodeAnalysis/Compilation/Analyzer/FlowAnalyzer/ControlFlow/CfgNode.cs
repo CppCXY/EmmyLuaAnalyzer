@@ -7,12 +7,27 @@ public class CfgNode(int index, CfgNodeKind kind)
 {
     public CfgNodeKind Kind { get; } = kind;
 
-    public SourceRange Range { get; set; }
+    public List<LuaStatSyntax> Statements { get; } = new();
+
+    public SourceRange Range
+    {
+        get
+        {
+            if (Statements.Count == 0)
+            {
+                return SourceRange.Empty;
+            }
+
+            var start = Statements.First().Range.StartOffset;
+            var end = Statements.Last().Range.EndOffset;
+            return new SourceRange(start, end - start);
+        }
+    }
 
     public int Index { get; } = index;
 
-    public void AddRange(SourceRange range)
+    public void AddStatement(LuaStatSyntax stat)
     {
-        Range = Range.Length == 0 ? range : Range.Merge(range);
+        Statements.Add(stat);
     }
 }

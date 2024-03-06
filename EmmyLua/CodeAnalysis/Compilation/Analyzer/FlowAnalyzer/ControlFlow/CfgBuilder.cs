@@ -134,7 +134,7 @@ public class CfgBuilder
                 }
                 default:
                 {
-                    currentBlock.AddRange(stat.Range);
+                    currentBlock.AddStatement(stat);
                     break;
                 }
             }
@@ -257,7 +257,7 @@ public class CfgBuilder
 
     private CfgNode BuildReturn(LuaReturnStatSyntax returnStat, CfgNode sourceBlock)
     {
-        sourceBlock.AddRange(returnStat.Range);
+        sourceBlock.AddStatement(returnStat);
         _graph.AddEdge(sourceBlock, _graph.ExitNode);
         return _graph.ExitNode;
     }

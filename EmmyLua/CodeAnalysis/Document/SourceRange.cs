@@ -2,6 +2,8 @@
 
 public struct SourceRange(int startOffset = 0, int length = 0)
 {
+    public static SourceRange Empty = new();
+
     public int StartOffset { get; set; } = startOffset;
     public int Length { get; set; } = length;
 

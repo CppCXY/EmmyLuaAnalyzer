@@ -11,15 +11,11 @@ public class SearchContext
 {
     public LuaCompilation Compilation { get; }
 
-    private Dictionary<LuaSyntaxElement, LuaType> _caches = new();
+    private Dictionary<LuaSyntaxElement, LuaType> Caches { get; } = new();
 
-    private List<ILuaSearcher> _searchers = new();
+    private List<ILuaSearcher> Searchers { get; } = new();
 
-    private HashSet<LuaType> _substituteGuard = new();
-
-    private HashSet<LuaType> _subTypesGuard = new();
-
-    private HashSet<LuaSyntaxElement> _inferGuard = new();
+    private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
 
     private const int MaxDepth = 1000;
 
@@ -33,8 +29,8 @@ public class SearchContext
     public SearchContext(LuaCompilation compilation)
     {
         Compilation = compilation;
-        _searchers.Add(EnvSearcher);
-        _searchers.Add(IndexSearcher);
+        Searchers.Add(EnvSearcher);
+        Searchers.Add(IndexSearcher);
     }
 
     public LuaType Infer(LuaSyntaxElement? element)
@@ -44,12 +40,12 @@ public class SearchContext
             return Builtin.Unknown;
         }
 
-        return _caches.TryGetValue(element, out var symbol) ? symbol : _caches[element] = InferCore(element);
+        return Caches.TryGetValue(element, out var symbol) ? symbol : Caches[element] = InferCore(element);
     }
 
     public void ClearCache()
     {
-        _caches.Clear();
+        Caches.Clear();
     }
 
     private LuaType InferCore(LuaSyntaxElement element)
@@ -59,7 +55,7 @@ public class SearchContext
             return Builtin.Unknown;
         }
 
-        if (!_inferGuard.Add(element))
+        if (!InferGuard.Add(element))
         {
             return Builtin.Unknown;
         }
@@ -80,26 +76,13 @@ public class SearchContext
         finally
         {
             _currentDepth--;
-            _inferGuard.Remove(element);
+            InferGuard.Remove(element);
         }
-    }
-
-    public LuaType FindLuaType(string name)
-    {
-        foreach (var searcher in _searchers)
-        {
-            if (searcher.SearchType(name, this).FirstOrDefault() is { } ty)
-            {
-                return ty;
-            }
-        }
-
-        return Builtin.Unknown;
     }
 
     public IEnumerable<Declaration> GetMembers(string name)
     {
-        return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
+        return Searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
     }
 
     public IEnumerable<Declaration> FindMember(LuaType luaType, string memberName)
@@ -111,35 +94,5 @@ public class SearchContext
         }
 
         return Enumerable.Empty<Declaration>();
-    }
-
-    public IEnumerable<GenericParameterDeclaration> FindGenericParams(string name)
-    {
-        return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
-    }
-
-    public IEnumerable<LuaType> FindSupers(string name)
-    {
-        return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
-    }
-
-    public bool TryAddSubstitute(LuaType type)
-    {
-        return _substituteGuard.Add(type);
-    }
-
-    public void RemoveSubstitute(LuaType type)
-    {
-        _substituteGuard.Remove(type);
-    }
-
-    public bool TryAddSubType(LuaType type)
-    {
-        return _subTypesGuard.Add(type);
-    }
-
-    public void RemoveSubType(LuaType type)
-    {
-        _subTypesGuard.Remove(type);
     }
 }

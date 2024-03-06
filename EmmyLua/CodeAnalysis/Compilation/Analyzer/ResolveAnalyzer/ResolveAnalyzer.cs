@@ -9,6 +9,8 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
 {
     private SearchContext SearchContext => Compilation.SearchContext;
 
+    private Dictionary<LuaBlockSyntax, List<List<LuaExprSyntax>>> BlockReturns { get; } = new();
+
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         bool changed;
@@ -83,7 +85,7 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             }
 
             var block = unResolvedMethod.Block;
-            var retTypes = InferBlockType(block);
+            var retTypes = CollectBlockReturns(block);
             if (retTypes is LuaReturnType returnType)
             {
                 methodType.MainSignature.ReturnType = returnType;
@@ -94,7 +96,7 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
             var block = unResolvedSource.Block;
-            var retTypes = InferBlockType(block);
+            var retTypes = CollectBlockReturns(block);
             if (retTypes is LuaReturnType returnType)
             {
                 Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId,
@@ -108,96 +110,16 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         }
     }
 
-    private LuaType InferBlockType(LuaBlockSyntax mainBlock)
+    private List<List<LuaExprSyntax>> CollectBlockReturns(LuaBlockSyntax mainBlock)
     {
-        LuaType retType = Builtin.Unknown;
-        var queue = new Queue<LuaBlockSyntax>();
-        queue.Enqueue(mainBlock);
-        while (queue.Count != 0)
+        var cfg = SearchContext.Compilation.GetControlFlowGraph(mainBlock);
+        if (cfg is null)
         {
-            var block = queue.Dequeue();
-            foreach (var stat in block.StatList)
-            {
-                switch (stat)
-                {
-                    case LuaDoStatSyntax doStat:
-                    {
-                        if (doStat.Block is not null)
-                        {
-                            queue.Enqueue(doStat.Block);
-                        }
-
-                        break;
-                    }
-                    case LuaWhileStatSyntax whileStat:
-                    {
-                        if (whileStat.Block is not null)
-                        {
-                            queue.Enqueue(whileStat.Block);
-                        }
-
-                        break;
-                    }
-                    case LuaRepeatStatSyntax repeatStat:
-                    {
-                        if (repeatStat.Block is not null)
-                        {
-                            queue.Enqueue(repeatStat.Block);
-                        }
-
-                        break;
-                    }
-                    case LuaIfStatSyntax ifStat:
-                    {
-                        if (ifStat.ThenBlock is not null)
-                        {
-                            queue.Enqueue(ifStat.ThenBlock);
-                        }
-
-                        foreach (var ifClauseStatSyntax in ifStat.IfClauseStatementList)
-                        {
-                            if (ifClauseStatSyntax.Block is not null)
-                            {
-                                queue.Enqueue(ifClauseStatSyntax.Block);
-                            }
-                        }
-
-                        break;
-                    }
-                    case LuaForStatSyntax forStat:
-                    {
-                        if (forStat.Block is not null)
-                        {
-                            queue.Enqueue(forStat.Block);
-                        }
-
-                        break;
-                    }
-                    case LuaForRangeStatSyntax forRangeStat:
-                    {
-                        if (forRangeStat.Block is not null)
-                        {
-                            queue.Enqueue(forRangeStat.Block);
-                        }
-
-                        break;
-                    }
-                    case LuaReturnStatSyntax returnStatSyntax:
-                    {
-                        var exprTypes =
-                            new LuaReturnType(returnStatSyntax.ExprList.Select(it=>SearchContext.Infer(it)).ToList());
-                        if (exprTypes.RetTypes.Count == 0)
-                        {
-                            exprTypes.RetTypes.Add(Builtin.Nil);
-                        }
-                        retType = retType.Union(exprTypes);
-                        break;
-                    }
-                }
-            }
+            return new();
         }
 
-        return retType;
+        var prevNodes = cfg.GetPredecessors(cfg.ExitNode).ToList();
+        throw new NotImplementedException();
     }
 
     private void MergeType(UnResolvedDeclaration unResolved, LuaType type, int retId)

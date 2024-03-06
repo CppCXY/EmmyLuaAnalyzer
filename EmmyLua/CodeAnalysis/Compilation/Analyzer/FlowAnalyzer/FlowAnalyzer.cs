@@ -7,11 +7,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 
 public class FlowAnalyzer : LuaAnalyzer
 {
-    private List<FlowAnalyzerBase> _analyzers = new();
+    private List<FlowAnalyzerBase> Analyzers { get; } = new();
 
     private void AddAnalyzer(FlowAnalyzerBase analyzer)
     {
-        _analyzers.Add(analyzer);
+        Analyzers.Add(analyzer);
     }
 
     public FlowAnalyzer(LuaCompilation compilation) : base(compilation)
@@ -42,7 +42,7 @@ public class FlowAnalyzer : LuaAnalyzer
                 }
             }
 
-            foreach (var analyzer in _analyzers)
+            foreach (var analyzer in Analyzers)
             {
                 foreach (var cfg in Compilation.ControlFlowGraphs[documentId].Values)
                 {

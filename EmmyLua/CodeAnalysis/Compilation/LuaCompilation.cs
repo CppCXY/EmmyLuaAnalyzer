@@ -176,4 +176,18 @@ public class LuaCompilation
                 tree.Document.GetLocation(it.Range)
             ))
             : Enumerable.Empty<Diagnostic>();
+
+    public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
+    {
+        var documentId = block.Tree.Document.Id;
+        if (ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
+        {
+            if (cfgDict.TryGetValue(block, out var cfg))
+            {
+                return cfg;
+            }
+        }
+
+        return null;
+    }
 }
