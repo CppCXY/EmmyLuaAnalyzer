@@ -38,9 +38,9 @@ public static class ExpressionInfer
         return unaryExpr.Operator switch
         {
             OperatorKind.UnaryOperator.OpNot or OperatorKind.UnaryOperator.OpUnm
-                or OperatorKind.UnaryOperator.OpBNot => context.Compilation.Builtin.Boolean,
-            OperatorKind.UnaryOperator.OpLen => context.Compilation.Builtin.Number,
-            _ => context.Compilation.Builtin.Unknown
+                or OperatorKind.UnaryOperator.OpBNot => Builtin.Boolean,
+            OperatorKind.UnaryOperator.OpLen => Builtin.Number,
+            _ => Builtin.Unknown
         };
     }
 
@@ -53,9 +53,9 @@ public static class ExpressionInfer
             OperatorKind.BinaryOperator.OpLe or OperatorKind.BinaryOperator.OpGt
                 or OperatorKind.BinaryOperator.OpLt or OperatorKind.BinaryOperator.OpGe
                 or OperatorKind.BinaryOperator.OpNe or OperatorKind.BinaryOperator.OpEq
-                => context.Compilation.Builtin.Boolean,
+                => Builtin.Boolean,
             // ..
-            OperatorKind.BinaryOperator.OpConcat => context.Compilation.Builtin.String,
+            OperatorKind.BinaryOperator.OpConcat => Builtin.String,
             // math
             OperatorKind.BinaryOperator.OpAdd or OperatorKind.BinaryOperator.OpSub
                 or OperatorKind.BinaryOperator.OpMul
@@ -69,7 +69,7 @@ public static class ExpressionInfer
             // 'and' 'or'
             OperatorKind.BinaryOperator.OpAnd or OperatorKind.BinaryOperator.OpOr =>
                 GuessAndOrType(binaryExpr, op, context),
-            _ => context.Compilation.Builtin.Unknown
+            _ => Builtin.Unknown
         };
     }
 
@@ -129,19 +129,19 @@ public static class ExpressionInfer
             return ty2;
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 
     private static LuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
     {
         return literalExpr.Literal switch
         {
-            LuaIntegerToken => context.Compilation.Builtin.Integer,
-            LuaFloatToken or LuaNumberToken => context.Compilation.Builtin.Number,
-            LuaStringToken => context.Compilation.Builtin.String,
-            LuaNilToken => context.Compilation.Builtin.Nil,
-            LuaBoolToken => context.Compilation.Builtin.Boolean,
-            _ => context.Compilation.Builtin.Unknown
+            LuaIntegerToken => Builtin.Integer,
+            LuaFloatToken or LuaNumberToken => Builtin.Number,
+            LuaStringToken => Builtin.String,
+            LuaNilToken => Builtin.Nil,
+            LuaBoolToken => Builtin.Boolean,
+            _ => Builtin.Unknown
         };
     }
 
@@ -149,7 +149,7 @@ public static class ExpressionInfer
     {
         if (nameExpr.Name is null)
         {
-            return context.Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         var symbolTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
@@ -160,6 +160,6 @@ public static class ExpressionInfer
             return ty;
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 }

@@ -1,24 +1,31 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
-public class LuaSignature
-{
-
-}
-
-public class TypedParameter(string name, LuaType? type)
-{
-    public string Name { get; } = name;
-    public LuaType? Type { get; } = type;
-}
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return)
 {
     public List<LuaType> RetTypes { get; } = retTypes;
 }
 
-public class LuaMethodType(LuaReturnType returnType, List<TypedParameter> parameters) : LuaType(TypeKind.Method)
+public class LuaSignature(LuaReturnType returnType, List<ParameterDeclaration> parameters)
 {
-    public LuaReturnType ReturnType { get; } = returnType;
+    public LuaReturnType ReturnType { get; set; } = returnType;
 
-    public List<TypedParameter> Parameters { get; } = parameters;
+    public List<ParameterDeclaration> Parameters { get; } = parameters;
+}
+
+public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overloads, bool colon) : LuaType(TypeKind.Method)
+{
+    public LuaSignature MainSignature { get; } = mainSignature;
+
+    public List<LuaSignature>? Overloads { get; } = overloads;
+
+    public LuaType? SelfType { get; set; } = null;
+
+    public bool Colon { get; } = colon;
+
+    public LuaMethodType(LuaReturnType returnType, List<ParameterDeclaration> parameters, bool colon)
+        : this(new LuaSignature(returnType, parameters), null, colon)
+    {
+    }
 }

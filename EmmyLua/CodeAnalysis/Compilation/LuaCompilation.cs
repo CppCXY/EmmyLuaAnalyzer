@@ -26,8 +26,6 @@ public class LuaCompilation
 
     public IEnumerable<Symbol.Symbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
 
-    public Builtin Builtin { get; } = new();
-
     public ProjectIndex ProjectIndex { get; }
 
     public SearchContext SearchContext { get; }

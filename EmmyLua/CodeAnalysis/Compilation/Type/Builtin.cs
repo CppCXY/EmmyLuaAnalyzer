@@ -1,20 +1,20 @@
 ﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class Builtin
+public static class Builtin
 {
-    public LuaNamedType Unknown { get; } = new("unknown", TypeKind.Unknown);
-    public LuaNamedType Any { get; } = new("any");
-    public LuaNilType Nil { get; } = new();
-    public LuaNamedType Boolean { get; } = new("boolean");
-    public LuaNamedType Number { get; } = new("number");
-    public LuaNamedType Integer { get; } = new("integer");
-    public LuaNamedType String { get; } = new("string");
-    public LuaNamedType Function { get; } = new("function");
-    public LuaNamedType Table { get; } = new("table");
-    public LuaNamedType Thread { get; } = new("thread");
-    public LuaNamedType UserData { get; } = new("userdata");
+    public static LuaNamedType Unknown { get; } = new("unknown", TypeKind.Unknown);
+    public static LuaNamedType Any { get; } = new("any");
+    public static LuaNilType Nil { get; } = new();
+    public static LuaNamedType Boolean { get; } = new("boolean");
+    public static LuaNamedType Number { get; } = new("number");
+    public static LuaNamedType Integer { get; } = new("integer");
+    public static LuaNamedType String { get; } = new("string");
+    public static LuaNamedType Function { get; } = new("function");
+    public static LuaNamedType Table { get; } = new("table");
+    public static LuaNamedType Thread { get; } = new("thread");
+    public static LuaNamedType UserData { get; } = new("userdata");
 
-    public LuaNamedType? FromName(string name)
+    public static LuaNamedType? FromName(string name)
     {
         return name switch
         {

@@ -17,16 +17,16 @@ public static class DeclarationInfer
         var declarationTree = GetSymbolTree(localName, context);
         if (declarationTree is null)
         {
-            return context.Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         var symbol = declarationTree.FindSymbol(localName);
-        return symbol?.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        return symbol?.DeclarationType ?? Builtin.Unknown;
     }
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        if (source.Block is null) return context.Compilation.Builtin.Unknown;
+        if (source.Block is null) return Builtin.Unknown;
         // var expr = context.Compilation.ProjectIndex.MainBlockReturns.Get(source.Block).FirstOrDefault();
         // return expr is null ? context.Compilation.Builtin.Unknown : context.Infer(expr.FirstOrDefault());
         throw new NotImplementedException();
@@ -37,10 +37,10 @@ public static class DeclarationInfer
         var symbolTree = GetSymbolTree(paramDef, context);
         if (symbolTree is null)
         {
-            return context.Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         var symbol = symbolTree.FindSymbol(paramDef);
-        return symbol?.DeclarationType ?? context.Compilation.Builtin.Unknown;
+        return symbol?.DeclarationType ?? Builtin.Unknown;
     }
 }

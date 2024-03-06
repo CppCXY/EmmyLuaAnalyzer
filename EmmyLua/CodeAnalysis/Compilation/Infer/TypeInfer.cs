@@ -64,41 +64,45 @@ public static class TypeInfer
         }
         else
         {
-            return context.Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
     }
 
     public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var typedParameters = new List<TypedParameter>();
+        var typedParameters = new List<ParameterDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name })
             {
-                 typedParameters.Add(new TypedParameter(name.RepresentText, context.Infer(typedParam.Type)));
+                var paramDeclaration = new ParameterDeclaration(
+                    name.RepresentText, name.Position, name,context.Infer(typedParam.Type));
+                typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                typedParameters.Add(new TypedParameter(varArgs.RepresentText, context.Infer(typedParam.Type)));
+                var paramDeclaration = new ParameterDeclaration(
+                    "...", varArgs.Position, varArgs,context.Infer(typedParam.Type));
+                typedParameters.Add(paramDeclaration);
             }
         }
 
         var returnTypes = funcType.ReturnType.Select(context.Infer).ToList();
-        return new LuaMethodType(new LuaReturnType(returnTypes), typedParameters);
+        return new LuaMethodType(new LuaReturnType(returnTypes), typedParameters, false);
     }
 
     private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
     {
         return nameType.Name != null
             ? new LuaNamedType(nameType.Name.RepresentText)
-            : context.Compilation.Builtin.Unknown;
+            : Builtin.Unknown;
     }
 
     private static LuaType InferParenType(LuaDocParenTypeSyntax parenType, SearchContext context)
     {
         return parenType.Type != null
             ? InferType(parenType.Type, context)
-            : context.Compilation.Builtin.Unknown;
+            : Builtin.Unknown;
     }
 
     private static LuaType InferTupleType(LuaDocTupleTypeSyntax tupleType, SearchContext context)
@@ -115,6 +119,6 @@ public static class TypeInfer
             return new LuaGenericType(name.RepresentText, typeArgs);
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 }

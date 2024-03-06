@@ -16,4 +16,11 @@ public struct SourceRange(int startOffset = 0, int length = 0)
     {
         return offset >= StartOffset && offset < EndOffset;
     }
+
+    public SourceRange Merge(SourceRange range)
+    {
+        var start = Math.Min(StartOffset, range.StartOffset);
+        var end = Math.Max(EndOffset, range.EndOffset);
+        return new SourceRange(start, end - start);
+    }
 }

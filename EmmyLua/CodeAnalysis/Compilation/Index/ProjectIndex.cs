@@ -20,13 +20,11 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, NamedTypeDeclaration> NamedType { get; } = new();
 
-    private IndexStorage<string, LuaType> Alias { get; } = new();
+    private IndexStorage<string, LuaType> Id2Type { get; } = new();
 
     private IndexStorage<string, GenericParameterDeclaration> GenericParam { get; } = new();
 
-    private IndexStorage<string, LuaMethodType> Methods { get; } = new();
-
-    public Dictionary<DocumentId, LuaType> ExportTypes { get; } = new();
+    private Dictionary<DocumentId, LuaType> ExportTypes { get; } = new();
 
     public TypeIndex TypeIndex { get; } = new(compilation);
 
@@ -68,13 +66,23 @@ public class ProjectIndex(LuaCompilation compilation)
     public void AddAlias(DocumentId documentId, string name, LuaType baseType, NamedTypeDeclaration declaration)
     {
         AddType(documentId, name, declaration, TypeFeature.Alias);
-        Alias.Add(documentId, name, baseType);
+        Id2Type.Add(documentId, name, baseType);
+    }
+
+    public void AddMethod(DocumentId documentId, string id, LuaMethodType methodType)
+    {
+        Id2Type.Add(documentId, id, methodType);
     }
 
     public void AddGenericParam(DocumentId documentId, string name, GenericParameterDeclaration declaration)
     {
         GenericParam.Add(documentId, name, declaration);
         NameDeclaration.Add(documentId, name, declaration);
+    }
+
+    public void AddExportType(DocumentId documentId, LuaType type)
+    {
+        ExportTypes[documentId] = type;
     }
 
     public IEnumerable<Declaration> GetMembers(string name)
@@ -97,9 +105,9 @@ public class ProjectIndex(LuaCompilation compilation)
         return NamedType.Get<NamedTypeDeclaration>(name);
     }
 
-    public IEnumerable<LuaType> GetAlias(string name)
+    public IEnumerable<LuaType> GetTypeFromId(string name)
     {
-        return Alias.Get<LuaType>(name);
+        return Id2Type.Get<LuaType>(name);
     }
 
     public IEnumerable<GenericParameterDeclaration> GetGenericParam(string name)
@@ -111,4 +119,10 @@ public class ProjectIndex(LuaCompilation compilation)
     {
         return NameDeclaration.Get<Declaration>(name);
     }
+
+    public LuaType? GetExportType(DocumentId documentId)
+    {
+        return ExportTypes.GetValueOrDefault(documentId);
+    }
+
 }

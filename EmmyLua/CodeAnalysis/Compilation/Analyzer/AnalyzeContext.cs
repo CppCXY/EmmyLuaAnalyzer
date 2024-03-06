@@ -33,7 +33,6 @@ public class UnResolvedDeclaration(Declaration declaration, LuaExprRef? exprRef,
 
     public bool IsTypeDeclaration { get; set; } = false;
 
-    public ResolveState State { get; } = state;
 }
 
 public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
@@ -41,8 +40,6 @@ public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, Re
     public LuaMethodType MethodType { get; } = methodType;
 
     public LuaBlockSyntax Block { get; } = block;
-
-    public ResolveState State { get; } = state;
 }
 
 public class UnResolvedSource(DocumentId documentId, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
@@ -50,8 +47,6 @@ public class UnResolvedSource(DocumentId documentId, LuaBlockSyntax block, Resol
     public DocumentId DocumentId { get; } = documentId;
 
     public LuaBlockSyntax Block { get; } = block;
-
-    public ResolveState State { get; } = state;
 }
 
 public class AnalyzeContext(List<LuaDocument> documents)

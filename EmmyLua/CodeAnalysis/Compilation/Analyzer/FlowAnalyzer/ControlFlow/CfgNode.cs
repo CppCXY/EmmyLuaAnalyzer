@@ -1,28 +1,18 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
-public class CfgNode(CfgNodeKind kind)
+public class CfgNode(int index, CfgNodeKind kind)
 {
     public CfgNodeKind Kind { get; } = kind;
 
-    public List<LuaStatSyntax> Statements { get; } = new();
+    public SourceRange Range { get; set; }
 
-    public List<CfgEdge>? Incomings { get; private set; }
+    public int Index { get; } = index;
 
-    public List<CfgEdge>? Outgoings { get; private set; }
-
-    public IEnumerable<CfgNode> Successors => Outgoings?.Select(e => e.Target) ?? Enumerable.Empty<CfgNode>();
-
-    public void AddIncoming(CfgEdge edge)
+    public void AddRange(SourceRange range)
     {
-        Incomings ??= new();
-        Incomings.Add(edge);
-    }
-
-    public void AddOutgoing(CfgEdge edge)
-    {
-        Outgoings ??= new();
-        Outgoings.Add(edge);
+        Range = Range.Length == 0 ? range : Range.Merge(range);
     }
 }

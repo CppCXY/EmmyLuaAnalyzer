@@ -41,7 +41,7 @@ public class SearchContext
     {
         if (element is null)
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         return _caches.TryGetValue(element, out var symbol) ? symbol : _caches[element] = InferCore(element);
@@ -56,12 +56,12 @@ public class SearchContext
     {
         if (_currentDepth > MaxDepth)
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         if (!_inferGuard.Add(element))
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         try
@@ -74,7 +74,7 @@ public class SearchContext
                 LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
                 LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
                 LuaDocTypeSyntax ty => TypeInfer.InferType(ty, this),
-                _ => Compilation.Builtin.Unknown
+                _ => Builtin.Unknown
             };
         }
         finally
@@ -94,7 +94,7 @@ public class SearchContext
             }
         }
 
-        return Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 
     public IEnumerable<Declaration> GetMembers(string name)

@@ -7,7 +7,7 @@ public static class CallExprInfer
 {
     public static LuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
     {
-        LuaType ret = context.Compilation.Builtin.Unknown;
+        LuaType ret = Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var accessPath = callExpr.AccessPath;
         if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(accessPath))
@@ -110,6 +110,6 @@ public static class CallExprInfer
             }
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 }
