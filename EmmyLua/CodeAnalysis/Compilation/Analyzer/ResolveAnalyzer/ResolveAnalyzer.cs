@@ -1,15 +1,13 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
-// 符号分析会根据当前的符号表, 反复分析符号的类型, 直到不动点
-public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
+public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
     private SearchContext SearchContext => Compilation.SearchContext;
-
-    private Dictionary<LuaBlockSyntax, List<List<LuaExprSyntax>>> BlockReturns { get; } = new();
 
     public override void Analyze(AnalyzeContext analyzeContext)
     {
@@ -77,7 +75,7 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var methodType = unResolvedMethod.MethodType;
-            if (methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+            if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
             {
                 unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
                 changed = true;
@@ -85,46 +83,112 @@ public class SymbolAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilatio
             }
 
             var block = unResolvedMethod.Block;
-            var retTypes = CollectBlockReturns(block);
-            if (retTypes is LuaReturnType returnType)
+            var complete = false;
+            var returnType = AnalyzeBlockReturns(block, ref complete);
+            if (!complete)
             {
-                methodType.MainSignature.ReturnType = returnType;
-                unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
-                changed = true;
+                return;
             }
+
+            methodType.MainSignature.ReturnType = returnType;
+            unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
+            changed = true;
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
             var block = unResolvedSource.Block;
-            var retTypes = CollectBlockReturns(block);
-            if (retTypes is LuaReturnType returnType)
+            var complete = false;
+            var returnType = AnalyzeBlockReturns(block, ref changed);
+            if (!complete)
             {
-                Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId,
-                    returnType.RetTypes.Count == 0
-                        ? Builtin.Boolean
-                        : returnType.RetTypes.First());
-
-                unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
-                changed = true;
+                return;
             }
+
+            if (returnType is LuaMultiReturnType multiReturnType)
+            {
+                var mainReturn = multiReturnType.RetTypes.ElementAtOrDefault(0);
+                if (mainReturn is not null)
+                {
+                    returnType = mainReturn;
+                }
+            }
+
+            Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId, returnType);
+            unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
+            changed = true;
         }
     }
 
-    private List<List<LuaExprSyntax>> CollectBlockReturns(LuaBlockSyntax mainBlock)
+    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, ref bool complete)
     {
+        LuaType returnType = Builtin.Unknown;
         var cfg = SearchContext.Compilation.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
-            return new();
+            return returnType;
         }
 
         var prevNodes = cfg.GetPredecessors(cfg.ExitNode).ToList();
-        throw new NotImplementedException();
+        foreach (var prevNode in prevNodes)
+        {
+            if (prevNode.Statements.Count != 0)
+            {
+                if (prevNode.Statements.Last() is LuaReturnStatSyntax returnStmt)
+                {
+                    var rets = returnStmt.ExprList.ToList();
+                    switch (rets.Count)
+                    {
+                        case 0:
+                        {
+                            returnType = returnType.Union(Builtin.Nil);
+                            break;
+                        }
+                        case 1:
+                        {
+                            var mainReturn = SearchContext.Infer(rets[0]);
+                            if (mainReturn.Equals(Builtin.Unknown))
+                            {
+                                complete = false;
+                                return returnType;
+                            }
+
+                            returnType = returnType.Union(mainReturn);
+                            break;
+                        }
+                        case > 1:
+                        {
+                            var retTypes = new List<LuaType>();
+                            foreach (var ret in rets)
+                            {
+                                var retType = SearchContext.Infer(ret);
+                                if (retType.Equals(Builtin.Unknown))
+                                {
+                                    complete = false;
+                                    return returnType;
+                                }
+
+                                retTypes.Add(retType);
+                            }
+
+                            returnType = returnType.Union(new LuaMultiReturnType(retTypes));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    returnType = returnType.Union(Builtin.Nil);
+                }
+            }
+        }
+
+        complete = true;
+        return returnType;
     }
 
     private void MergeType(UnResolvedDeclaration unResolved, LuaType type, int retId)
     {
-        if (type is LuaReturnType returnType)
+        if (type is LuaMultiReturnType returnType)
         {
             var childTy = returnType.RetTypes.ElementAtOrDefault(retId);
             if (childTy is not null)

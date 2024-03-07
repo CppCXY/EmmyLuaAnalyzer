@@ -37,6 +37,8 @@ public class ProjectIndex(LuaCompilation compilation)
         NamedType.Remove(documentId);
         GenericParam.Remove(documentId);
         TypeIndex.Remove(documentId);
+        ExportTypes.Remove(documentId);
+        Id2Type.Remove(documentId);
     }
 
     public void AddMember(DocumentId documentId, string name, Declaration declaration)

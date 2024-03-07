@@ -319,10 +319,10 @@ public class DeclarationBuilder : ILuaElementWalker
         return parameters;
     }
 
-    private LuaReturnType GetRetType(IEnumerable<LuaDocTagSyntax> docList)
+    private LuaMultiReturnType GetRetType(IEnumerable<LuaDocTagSyntax> docList)
     {
         var retTag = docList.OfType<LuaDocTagReturnSyntax>().ToList();
-        return new LuaReturnType(
+        return new LuaMultiReturnType(
             retTag.SelectMany(tag => tag.TypeList).Select(Compilation.SearchContext.Infer).ToList());
     }
 

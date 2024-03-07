@@ -40,7 +40,8 @@ public class SearchContext
             return Builtin.Unknown;
         }
 
-        return Caches.TryGetValue(element, out var symbol) ? symbol : Caches[element] = InferCore(element);
+        return InferCore(element);
+        // Caches.TryGetValue(element, out var symbol) ? symbol : Caches[element] = InferCore(element);
     }
 
     public void ClearCache()

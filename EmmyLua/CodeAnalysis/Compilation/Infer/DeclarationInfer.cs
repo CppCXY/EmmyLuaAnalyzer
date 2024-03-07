@@ -26,10 +26,7 @@ public static class DeclarationInfer
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        if (source.Block is null) return Builtin.Unknown;
-        // var expr = context.Compilation.ProjectIndex.MainBlockReturns.Get(source.Block).FirstOrDefault();
-        // return expr is null ? context.Compilation.Builtin.Unknown : context.Infer(expr.FirstOrDefault());
-        throw new NotImplementedException();
+        return context.Compilation.ProjectIndex.GetExportType(source.Tree.Document.Id) ?? Builtin.Unknown;
     }
 
     public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)

@@ -39,7 +39,7 @@ public static class ExpressionInfer
         {
             OperatorKind.UnaryOperator.OpNot or OperatorKind.UnaryOperator.OpUnm
                 or OperatorKind.UnaryOperator.OpBNot => Builtin.Boolean,
-            OperatorKind.UnaryOperator.OpLen => Builtin.Number,
+            OperatorKind.UnaryOperator.OpLen => Builtin.Integer,
             _ => Builtin.Unknown
         };
     }
@@ -106,8 +106,8 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        // var ty = context.Compilation.ProjectIndex.NameDeclaration
-        throw new NotImplementedException();
+        var methodType = context.Compilation.ProjectIndex.GetTypeFromId(closureExpr.UniqueId).FirstOrDefault();
+        return methodType ?? Builtin.Unknown;
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
@@ -158,6 +158,28 @@ public static class ExpressionInfer
         if (nameDecl?.DeclarationType is { } ty)
         {
             return ty;
+        }
+
+        if (nameExpr.Name is { RepresentText: "self"})
+        {
+            return InferSelf(nameExpr, context);
+        }
+
+        // TODO infer from Env
+
+        return Builtin.Unknown;
+    }
+
+    private static LuaType InferSelf(LuaNameExprSyntax selfExpr, SearchContext context)
+    {
+        var closures = selfExpr.Ancestors.OfType<LuaClosureExprSyntax>();
+        foreach (var closure in closures)
+        {
+            var stat = closure.Parent;
+            if (stat is LuaFuncStatSyntax { IndexExpr.PrefixExpr: { } expr })
+            {
+                return context.Infer(expr);
+            }
         }
 
         return Builtin.Unknown;

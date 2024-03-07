@@ -7,12 +7,21 @@ public static class CallExprInfer
 {
     public static LuaType InferCallExpr(LuaCallExprSyntax callExpr, SearchContext context)
     {
-        LuaType ret = Builtin.Unknown;
+        LuaType returnType = Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var accessPath = callExpr.AccessPath;
         if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(accessPath))
         {
             return InferRequire(callExpr, context);
+        }
+
+        if (prefixExpr is LuaIndexExprSyntax indexExpr)
+        {
+            var fnName = indexExpr.Name;
+            if (fnName is not null && string.Equals(fnName, "new", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return context.Infer(indexExpr.PrefixExpr);
+            }
         }
 
         var luaType = context.Infer(prefixExpr);
@@ -32,16 +41,6 @@ public static class CallExprInfer
                 }
             }
         });
-
-        // TODO class.new return self
-        // if (prefixExpr is LuaIndexExprSyntax indexExpr)
-        // {
-        //     var fnName = indexExpr.Name?.RepresentText;
-        //     if (fnName is not null)
-        //     {
-        //         var fnSymbol = context.Compilation.GetSymbol(fnName);
-        //     }
-        // }
 
         // return TryUnwrapReturn(callExpr, context, ret);
         throw new NotImplementedException();

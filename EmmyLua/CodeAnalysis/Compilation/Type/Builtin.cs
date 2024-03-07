@@ -9,7 +9,6 @@ public static class Builtin
     public static LuaNamedType Number { get; } = new("number");
     public static LuaNamedType Integer { get; } = new("integer");
     public static LuaNamedType String { get; } = new("string");
-    public static LuaNamedType Function { get; } = new("function");
     public static LuaNamedType Table { get; } = new("table");
     public static LuaNamedType Thread { get; } = new("thread");
     public static LuaNamedType UserData { get; } = new("userdata");
@@ -25,7 +24,6 @@ public static class Builtin
             "number" => Number,
             "integer" or "int" => Integer,
             "string" => String,
-            "function" => Function,
             "table" => Table,
             "thread" => Thread,
             "userdata" => UserData,

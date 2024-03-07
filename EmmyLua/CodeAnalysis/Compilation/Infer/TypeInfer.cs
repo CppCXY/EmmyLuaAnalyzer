@@ -88,14 +88,33 @@ public static class TypeInfer
         }
 
         var returnTypes = funcType.ReturnType.Select(context.Infer).ToList();
-        return new LuaMethodType(new LuaReturnType(returnTypes), typedParameters, false);
+        LuaType returnType = Builtin.Unknown;
+        if (returnTypes.Count == 1)
+        {
+            returnType = returnTypes[0];
+        }
+        else if (returnTypes.Count > 1)
+        {
+            returnType = new LuaMultiReturnType(returnTypes);
+        }
+
+        return new LuaMethodType(returnType, typedParameters, false);
     }
 
     private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
     {
-        return nameType.Name != null
-            ? new LuaNamedType(nameType.Name.RepresentText)
-            : Builtin.Unknown;
+        if (nameType.Name is { RepresentText: {} name} )
+        {
+            var builtInType = Builtin.FromName(name);
+            if (builtInType is not null)
+            {
+                return builtInType;
+            }
+
+            return new LuaNamedType(name);
+        }
+
+        return Builtin.Unknown;
     }
 
     private static LuaType InferParenType(LuaDocParenTypeSyntax parenType, SearchContext context)

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
@@ -46,7 +47,8 @@ public class LuaCompilation
         Analyzers =
         [
             new DeclarationAnalyzer(this),
-            new SymbolAnalyzer(this),
+            new FlowAnalyzer(this),
+            new ResolveAnalyzer(this),
             new TypeAnalyzer(this)
         ];
     }
