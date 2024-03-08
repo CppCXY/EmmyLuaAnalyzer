@@ -110,12 +110,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 SetScope(new ForRangeStatSymbolScope(_tree, position), element);
                 break;
             }
-            case LuaFuncStatSyntax funcStat:
-            {
-                // PushMethod(position, funcStat);
-                SetScope(new MethodStatSymbolScope(_tree, position, null), funcStat);
-                break;
-            }
             default:
             {
                 SetScope(new SymbolScope(_tree, position), element);
@@ -234,8 +228,7 @@ public class DeclarationBuilder : ILuaElementWalker
     }
 
     private static bool IsScopeOwner(LuaSyntaxElement element)
-        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax
-            or LuaFuncStatSyntax or LuaClosureExprSyntax;
+        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax or LuaClosureExprSyntax;
 
     private void AnalyzeLocalStatDeclaration(LuaLocalStatSyntax localStatSyntax)
     {

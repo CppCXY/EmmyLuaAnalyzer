@@ -5,7 +5,6 @@ public enum TypeKind
     Unknown,
     NamedType,
     Nil,
-    Alias,
     Tuple,
     Union,
     Array,

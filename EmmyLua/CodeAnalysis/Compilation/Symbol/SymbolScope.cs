@@ -174,28 +174,3 @@ public class ForRangeStatSymbolScope(SymbolTree tree, int pos)
         }
     }
 }
-
-public class MethodStatSymbolScope(SymbolTree tree, int pos, ParameterDeclaration? self)
-    : SymbolScope(tree, pos)
-{
-    public override ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
-    {
-        return ProcessNode(process);
-    }
-
-    public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
-    {
-        if (level == 0)
-        {
-            ParentScope?.WalkUp(position, level, process);
-        }
-        else
-        {
-            if (self is not null && process(self) == ScopeFoundState.Founded)
-            {
-                return;
-            }
-            base.WalkUp(position, level, process);
-        }
-    }
-}

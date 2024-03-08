@@ -4,7 +4,7 @@ public static class Builtin
 {
     public static LuaNamedType Unknown { get; } = new("unknown", TypeKind.Unknown);
     public static LuaNamedType Any { get; } = new("any");
-    public static LuaNilType Nil { get; } = new();
+    public static LuaNamedType Nil { get; } = new("nil", TypeKind.Nil);
     public static LuaNamedType Boolean { get; } = new("boolean");
     public static LuaNamedType Number { get; } = new("number");
     public static LuaNamedType Integer { get; } = new("integer");

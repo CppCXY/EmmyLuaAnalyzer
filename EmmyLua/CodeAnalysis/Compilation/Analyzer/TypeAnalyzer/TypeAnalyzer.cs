@@ -7,6 +7,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
+// TODO: Implement TypeAnalyzer
 public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
     private SearchContext Context => Compilation.SearchContext;
