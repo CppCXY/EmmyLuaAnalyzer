@@ -1,4 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaType(TypeKind kind) : IEquatable<LuaType>
 {
@@ -27,6 +29,11 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
     public override int GetHashCode()
     {
         return (int)Kind;
+    }
+
+    public virtual bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        return Equals(other);
     }
 }
 
@@ -63,11 +70,42 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
     {
         return HashCode.Combine(base.GetHashCode(), Name);
     }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        if (Equals(other))
+        {
+            return true;
+        }
+
+        if (other is not LuaNamedType namedType)
+        {
+            return false;
+        }
+
+        var supers = context.Compilation.ProjectIndex.GetSupers(Name);
+        return supers.Any(super => super.SubTypeOf(namedType, context));
+    }
 }
 
 public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union)
 {
     public HashSet<LuaType> UnionTypes { get; } = [..unionTypes];
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        if (Equals(other))
+        {
+            return true;
+        }
+
+        if (other is not LuaUnionType unionType)
+        {
+            return false;
+        }
+
+        return UnionTypes.All(t => unionType.UnionTypes.Any(ut => t.SubTypeOf(ut, context)));
+    }
 }
 
 public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
@@ -88,6 +126,26 @@ public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), I
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), TupleTypes);
+    }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        if (Equals(other))
+        {
+            return true;
+        }
+
+        if (other is not LuaTupleType tupleType)
+        {
+            return false;
+        }
+
+        if (TupleTypes.Count != tupleType.TupleTypes.Count)
+        {
+            return false;
+        }
+
+        return !TupleTypes.Where((t, i) => !t.SubTypeOf(tupleType.TupleTypes[i], context)).Any();
     }
 }
 
@@ -110,9 +168,25 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
     {
         return HashCode.Combine(base.GetHashCode(), BaseType);
     }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        if (Equals(other))
+        {
+            return true;
+        }
+
+        if (other is not LuaArrayType arrayType)
+        {
+            return false;
+        }
+
+        return BaseType.SubTypeOf(arrayType.BaseType, context);
+    }
 }
 
-public class LuaGenericType(string baseName, List<LuaType> genericArgs) : LuaNamedType(baseName, TypeKind.Generic), IEquatable<LuaGenericType>
+public class LuaGenericType(string baseName, List<LuaType> genericArgs)
+    : LuaNamedType(baseName, TypeKind.Generic), IEquatable<LuaGenericType>
 {
     public List<LuaType> GenericArgs { get; } = genericArgs;
 
@@ -152,6 +226,11 @@ public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiter
     {
         return HashCode.Combine(base.GetHashCode(), Content);
     }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        return Equals(other);
+    }
 }
 
 public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral), IEquatable<LuaIntegerLiteralType>
@@ -173,9 +252,15 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
     {
         return HashCode.Combine(base.GetHashCode(), Value);
     }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        return Equals(other);
+    }
 }
 
-public class LuaTableLiteralType(string tableId) : LuaNamedType(tableId, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
+public class LuaTableLiteralType(string tableId)
+    : LuaNamedType(tableId, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
 {
     public string TableId { get; } = tableId;
 

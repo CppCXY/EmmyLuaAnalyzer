@@ -615,7 +615,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
 
         var mainRetType = GetRetType(docList);
-        bool isColon = false;
+        var isColon = false;
         var method = new LuaMethodType(new LuaSignature(mainRetType, parameters), overloads, isColon);
         if (closureExprSyntax.Block is { } block)
         {
