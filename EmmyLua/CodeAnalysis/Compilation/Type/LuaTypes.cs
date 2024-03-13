@@ -33,7 +33,22 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
 
     public virtual bool SubTypeOf(LuaType? other, SearchContext context)
     {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (other.Kind is TypeKind.Any or TypeKind.Unknown)
+        {
+            return true;
+        }
+
         return Equals(other);
+    }
+
+    public virtual LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        return this;
     }
 }
 
@@ -86,6 +101,11 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
         var supers = context.Compilation.ProjectIndex.GetSupers(Name);
         return supers.Any(super => super.SubTypeOf(namedType, context));
     }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        return this;
+    }
 }
 
 public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union)
@@ -105,6 +125,12 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
         }
 
         return UnionTypes.All(t => unionType.UnionTypes.Any(ut => t.SubTypeOf(ut, context)));
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newUnionTypes = UnionTypes.Select(t => t.Instantiate(genericReplace));
+        return new LuaUnionType(newUnionTypes);
     }
 }
 
@@ -147,6 +173,12 @@ public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), I
 
         return !TupleTypes.Where((t, i) => !t.SubTypeOf(tupleType.TupleTypes[i], context)).Any();
     }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newTupleTypes = TupleTypes.Select(t => t.Instantiate(genericReplace)).ToList();
+        return new LuaTupleType(newTupleTypes);
+    }
 }
 
 public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatable<LuaArrayType>
@@ -183,6 +215,12 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
 
         return BaseType.SubTypeOf(arrayType.BaseType, context);
     }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newBaseType = BaseType.Instantiate(genericReplace);
+        return new LuaArrayType(newBaseType);
+    }
 }
 
 public class LuaGenericType(string baseName, List<LuaType> genericArgs)
@@ -204,6 +242,18 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), GenericArgs);
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newName = Name;
+        if (string.Equals(Name, genericReplace, StringComparison.CurrentCulture) && type is LuaNamedType namedType)
+        {
+            newName = namedType.Name;
+        }
+
+        var newGenericArgs = GenericArgs.Select(t => t.Instantiate(genericReplace)).ToList();
+        return new LuaGenericType(newName, newGenericArgs);
     }
 }
 

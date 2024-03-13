@@ -56,6 +56,8 @@ public class ParameterDeclaration(
     public LuaParamDefSyntax? ParamDef => SyntaxElement as LuaParamDefSyntax;
 
     public LuaDocTagTypedParamSyntax? TypedParamDef => SyntaxElement as LuaDocTagTypedParamSyntax;
+
+    public ParameterDeclaration WithType(LuaType type) => new ParameterDeclaration(Name, Position, SyntaxElement, type);
 }
 
 public class MethodDeclaration(

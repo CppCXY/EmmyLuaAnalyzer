@@ -1,4 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public static class TypeHelper
 {
@@ -40,7 +42,7 @@ public static class TypeHelper
         }
         else
         {
-            return new LuaUnionType(new List<LuaType> {left, right});
+            return new LuaUnionType(new List<LuaType> { left, right });
         }
     }
 

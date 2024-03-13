@@ -3,6 +3,7 @@
 public enum TypeKind
 {
     Unknown,
+    Any,
     NamedType,
     Nil,
     Tuple,
