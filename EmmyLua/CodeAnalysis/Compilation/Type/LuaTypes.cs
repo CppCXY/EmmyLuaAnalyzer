@@ -104,7 +104,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
-        return this;
+        return genericReplace.TryGetValue(Name, out var type) ? type : this;
     }
 }
 
@@ -247,9 +247,12 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
         var newName = Name;
-        if (string.Equals(Name, genericReplace, StringComparison.CurrentCulture) && type is LuaNamedType namedType)
+        if (genericReplace.TryGetValue(Name, out var type))
         {
-            newName = namedType.Name;
+            if (type is LuaNamedType namedType)
+            {
+                newName = namedType.Name;
+            }
         }
 
         var newGenericArgs = GenericArgs.Select(t => t.Instantiate(genericReplace)).ToList();

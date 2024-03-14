@@ -3,5 +3,4 @@
 public enum SymbolKind
 {
     Declaration,
-    Assign,
 }

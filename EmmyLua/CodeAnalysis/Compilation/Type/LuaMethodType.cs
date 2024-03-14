@@ -276,17 +276,16 @@ public class LuaSignature(LuaType returnType, List<ParameterDeclaration> paramet
             GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap, context);
         }
 
-        // for (var i = skipParam; i < Parameters.Count; i++)
-        // {
-        //     var parameter = Parameters[i];
-        //     var newType = parameter.DeclarationType?.Instantiate(genericParameters) ?? Builtin.Any;
-        //     newParameters.Add(new ParameterDeclaration(parameter.Name, newType));
-        // }
-        //
-        // return new LuaSignature(newReturnType, newParameters);
-        throw new NotImplementedException();
-    }
+        var newReturnType = ReturnType.Instantiate(genericParameterMap);
+        for (var i = 0; i < Parameters.Count; i++)
+        {
+            var parameter = Parameters[i];
+            var newParameterType = parameter.DeclarationType?.Instantiate(genericParameterMap) ?? Builtin.Any;
+            newParameters.Add(parameter.WithType(newParameterType));
+        }
 
+        return new LuaSignature(newReturnType, newParameters);
+    }
 
     public bool Equals(LuaSignature? other)
     {
@@ -311,6 +310,14 @@ public class LuaSignature(LuaType returnType, List<ParameterDeclaration> paramet
     public override int GetHashCode()
     {
         return HashCode.Combine(Parameters);
+    }
+
+    public LuaSignature Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newReturnType = ReturnType.Instantiate(genericReplace);
+        var newParameters = Parameters.Select(parameter =>
+            parameter.WithType(parameter.DeclarationType?.Instantiate(genericReplace) ?? Builtin.Any)).ToList();
+        return new LuaSignature(newReturnType, newParameters);
     }
 }
 
@@ -376,6 +383,13 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), MainSignature, ColonDefine);
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newMainSignature = MainSignature.Instantiate(genericReplace);
+        var newOverloads = Overloads?.Select(signature => signature.Instantiate(genericReplace)).ToList();
+        return new LuaMethodType(newMainSignature, newOverloads, ColonDefine);
     }
 }
 

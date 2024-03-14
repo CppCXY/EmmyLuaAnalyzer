@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -7,13 +6,11 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class SearchContext
+public class SearchContext(LuaCompilation compilation, bool allowCache = true)
 {
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
     private Dictionary<LuaSyntaxElement, LuaType> Caches { get; } = new();
-
-    private List<ILuaSearcher> Searchers { get; } = new();
 
     private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
 
@@ -22,17 +19,6 @@ public class SearchContext
     // 推断深度
     private int _currentDepth = 0;
 
-    public EnvSearcher EnvSearcher { get; } = new();
-
-    public IndexSearcher IndexSearcher { get; } = new();
-
-    public SearchContext(LuaCompilation compilation)
-    {
-        Compilation = compilation;
-        Searchers.Add(EnvSearcher);
-        Searchers.Add(IndexSearcher);
-    }
-
     public LuaType Infer(LuaSyntaxElement? element)
     {
         if (element is null)
@@ -40,8 +26,14 @@ public class SearchContext
             return Builtin.Unknown;
         }
 
-        return InferCore(element);
-        // Caches.TryGetValue(element, out var symbol) ? symbol : Caches[element] = InferCore(element);
+        if (allowCache)
+        {
+            return Caches.TryGetValue(element, out var luaType) ? luaType : Caches[element] = InferCore(element);
+        }
+        else
+        {
+            return InferCore(element);
+        }
     }
 
     public void ClearCache()
@@ -83,7 +75,8 @@ public class SearchContext
 
     public IEnumerable<Declaration> GetMembers(string name)
     {
-        return Searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
+        // return Searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
+        throw new NotImplementedException();
     }
 
     public IEnumerable<Declaration> FindMember(LuaType luaType, string memberName)

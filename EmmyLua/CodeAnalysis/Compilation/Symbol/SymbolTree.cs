@@ -64,24 +64,10 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
             var prefixType = context.Infer(prefixExpr);
-            switch (indexExpr)
+            var name = indexExpr.Name;
+            if (name is not null)
             {
-                case { DotOrColonIndexName: { } nameToken }:
-                    return context.FindMember(prefixType, nameToken.RepresentText).FirstOrDefault();
-                case { IndexKeyExpr: LuaLiteralExprSyntax literal }:
-                    return literal.Literal switch
-                    {
-                        LuaStringToken stringToken => context.FindMember(prefixType, stringToken.Value).FirstOrDefault(),
-                        LuaIntegerToken luaIntegerToken => context.FindMember(prefixType, $"[{luaIntegerToken.Value}]")
-                            .FirstOrDefault(),
-                        _ => context.FindMember(prefixType, literal.Literal.RepresentText).FirstOrDefault()
-                    };
-                case { IndexKeyExpr: { } expr }:
-                {
-                    // var indexType = context.Infer(expr);
-                    // return prefixType.IndexMember(indexType, context).FirstOrDefault();
-                    throw new NotImplementedException();
-                }
+                return context.FindMember(prefixType, name).FirstOrDefault();
             }
         }
 
