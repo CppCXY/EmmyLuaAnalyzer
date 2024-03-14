@@ -7,8 +7,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    private SearchContext SearchContext => Compilation.SearchContext;
-
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         bool changed;
@@ -40,7 +38,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var exprRef = unResolvedDeclaration.ExprRef;
             if (exprRef is not null)
             {
-                var exprType = SearchContext.Infer(exprRef.Expr);
+                var exprType = Context.Infer(exprRef.Expr);
                 if (!exprType.Equals(Builtin.Unknown))
                 {
                     MergeType(unResolvedDeclaration, exprType, exprRef.RetId);
@@ -59,7 +57,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             if (declaration.SyntaxElement is LuaIndexExprSyntax indexExpr)
             {
                 var documentId = indexExpr.Tree.Document.Id;
-                var ty = SearchContext.Infer(indexExpr);
+                var ty = Context.Infer(indexExpr);
                 if (ty is LuaNamedType namedType)
                 {
                     Compilation.ProjectIndex.AddMember(documentId, namedType.Name, declaration);
@@ -122,7 +120,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, ref bool complete)
     {
         LuaType returnType = Builtin.Unknown;
-        var cfg = SearchContext.Compilation.GetControlFlowGraph(mainBlock);
+        var cfg = Context.Compilation.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
             return returnType;
@@ -145,7 +143,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         }
                         case 1:
                         {
-                            var mainReturn = SearchContext.Infer(rets[0]);
+                            var mainReturn = Context.Infer(rets[0]);
                             if (mainReturn.Equals(Builtin.Unknown))
                             {
                                 complete = false;
@@ -160,7 +158,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             var retTypes = new List<LuaType>();
                             foreach (var ret in rets)
                             {
-                                var retType = SearchContext.Infer(ret);
+                                var retType = Context.Infer(ret);
                                 if (retType.Equals(Builtin.Unknown))
                                 {
                                     complete = false;

@@ -10,8 +10,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 // TODO: Implement TypeAnalyzer
 public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    private SearchContext Context => Compilation.SearchContext;
-
     // public override void Analyze(AnalyzeContext analyzeContext)
     // {
     //     foreach (var document in analyzeContext.LuaDocuments)

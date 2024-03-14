@@ -29,8 +29,6 @@ public class LuaCompilation
 
     public ProjectIndex ProjectIndex { get; }
 
-    public SearchContext SearchContext { get; }
-
     private HashSet<DocumentId> DirtyDocuments { get; } = [];
 
     internal Dictionary<DocumentId, SymbolTree> SymbolTrees { get; } = new();
@@ -43,7 +41,6 @@ public class LuaCompilation
     {
         Workspace = workspace;
         ProjectIndex = new ProjectIndex(this);
-        SearchContext = new SearchContext(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
@@ -117,7 +114,6 @@ public class LuaCompilation
 
     private void Analyze()
     {
-        SearchContext.ClearCache();
         if (DirtyDocuments.Count != 0)
         {
             try

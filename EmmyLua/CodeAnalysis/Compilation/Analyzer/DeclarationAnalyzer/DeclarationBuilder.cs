@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Index;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
@@ -31,6 +32,8 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private AnalyzeContext AnalyzeContext { get; }
 
+    private SearchContext Context => Analyzer.Context;
+
     private DocumentId DocumentId { get; }
 
     public SymbolTree Build()
@@ -40,7 +43,10 @@ public class DeclarationBuilder : ILuaElementWalker
         return _tree;
     }
 
-    public DeclarationBuilder(DocumentId documentId, LuaSyntaxTree tree, DeclarationAnalyzer analyzer,
+    public DeclarationBuilder(
+        DocumentId documentId,
+        LuaSyntaxTree tree,
+        DeclarationAnalyzer analyzer,
         AnalyzeContext analyzeContext)
     {
         _syntaxTree = tree;
@@ -228,7 +234,8 @@ public class DeclarationBuilder : ILuaElementWalker
     }
 
     private static bool IsScopeOwner(LuaSyntaxElement element)
-        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax or LuaClosureExprSyntax;
+        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax
+            or LuaClosureExprSyntax;
 
     private void AnalyzeLocalStatDeclaration(LuaLocalStatSyntax localStatSyntax)
     {
@@ -316,7 +323,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         var retTag = docList.OfType<LuaDocTagReturnSyntax>().ToList();
         return new LuaMultiReturnType(
-            retTag.SelectMany(tag => tag.TypeList).Select(Compilation.SearchContext.Infer).ToList());
+            retTag.SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList());
     }
 
     private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
@@ -405,7 +412,7 @@ public class DeclarationBuilder : ILuaElementWalker
         from comment in stat.Comments
         from tagType in comment.DocList.OfType<LuaDocTagTypeSyntax>()
         from type in tagType.TypeList
-        select Compilation.SearchContext.Infer(type)
+        select Context.Infer(type)
     ).ToList();
 
     private Dictionary<string, Declaration> FindParamDeclarations(LuaSyntaxElement element)
@@ -428,7 +435,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (tagParamSyntax is { Name: { } name, Type: { } type, Nullable: { } nullable })
             {
-                var ty = Compilation.SearchContext.Infer(type);
+                var ty = Context.Infer(type);
                 if (nullable)
                 {
                     ty = ty.Union(Builtin.Nil);
@@ -440,7 +447,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             else if (tagParamSyntax is { VarArgs: { } varArgs, Type: { } type2 })
             {
-                var ty = Compilation.SearchContext.Infer(type2);
+                var ty = Context.Infer(type2);
                 var declaration = new DocParameterDeclaration(varArgs.RepresentText, GetPosition(varArgs), varArgs, ty);
                 dic.Add("...", declaration);
                 AddDeclaration(declaration);
@@ -537,7 +544,8 @@ public class DeclarationBuilder : ILuaElementWalker
                     Feature = SymbolFeature.Local
                 };
                 AddDeclaration(declaration);
-                var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr), ResolveState.UnResolvedType);
+                var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                    ResolveState.UnResolvedType);
                 AddUnResolved(unResolved);
                 break;
             }
@@ -554,7 +562,8 @@ public class DeclarationBuilder : ILuaElementWalker
                     };
                     ProjectIndex.AddGlobal(DocumentId, name2.RepresentText, declaration);
                     AddDeclaration(declaration);
-                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr), ResolveState.UnResolvedType);
+                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                        ResolveState.UnResolvedType);
                     AddUnResolved(unResolved);
                 }
 
@@ -567,7 +576,8 @@ public class DeclarationBuilder : ILuaElementWalker
                     var declaration = new MethodDeclaration(name, GetPosition(indexExpr), indexExpr, null,
                         closureExpr);
                     AddDeclaration(declaration);
-                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr), ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
+                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                        ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
                     AddUnResolved(unResolved);
                 }
 
@@ -602,9 +612,9 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var overloads = docList
             .OfType<LuaDocTagOverloadSyntax>()
-            .Select(it => Compilation.SearchContext.Infer(it.TypeFunc))
+            .Select(it => Context.Infer(it.TypeFunc))
             .Cast<LuaMethodType>()
-            .Select(it=>it.MainSignature).ToList();
+            .Select(it => it.MainSignature).ToList();
 
         var parameters = new List<ParameterDeclaration>();
         if (closureExprSyntax.ParamList is { } paramList)
@@ -660,7 +670,7 @@ public class DeclarationBuilder : ILuaElementWalker
         if (tagAliasSyntax is { Name: { } name, Type: { } type })
         {
             var luaAlias = new LuaNamedType(name.RepresentText);
-            var baseTy = Compilation.SearchContext.Infer(type);
+            var baseTy = Context.Infer(type);
             var declaration = new NamedTypeDeclaration(name.RepresentText, GetPosition(name), name, luaAlias);
             AddDeclaration(declaration);
             ProjectIndex.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
@@ -672,7 +682,7 @@ public class DeclarationBuilder : ILuaElementWalker
         if (tagEnumSyntax is { Name: { } name })
         {
             var baseType = tagEnumSyntax.BaseType is { } type
-                ? Compilation.SearchContext.Infer(type)
+                ? Context.Infer(type)
                 : Builtin.Integer;
             var luaEnum = new LuaNamedType(name.RepresentText);
             var declaration = new NamedTypeDeclaration(name.RepresentText, GetPosition(name), name, luaEnum);
@@ -727,146 +737,146 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 case "add":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "sub":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "mul":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "div":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "mod":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "pow":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "unm":
                 {
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "idiv":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "band":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bor":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bxor":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bnot":
                 {
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "shl":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "shr":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "concat":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "len":
                 {
-                    var retType = Compilation.SearchContext.Infer(operatorSyntax.ReturnType);
+                    var retType = Context.Infer(operatorSyntax.ReturnType);
                     var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "eq":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "lt":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "le":
                 {
-                    var type = Compilation.SearchContext.Infer(operatorSyntax.Types.FirstOrDefault());
+                    var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, op);
                     break;
@@ -883,7 +893,7 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 case { NameField: { } nameField, Type: { } type1 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type1);
+                    var type = Context.Infer(type1);
                     var declaration = new DocFieldDeclaration(nameField.RepresentText, GetPosition(nameField),
                         tagField, type);
                     AddDeclaration(declaration);
@@ -892,7 +902,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { IntegerField: { } integerField, Type: { } type2 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type2);
+                    var type = Context.Infer(type2);
                     var declaration = new DocFieldDeclaration($"[{integerField.Value}]", GetPosition(integerField),
                         tagField, type);
                     AddDeclaration(declaration);
@@ -901,7 +911,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { StringField: { } stringField, Type: { } type3 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type3);
+                    var type = Context.Infer(type3);
                     var declaration = new DocFieldDeclaration(stringField.Value, GetPosition(stringField),
                         tagField, type);
                     AddDeclaration(declaration);
@@ -910,8 +920,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { TypeField: { } typeField, Type: { } type4 }:
                 {
-                    var keyType = Compilation.SearchContext.Infer(typeField);
-                    var valueType = Compilation.SearchContext.Infer(type4);
+                    var keyType = Context.Infer(typeField);
+                    var valueType = Context.Infer(type4);
                     var indexOperator = new IndexOperator(namedType, keyType, valueType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, indexOperator);
                     break;
@@ -928,7 +938,7 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 case { NameField: { } nameField, Type: { } type1 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type1);
+                    var type = Context.Infer(type1);
                     var declaration = new DocFieldDeclaration(nameField.RepresentText, GetPosition(nameField),
                         field, type);
                     AddDeclaration(declaration);
@@ -937,7 +947,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { IntegerField: { } integerField, Type: { } type2 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type2);
+                    var type = Context.Infer(type2);
                     var declaration = new DocFieldDeclaration($"[{integerField.Value}]", GetPosition(integerField),
                         field, type);
                     AddDeclaration(declaration);
@@ -946,7 +956,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { StringField: { } stringField, Type: { } type3 }:
                 {
-                    var type = Compilation.SearchContext.Infer(type3);
+                    var type = Context.Infer(type3);
                     var declaration = new DocFieldDeclaration(stringField.Value, GetPosition(stringField),
                         field, type);
                     AddDeclaration(declaration);
@@ -955,8 +965,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case { TypeField: { } typeField, Type: { } type4 }:
                 {
-                    var keyType = Compilation.SearchContext.Infer(typeField);
-                    var valueType = Compilation.SearchContext.Infer(type4);
+                    var keyType = Context.Infer(typeField);
+                    var valueType = Context.Infer(type4);
                     var indexOperator = new IndexOperator(namedType, keyType, valueType);
                     ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, indexOperator);
                     break;
@@ -969,7 +979,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         foreach (var extend in extendList)
         {
-            var type = Compilation.SearchContext.Infer(extend);
+            var type = Context.Infer(extend);
             ProjectIndex.AddSuper(DocumentId, namedType.Name, type);
         }
     }
@@ -981,7 +991,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param is { Name: { } name })
             {
-                var type = Compilation.SearchContext.Infer(param.Type);
+                var type = Context.Infer(param.Type);
                 var declaration = new GenericParameterDeclaration(name.RepresentText, GetPosition(name), param, type);
                 ProjectIndex.AddGenericParam(DocumentId, namedType.Name, declaration);
             }
@@ -1012,7 +1022,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (fieldSyntax is { NameField: { } nameToken, Type: { } type1 })
             {
-                var type = Compilation.SearchContext.Infer(type1);
+                var type = Context.Infer(type1);
                 var declaration = new DocFieldDeclaration(nameToken.RepresentText, GetPosition(fieldSyntax),
                     fieldSyntax, type);
                 AddDeclaration(declaration);
@@ -1020,7 +1030,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             else if (fieldSyntax is { IntegerField: { } integerField, Type: { } type2 })
             {
-                var type = Compilation.SearchContext.Infer(type2);
+                var type = Context.Infer(type2);
                 var declaration = new DocFieldDeclaration($"[{integerField.Value}]", GetPosition(fieldSyntax),
                     fieldSyntax, type);
                 AddDeclaration(declaration);
@@ -1028,7 +1038,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             else if (fieldSyntax is { StringField: { } stringField, Type: { } type3 })
             {
-                var type = Compilation.SearchContext.Infer(type3);
+                var type = Context.Infer(type3);
                 var declaration = new DocFieldDeclaration(stringField.Value, GetPosition(fieldSyntax), fieldSyntax,
                     type);
                 AddDeclaration(declaration);
@@ -1036,8 +1046,8 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             else if (fieldSyntax is { TypeField: { } typeField, Type: { } type4 })
             {
-                var keyType = Compilation.SearchContext.Infer(typeField);
-                var valueType = Compilation.SearchContext.Infer(type4);
+                var keyType = Context.Infer(typeField);
+                var valueType = Context.Infer(type4);
                 var indexOperator = new IndexOperator(tableType, keyType, valueType);
                 ProjectIndex.TypeIndex.AddTypeOperator(DocumentId, indexOperator);
             }
