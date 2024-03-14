@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -9,6 +10,8 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
     public LuaCompilation Compilation { get; } = compilation;
 
     public LuaDocument Document { get; } = document;
+
+    public SearchContext Context { get; } = new(compilation);
 
     public Symbol.Symbol? GetSymbol(LuaSyntaxElement element)
     {

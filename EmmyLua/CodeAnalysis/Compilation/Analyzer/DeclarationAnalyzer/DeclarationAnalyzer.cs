@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Document;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {

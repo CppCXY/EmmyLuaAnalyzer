@@ -67,6 +67,10 @@ public class IndexStorage<TKey, TStubElement>
     public IEnumerable<TValue> Get<TValue>(TKey key)
         where TValue : TStubElement
         => Get(key).OfType<TValue>();
+
+    public IEnumerable<TStubElement> GetAll() =>
+        _indexMap.Values.SelectMany(
+            it => it.Files.Values.SelectMany(it2 => it2));
 }
 
 public class SyntaxStorage<TKey, TSyntaxElement, TElement>

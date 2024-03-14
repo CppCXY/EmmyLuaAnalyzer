@@ -93,7 +93,7 @@ public class Symbol(
 
     public LuaType? DeclarationType = declarationType;
 
-    public SymbolFeature Feature { get; internal set; } = feature;
+    public SymbolFeature Feature { get; internal init; } = feature;
 
     public override string ToString()
     {

@@ -75,8 +75,12 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
 
     public IEnumerable<Declaration> GetMembers(string name)
     {
-        // return Searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
-        throw new NotImplementedException();
+        if (name is "_G" or "_ENV")
+        {
+            return Compilation.ProjectIndex.GetGlobals();
+        }
+
+        return Compilation.ProjectIndex.GetMembers(name);
     }
 
     public IEnumerable<Declaration> FindMember(LuaType luaType, string memberName)
@@ -85,6 +89,10 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
         {
             return GetMembers(namedType.Name)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
+        }
+        else if (luaType is LuaUnionType unionType)
+        {
+            return unionType.UnionTypes.SelectMany(it => FindMember(it, memberName));
         }
 
         return Enumerable.Empty<Declaration>();

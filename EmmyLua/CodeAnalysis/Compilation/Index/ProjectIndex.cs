@@ -97,6 +97,11 @@ public class ProjectIndex(LuaCompilation compilation)
         return GlobalDeclaration.Get<Declaration>(name);
     }
 
+    public IEnumerable<Declaration> GetGlobals()
+    {
+        return GlobalDeclaration.GetAll();
+    }
+
     public IEnumerable<LuaType> GetSupers(string name)
     {
         return Supers.Get<LuaType>(name);
