@@ -7,7 +7,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         foreach (var document in analyzeContext.LuaDocuments)
         {
             var builder = new DeclarationBuilder(document.Id, document.SyntaxTree, this, analyzeContext);
-            Compilation.SymbolTrees[document.Id] = builder.Build();
+            Compilation.DeclarationTrees[document.Id] = builder.Build();
         }
     }
 }

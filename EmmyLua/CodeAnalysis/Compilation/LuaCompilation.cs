@@ -29,7 +29,7 @@ public class LuaCompilation
 
     private HashSet<DocumentId> DirtyDocuments { get; } = [];
 
-    internal Dictionary<DocumentId, LuaDeclarationTree> SymbolTrees { get; } = new();
+    internal Dictionary<DocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
 
     internal Dictionary<DocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
 
@@ -89,7 +89,7 @@ public class LuaCompilation
             luaAnalyzer.RemoveCache(documentId);
         }
 
-        SymbolTrees.Remove(documentId);
+        DeclarationTrees.Remove(documentId);
         ProjectIndex.Remove(documentId);
         ControlFlowGraphs.Remove(documentId);
     }
@@ -146,7 +146,7 @@ public class LuaCompilation
 
     public LuaDeclarationTree? GetDeclarationTree(DocumentId documentId)
     {
-        return SymbolTrees.GetValueOrDefault(documentId);
+        return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
     public void AddDiagnostic(DocumentId documentId, Diagnostic diagnostic)

@@ -128,13 +128,13 @@ public class LuaRenderBuilder(SearchContext context)
             case LocalLuaDeclaration local:
             {
                 sb.Append(
-                    $"```lua\n\nlocal {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n\n```");
+                    $"```lua\nlocal {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
                 break;
             }
             case GlobalLuaDeclaration global:
             {
                 sb.Append(
-                    $"```lua\n\nglobal variable {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n\n```");
+                    $"```lua\nglobal variable {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
                 break;
             }
             case MethodLuaDeclaration method:
@@ -143,12 +143,12 @@ public class LuaRenderBuilder(SearchContext context)
                 if (isLocal)
                 {
                     sb.Append(
-                        $"```lua\n\nlocal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n\n```");
+                        $"```lua\nlocal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n```");
                 }
                 else
                 {
                     sb.Append(
-                        $"```lua\n\nglobal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n\n```");
+                        $"```lua\nglobal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n```");
                 }
 
                 break;
@@ -158,11 +158,11 @@ public class LuaRenderBuilder(SearchContext context)
                 if (parameter.DeclarationType is { } declarationType)
                 {
                     sb.Append(
-                        $"```lua\n\nparameter {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n\n```");
+                        $"```lua\nparameter {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n```");
                 }
                 else
                 {
-                    sb.Append($"```lua\n\nparameter {parameter.Name}\n\n```");
+                    sb.Append($"```lua\nparameter {parameter.Name}\n\n```");
                 }
 
                 break;

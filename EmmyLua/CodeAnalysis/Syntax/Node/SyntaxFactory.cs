@@ -161,8 +161,18 @@ public static class SyntaxFactory
         {
             var hexFloatText = text[2..].ToString();
             var parts = hexFloatText.Split('.');
-            var integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
-            var fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
+            long integerPart = 0;
+            if (parts[0].Length != 0)
+            {
+                integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
+            }
+
+            long fractionPart = 0;
+            if (parts[1].Length != 0)
+            {
+                fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
+            }
+
             var fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
             value = integerPart + fractionValue;
             var exponentPosition = hexFloatText.IndexOf('p', StringComparison.CurrentCultureIgnoreCase);

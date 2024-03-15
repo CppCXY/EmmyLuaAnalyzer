@@ -455,7 +455,12 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         Tree.PushDiagnostic(diagnostic);
     }
 
-    public string UniqueId => $"{Tree.Document.Id}_{Range.StartOffset}_{Range.Length}";
+    public string UniqueId => $"{Tree.Document.Id.Id}_{Range.StartOffset}_{Range.Length}_{(int)Green.SyntaxKind}";
 
     public int Position => Range.StartOffset;
+
+    public override int GetHashCode()
+    {
+         return HashCode.Combine(Tree.Document.Id.Id, Range.StartOffset, Range.Length, (int)Green.SyntaxKind);
+    }
 }

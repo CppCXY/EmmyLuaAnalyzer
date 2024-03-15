@@ -154,9 +154,9 @@ public class LuaWorkspace
                 ModuleGraph.AddDocument(newDocument);
             }
 
+            Documents[documentId] = newDocument;
             Compilation.RemoveSyntaxTree(documentId);
             Compilation.AddSyntaxTree(documentId, newDocument.SyntaxTree);
-            Documents[documentId] = newDocument;
         }
     }
 
