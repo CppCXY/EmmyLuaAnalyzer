@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Syntax.Node;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;

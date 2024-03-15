@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -80,6 +79,4 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
         return null;
     }
-
-    public IEnumerable<LuaSymbol> Symbols => Enumerable.Empty<LuaSymbol>();
 }

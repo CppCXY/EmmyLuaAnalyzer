@@ -8,7 +8,6 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
@@ -25,8 +24,6 @@ public class LuaCompilation
     private readonly Dictionary<DocumentId, LuaSyntaxTree> _syntaxTrees = new();
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
-
-    public IEnumerable<LuaSymbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
 
     public ProjectIndex ProjectIndex { get; }
 

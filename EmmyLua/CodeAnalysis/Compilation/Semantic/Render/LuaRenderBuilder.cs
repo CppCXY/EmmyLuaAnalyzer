@@ -1,11 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
 public class LuaRenderBuilder(SearchContext context)
 {
-    public string Render(LuaSymbol declaration)
+    public string Render(LuaSyntaxElement declaration)
     {
         // return symbol switch
         // {
