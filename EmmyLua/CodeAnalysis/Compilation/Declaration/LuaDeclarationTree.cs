@@ -1,34 +1,20 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
+namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
-public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, SymbolScope> scopeOwners)
+public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
 {
     public LuaSyntaxTree SyntaxTree { get; } = tree;
 
-    public SymbolScope? RootScope { get; internal set; }
+    public DeclarationScope? RootScope { get; internal set; }
 
-    public LuaSymbol? FindSymbol(LuaSyntaxElement element)
+    public LuaDeclaration? FindDeclaration(LuaSyntaxElement element, SearchContext context)
     {
         switch (element)
-        {
-            case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
-            {
-                var scope = FindScope(element);
-                return scope?.FindSymbol(element);
-            }
-        }
-
-        return null;
-    }
-
-    public LuaDeclaration? FindDeclaration(LuaExprSyntax expr, SearchContext context)
-    {
-        switch (expr)
         {
             case LuaNameExprSyntax nameExpr:
             {
@@ -37,6 +23,11 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
             case LuaIndexExprSyntax indexExpr:
             {
                 return FindIndexDeclaration(indexExpr, context);
+            }
+            case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
+            {
+                var scope = FindScope(element);
+                return scope?.FindDeclaration(element);
             }
         }
 
@@ -74,7 +65,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    public SymbolScope? FindScope(LuaSyntaxElement element)
+    public DeclarationScope? FindScope(LuaSyntaxElement element)
     {
         var cur = element;
         while (cur != null)
@@ -90,5 +81,5 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    public IEnumerable<LuaSymbol> Symbols => RootScope?.Descendants ?? Enumerable.Empty<LuaSymbol>();
+    public IEnumerable<LuaSymbol> Symbols => Enumerable.Empty<LuaSymbol>();
 }

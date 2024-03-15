@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -7,7 +8,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class DeclarationInfer
 {
-    public static SymbolTree? GetSymbolTree(LuaSyntaxElement element, SearchContext context)
+    public static LuaDeclarationTree? GetSymbolTree(LuaSyntaxElement element, SearchContext context)
     {
         return context.Compilation.GetSymbolTree(element.Tree.Document.Id);
     }
@@ -20,7 +21,7 @@ public static class DeclarationInfer
             return Builtin.Unknown;
         }
 
-        var symbol = declarationTree.FindSymbol(localName);
+        var symbol = declarationTree.FindDeclaration(localName, context);
         return symbol?.DeclarationType ?? Builtin.Unknown;
     }
 
@@ -37,7 +38,7 @@ public static class DeclarationInfer
             return Builtin.Unknown;
         }
 
-        var symbol = symbolTree.FindSymbol(paramDef);
+        var symbol = symbolTree.FindDeclaration(paramDef, context);
         return symbol?.DeclarationType ?? Builtin.Unknown;
     }
 }

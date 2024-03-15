@@ -2,23 +2,109 @@
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
+namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
+
+public class DeclarationNode(int position)
+{
+    public DeclarationNode? Prev { get; set; }
+
+    public DeclarationNode? Next { get; set; }
+
+    public DeclarationNodeContainer? Parent { get; set; } = null;
+
+    public int Position { get; } = position;
+}
+
+public abstract class DeclarationNodeContainer(int position)
+    : DeclarationNode(position)
+{
+    public List<DeclarationNode> Children { get; } = [];
+
+    public void Add(DeclarationNode node)
+    {
+        node.Parent = this;
+
+        // 如果Children为空，直接添加
+        if (Children.Count == 0)
+        {
+            Children.Add(node);
+            return;
+        }
+
+        // 如果Children的最后一个节点的位置小于等于node的位置，直接添加
+        if (Children.Last().Position <= node.Position)
+        {
+            var last = Children.Last();
+            node.Prev = last;
+            last.Next = node;
+            Children.Add(node);
+        }
+        else
+        {
+            var index = Children.FindIndex(n => n.Position > node.Position);
+            // 否则，插入到找到的位置
+            var nextNode = Children[index];
+            var prevNode = nextNode.Prev;
+
+            node.Next = nextNode;
+            node.Prev = prevNode;
+
+            if (prevNode != null)
+            {
+                prevNode.Next = node;
+            }
+
+            nextNode.Prev = node;
+
+            Children.Insert(index, node);
+        }
+    }
+
+    public DeclarationNode? FirstChild => Children.FirstOrDefault();
+
+    public DeclarationNode? LastChild => Children.LastOrDefault();
+
+    public DeclarationNode? FindFirstChild(Func<DeclarationNode, bool> predicate) => Children.FirstOrDefault(predicate);
+
+    public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
+}
+
+public enum DeclarationFeature
+{
+    None,
+    Local,
+    Global,
+}
 
 public class LuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement? syntaxElement,
     LuaType? declarationType,
-    SymbolFeature feature = SymbolFeature.None
+    DeclarationFeature feature = DeclarationFeature.None
 )
-    : LuaSymbol(name, position, syntaxElement, SymbolKind.Declaration, declarationType, feature);
+    : DeclarationNode(position)
+{
+    public string Name { get; } = name;
+
+    public LuaSyntaxElement? SyntaxElement { get; } = syntaxElement;
+
+    public LuaType? DeclarationType = declarationType;
+
+    public DeclarationFeature Feature { get; internal init; } = feature;
+
+    public override string ToString()
+    {
+        return $"{Name}";
+    }
+}
 
 public class LocalLuaDeclaration(
     string name,
     int position,
     LuaLocalNameSyntax localName,
     LuaType? declarationType
-) : LuaDeclaration(name, position, localName, declarationType, SymbolFeature.Local)
+) : LuaDeclaration(name, position, localName, declarationType, DeclarationFeature.Local)
 {
     public LuaLocalNameSyntax LocalName => localName;
 
@@ -31,7 +117,7 @@ public class GlobalLuaDeclaration(
     string name,
     int position,
     LuaNameExprSyntax varName,
-    LuaType? declarationType) : LuaDeclaration(name, position, varName, declarationType, SymbolFeature.Global)
+    LuaType? declarationType) : LuaDeclaration(name, position, varName, declarationType, DeclarationFeature.Global)
 {
     public LuaNameExprSyntax VarName => varName;
 }
@@ -51,7 +137,7 @@ public class ParameterLuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement? element,
-    LuaType? declarationType) : LuaDeclaration(name, position, element, declarationType, SymbolFeature.Local)
+    LuaType? declarationType) : LuaDeclaration(name, position, element, declarationType, DeclarationFeature.Local)
 {
     public LuaParamDefSyntax? ParamDef => SyntaxElement as LuaParamDefSyntax;
 
@@ -139,4 +225,3 @@ public class LabelLuaDeclaration(
 {
     public LuaLabelStatSyntax LabelStat => labelStat;
 }
-

@@ -49,7 +49,7 @@ public class HoverHandler(
                     Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = "" //$"{symbol.DeclarationType?.ToDisplayString(workspace.Compilation.SearchContext)}"
+                        Value = semanticModel.RenderSymbol(symbol)
                     })
                 };
                 return Task.FromResult(hoverResult)!;

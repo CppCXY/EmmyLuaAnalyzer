@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Index;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -12,15 +13,15 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationBuilder : ILuaElementWalker
 {
-    private SymbolScope? _topScope = null;
+    private DeclarationScope? _topScope = null;
 
-    private SymbolScope? _curScope = null;
+    private DeclarationScope? _curScope = null;
 
-    private Stack<SymbolScope> _scopeStack = new();
+    private Stack<DeclarationScope> _scopeStack = new();
 
-    private Dictionary<LuaSyntaxElement, SymbolScope> _scopeOwners = new();
+    private Dictionary<LuaSyntaxElement, DeclarationScope> _scopeOwners = new();
 
-    private SymbolTree _tree;
+    private LuaDeclarationTree _tree;
 
     private LuaSyntaxTree _syntaxTree;
 
@@ -36,7 +37,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private DocumentId DocumentId { get; }
 
-    public SymbolTree Build()
+    public LuaDeclarationTree Build()
     {
         _syntaxTree.SyntaxRoot.Accept(this);
         _tree.RootScope = _topScope;
@@ -50,7 +51,7 @@ public class DeclarationBuilder : ILuaElementWalker
         AnalyzeContext analyzeContext)
     {
         _syntaxTree = tree;
-        _tree = new SymbolTree(tree, _scopeOwners);
+        _tree = new LuaDeclarationTree(tree, _scopeOwners);
         Analyzer = analyzer;
         DocumentId = documentId;
         AnalyzeContext = analyzeContext;
@@ -61,7 +62,7 @@ public class DeclarationBuilder : ILuaElementWalker
         return FindScope(nameExpr)?.FindNameDeclaration(nameExpr);
     }
 
-    private SymbolScope? FindScope(LuaSyntaxNode element)
+    private DeclarationScope? FindScope(LuaSyntaxNode element)
     {
         LuaSyntaxElement? cur = element;
         while (cur != null)
@@ -103,28 +104,28 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             case LuaLocalStatSyntax:
             {
-                SetScope(new LocalStatSymbolScope(_tree, position), element);
+                SetScope(new LocalStatDeclarationScope(_tree, position), element);
                 break;
             }
             case LuaRepeatStatSyntax:
             {
-                SetScope(new RepeatStatSymbolScope(_tree, position), element);
+                SetScope(new RepeatStatDeclarationScope(_tree, position), element);
                 break;
             }
             case LuaForRangeStatSyntax:
             {
-                SetScope(new ForRangeStatSymbolScope(_tree, position), element);
+                SetScope(new ForRangeStatDeclarationScope(_tree, position), element);
                 break;
             }
             default:
             {
-                SetScope(new SymbolScope(_tree, position), element);
+                SetScope(new DeclarationScope(_tree, position), element);
                 break;
             }
         }
     }
 
-    private void SetScope(SymbolScope scope, LuaSyntaxElement element)
+    private void SetScope(DeclarationScope scope, LuaSyntaxElement element)
     {
         _scopeStack.Push(scope);
         _topScope ??= scope;
@@ -541,7 +542,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 var declaration = new MethodLuaDeclaration(name.RepresentText,
                     GetPosition(luaFuncStat.LocalName), luaFuncStat.LocalName, null, closureExpr)
                 {
-                    Feature = SymbolFeature.Local
+                    Feature = DeclarationFeature.Local
                 };
                 AddDeclaration(declaration);
                 var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
@@ -558,7 +559,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         GetPosition(luaFuncStat.NameExpr),
                         luaFuncStat.NameExpr, null, closureExpr)
                     {
-                        Feature = SymbolFeature.Global
+                        Feature = DeclarationFeature.Global
                     };
                     ProjectIndex.AddGlobal(DocumentId, name2.RepresentText, declaration);
                     AddDeclaration(declaration);
