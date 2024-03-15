@@ -80,14 +80,12 @@ public class TypeIndex(LuaCompilation compilation)
             return null;
         }
 
-        // var bestMatched = entry.Files.Values.SelectMany(it => it.Elements)
-        //     .OfType<BinaryOperator>()
-        //     .Where(it => it.Left.Equals(left) && it.Right.Equals(right))
-        //     .OrderByDescending(it => it.Left, it => it.Right)
-        //     .FirstOrDefault();
-        //
-        // return bestMatched;
-        throw new NotImplementedException();
+        var bestMatched = entry.Files.Values
+            .SelectMany(it => it)
+            .OfType<BinaryOperator>()
+            .FirstOrDefault(it => it.Left.Equals(left) && it.Right.Equals(right));
+
+        return bestMatched;
     }
 
     public UnaryOperator? GetBestMatchedUnaryOperator(TypeOperatorKind kind, LuaType type)
@@ -97,14 +95,12 @@ public class TypeIndex(LuaCompilation compilation)
             return null;
         }
 
-        // var bestMatched = entry.Files.Values.SelectMany(it => it.Elements)
-        //     .OfType<TypeOperator>()
-        //     .Where(it => it.Left.Equals(type))
-        //     .OrderByDescending(it => it.Left)
-        //     .FirstOrDefault();
-        //
-        // return bestMatched;
-        throw new NotImplementedException();
+        var bestMatched = entry.Files.Values
+            .SelectMany(it => it)
+            .OfType<UnaryOperator>()
+            .FirstOrDefault(it => it.Operand.Equals(type));
+
+        return bestMatched;
     }
 
     public IndexOperator? GetBestMatchedIndexOperator(LuaType type, LuaType key)
@@ -114,14 +110,11 @@ public class TypeIndex(LuaCompilation compilation)
             return null;
         }
 
-        // var bestMatched = entry.Files.Values.SelectMany(it => it.Elements)
-        //     .OfType<IndexOperator>()
-        //     .Where(it => it.Type.Equals(type) && it.Key.Equals(key))
-        //     .OrderByDescending(it => it.Type, it => it.Key)
-        //     .FirstOrDefault();
-        //
-        // return bestMatched;
-        throw new NotImplementedException();
+        var bestMatched = entry.Files.Values
+            .SelectMany(it => it)
+            .OfType<IndexOperator>()
+            .FirstOrDefault(it => it.Type.Equals(type) && it.Key.Equals(key));
+        return bestMatched;
     }
 
     public TypeFeature GetFeature(string name)

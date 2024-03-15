@@ -144,7 +144,7 @@ public class LuaCompilation
         DirtyDocuments.Add(documentId);
     }
 
-    public LuaDeclarationTree? GetSymbolTree(DocumentId documentId)
+    public LuaDeclarationTree? GetDeclarationTree(DocumentId documentId)
     {
         return SymbolTrees.GetValueOrDefault(documentId);
     }
