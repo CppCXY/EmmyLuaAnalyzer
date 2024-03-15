@@ -75,7 +75,7 @@ public enum SymbolFeature
     Global,
 }
 
-public class Symbol(
+public class LuaSymbol(
     string name,
     int position,
     LuaSyntaxElement? syntaxElement,

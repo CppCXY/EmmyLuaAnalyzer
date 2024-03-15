@@ -25,9 +25,9 @@ public class UnResolved(ResolveState state)
     public ResolveState ResolvedState { get; set; } = state;
 }
 
-public class UnResolvedDeclaration(Declaration declaration, LuaExprRef? exprRef, ResolveState state) : UnResolved(state)
+public class UnResolvedDeclaration(LuaDeclaration luaDeclaration, LuaExprRef? exprRef, ResolveState state) : UnResolved(state)
 {
-    public Declaration Declaration { get; } = declaration;
+    public LuaDeclaration LuaDeclaration { get; } = luaDeclaration;
 
     public LuaExprRef? ExprRef { get; } = exprRef;
 

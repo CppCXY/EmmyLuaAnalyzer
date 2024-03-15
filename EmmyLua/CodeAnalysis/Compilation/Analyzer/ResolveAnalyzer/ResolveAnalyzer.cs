@@ -53,7 +53,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
-            var declaration = unResolvedDeclaration.Declaration;
+            var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.SyntaxElement is LuaIndexExprSyntax indexExpr)
             {
                 var documentId = indexExpr.Tree.Document.Id;
@@ -195,7 +195,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
         }
 
-        var declaration = unResolved.Declaration;
+        var declaration = unResolved.LuaDeclaration;
 
         if (declaration.DeclarationType is null)
         {

@@ -12,7 +12,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
 
     public SymbolScope? RootScope { get; internal set; }
 
-    public Symbol? FindSymbol(LuaSyntaxElement element)
+    public LuaSymbol? FindSymbol(LuaSyntaxElement element)
     {
         switch (element)
         {
@@ -26,7 +26,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    public Declaration? FindDeclaration(LuaExprSyntax expr, SearchContext context)
+    public LuaDeclaration? FindDeclaration(LuaExprSyntax expr, SearchContext context)
     {
         switch (expr)
         {
@@ -43,7 +43,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    private Declaration? FindNameDeclaration(LuaNameExprSyntax nameExpr, SearchContext context)
+    private LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr, SearchContext context)
     {
         if (nameExpr.Name is { } name)
         {
@@ -59,7 +59,7 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    private Declaration? FindIndexDeclaration(LuaIndexExprSyntax indexExpr, SearchContext context)
+    private LuaDeclaration? FindIndexDeclaration(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
@@ -90,5 +90,5 @@ public class SymbolTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement
         return null;
     }
 
-    public IEnumerable<Symbol> Symbols => RootScope?.Descendants ?? Enumerable.Empty<Symbol>();
+    public IEnumerable<LuaSymbol> Symbols => RootScope?.Descendants ?? Enumerable.Empty<LuaSymbol>();
 }

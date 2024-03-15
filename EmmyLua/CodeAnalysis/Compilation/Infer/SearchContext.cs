@@ -73,7 +73,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
         }
     }
 
-    public IEnumerable<Declaration> GetMembers(string name)
+    public IEnumerable<LuaDeclaration> GetMembers(string name)
     {
         if (name is "_G" or "_ENV")
         {
@@ -83,7 +83,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
         return Compilation.ProjectIndex.GetMembers(name);
     }
 
-    public IEnumerable<Declaration> FindMember(LuaType luaType, string memberName)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, string memberName)
     {
         if (luaType is LuaNamedType namedType)
         {
@@ -95,6 +95,6 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
             return unionType.UnionTypes.SelectMany(it => FindMember(it, memberName));
         }
 
-        return Enumerable.Empty<Declaration>();
+        return Enumerable.Empty<LuaDeclaration>();
     }
 }

@@ -4,21 +4,21 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
-public class Declaration(
+public class LuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement? syntaxElement,
     LuaType? declarationType,
     SymbolFeature feature = SymbolFeature.None
 )
-    : Symbol(name, position, syntaxElement, SymbolKind.Declaration, declarationType, feature);
+    : LuaSymbol(name, position, syntaxElement, SymbolKind.Declaration, declarationType, feature);
 
-public class LocalDeclaration(
+public class LocalLuaDeclaration(
     string name,
     int position,
     LuaLocalNameSyntax localName,
     LuaType? declarationType
-) : Declaration(name, position, localName, declarationType, SymbolFeature.Local)
+) : LuaDeclaration(name, position, localName, declarationType, SymbolFeature.Local)
 {
     public LuaLocalNameSyntax LocalName => localName;
 
@@ -27,46 +27,46 @@ public class LocalDeclaration(
     public bool IsClose => localName.Attribute?.IsClose == true;
 }
 
-public class GlobalDeclaration(
+public class GlobalLuaDeclaration(
     string name,
     int position,
     LuaNameExprSyntax varName,
-    LuaType? declarationType) : Declaration(name, position, varName, declarationType, SymbolFeature.Global)
+    LuaType? declarationType) : LuaDeclaration(name, position, varName, declarationType, SymbolFeature.Global)
 {
     public LuaNameExprSyntax VarName => varName;
 }
 
-public class DocParameterDeclaration(
+public class DocParameterLuaDeclaration(
     string name,
     int position,
     LuaSyntaxToken nameOrVararg,
-    LuaType? declarationType) : Declaration(name, position, nameOrVararg, declarationType)
+    LuaType? declarationType) : LuaDeclaration(name, position, nameOrVararg, declarationType)
 {
     public LuaNameToken? ParamName => SyntaxElement as LuaNameToken;
 
     public LuaDotsToken? Vararg => SyntaxElement as LuaDotsToken;
 }
 
-public class ParameterDeclaration(
+public class ParameterLuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement? element,
-    LuaType? declarationType) : Declaration(name, position, element, declarationType, SymbolFeature.Local)
+    LuaType? declarationType) : LuaDeclaration(name, position, element, declarationType, SymbolFeature.Local)
 {
     public LuaParamDefSyntax? ParamDef => SyntaxElement as LuaParamDefSyntax;
 
     public LuaDocTagTypedParamSyntax? TypedParamDef => SyntaxElement as LuaDocTagTypedParamSyntax;
 
-    public ParameterDeclaration WithType(LuaType type) => new ParameterDeclaration(Name, Position, SyntaxElement, type);
+    public ParameterLuaDeclaration WithType(LuaType type) => new ParameterLuaDeclaration(Name, Position, SyntaxElement, type);
 }
 
-public class MethodDeclaration(
+public class MethodLuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement element,
     LuaMethodType? method,
     LuaClosureExprSyntax closureExpr
-) : Declaration(name, position, element, method)
+) : LuaDeclaration(name, position, element, method)
 {
     public LuaFuncStatSyntax? MethodDef => SyntaxElement?.Parent as LuaFuncStatSyntax;
 
@@ -75,67 +75,67 @@ public class MethodDeclaration(
     public LuaClosureExprSyntax ClosureExpr => closureExpr;
 }
 
-public class NamedTypeDeclaration(
+public class NamedTypeLuaDeclaration(
     string name,
     int position,
     LuaNameToken nameToken,
     LuaType type)
-    : Declaration(name, position, nameToken, type)
+    : LuaDeclaration(name, position, nameToken, type)
 {
     public LuaNameToken NameToken => nameToken;
 }
 
-public class DocFieldDeclaration(
+public class DocFieldLuaDeclaration(
     string name,
     int position,
     LuaSyntaxElement fieldDef,
-    LuaType? declarationType) : Declaration(name, position, fieldDef, declarationType)
+    LuaType? declarationType) : LuaDeclaration(name, position, fieldDef, declarationType)
 {
     public LuaDocTagFieldSyntax? FieldDef => SyntaxElement as LuaDocTagFieldSyntax;
 
     public LuaDocTagTypedFieldSyntax? TypedFieldDef => SyntaxElement as LuaDocTagTypedFieldSyntax;
 }
 
-public class TableFieldDeclaration(
+public class TableFieldLuaDeclaration(
     string name,
     int position,
     LuaTableFieldSyntax tableField,
-    LuaType? declarationType) : Declaration(name, position, tableField, declarationType)
+    LuaType? declarationType) : LuaDeclaration(name, position, tableField, declarationType)
 {
     public LuaTableFieldSyntax TableField => tableField;
 }
 
-public class EnumFieldDeclaration(
+public class EnumFieldLuaDeclaration(
     string name,
     int position,
     LuaDocTagEnumFieldSyntax enumFieldDef,
-    LuaType? declarationType) : Declaration(name, position, enumFieldDef, declarationType)
+    LuaType? declarationType) : LuaDeclaration(name, position, enumFieldDef, declarationType)
 {
     public LuaDocTagEnumFieldSyntax EnumFieldDef => enumFieldDef;
 }
 
-public class GenericParameterDeclaration(
+public class GenericParameterLuaDeclaration(
     string name,
     int position,
     LuaDocGenericParamSyntax genericParameterDef,
-    LuaType? baseType) : Declaration(name, position, genericParameterDef, baseType)
+    LuaType? baseType) : LuaDeclaration(name, position, genericParameterDef, baseType)
 {
     public LuaDocGenericParamSyntax GenericParameterDef => genericParameterDef;
 }
 
-public class IndexDeclaration(
+public class IndexLuaDeclaration(
     string name,
     int position,
     LuaIndexExprSyntax indexExpr,
-    LuaType? declarationType) : Declaration(name, position, indexExpr, declarationType)
+    LuaType? declarationType) : LuaDeclaration(name, position, indexExpr, declarationType)
 {
     public LuaIndexExprSyntax IndexExpr => indexExpr;
 }
 
-public class LabelDeclaration(
+public class LabelLuaDeclaration(
     string name,
     int position,
-    LuaLabelStatSyntax labelStat) : Declaration(name, position, labelStat, null)
+    LuaLabelStatSyntax labelStat) : LuaDeclaration(name, position, labelStat, null)
 {
     public LuaLabelStatSyntax LabelStat => labelStat;
 }

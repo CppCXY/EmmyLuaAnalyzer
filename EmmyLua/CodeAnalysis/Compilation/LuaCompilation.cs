@@ -25,7 +25,7 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    public IEnumerable<Symbol.Symbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
+    public IEnumerable<LuaSymbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
 
     public ProjectIndex ProjectIndex { get; }
 

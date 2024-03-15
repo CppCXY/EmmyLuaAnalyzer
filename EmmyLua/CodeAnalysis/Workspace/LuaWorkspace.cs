@@ -110,9 +110,13 @@ public class LuaWorkspace
         }
 
         Documents.Add(document.Id, document);
-        UrlToDocument.Add(document.Uri, document.Id);
-        PathToDocument.Add(document.Path, document.Id);
-        ModuleGraph.AddDocument(document);
+        if (!document.IsVirtual)
+        {
+            UrlToDocument.Add(document.Uri, document.Id);
+            PathToDocument.Add(document.Path, document.Id);
+            ModuleGraph.AddDocument(document);
+        }
+
         Compilation.AddSyntaxTree(document.Id, document.SyntaxTree);
     }
 
@@ -128,9 +132,13 @@ public class LuaWorkspace
     {
         if (Documents.Remove(id, out var document))
         {
-            UrlToDocument.Remove(document.Uri);
-            PathToDocument.Remove(document.Path);
-            ModuleGraph.RemoveDocument(document);
+            if (!document.IsVirtual)
+            {
+                UrlToDocument.Remove(document.Uri);
+                PathToDocument.Remove(document.Path);
+                ModuleGraph.RemoveDocument(document);
+            }
+
             Compilation.RemoveSyntaxTree(id);
         }
     }
@@ -140,8 +148,12 @@ public class LuaWorkspace
         if (Documents.TryGetValue(documentId, out var document))
         {
             var newDocument = document.WithText(text);
-            ModuleGraph.RemoveDocument(document);
-            ModuleGraph.AddDocument(newDocument);
+            if (!newDocument.IsVirtual)
+            {
+                ModuleGraph.RemoveDocument(document);
+                ModuleGraph.AddDocument(newDocument);
+            }
+
             Compilation.RemoveSyntaxTree(documentId);
             Compilation.AddSyntaxTree(documentId, newDocument.SyntaxTree);
             Documents[documentId] = newDocument;
@@ -159,7 +171,6 @@ public class LuaWorkspace
             AddDocumentByUri(uri, text);
         }
     }
-
 
     public void CloseDocument(string uri)
     {

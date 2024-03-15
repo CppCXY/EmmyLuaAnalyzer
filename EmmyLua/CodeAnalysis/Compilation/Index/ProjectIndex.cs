@@ -10,19 +10,19 @@ public class ProjectIndex(LuaCompilation compilation)
 {
     private LuaCompilation Compilation { get; } = compilation;
 
-    private IndexStorage<string, Declaration> NameDeclaration { get; } = new();
+    private IndexStorage<string, LuaDeclaration> NameDeclaration { get; } = new();
 
-    private IndexStorage<string, Declaration> Members { get; } = new();
+    private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
-    private IndexStorage<string, Declaration> GlobalDeclaration { get; } = new();
+    private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
 
     private IndexStorage<string, LuaType> Supers { get; } = new();
 
-    private IndexStorage<string, NamedTypeDeclaration> NamedType { get; } = new();
+    private IndexStorage<string, NamedTypeLuaDeclaration> NamedType { get; } = new();
 
     private IndexStorage<string, LuaType> Id2Type { get; } = new();
 
-    private IndexStorage<string, GenericParameterDeclaration> GenericParam { get; } = new();
+    private IndexStorage<string, GenericParameterLuaDeclaration> GenericParam { get; } = new();
 
     private Dictionary<DocumentId, LuaType> ExportTypes { get; } = new();
 
@@ -41,16 +41,16 @@ public class ProjectIndex(LuaCompilation compilation)
         Id2Type.Remove(documentId);
     }
 
-    public void AddMember(DocumentId documentId, string name, Declaration declaration)
+    public void AddMember(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
-        Members.Add(documentId, name, declaration);
-        NameDeclaration.Add(documentId, name, declaration);
+        Members.Add(documentId, name, luaDeclaration);
+        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
-    public void AddGlobal(DocumentId documentId, string name, Declaration declaration)
+    public void AddGlobal(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
-        GlobalDeclaration.Add(documentId, name, declaration);
-        NameDeclaration.Add(documentId, name, declaration);
+        GlobalDeclaration.Add(documentId, name, luaDeclaration);
+        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
     public void AddSuper(DocumentId documentId, string name, LuaType type)
@@ -58,16 +58,16 @@ public class ProjectIndex(LuaCompilation compilation)
         Supers.Add(documentId, name, type);
     }
 
-    public void AddType(DocumentId documentId, string name, NamedTypeDeclaration declaration, TypeFeature feature)
+    public void AddType(DocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration, TypeFeature feature)
     {
-        NamedType.Add(documentId, name, declaration);
-        NameDeclaration.Add(documentId, name, declaration);
+        NamedType.Add(documentId, name, luaDeclaration);
+        NameDeclaration.Add(documentId, name, luaDeclaration);
         TypeIndex.AddFeature(documentId, name, feature);
     }
 
-    public void AddAlias(DocumentId documentId, string name, LuaType baseType, NamedTypeDeclaration declaration)
+    public void AddAlias(DocumentId documentId, string name, LuaType baseType, NamedTypeLuaDeclaration luaDeclaration)
     {
-        AddType(documentId, name, declaration, TypeFeature.Alias);
+        AddType(documentId, name, luaDeclaration, TypeFeature.Alias);
         Id2Type.Add(documentId, name, baseType);
     }
 
@@ -76,10 +76,10 @@ public class ProjectIndex(LuaCompilation compilation)
         Id2Type.Add(documentId, id, methodType);
     }
 
-    public void AddGenericParam(DocumentId documentId, string name, GenericParameterDeclaration declaration)
+    public void AddGenericParam(DocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
     {
-        GenericParam.Add(documentId, name, declaration);
-        NameDeclaration.Add(documentId, name, declaration);
+        GenericParam.Add(documentId, name, luaDeclaration);
+        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
     public void AddExportType(DocumentId documentId, LuaType type)
@@ -87,17 +87,17 @@ public class ProjectIndex(LuaCompilation compilation)
         ExportTypes[documentId] = type;
     }
 
-    public IEnumerable<Declaration> GetMembers(string name)
+    public IEnumerable<LuaDeclaration> GetMembers(string name)
     {
-        return Members.Get<Declaration>(name);
+        return Members.Get<LuaDeclaration>(name);
     }
 
-    public IEnumerable<Declaration> GetGlobal(string name)
+    public IEnumerable<LuaDeclaration> GetGlobal(string name)
     {
-        return GlobalDeclaration.Get<Declaration>(name);
+        return GlobalDeclaration.Get<LuaDeclaration>(name);
     }
 
-    public IEnumerable<Declaration> GetGlobals()
+    public IEnumerable<LuaDeclaration> GetGlobals()
     {
         return GlobalDeclaration.GetAll();
     }
@@ -107,9 +107,9 @@ public class ProjectIndex(LuaCompilation compilation)
         return Supers.Get<LuaType>(name);
     }
 
-    public IEnumerable<NamedTypeDeclaration> GetNamedType(string name)
+    public IEnumerable<NamedTypeLuaDeclaration> GetNamedType(string name)
     {
-        return NamedType.Get<NamedTypeDeclaration>(name);
+        return NamedType.Get<NamedTypeLuaDeclaration>(name);
     }
 
     public IEnumerable<LuaType> GetTypeFromId(string name)
@@ -117,14 +117,14 @@ public class ProjectIndex(LuaCompilation compilation)
         return Id2Type.Get<LuaType>(name);
     }
 
-    public IEnumerable<GenericParameterDeclaration> GetGenericParam(string name)
+    public IEnumerable<GenericParameterLuaDeclaration> GetGenericParam(string name)
     {
-        return GenericParam.Get<GenericParameterDeclaration>(name);
+        return GenericParam.Get<GenericParameterLuaDeclaration>(name);
     }
 
-    public IEnumerable<Declaration> GetDeclarations(string name)
+    public IEnumerable<LuaDeclaration> GetDeclarations(string name)
     {
-        return NameDeclaration.Get<Declaration>(name);
+        return NameDeclaration.Get<LuaDeclaration>(name);
     }
 
     public LuaType? GetExportType(DocumentId documentId)

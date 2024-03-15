@@ -16,19 +16,19 @@ public class SymbolScope(SymbolTree tree, int pos)
 
     public SymbolScope? ParentScope => Parent as SymbolScope;
 
-    public virtual ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
+    public virtual ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
     {
         return ScopeFoundState.NotFounded;
     }
 
-    public virtual void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
+    public virtual void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
         var cur = FindLastChild(it => it.Position < position);
         while (cur != null)
         {
             switch (cur)
             {
-                case Declaration declaration when process(declaration) == ScopeFoundState.Founded:
+                case LuaDeclaration declaration when process(declaration) == ScopeFoundState.Founded:
                     return;
                 case SymbolScope scope when scope.WalkOver(process) == ScopeFoundState.Founded:
                     return;
@@ -55,12 +55,12 @@ public class SymbolScope(SymbolTree tree, int pos)
         return ScopeFoundState.NotFounded;
     }
 
-    public Declaration? FindNameDeclaration(LuaNameExprSyntax nameExpr)
+    public LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { } name)
         {
             var nameText = name.RepresentText;
-            Declaration? result = null;
+            LuaDeclaration? result = null;
             WalkUp(nameExpr.Position, 0, declaration =>
             {
                 if (declaration is { Feature: SymbolFeature.Global or SymbolFeature.Local}
@@ -78,11 +78,11 @@ public class SymbolScope(SymbolTree tree, int pos)
         return null;
     }
 
-    public Symbol? FindSymbol(LuaSyntaxElement element)
+    public LuaSymbol? FindSymbol(LuaSyntaxElement element)
     {
         var position = element.Position;
         var symbolNode = FindFirstChild(it => it.Position == position);
-        if (symbolNode is Symbol result)
+        if (symbolNode is LuaSymbol result)
         {
             return result;
         }
@@ -90,7 +90,7 @@ public class SymbolScope(SymbolTree tree, int pos)
         return null;
     }
 
-    public IEnumerable<Symbol> Descendants
+    public IEnumerable<LuaSymbol> Descendants
     {
         get
         {
@@ -100,7 +100,7 @@ public class SymbolScope(SymbolTree tree, int pos)
             {
                 var node = stack.Pop();
                 // ReSharper disable once InvertIf
-                if (node is Symbol declaration)
+                if (node is LuaSymbol declaration)
                 {
                     yield return declaration;
                 }
@@ -132,12 +132,12 @@ public class SymbolScope(SymbolTree tree, int pos)
 public class LocalStatSymbolScope(SymbolTree tree, int pos)
     : SymbolScope(tree, pos)
 {
-    public override ScopeFoundState WalkOver(Func<Declaration, ScopeFoundState> process)
+    public override ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
     {
         return ProcessNode(process);
     }
 
-    public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
         ParentScope?.WalkUp(Position, level, process);
     }
@@ -146,7 +146,7 @@ public class LocalStatSymbolScope(SymbolTree tree, int pos)
 public class RepeatStatSymbolScope(SymbolTree tree, int pos)
     : SymbolScope(tree, pos)
 {
-    public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
         if (Children.FirstOrDefault() is SymbolScope scope && level == 0)
         {
@@ -162,7 +162,7 @@ public class RepeatStatSymbolScope(SymbolTree tree, int pos)
 public class ForRangeStatSymbolScope(SymbolTree tree, int pos)
     : SymbolScope(tree, pos)
 {
-    public override void WalkUp(int position, int level, Func<Declaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
         if (level == 0)
         {

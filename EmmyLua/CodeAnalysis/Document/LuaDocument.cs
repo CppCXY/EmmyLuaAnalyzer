@@ -37,9 +37,11 @@ public class LuaDocument
 {
     public DocumentId Id { get; set; }
 
-    public string Uri { get; set; }
+    public string Uri { get; }
 
-    public string Path { get; set; }
+    public string Path { get; }
+
+    public bool IsVirtual => Uri.Length == 0;
 
     private LuaSyntaxTree? _syntaxTree;
 

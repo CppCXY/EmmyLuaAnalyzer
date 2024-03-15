@@ -89,11 +89,11 @@ public struct SignatureMatchResult
     }
 }
 
-public class LuaSignature(LuaType returnType, List<ParameterDeclaration> parameters) : IEquatable<LuaSignature>
+public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> parameters) : IEquatable<LuaSignature>
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<ParameterDeclaration> Parameters { get; } = parameters;
+    public List<ParameterLuaDeclaration> Parameters { get; } = parameters;
 
     // 返回值表示匹配程度, 匹配程度只是表征对lua来讲有多少个参数匹配了, 但是并不表示类型完全匹配
     // lua没有重载决议, 所以只要参数数量接近就可以了
@@ -255,7 +255,7 @@ public class LuaSignature(LuaType returnType, List<ParameterDeclaration> paramet
             return this;
         }
 
-        var newParameters = new List<ParameterDeclaration>();
+        var newParameters = new List<ParameterLuaDeclaration>();
         if (skipParam > 0)
         {
             newParameters.AddRange(Parameters.Take(skipParam));
@@ -330,7 +330,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<ParameterDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<ParameterLuaDeclaration> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }
@@ -395,12 +395,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<GenericParameterDeclaration> GenericParameterDeclarations { get; }
+    public List<GenericParameterLuaDeclaration> GenericParameterDeclarations { get; }
 
     public HashSet<string> GenericParameterNames { get; }
 
     public LuaGenericMethodType(
-        List<GenericParameterDeclaration> genericParameterDeclarations,
+        List<GenericParameterLuaDeclaration> genericParameterDeclarations,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)

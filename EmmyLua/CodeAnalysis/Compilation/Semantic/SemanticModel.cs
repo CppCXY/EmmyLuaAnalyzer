@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -13,7 +14,7 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 
     public SearchContext Context { get; } = new(compilation);
 
-    public Symbol.Symbol? GetSymbol(LuaSyntaxElement element)
+    public LuaSymbol? GetSymbol(LuaSyntaxElement element)
     {
         var symbolTree = Compilation.GetSymbolTree(Document.Id);
         if (symbolTree?.FindSymbol(element) is { } symbol)
@@ -22,6 +23,18 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         }
 
         return null;
+    }
+
+    // 渲染符号的文档和类型
+    public string RenderSymbol(LuaSymbol? symbol)
+    {
+        // if (symbol is null)
+        // {
+        //     return "";
+        // }
+        //
+        // return symbol.Render();
+        throw new NotImplementedException();
     }
 
     public IEnumerable<Diagnostic> GetDiagnostic()
