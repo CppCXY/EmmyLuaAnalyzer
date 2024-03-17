@@ -34,11 +34,6 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public void AddDocument(string workspace, LuaDocument document)
     {
         var documentId = document.Id;
-        if (documentId.IsVirtual)
-        {
-            return;
-        }
-
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             root = new ModuleNode();
@@ -46,7 +41,7 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         }
 
         // 取得相对于workspace的路径
-        var relativePath = Path.GetRelativePath(workspace, documentId.Path);
+        var relativePath = Path.GetRelativePath(workspace, document.Path);
         var normalPath = relativePath.Replace('\\', '/');
         foreach (var regex in Pattern)
         {
@@ -76,27 +71,22 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public void AddDocument(LuaDocument document)
     {
-        AddDocument(GetWorkspace(document.Id), document);
+        AddDocument(GetWorkspace(document), document);
     }
 
-    public void RemoveDocument(DocumentId id)
+    public void RemoveDocument(LuaDocument document)
     {
-        RemoveDocument(GetWorkspace(id), id);
+        RemoveDocument(GetWorkspace(document), document);
     }
 
-    public void RemoveDocument(string workspace, DocumentId documentId)
+    public void RemoveDocument(string workspace, LuaDocument document)
     {
-        if (documentId.IsVirtual)
-        {
-            return;
-        }
-
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
         }
 
-        if (DocumentIndex.TryGetValue(documentId, out var moduleIndex))
+        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
         {
             var modulePaths = moduleIndex.ModulePath.Split('.');
             var node = root;
@@ -111,21 +101,17 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
             }
 
             node.Document = null;
-            DocumentIndex.Remove(documentId);
+            DocumentIndex.Remove(document.Id);
         }
     }
 
-    public string GetWorkspace(DocumentId documentId)
+    public string GetWorkspace(LuaDocument document)
     {
         var workspace = string.Empty;
-        if (documentId.IsVirtual)
-        {
-            return workspace;
-        }
 
         foreach (var pair in WorkspaceModule)
         {
-            if (documentId.Path.StartsWith(pair.Key))
+            if (document.Path.StartsWith(pair.Key))
             {
                 workspace = pair.Key;
                 break;

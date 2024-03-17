@@ -2,11 +2,9 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
-public class CfgEdge(CfgNode source, CfgNode target, LuaExprSyntax? condition = null)
+public readonly struct CfgEdge(int sourceIndex, int targetIndex)
 {
-    public CfgNode Target { get; } = target;
+    public int TargetIndex { get; } = targetIndex;
 
-    public CfgNode Source { get; } = source;
-
-    public LuaExprSyntax? Condition { get; } = condition;
+    public int SourceIndex { get; } = sourceIndex;
 }

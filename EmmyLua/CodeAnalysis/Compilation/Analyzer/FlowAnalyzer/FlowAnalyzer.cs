@@ -7,11 +7,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 
 public class FlowAnalyzer : LuaAnalyzer
 {
-    private List<FlowAnalyzerBase> _analyzers = new();
+    private List<FlowAnalyzerBase> Analyzers { get; } = new();
 
     private void AddAnalyzer(FlowAnalyzerBase analyzer)
     {
-        _analyzers.Add(analyzer);
+        Analyzers.Add(analyzer);
     }
 
     public FlowAnalyzer(LuaCompilation compilation) : base(compilation)
@@ -19,15 +19,18 @@ public class FlowAnalyzer : LuaAnalyzer
         AddAnalyzer(new ReachableAnalyzer(compilation));
     }
 
-    public override void Analyze(DocumentId documentId)
+    public override void Analyze(AnalyzeContext analyzeContext)
     {
-        if (Compilation.GetSyntaxTree(documentId) is { } syntaxTree)
+        foreach (var document in analyzeContext.LuaDocuments)
         {
+            var documentId = document.Id;
+            var syntaxTree = document.SyntaxTree;
+
             var builder = new CfgBuilder();
             var blocks = syntaxTree.SyntaxRoot.Descendants.OfType<LuaBlockSyntax>();
             foreach (var block in blocks)
             {
-                if (block.Parent is LuaSourceSyntax or LuaFuncBodySyntax)
+                if (block.Parent is LuaSourceSyntax or LuaClosureExprSyntax)
                 {
                     if (!Compilation.ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
                     {
@@ -39,7 +42,7 @@ public class FlowAnalyzer : LuaAnalyzer
                 }
             }
 
-            foreach (var analyzer in _analyzers)
+            foreach (var analyzer in Analyzers)
             {
                 foreach (var cfg in Compilation.ControlFlowGraphs[documentId].Values)
                 {

@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -7,7 +7,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class TypeInfer
 {
-    public static ILuaType InferType(LuaDocTypeSyntax type, SearchContext context)
+    public static LuaType InferType(LuaDocTypeSyntax type, SearchContext context)
     {
         switch (type)
         {
@@ -34,114 +34,110 @@ public static class TypeInfer
         }
     }
 
-    private static ILuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
+    private static LuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
     {
-        var className = context.GetUniqueId(tableType);
-        return new LuaTable(className);
+        var className = tableType.UniqueId;
+        return new LuaNamedType(className);
     }
 
-    private static ILuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)
+    private static LuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)
     {
         var baseTy = context.Infer(arrayType.BaseType);
-        return new LuaArray(baseTy);
+        return new LuaArrayType(baseTy);
     }
 
-    private static ILuaType InferUnionType(LuaDocUnionTypeSyntax unionType, SearchContext context)
+    private static LuaType InferUnionType(LuaDocUnionTypeSyntax unionType, SearchContext context)
     {
-        var unionTy = new LuaUnion();
         var types = unionType.UnionTypes.Select(context.Infer);
-        foreach (var type in types)
-        {
-            unionTy.UnionType(type);
-        }
-
-        return unionTy;
+        return new LuaUnionType(types.ToList());
     }
 
-    private static ILuaType InferLiteralType(LuaDocLiteralTypeSyntax literalType, SearchContext context)
+    private static LuaType InferLiteralType(LuaDocLiteralTypeSyntax literalType, SearchContext context)
     {
         if (literalType.Integer != null)
         {
-            return new LuaLiteral(literalType.Integer);
+            return new LuaIntegerLiteralType(literalType.Integer.Value);
         }
         else if (literalType.String != null)
         {
-            return new LuaLiteral(literalType.String);
+            return new LuaStringLiteralType(literalType.String.Value);
         }
         else
         {
-            return context.Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
     }
 
-    public static ILuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
+    public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var symbolTree = context.Compilation.GetSymbolTree(funcType.Tree.Document.Id);
-        var paramDeclaration = new List<ParameterDeclaration>();
+        var typedParameters = new List<ParameterLuaDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name })
             {
-                var declaration = new ParameterDeclaration(
-                    name.RepresentText,
-                    symbolTree!.GetPosition(typedParam),
-                    typedParam,
-                    typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
-                paramDeclaration.Add(declaration);
+                var paramDeclaration = new ParameterLuaDeclaration(
+                    name.RepresentText, name.Position, name,context.Infer(typedParam.Type));
+                typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var declaration = new ParameterDeclaration(varArgs.RepresentText,
-                    symbolTree!.GetPosition(typedParam),
-                    typedParam,
-                    typedParam.Type is not null ? new LuaTypeRef(typedParam.Type) : null);
-                paramDeclaration.Add(declaration);
+                var paramDeclaration = new ParameterLuaDeclaration(
+                    "...", varArgs.Position, varArgs,context.Infer(typedParam.Type));
+                typedParameters.Add(paramDeclaration);
             }
         }
 
-        var returnTypes = funcType.ReturnType.Select(it => new LuaTypeRef(it)).Cast<ILuaType>().ToList();
-        if (returnTypes.Count <= 1)
+        var returnTypes = funcType.ReturnType.Select(context.Infer).ToList();
+        LuaType returnType = Builtin.Unknown;
+        if (returnTypes.Count == 1)
         {
-            return new LuaMethod(new Signature(false, paramDeclaration, returnTypes.FirstOrDefault()));
+            returnType = returnTypes[0];
+        }
+        else if (returnTypes.Count > 1)
+        {
+            returnType = new LuaMultiReturnType(returnTypes);
         }
 
-        return new LuaMethod(new Signature(false, paramDeclaration, new LuaMultiRetType(returnTypes)));
+        return new LuaMethodType(returnType, typedParameters, false);
     }
 
-    private static ILuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
+    private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
     {
-        if (nameType.Name != null)
+        if (nameType.Name is { RepresentText: {} name} )
         {
-            var name = nameType.Name.RepresentText;
-            var ty = context.FindLuaType(name);
-            return ty;
+            var builtInType = Builtin.FromName(name);
+            if (builtInType is not null)
+            {
+                return builtInType;
+            }
+
+            return new LuaNamedType(name);
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 
-    private static ILuaType InferParenType(LuaDocParenTypeSyntax parenType, SearchContext context)
+    private static LuaType InferParenType(LuaDocParenTypeSyntax parenType, SearchContext context)
     {
         return parenType.Type != null
             ? InferType(parenType.Type, context)
-            : context.Compilation.Builtin.Unknown;
+            : Builtin.Unknown;
     }
 
-    private static ILuaType InferTupleType(LuaDocTupleTypeSyntax tupleType, SearchContext context)
+    private static LuaType InferTupleType(LuaDocTupleTypeSyntax tupleType, SearchContext context)
     {
         var types = tupleType.TypeList.Select(context.Infer).ToList();
-        return new LuaTuple(types);
+        return new LuaTupleType(types);
     }
 
-    private static ILuaType InferGenericType(LuaDocGenericTypeSyntax genericType, SearchContext context)
+    private static LuaType InferGenericType(LuaDocGenericTypeSyntax genericType, SearchContext context)
     {
-        var baseType = context.Infer(genericType.Name);
-        if (baseType is IGenericBase genericBase)
+        var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
+        if (genericType is { Name.Name: { } name })
         {
-            var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
-            return GenericInfer.InferGeneric(genericBase, typeArgs, context);
+            return new LuaGenericType(name.RepresentText, typeArgs);
         }
 
-        return context.Compilation.Builtin.Unknown;
+        return Builtin.Unknown;
     }
 }

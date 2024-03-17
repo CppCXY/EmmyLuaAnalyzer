@@ -88,19 +88,6 @@ public class LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
     public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
 }
 
-public class LuaFuncBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
-{
-    public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
-
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
-}
-
-public interface IFuncBodyOwner
-{
-    public LuaFuncBodySyntax? FuncBody { get; }
-}
-
 public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {

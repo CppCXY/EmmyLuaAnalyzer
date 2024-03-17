@@ -86,13 +86,73 @@ public static class ExpressionParser
         }
     }
 
-    private static CompleteMarker ClosureExpr(LuaParser p)
+    public static CompleteMarker ParamDef(LuaParser p, bool allowDots = true)
     {
         var m = p.Marker();
-        p.Bump();
         try
         {
-            StatementParser.FunctionBody(p);
+            if (allowDots)
+            {
+                if (p.Current is LuaTokenKind.TkName or LuaTokenKind.TkDots)
+                {
+                    p.Bump();
+                }
+                else
+                {
+                    throw new UnexpectedTokenException("expected name or '...'");
+                }
+            }
+            else
+            {
+                p.Expect(LuaTokenKind.TkName);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.ParamName);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.ParamName, e.Message);
+        }
+    }
+
+    private static CompleteMarker ParamList(LuaParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Expect(LuaTokenKind.TkLeftParen);
+            if (p.Current is not LuaTokenKind.TkRightParen)
+            {
+                var cm = ParamDef(p);
+                while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
+                {
+                    p.Bump();
+                    cm = ParamDef(p);
+                }
+            }
+
+            p.Expect(LuaTokenKind.TkRightParen);
+            return m.Complete(p, LuaSyntaxKind.ParamList);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.ParamList, e.Message);
+        }
+    }
+
+
+    public static CompleteMarker ClosureExpr(LuaParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Accept(LuaTokenKind.TkFunction);
+
+            if (ParamList(p).IsComplete)
+            {
+                BlockParser.Block(p);
+                p.Expect(LuaTokenKind.TkEnd);
+            }
 
             return m.Complete(p, LuaSyntaxKind.ClosureExpr);
         }

@@ -48,9 +48,11 @@ public class CfgBuilder
                             label.PushDiagnostic(DiagnosticSeverity.Error, $"No Visible label {label.RepresentText}");
                         }
                     }
+
                     continue;
                 }
             }
+
             gotoNode.GotoStat.Goto.PushDiagnostic(DiagnosticSeverity.Error, "Label not found");
         }
 
@@ -132,7 +134,7 @@ public class CfgBuilder
                 }
                 default:
                 {
-                    currentBlock.Statements.Add(stat);
+                    currentBlock.AddStatement(stat);
                     break;
                 }
             }
@@ -255,7 +257,7 @@ public class CfgBuilder
 
     private CfgNode BuildReturn(LuaReturnStatSyntax returnStat, CfgNode sourceBlock)
     {
-        sourceBlock.Statements.Add(returnStat);
+        sourceBlock.AddStatement(returnStat);
         _graph.AddEdge(sourceBlock, _graph.ExitNode);
         return _graph.ExitNode;
     }
@@ -263,9 +265,9 @@ public class CfgBuilder
     private CfgNode BuildBreak(LuaBreakStatSyntax breakStat, CfgNode sourceBlock)
     {
         var loop = sourceBlock;
-        while (loop is not null && loop.Kind != CfgNodeKind.Loop)
+        while (loop is { Kind: not CfgNodeKind.Loop } node)
         {
-            loop = loop.Incomings?.FirstOrDefault()?.Source;
+            loop = _graph.GetPredecessors(node).FirstOrDefault();
         }
 
         var nextBlock = _graph.CreateNode();
@@ -287,7 +289,7 @@ public class CfgBuilder
     {
         while (node is not null && !_scopeLabels.ContainsKey(node))
         {
-            node = node.Incomings?.FirstOrDefault()?.Source;
+            node = _graph.GetPredecessors(node).FirstOrDefault();
         }
 
         return node;

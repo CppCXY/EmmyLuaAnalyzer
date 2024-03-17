@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer.Searcher;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -7,61 +6,51 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class SearchContext
+public class SearchContext(LuaCompilation compilation, bool allowCache = true)
 {
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
-    private Dictionary<LuaSyntaxElement, ILuaType> _caches = new();
+    private Dictionary<LuaSyntaxElement, LuaType> Caches { get; } = new();
 
-    private List<ILuaSearcher> _searchers = new();
-
-    private HashSet<ILuaType> _substituteGuard = new();
-
-    private HashSet<ILuaType> _subTypesGuard = new();
-
-    private HashSet<LuaSyntaxElement> _inferGuard = new();
+    private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
 
     private const int MaxDepth = 1000;
 
     // 推断深度
     private int _currentDepth = 0;
 
-    public EnvSearcher EnvSearcher { get; } = new();
-
-    public IndexSearcher IndexSearcher { get; } = new();
-
-    public SearchContext(LuaCompilation compilation)
-    {
-        Compilation = compilation;
-        _searchers.Add(EnvSearcher);
-        _searchers.Add(IndexSearcher);
-    }
-
-    public ILuaType Infer(LuaSyntaxElement? element)
+    public LuaType Infer(LuaSyntaxElement? element)
     {
         if (element is null)
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
-        return _caches.TryGetValue(element, out var symbol) ? symbol : _caches[element] = InferCore(element);
+        if (allowCache)
+        {
+            return Caches.TryGetValue(element, out var luaType) ? luaType : Caches[element] = InferCore(element);
+        }
+        else
+        {
+            return InferCore(element);
+        }
     }
 
     public void ClearCache()
     {
-        _caches.Clear();
+        Caches.Clear();
     }
 
-    private ILuaType InferCore(LuaSyntaxElement element)
+    private LuaType InferCore(LuaSyntaxElement element)
     {
         if (_currentDepth > MaxDepth)
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
-        if (!_inferGuard.Add(element))
+        if (!InferGuard.Add(element))
         {
-            return Compilation.Builtin.Unknown;
+            return Builtin.Unknown;
         }
 
         try
@@ -74,79 +63,38 @@ public class SearchContext
                 LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
                 LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
                 LuaDocTypeSyntax ty => TypeInfer.InferType(ty, this),
-                _ => Compilation.Builtin.Unknown
+                _ => Builtin.Unknown
             };
         }
         finally
         {
             _currentDepth--;
-            _inferGuard.Remove(element);
+            InferGuard.Remove(element);
         }
     }
 
-    public ILuaType FindLuaType(string name)
+    public IEnumerable<LuaDeclaration> GetMembers(string name)
     {
-        foreach (var searcher in _searchers)
+        if (name is "_G" or "_ENV")
         {
-            if (searcher.SearchType(name, this).FirstOrDefault() is { } ty)
-            {
-                return ty;
-            }
+            return Compilation.ProjectIndex.GetGlobals();
         }
 
-        return Compilation.Builtin.Unknown;
+        return Compilation.ProjectIndex.GetMembers(name);
     }
 
-    public IEnumerable<Declaration> GetMembers(string name)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, string memberName)
     {
-        return _searchers.SelectMany(searcher => searcher.SearchMembers(name, this));
-    }
-
-    public IEnumerable<Declaration> FindMember(ILuaType luaType, string memberName)
-    {
-        if (luaType is ILuaNamedType namedType)
+        if (luaType is LuaNamedType namedType)
         {
             return GetMembers(namedType.Name)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
         }
+        else if (luaType is LuaUnionType unionType)
+        {
+            return unionType.UnionTypes.SelectMany(it => FindMember(it, memberName));
+        }
 
-        return Enumerable.Empty<Declaration>();
-    }
-
-    public IEnumerable<GenericParameterDeclaration> FindGenericParams(string name)
-    {
-        return _searchers.SelectMany(searcher => searcher.SearchGenericParams(name, this));
-    }
-
-    public IEnumerable<ILuaType> FindSupers(string name)
-    {
-        return _searchers.SelectMany(searcher => searcher.SearchSupers(name, this));
-    }
-
-    public string GetUniqueId(LuaSyntaxElement element)
-    {
-        var document = element.Tree.Document;
-        var documentId = document.Id;
-        return $"{documentId.Guid}|{Compilation.SymbolTrees[documentId].GetPosition(element)}";
-    }
-
-    public bool TryAddSubstitute(ILuaType type)
-    {
-        return _substituteGuard.Add(type);
-    }
-
-    public void RemoveSubstitute(ILuaType type)
-    {
-        _substituteGuard.Remove(type);
-    }
-
-    public bool TryAddSubType(ILuaType type)
-    {
-        return _subTypesGuard.Add(type);
-    }
-
-    public void RemoveSubType(ILuaType type)
-    {
-        _subTypesGuard.Remove(type);
+        return Enumerable.Empty<LuaDeclaration>();
     }
 }

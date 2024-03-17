@@ -44,7 +44,6 @@ public enum LuaSyntaxKind : ushort
     TableFieldAssign,
     TableFieldValue,
     Attribute,
-    FuncBody,
 
     // comment
     Comment,
@@ -94,7 +93,6 @@ public enum LuaSyntaxKind : ushort
     // a: number
     TypedField,
 
-    // docOther
     GenericDeclareList,
 
     // start with '#' or '@'

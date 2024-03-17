@@ -47,12 +47,12 @@ public class TextDocumentHandler(
     public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        var document = workspace.GetDocument(uri);
+        var document = workspace.GetDocumentByUri(uri);
         if (document is not null && string.Equals(document.Text, request.TextDocument.Text, StringComparison.Ordinal))
         {
             return Unit.Task;
         }
-        workspace.UpdateDocument(uri, request.TextDocument.Text);
+        workspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
         PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
         return Unit.Task;
     }
@@ -61,7 +61,7 @@ public class TextDocumentHandler(
     {
         var changes = request.ContentChanges.ToList();
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        workspace.UpdateDocument(uri, changes[0].Text);
+        workspace.UpdateDocumentByUri(uri, changes[0].Text);
         PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
         return Unit.Task;
     }

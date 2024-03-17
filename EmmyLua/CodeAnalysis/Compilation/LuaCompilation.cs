@@ -1,11 +1,13 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.SymbolAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
@@ -23,31 +25,25 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    public IEnumerable<Symbol.Symbol> Symbols => SymbolTrees.Values.SelectMany(it => it.Symbols);
-
-    public Builtin Builtin { get; } = new();
-
-    public Stub.Stub Stub { get; }
-
-    public SearchContext SearchContext { get; }
+    public ProjectIndex ProjectIndex { get; }
 
     private HashSet<DocumentId> DirtyDocuments { get; } = [];
 
-    internal Dictionary<DocumentId, SymbolTree> SymbolTrees { get; } = new();
+    internal Dictionary<DocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
 
     internal Dictionary<DocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
 
-    private List<ILuaAnalyzer> Analyzers { get; }
+    private List<LuaAnalyzer> Analyzers { get; }
 
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        Stub = new Stub.Stub(this);
-        SearchContext = new SearchContext(this);
+        ProjectIndex = new ProjectIndex(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
-            new SymbolAnalyzer(this),
+            new FlowAnalyzer(this),
+            new ResolveAnalyzer(this),
             new TypeAnalyzer(this)
         ];
     }
@@ -93,8 +89,8 @@ public class LuaCompilation
             luaAnalyzer.RemoveCache(documentId);
         }
 
-        SymbolTrees.Remove(documentId);
-        Stub.Remove(documentId);
+        DeclarationTrees.Remove(documentId);
+        ProjectIndex.Remove(documentId);
         ControlFlowGraphs.Remove(documentId);
     }
 
@@ -105,7 +101,7 @@ public class LuaCompilation
 
     public SemanticModel? GetSemanticModel(string url)
     {
-        var document = Workspace.GetDocument(url);
+        var document = Workspace.GetDocumentByUri(url);
         if (document is null)
         {
             return null;
@@ -116,17 +112,24 @@ public class LuaCompilation
 
     private void Analyze()
     {
-        SearchContext.ClearCache();
         if (DirtyDocuments.Count != 0)
         {
             try
             {
+                var list = new List<LuaDocument>();
+                foreach (var documentId in DirtyDocuments)
+                {
+                    var document = Workspace.GetDocument(documentId);
+                    if (document is not null)
+                    {
+                        list.Add(document);
+                    }
+                }
+
+                var analyzeContext = new AnalyzeContext(list);
                 foreach (var analyzer in Analyzers)
                 {
-                    foreach (var documentId in DirtyDocuments)
-                    {
-                        analyzer.Analyze(documentId);
-                    }
+                    analyzer.Analyze(analyzeContext);
                 }
             }
             finally
@@ -141,9 +144,9 @@ public class LuaCompilation
         DirtyDocuments.Add(documentId);
     }
 
-    public SymbolTree? GetSymbolTree(DocumentId documentId)
+    public LuaDeclarationTree? GetDeclarationTree(DocumentId documentId)
     {
-        return SymbolTrees.GetValueOrDefault(documentId);
+        return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
     public void AddDiagnostic(DocumentId documentId, Diagnostic diagnostic)
@@ -169,4 +172,18 @@ public class LuaCompilation
                 tree.Document.GetLocation(it.Range)
             ))
             : Enumerable.Empty<Diagnostic>();
+
+    public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
+    {
+        var documentId = block.Tree.Document.Id;
+        if (ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
+        {
+            if (cfgDict.TryGetValue(block, out var cfg))
+            {
+                return cfg;
+            }
+        }
+
+        return null;
+    }
 }

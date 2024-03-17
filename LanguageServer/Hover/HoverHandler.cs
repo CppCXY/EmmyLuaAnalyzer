@@ -3,6 +3,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
+
 namespace LanguageServer.Hover;
 
 // ReSharper disable once ClassNeverInstantiated.Global
@@ -35,24 +36,15 @@ public class HoverHandler(
             var document = semanticModel.Document;
             var pos = request.Position;
             var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
-            if (node is null)
+            var hoverResult = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover()
             {
-                return Task.FromResult<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?>(null);
-            }
-            
-            var symbol = semanticModel.GetSymbol(node);
-            if (symbol is not null)
-            {
-                var hoverResult = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover()
+                Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                 {
-                    Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
-                    {
-                        Kind = MarkupKind.Markdown,
-                        Value = $"{symbol.DeclarationType?.ToDisplayString(workspace.Compilation.SearchContext)}"
-                    })
-                };
-                return Task.FromResult(hoverResult)!;
-            }
+                    Kind = MarkupKind.Markdown,
+                    Value = semanticModel.RenderSymbol(node)
+                })
+            };
+            return Task.FromResult(hoverResult)!;
         }
 
         return Task.FromResult<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?>(null);

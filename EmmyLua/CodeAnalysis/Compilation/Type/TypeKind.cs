@@ -3,17 +3,16 @@
 public enum TypeKind
 {
     Unknown,
-    Alias,
+    Any,
+    NamedType,
+    Nil,
     Tuple,
-    MultiRet,
     Union,
     Array,
-    Class,
-    Enum,
-    Interface,
     Generic,
+    Return,
     Method,
-    TypeRef,
-    Literal,
-    Table
+    StringLiteral,
+    IntegerLiteral,
+    TableLiteral,
 }

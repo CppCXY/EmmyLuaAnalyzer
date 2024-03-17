@@ -25,7 +25,7 @@ public class ReachableAnalyzer(LuaCompilation compilation) : FlowAnalyzerBase(co
             {
                 if (reachable[block])
                 {
-                    foreach (var successor in block.Successors)
+                    foreach (var successor in cfg.GetSuccessors(block))
                     {
                         if (!reachable[successor])
                         {
@@ -39,15 +39,13 @@ public class ReachableAnalyzer(LuaCompilation compilation) : FlowAnalyzerBase(co
 
         foreach (var block in cfg.Nodes)
         {
-            if (!reachable[block] && block.Statements.Count != 0)
+            if (!reachable[block] && block.Range.Length != 0)
             {
-                var start = block.Statements.First().Range.StartOffset;
-                var range = new SourceRange(start, block.Statements.Last().Range.EndOffset - start);
                 tree.PushDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Hint,
                     DiagnosticCode.UnreachableCode,
                     "Unreachable code",
-                    range,
+                    block.Range,
                     DiagnosticTag.Unnecessary
                 ));
             }

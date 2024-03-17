@@ -1,24 +1,38 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 
-public class SemanticModel(LuaCompilation compilation, LuaDocument document)
+public class SemanticModel
 {
-    public LuaCompilation Compilation { get; } = compilation;
+    public LuaCompilation Compilation { get; }
 
-    public LuaDocument Document { get; } = document;
+    public LuaDocument Document { get; }
 
-    public Symbol.Symbol? GetSymbol(LuaSyntaxElement element)
+    public SearchContext Context { get; }
+
+    public LuaRenderBuilder RenderBuilder { get; }
+
+    public SemanticModel(LuaCompilation compilation, LuaDocument document)
     {
-        var symbolTree = Compilation.GetSymbolTree(Document.Id);
-        if (symbolTree?.FindSymbol(element) is { } symbol)
+        Compilation = compilation;
+        Document = document;
+        Context = new(compilation);
+        RenderBuilder = new(Context);
+    }
+
+    // 渲染符号的文档和类型
+    public string RenderSymbol(LuaSyntaxElement? symbol)
+    {
+        if (symbol is null)
         {
-            return symbol;
+            return string.Empty;
         }
 
-        return null;
+        return RenderBuilder.Render(symbol);
     }
 
     public IEnumerable<Diagnostic> GetDiagnostic()
