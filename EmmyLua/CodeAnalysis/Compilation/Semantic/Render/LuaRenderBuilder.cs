@@ -47,19 +47,19 @@ public class LuaRenderBuilder(SearchContext context)
             {
                 case MethodLuaDeclaration method:
                 {
-                    sb.Append($"```lua\n\nmethod {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n\n```");
+                    sb.Append($"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
                     break;
                 }
                 default:
                 {
-                    sb.Append($"```lua\n\nfield {declaration.Name}:{LuaTypeRender.RenderType(declaration.DeclarationType, context)}\n\n```");
+                    sb.Append($"```lua\n(field) {declaration.Name}:{LuaTypeRender.RenderType(declaration.DeclarationType, context)}\n```");
                     break;
                 }
             }
             var prefixType = context.Infer(indexExpr.PrefixExpr);
             if (!prefixType.Equals(Builtin.Unknown))
             {
-                sb.Append($"\nin class {LuaTypeRender.RenderType(prefixType, context)}\n\n");
+                sb.Append($"\nin class `{LuaTypeRender.RenderType(prefixType, context)}`\n");
             }
         }
 
@@ -128,13 +128,13 @@ public class LuaRenderBuilder(SearchContext context)
             case LocalLuaDeclaration local:
             {
                 sb.Append(
-                    $"```lua\nlocal {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
+                    $"```lua\n(local) {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
                 break;
             }
             case GlobalLuaDeclaration global:
             {
                 sb.Append(
-                    $"```lua\nglobal variable {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
+                    $"```lua\n(global) {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
                 break;
             }
             case MethodLuaDeclaration method:
@@ -143,12 +143,12 @@ public class LuaRenderBuilder(SearchContext context)
                 if (isLocal)
                 {
                     sb.Append(
-                        $"```lua\nlocal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n```");
+                        $"```lua\nlocal function {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
                 }
                 else
                 {
                     sb.Append(
-                        $"```lua\nglobal function {method.Name}{LuaTypeRender.RenderType(method.DeclarationType, context)}\n```");
+                        $"```lua\nfunction {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
                 }
 
                 break;
@@ -158,11 +158,11 @@ public class LuaRenderBuilder(SearchContext context)
                 if (parameter.DeclarationType is { } declarationType)
                 {
                     sb.Append(
-                        $"```lua\nparameter {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n```");
+                        $"```lua\n(parameter) {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n```");
                 }
                 else
                 {
-                    sb.Append($"```lua\nparameter {parameter.Name}\n\n```");
+                    sb.Append($"```lua\n(parameter) {parameter.Name}\n\n```");
                 }
 
                 break;

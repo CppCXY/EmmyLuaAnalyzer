@@ -93,7 +93,6 @@ public enum LuaSyntaxKind : ushort
     // a: number
     TypedField,
 
-    // docOther
     GenericDeclareList,
 
     // start with '#' or '@'

@@ -480,11 +480,11 @@ public static class TagParser
         p.Bump();
         try
         {
-            var cm = TypesParser.TypedParameter(p);
+            var cm = GenericParam(p);
             while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                cm = TypesParser.TypedParameter(p);
+                cm = GenericParam(p);
             }
 
             DescriptionParser.Description(p);

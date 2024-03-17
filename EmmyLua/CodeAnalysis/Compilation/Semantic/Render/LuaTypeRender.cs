@@ -18,6 +18,18 @@ public static class LuaTypeRender
         return sb.ToString();
     }
 
+    public static string RenderFunc(LuaType? type, SearchContext context)
+    {
+        if (type is LuaMethodType methodType)
+        {
+            var sb = new StringBuilder();
+            RenderFunctionType(methodType, context, sb, 0, true);
+            return sb.ToString();
+        }
+
+        return "()=>void";
+    }
+
     private static void InnerRenderType(LuaType type, SearchContext context, StringBuilder sb, int level)
     {
         switch (type)
@@ -40,6 +52,11 @@ public static class LuaTypeRender
             case LuaTupleType tupleType:
             {
                 RenderTupleType(tupleType, context, sb, level);
+                break;
+            }
+            case LuaMethodType methodType:
+            {
+                RenderFunctionType(methodType, context, sb, level, false);
                 break;
             }
             default:
@@ -132,5 +149,53 @@ public static class LuaTypeRender
         }
 
         sb.Append(']');
+    }
+
+    private static void RenderFunctionType(LuaMethodType methodType, SearchContext context, StringBuilder sb, int level,
+        bool skipFun)
+    {
+        if (!skipFun)
+        {
+            sb.Append("fun");
+        }
+
+        // show generic
+        if (methodType is LuaGenericMethodType genericMethodType)
+        {
+            var genericParameters = genericMethodType.GenericParameterDeclarations;
+            sb.Append('<');
+            for (var i = 0; i < genericParameters.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(",");
+                }
+
+                sb.Append(genericParameters[i].Name);
+            }
+
+            sb.Append('>');
+        }
+
+        var mainSignature = methodType.MainSignature;
+
+        sb.Append('(');
+        for (var i = 0; i < mainSignature.Parameters.Count; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(", ");
+            }
+
+            var parameter = mainSignature.Parameters[i];
+            sb.Append(parameter.Name);
+            sb.Append(':');
+            InnerRenderType(parameter.DeclarationType ?? Builtin.Any, context, sb, 0);
+        }
+
+        sb.Append(')');
+
+        sb.Append("=>");
+        InnerRenderType(mainSignature.ReturnType, context, sb, 0);
     }
 }

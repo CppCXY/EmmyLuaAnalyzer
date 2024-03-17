@@ -6,19 +6,13 @@ using EmmyLua.CodeAnalysis.Workspace;
 var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    ---@enum A : B @好了好了
-    ---| yes @是的
-    ---| no @不是
-    local c = {
-        aaa = 123
-    }
-    print(c.aaa)
-    if c.aaa then
-        return x
+    local t= {}
+    
+    ---@generic T, B, c
+    ---@param aaa number
+    function t:aa(aaa,bbb,ccc)
+        -- body
     end
-    
-    
-    yes.it = 123
     """, new LuaLanguage());
 workspace.AddDocument(document);
     

@@ -13,8 +13,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         do
         {
             changed = false;
-            foreach (var unResolved in analyzeContext.UnResolves)
+            var resolvedCount = 0;
+            for (var i = 0; i < analyzeContext.UnResolves.Count - resolvedCount;)
             {
+                var unResolved = analyzeContext.UnResolves[i];
                 if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
                 {
                     ResolveType(unResolved, ref changed);
@@ -27,8 +29,24 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 {
                     ResolveReturn(unResolved, ref changed);
                 }
+
+                if (unResolved.ResolvedState == ResolveState.Resolved)
+                {
+                    if (i < analyzeContext.UnResolves.Count - resolvedCount - 1)
+                    {
+                        // Move the resolved object to the end of the list
+                        (analyzeContext.UnResolves[i], analyzeContext.UnResolves[analyzeContext.UnResolves.Count - resolvedCount - 1]) = (
+                            analyzeContext.UnResolves[analyzeContext.UnResolves.Count - resolvedCount - 1],
+                            analyzeContext.UnResolves[i]);
+                    }
+                    resolvedCount++;
+                }
+                else
+                {
+                    i++;
+                }
             }
-        } while (!changed);
+        } while (changed);
     }
 
     private void ResolveType(UnResolved unResolved, ref bool changed)
@@ -54,10 +72,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.SyntaxElement is LuaIndexExprSyntax indexExpr)
+            if (declaration.SyntaxElement is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
                 var documentId = indexExpr.Tree.Document.Id;
-                var ty = Context.Infer(indexExpr);
+                var ty = Context.Infer(prefixExpr);
                 if (ty is LuaNamedType namedType)
                 {
                     Compilation.ProjectIndex.AddMember(documentId, namedType.Name, declaration);
@@ -96,7 +114,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             var block = unResolvedSource.Block;
             var complete = false;
-            var returnType = AnalyzeBlockReturns(block, ref changed);
+            var returnType = AnalyzeBlockReturns(block, ref complete);
             if (!complete)
             {
                 return;

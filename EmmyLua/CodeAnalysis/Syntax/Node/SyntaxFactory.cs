@@ -61,7 +61,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocType => new LuaDocTagTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocParam => new LuaDocTagParamSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocReturn => new LuaDocTagReturnSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocGeneric => new LuaDocGenericTypeSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.DocGeneric => new LuaDocTagGenericSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocSee => new LuaDocTagSeeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocDeprecated => new LuaDocTagDeprecatedSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocCast => new LuaDocTagCastSyntax(greenNode, tree, parent, startOffset),
@@ -74,7 +74,6 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocAs => new LuaDocTagAsSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocNodiscard => new LuaDocTagNodiscardSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.GenericDeclareList => new LuaDocTagGenericDeclareListSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(greenNode, tree, parent, startOffset),
@@ -91,6 +90,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypeBody => new LuaDocTagBodySyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };

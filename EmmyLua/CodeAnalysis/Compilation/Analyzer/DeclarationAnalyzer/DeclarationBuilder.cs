@@ -268,7 +268,8 @@ public class DeclarationBuilder : ILuaElementWalker
 
             if (localName is { Name: { } name })
             {
-                var declaration = new LocalLuaDeclaration(name.RepresentText, GetPosition(localName), localName, luaType);
+                var declaration =
+                    new LocalLuaDeclaration(name.RepresentText, GetPosition(localName), localName, luaType);
                 AddDeclaration(declaration);
                 var unResolveDeclaration =
                     new UnResolvedDeclaration(declaration, relatedExpr, ResolveState.UnResolvedType);
@@ -319,11 +320,11 @@ public class DeclarationBuilder : ILuaElementWalker
         return parameters;
     }
 
-    private LuaMultiReturnType GetRetType(IEnumerable<LuaDocTagSyntax> docList)
+    private LuaMultiReturnType GetRetType(IEnumerable<LuaDocTagSyntax>? docList)
     {
-        var retTag = docList.OfType<LuaDocTagReturnSyntax>().ToList();
+        var retTag = docList?.OfType<LuaDocTagReturnSyntax>().ToList();
         return new LuaMultiReturnType(
-            retTag.SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList());
+            retTag?.SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList() ?? []);
     }
 
     private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
@@ -348,7 +349,8 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (forStatSyntax is { IteratorName.Name: { } name })
         {
-            AddDeclaration(new ParameterLuaDeclaration(name.RepresentText, GetPosition(name), forStatSyntax.IteratorName,
+            AddDeclaration(new ParameterLuaDeclaration(name.RepresentText, GetPosition(name),
+                forStatSyntax.IteratorName,
                 Builtin.Integer));
         }
     }
@@ -448,7 +450,8 @@ public class DeclarationBuilder : ILuaElementWalker
             else if (tagParamSyntax is { VarArgs: { } varArgs, Type: { } type2 })
             {
                 var ty = Context.Infer(type2);
-                var declaration = new DocParameterLuaDeclaration(varArgs.RepresentText, GetPosition(varArgs), varArgs, ty);
+                var declaration =
+                    new DocParameterLuaDeclaration(varArgs.RepresentText, GetPosition(varArgs), varArgs, ty);
                 dic.Add("...", declaration);
                 AddDeclaration(declaration);
             }
@@ -495,7 +498,8 @@ public class DeclarationBuilder : ILuaElementWalker
                         var prevDeclaration = FindDeclaration(nameExpr);
                         if (prevDeclaration is null)
                         {
-                            var declaration = new GlobalLuaDeclaration(name.RepresentText, GetPosition(nameExpr), nameExpr,
+                            var declaration = new GlobalLuaDeclaration(name.RepresentText, GetPosition(nameExpr),
+                                nameExpr,
                                 luaType);
                             ProjectIndex.AddGlobal(DocumentId, name.RepresentText, declaration);
                             var unResolveDeclaration =
@@ -516,7 +520,8 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    var declaration = new IndexLuaDeclaration(indexExpr.Name, GetPosition(indexExpr), indexExpr, luaType);
+                    var declaration =
+                        new IndexLuaDeclaration(indexExpr.Name, GetPosition(indexExpr), indexExpr, luaType);
                     if (i == 0)
                     {
                         declaration.DeclarationType = FindFirstLocalOrAssignType(luaAssignStat);
@@ -590,13 +595,10 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         var comment = closureExprSyntax.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments
             .FirstOrDefault();
-        if (comment is null)
-        {
-            return;
-        }
 
-        var docList = comment.DocList.ToList();
-        var generic = docList.OfType<LuaDocTagGenericDeclareListSyntax>().FirstOrDefault();
+        var genericParameters = new List<GenericParameterLuaDeclaration>();
+        var docList = comment?.DocList.ToList();
+        var generic = docList?.OfType<LuaDocTagGenericSyntax>().FirstOrDefault();
         if (generic is not null)
         {
             foreach (var param in generic.Params)
@@ -605,12 +607,13 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var declaration =
                         new GenericParameterLuaDeclaration(name.RepresentText, GetPosition(param), param, null);
-                    AddDeclaration(declaration);
+                    // AddDeclaration(declaration);
+                    genericParameters.Add(declaration);
                 }
             }
         }
 
-        var overloads = docList
+        var overloads = docList?
             .OfType<LuaDocTagOverloadSyntax>()
             .Select(it => Context.Infer(it.TypeFunc))
             .Cast<LuaMethodType>()
@@ -626,7 +629,12 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var mainRetType = GetRetType(docList);
         var isColon = false;
-        var method = new LuaMethodType(new LuaSignature(mainRetType, parameters), overloads, isColon);
+        LuaMethodType method =
+            genericParameters.Count != 0
+                ? new LuaGenericMethodType(
+                    genericParameters,
+                    new LuaSignature(mainRetType, parameters), overloads, isColon)
+                : new LuaMethodType(new LuaSignature(mainRetType, parameters), overloads, isColon);
         if (closureExprSyntax.Block is { } block)
         {
             var unResolved = new UnResolvedMethod(method, block, ResolveState.UnResolveReturn);
@@ -984,15 +992,16 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void AnalyzeTypeGenericParam(LuaDocTagGenericDeclareListSyntax genericDeclareList,
+    private void AnalyzeTypeGenericParam(LuaDocGenericDeclareListSyntax generic,
         LuaNamedType namedType)
     {
-        foreach (var param in genericDeclareList.Params)
+        foreach (var param in generic.Params)
         {
             if (param is { Name: { } name })
             {
                 var type = Context.Infer(param.Type);
-                var declaration = new GenericParameterLuaDeclaration(name.RepresentText, GetPosition(name), param, type);
+                var declaration =
+                    new GenericParameterLuaDeclaration(name.RepresentText, GetPosition(name), param, type);
                 ProjectIndex.AddGenericParam(DocumentId, namedType.Name, declaration);
             }
         }

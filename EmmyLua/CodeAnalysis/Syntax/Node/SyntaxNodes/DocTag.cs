@@ -22,7 +22,7 @@ public class LuaDocTagClassSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public LuaDocTagGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocTagGenericDeclareListSyntax>();
+    public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
 
     public bool HasExtendType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
@@ -39,7 +39,13 @@ public class LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, L
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTagGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+public class LuaDocTagGenericSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
+}
+
+public class LuaDocGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {
     public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
@@ -62,7 +68,7 @@ public class LuaDocTagInterfaceSyntax(GreenNode greenNode, LuaSyntaxTree tree, L
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public LuaDocTagGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocTagGenericDeclareListSyntax>();
+    public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
 
     public bool HasExtendType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
