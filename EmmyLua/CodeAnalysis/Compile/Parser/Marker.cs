@@ -73,11 +73,14 @@ public struct CompleteMarker(int start, int finish, LuaSyntaxKind kind, bool isC
         return m;
     }
 
-    public void Reset(IMarkerEventContainer p, LuaSyntaxKind kind)
+    public Marker Reset(IMarkerEventContainer p)
     {
         if (p.Events[Start] is MarkEvent.NodeStart(_, _) start)
         {
-            p.Events[Start] = start with { Kind = kind };
+            p.Events[Start] = start with { Kind = LuaSyntaxKind.None };
         }
+
+        p.Events.RemoveAt(Finish);
+        return new Marker(Start);
     }
 }

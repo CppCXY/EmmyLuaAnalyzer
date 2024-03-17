@@ -1,6 +1,6 @@
 ﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public enum TypeFeature
+public enum NamedTypeKind
 {
     Class,
     Enum,

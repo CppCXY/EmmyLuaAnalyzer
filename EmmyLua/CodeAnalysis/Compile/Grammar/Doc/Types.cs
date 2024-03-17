@@ -88,7 +88,11 @@ public static class TypesParser
                         return;
                     }
 
-                    var m = pcm.Precede(p);
+                    if (pcm.Kind != LuaSyntaxKind.TypeName)
+                    {
+                        return;
+                    }
+                    var m = pcm.Reset(p);
                     p.Bump();
                     TypeList(p);
                     p.Expect(LuaTokenKind.TkGt);

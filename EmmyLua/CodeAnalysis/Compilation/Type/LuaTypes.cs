@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -55,6 +56,11 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
 public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : LuaType(kind), IEquatable<LuaNamedType>
 {
     public string Name { get; } = name;
+
+    public BasicDetailType GetTypeInfo(SearchContext context)
+    {
+        throw new NotImplementedException();
+    }
 
     public override bool Equals(object? obj)
     {

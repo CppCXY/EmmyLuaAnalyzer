@@ -96,6 +96,6 @@ public class LuaDocTagTypedFieldSyntax(
 public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
-    public LuaDocNameTypeSyntax? Name => FirstChild<LuaDocNameTypeSyntax>();
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
     public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
 }

@@ -6,13 +6,13 @@ using EmmyLua.CodeAnalysis.Workspace;
 var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    local t= {}
+    ---@class A<T>
+    ---@field x T
+    local t = {}
     
-    ---@generic T, B, c
-    ---@param aaa number
-    function t:aa(aaa,bbb,ccc)
-        -- body
-    end
+    ---@type A<number>
+    local d = 123
+    
     """, new LuaLanguage());
 workspace.AddDocument(document);
     

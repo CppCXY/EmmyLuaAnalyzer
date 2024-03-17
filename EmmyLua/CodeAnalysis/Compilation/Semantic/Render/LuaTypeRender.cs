@@ -168,7 +168,7 @@ public static class LuaTypeRender
             {
                 if (i > 0)
                 {
-                    sb.Append(",");
+                    sb.Append(',');
                 }
 
                 sb.Append(genericParameters[i].Name);

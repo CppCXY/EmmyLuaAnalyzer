@@ -3,11 +3,9 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class TypeIndex(LuaCompilation compilation)
+public class TypeOperatorStorage
 {
     private Dictionary<TypeOperatorKind, IndexEntry<TypeOperator>> TypeOperators { get; } = new();
-
-    private Dictionary<string, IndexEntry<TypeFeature>> Features { get; } = new();
 
     public void AddTypeOperator(DocumentId documentId, TypeOperator typeOperator)
     {
@@ -20,21 +18,9 @@ public class TypeIndex(LuaCompilation compilation)
         entry.Add(documentId, typeOperator);
     }
 
-    public void AddFeature(DocumentId documentId, string name, TypeFeature feature)
-    {
-        if (!Features.TryGetValue(name, out var entry))
-        {
-            entry = new IndexEntry<TypeFeature>();
-            Features.Add(name, entry);
-        }
-
-        entry.Add(documentId, feature);
-    }
-
     public void Remove(DocumentId documentId)
     {
         RemoveOperator(documentId);
-        RemoveFeatures(documentId);
     }
 
     private void RemoveOperator(DocumentId documentId)
@@ -52,24 +38,6 @@ public class TypeIndex(LuaCompilation compilation)
         foreach (var key in waitRemove)
         {
             TypeOperators.Remove(key);
-        }
-    }
-
-    private void RemoveFeatures(DocumentId documentId)
-    {
-        var waitRemove = new List<string>();
-        foreach (var (key, entry) in Features)
-        {
-            entry.Remove(documentId);
-            if (entry.Files.Count == 0)
-            {
-                waitRemove.Add(key);
-            }
-        }
-
-        foreach (var key in waitRemove)
-        {
-            Features.Remove(key);
         }
     }
 
@@ -115,17 +83,5 @@ public class TypeIndex(LuaCompilation compilation)
             .OfType<IndexOperator>()
             .FirstOrDefault(it => it.Type.Equals(type) && it.Key.Equals(key));
         return bestMatched;
-    }
-
-    public TypeFeature GetFeature(string name)
-    {
-        if (!Features.TryGetValue(name, out var entry))
-        {
-            return TypeFeature.Class;
-        }
-
-        return entry.Files.Values.SelectMany(it => it)
-            .OrderByDescending(it => it)
-            .FirstOrDefault();
     }
 }

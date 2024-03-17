@@ -28,7 +28,7 @@ public static class ExpressionInfer
     {
         var exprTy = context.Infer(unaryExpr.Expression);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(unaryExpr.Operator);
-        var op = context.Compilation.ProjectIndex.TypeIndex.GetBestMatchedUnaryOperator(opKind, exprTy);
+        var op = context.Compilation.ProjectIndex.TypeOperatorStorage.GetBestMatchedUnaryOperator(opKind, exprTy);
 
         if (op is not null)
         {
@@ -96,7 +96,7 @@ public static class ExpressionInfer
         var leftTy = context.Infer(binaryExpr.LeftExpr);
         var rightTy = context.Infer(binaryExpr.RightExpr);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
-        var bop = context.Compilation.ProjectIndex.TypeIndex.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
+        var bop = context.Compilation.ProjectIndex.TypeOperatorStorage.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
         if (bop is not null)
         {
             return bop.Ret;

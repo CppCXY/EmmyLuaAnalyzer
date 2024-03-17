@@ -64,6 +64,11 @@ public class IndexStorage<TKey, TStubElement>
             : Enumerable.Empty<TStubElement>();
     }
 
+    public TStubElement? GetOne(TKey key)
+    {
+        return Get(key).FirstOrDefault();
+    }
+
     public IEnumerable<TValue> Get<TValue>(TKey key)
         where TValue : TStubElement
         => Get(key).OfType<TValue>();

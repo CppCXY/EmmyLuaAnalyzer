@@ -133,7 +133,7 @@ public static class TypeInfer
     private static LuaType InferGenericType(LuaDocGenericTypeSyntax genericType, SearchContext context)
     {
         var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
-        if (genericType is { Name.Name: { } name })
+        if (genericType is { Name: { } name })
         {
             return new LuaGenericType(name.RepresentText, typeArgs);
         }

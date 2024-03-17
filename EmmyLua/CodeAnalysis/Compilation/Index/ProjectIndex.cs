@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -26,7 +27,9 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private Dictionary<DocumentId, LuaType> ExportTypes { get; } = new();
 
-    public TypeIndex TypeIndex { get; } = new(compilation);
+    public TypeOperatorStorage TypeOperatorStorage { get; } = new();
+
+    private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
 
     public void Remove(DocumentId documentId)
     {
@@ -36,7 +39,7 @@ public class ProjectIndex(LuaCompilation compilation)
         Supers.Remove(documentId);
         NamedType.Remove(documentId);
         GenericParam.Remove(documentId);
-        TypeIndex.Remove(documentId);
+        TypeOperatorStorage.Remove(documentId);
         ExportTypes.Remove(documentId);
         Id2Type.Remove(documentId);
     }
@@ -58,17 +61,26 @@ public class ProjectIndex(LuaCompilation compilation)
         Supers.Add(documentId, name, type);
     }
 
-    public void AddType(DocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration, TypeFeature feature)
+    public void AddType(DocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration, NamedTypeKind kind)
     {
         NamedType.Add(documentId, name, luaDeclaration);
         NameDeclaration.Add(documentId, name, luaDeclaration);
-        TypeIndex.AddFeature(documentId, name, feature);
+        NamedTypeKinds.Add(documentId, name, kind);
     }
 
     public void AddAlias(DocumentId documentId, string name, LuaType baseType, NamedTypeLuaDeclaration luaDeclaration)
     {
-        AddType(documentId, name, luaDeclaration, TypeFeature.Alias);
+        AddType(documentId, name, luaDeclaration, NamedTypeKind.Alias);
         Id2Type.Add(documentId, name, baseType);
+    }
+
+    public void AddEnum(DocumentId documentId, string name, LuaType? baseType, NamedTypeLuaDeclaration luaDeclaration)
+    {
+        AddType(documentId, name, luaDeclaration, NamedTypeKind.Enum);
+        if (baseType != null)
+        {
+            Supers.Add(documentId, name, baseType);
+        }
     }
 
     public void AddMethod(DocumentId documentId, string id, LuaMethodType methodType)
@@ -117,11 +129,6 @@ public class ProjectIndex(LuaCompilation compilation)
         return Id2Type.Get<LuaType>(name);
     }
 
-    public IEnumerable<GenericParameterLuaDeclaration> GetGenericParam(string name)
-    {
-        return GenericParam.Get<GenericParameterLuaDeclaration>(name);
-    }
-
     public IEnumerable<LuaDeclaration> GetDeclarations(string name)
     {
         return NameDeclaration.Get<LuaDeclaration>(name);
@@ -132,4 +139,37 @@ public class ProjectIndex(LuaCompilation compilation)
         return ExportTypes.GetValueOrDefault(documentId);
     }
 
+    public BasicDetailType GetDetailNamedType(string name)
+    {
+        var kind = NamedTypeKinds.GetOne(name);
+        switch (kind)
+        {
+            case NamedTypeKind.Alias:
+            {
+                var baseType = Id2Type.GetOne(name);
+                return new AliasDetailType(name, baseType);
+            }
+            case NamedTypeKind.Class:
+            {
+                var supers = Supers.Get(name).ToList();
+                var generics = GenericParam.Get(name).ToList();
+                var declaration = NamedType.GetOne(name);
+                return new ClassDetailType(name, supers, generics, declaration);
+            }
+            case NamedTypeKind.Enum:
+            {
+                var baseType = Supers.GetOne(name);
+                return new EnumDetailType(name, baseType);
+            }
+            case NamedTypeKind.Interface:
+            {
+                var supers = Supers.Get(name).ToList();
+                var generics = GenericParam.Get(name).ToList();
+                var declaration = NamedType.GetOne(name);
+                return new InterfaceDetailType(name, supers, generics, declaration);
+            }
+        }
+
+        return new BasicDetailType(name, NamedTypeKind.Class);
+    }
 }
