@@ -196,6 +196,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     returnType = returnType.Union(Builtin.Nil);
                 }
             }
+            else
+            {
+                returnType = returnType.Union(Builtin.Nil);
+            }
         }
 
         complete = true;

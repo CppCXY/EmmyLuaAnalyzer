@@ -95,6 +95,12 @@ public class TextDocumentHandler(
         {
             Code = diagnostic.Code.ToString(),
             Message = diagnostic.Message,
+            Tags = diagnostic.Tag switch
+            {
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticTag.Unnecessary => new[] { DiagnosticTag.Unnecessary },
+                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticTag.Deprecated => new[] { DiagnosticTag.Deprecated },
+                _ => Array.Empty<DiagnosticTag>()
+            },
             Range = new()
             {
                 Start = new Position()

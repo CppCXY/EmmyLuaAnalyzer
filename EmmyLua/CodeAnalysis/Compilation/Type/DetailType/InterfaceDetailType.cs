@@ -1,16 +1,62 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 public class InterfaceDetailType(
-    string name,
-    List<LuaType> supers,
-    List<GenericParameterLuaDeclaration> generics,
-    NamedTypeLuaDeclaration? declaration) : BasicDetailType(name, NamedTypeKind.Interface)
+    string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Interface, context)
 {
-    public List<LuaType> Supers { get; } = supers;
+    private List<LuaType>? _supers = null;
 
-    public List<GenericParameterLuaDeclaration> Generics { get; } = generics;
+    private List<GenericParameterLuaDeclaration>? _generics = null;
 
-    public NamedTypeLuaDeclaration? Declaration { get; } = declaration;
+    private NamedTypeLuaDeclaration? _declaration = null;
+
+
+    public List<LuaType> Supers
+    {
+        get
+        {
+            if (!LazyInit)
+            {
+                DoLazyInit();
+            }
+
+            return _supers!;
+        }
+    }
+
+    public List<GenericParameterLuaDeclaration> Generics
+    {
+        get
+        {
+            if (!LazyInit)
+            {
+                DoLazyInit();
+            }
+
+            return _generics!;
+        }
+    }
+
+    public NamedTypeLuaDeclaration? Declaration
+    {
+        get
+        {
+            if (!LazyInit)
+            {
+                DoLazyInit();
+            }
+
+            return _declaration;
+        }
+    }
+
+    protected override void DoLazyInit()
+    {
+        base.DoLazyInit();
+        _supers = Index.GetSupers(Name).ToList();
+        _generics = Index.GetGenericParams(Name).ToList();
+        _declaration = Index.GetTypeLuaDeclaration(Name);
+    }
 }

@@ -1,8 +1,15 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+﻿using EmmyLua.CodeAnalysis.Compilation.Index;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class BasicDetailType(string name, NamedTypeKind kind) : LuaNamedType(name)
+namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+
+public class BasicDetailType(string name, NamedTypeKind kind, SearchContext context)
 {
+    public string Name { get; } = name;
+
     public NamedTypeKind Kind { get; } = kind;
+
+    protected SearchContext Context { get; } = context;
 
     public bool IsEnum => Kind == NamedTypeKind.Enum;
 
@@ -12,8 +19,12 @@ public class BasicDetailType(string name, NamedTypeKind kind) : LuaNamedType(nam
 
     public bool IsAlias => Kind == NamedTypeKind.Alias;
 
-    public virtual void DoLazyInit()
-    {
+    protected bool LazyInit { get; set; } = false;
 
+    protected ProjectIndex Index => Context.Compilation.ProjectIndex;
+
+    protected virtual void DoLazyInit()
+    {
+        LazyInit = true;
     }
 }

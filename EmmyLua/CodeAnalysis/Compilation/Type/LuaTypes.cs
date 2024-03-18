@@ -57,9 +57,9 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 {
     public string Name { get; } = name;
 
-    public BasicDetailType GetTypeInfo(SearchContext context)
+    public BasicDetailType GetDetailType(SearchContext context)
     {
-        throw new NotImplementedException();
+        return context.Compilation.ProjectIndex.GetDetailNamedType(Name, context);
     }
 
     public override bool Equals(object? obj)

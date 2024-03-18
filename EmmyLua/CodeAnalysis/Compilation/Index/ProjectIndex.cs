@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Document;
@@ -134,42 +135,44 @@ public class ProjectIndex(LuaCompilation compilation)
         return NameDeclaration.Get<LuaDeclaration>(name);
     }
 
+    public NamedTypeLuaDeclaration? GetTypeLuaDeclaration(string name)
+    {
+        return NamedType.GetOne(name);
+    }
+
     public LuaType? GetExportType(DocumentId documentId)
     {
         return ExportTypes.GetValueOrDefault(documentId);
     }
 
-    public BasicDetailType GetDetailNamedType(string name)
+    public IEnumerable<GenericParameterLuaDeclaration> GetGenericParams(string name)
+    {
+        return GenericParam.Get<GenericParameterLuaDeclaration>(name);
+    }
+
+    public BasicDetailType GetDetailNamedType(string name, SearchContext context)
     {
         var kind = NamedTypeKinds.GetOne(name);
         switch (kind)
         {
             case NamedTypeKind.Alias:
             {
-                var baseType = Id2Type.GetOne(name);
-                return new AliasDetailType(name, baseType);
+                return new AliasDetailType(name, context);
             }
             case NamedTypeKind.Class:
             {
-                var supers = Supers.Get(name).ToList();
-                var generics = GenericParam.Get(name).ToList();
-                var declaration = NamedType.GetOne(name);
-                return new ClassDetailType(name, supers, generics, declaration);
+                return new ClassDetailType(name, context);
             }
             case NamedTypeKind.Enum:
             {
-                var baseType = Supers.GetOne(name);
-                return new EnumDetailType(name, baseType);
+                return new EnumDetailType(name, context);
             }
             case NamedTypeKind.Interface:
             {
-                var supers = Supers.Get(name).ToList();
-                var generics = GenericParam.Get(name).ToList();
-                var declaration = NamedType.GetOne(name);
-                return new InterfaceDetailType(name, supers, generics, declaration);
+                return new InterfaceDetailType(name, context);
             }
         }
 
-        return new BasicDetailType(name, NamedTypeKind.Class);
+        return new ClassDetailType(name, context);
     }
 }

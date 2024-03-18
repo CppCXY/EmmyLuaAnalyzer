@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
@@ -97,7 +98,13 @@ public static class LuaTypeRender
             {
                 if (level == 0)
                 {
-                    // TODO
+                    var detailType = namedType.GetDetailType(context);
+                    if (detailType is AliasDetailType { OriginType: { } originType })
+                    {
+                        // ReSharper disable once UselessBinaryOperation
+                        InnerRenderType(originType, context, sb, level + 1);
+                        break;
+                    }
                 }
 
                 sb.Append(namedType.Name);

@@ -320,11 +320,25 @@ public class DeclarationBuilder : ILuaElementWalker
         return parameters;
     }
 
-    private LuaMultiReturnType GetRetType(IEnumerable<LuaDocTagSyntax>? docList)
+    private LuaType GetRetType(IEnumerable<LuaDocTagSyntax>? docList)
     {
-        var retTag = docList?.OfType<LuaDocTagReturnSyntax>().ToList();
-        return new LuaMultiReturnType(
-            retTag?.SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList() ?? []);
+        var returnTypes = docList?.OfType<LuaDocTagReturnSyntax>()
+                .SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList();
+        LuaType returnType = Builtin.Unknown;
+        if (returnTypes is null)
+        {
+            return returnType;
+        }
+        if (returnTypes.Count == 1)
+        {
+            returnType = returnTypes[0];
+        }
+        else if (returnTypes.Count > 1)
+        {
+            returnType = new LuaMultiReturnType(returnTypes);
+        }
+
+        return returnType;
     }
 
     private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
@@ -508,8 +522,12 @@ public class DeclarationBuilder : ILuaElementWalker
 
                             if (i == 0)
                             {
-                                declaration.DeclarationType = FindFirstLocalOrAssignType(luaAssignStat);
-                                unResolveDeclaration.IsTypeDeclaration = true;
+                                var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
+                                if (declarationType is not null)
+                                {
+                                    declaration.DeclarationType = declarationType;
+                                    unResolveDeclaration.IsTypeDeclaration = true;
+                                }
                             }
 
                             AddDeclaration(declaration);
@@ -524,7 +542,11 @@ public class DeclarationBuilder : ILuaElementWalker
                         new IndexLuaDeclaration(indexExpr.Name, GetPosition(indexExpr), indexExpr, luaType);
                     if (i == 0)
                     {
-                        declaration.DeclarationType = FindFirstLocalOrAssignType(luaAssignStat);
+                        var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
+                        if (declarationType is not null)
+                        {
+                            declaration.DeclarationType = declarationType;
+                        }
                     }
 
                     AddDeclaration(declaration);

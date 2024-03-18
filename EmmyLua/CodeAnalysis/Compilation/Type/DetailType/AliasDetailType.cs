@@ -1,6 +1,27 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class AliasDetailType(string name, LuaType? originType) : BasicDetailType(name, NamedTypeKind.Alias)
+namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+
+public class AliasDetailType(string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Alias, context)
 {
-    public LuaType? OriginType { get; } = originType;
+    private LuaType? _originType = null;
+
+    public LuaType? OriginType
+    {
+        get
+        {
+            if (!LazyInit)
+            {
+                DoLazyInit();
+            }
+
+            return _originType;
+        }
+    }
+
+    protected override void DoLazyInit()
+    {
+        base.DoLazyInit();
+        _originType = Index.GetTypeFromId(Name).FirstOrDefault();
+    }
 }

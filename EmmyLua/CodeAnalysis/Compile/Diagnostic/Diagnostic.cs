@@ -21,26 +21,28 @@ public class Diagnostic(
 
     public DiagnosticTag Tag { get; } = tag;
 
-    public Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, LuaLocation location)
-        : this(severity, code, message, location.Range)
+    public Diagnostic(DiagnosticSeverity severity, DiagnosticCode code, string message, LuaLocation location,
+        DiagnosticTag tag = DiagnosticTag.None)
+        : this(severity, code, message, location.Range, tag)
     {
         Location = location;
     }
 
-    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location)
-        : this(severity, DiagnosticCode.SyntaxError, message, location.Range)
+    public Diagnostic(DiagnosticSeverity severity, string message, LuaLocation location,
+        DiagnosticTag tag = DiagnosticTag.None)
+        : this(severity, DiagnosticCode.SyntaxError, message, location, tag)
     {
-        Location = location;
     }
 
-    public Diagnostic(DiagnosticSeverity severity, string message, SourceRange range)
-        : this(severity, DiagnosticCode.SyntaxError, message, range)
+    public Diagnostic(DiagnosticSeverity severity, string message, SourceRange range,
+        DiagnosticTag tag = DiagnosticTag.None)
+        : this(severity, DiagnosticCode.SyntaxError, message, range, tag)
     {
     }
 
     public Diagnostic WithLocation(LuaLocation location)
     {
-        return new Diagnostic(Severity, Code, Message, location);
+        return new Diagnostic(Severity, Code, Message, location, Tag);
     }
 
     public override string ToString()

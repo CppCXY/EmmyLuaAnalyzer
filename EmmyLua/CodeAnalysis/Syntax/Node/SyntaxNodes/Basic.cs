@@ -93,5 +93,5 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 {
     public IEnumerable<LuaSyntaxToken> Details => ChildTokens(LuaTokenKind.TkDocDetail);
 
-    public string CommentText => string.Join("\n", Details.Select(it => it.RepresentText));
+    public string CommentText => string.Join("\n\n", Details.Select(it => it.RepresentText));
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -18,6 +19,7 @@ public class LuaRenderBuilder(SearchContext context)
             LuaParamDefSyntax paramDef => RenderParamDef(paramDef),
             LuaLocalNameSyntax localName => RenderLocalName(localName),
             LuaLiteralExprSyntax literalExpr => RenderLiteralExpr(literalExpr),
+            LuaCallExprSyntax callExpr => RenderCallExpr(callExpr),
             _ => string.Empty
         };
     }
@@ -29,9 +31,12 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderNameDeclaration(declaration, sb);
+            RenderDeclaration(declaration, sb);
+            var declarationElement = declaration.SyntaxElement;
+            var comments =
+                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
-        // TODO render comment
 
         return sb.ToString();
     }
@@ -47,23 +52,65 @@ public class LuaRenderBuilder(SearchContext context)
             {
                 case MethodLuaDeclaration method:
                 {
-                    sb.Append($"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
+                    sb.Append(
+                        $"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
                     break;
                 }
                 default:
                 {
-                    sb.Append($"```lua\n(field) {declaration.Name}:{LuaTypeRender.RenderType(declaration.DeclarationType, context)}\n```");
+                    sb.Append(
+                        $"```lua\n(field) {declaration.Name}:{LuaTypeRender.RenderType(declaration.DeclarationType, context)}\n```");
                     break;
                 }
             }
+
             var prefixType = context.Infer(indexExpr.PrefixExpr);
             if (!prefixType.Equals(Builtin.Unknown))
             {
-                sb.Append($"\nin class `{LuaTypeRender.RenderType(prefixType, context)}`\n");
+                RenderBelongType(prefixType, sb);
             }
+
+            var declarationElement = declaration.SyntaxElement;
+            var comments =
+                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
 
         return sb.ToString();
+    }
+
+    private void RenderSeparator(StringBuilder sb)
+    {
+        if (sb.Length > 0)
+        {
+            sb.Append("\n___\n");
+        }
+    }
+
+    private void RenderBelongType(LuaType prefixType, StringBuilder sb)
+    {
+        if (!prefixType.Equals(Builtin.Unknown))
+        {
+            var parentTypeDescription = "class";
+            if (prefixType is LuaNamedType namedType)
+            {
+                var detailType = namedType.GetDetailType(context);
+                if (detailType.IsAlias)
+                {
+                    parentTypeDescription = "alias";
+                }
+                else if (detailType.IsEnum)
+                {
+                    parentTypeDescription = "enum";
+                }
+                else if (detailType.IsInterface)
+                {
+                    parentTypeDescription = "interface";
+                }
+            }
+
+            sb.Append($"\nin {parentTypeDescription} `{LuaTypeRender.RenderType(prefixType, context)}`");
+        }
     }
 
     private string RenderParamDef(LuaParamDefSyntax paramDef)
@@ -73,7 +120,7 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderNameDeclaration(declaration, sb);
+            RenderDeclaration(declaration, sb);
         }
 
         return sb.ToString();
@@ -86,7 +133,12 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderNameDeclaration(declaration, sb);
+            RenderDeclaration(declaration, sb);
+
+            var declarationElement = declaration.SyntaxElement;
+            var comments =
+                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
 
         return sb.ToString();
@@ -98,7 +150,21 @@ public class LuaRenderBuilder(SearchContext context)
         {
             case LuaStringToken stringLiteral:
             {
-                return $"'{stringLiteral.Value}' size:{stringLiteral.Value.Length}";
+                var enumerator = StringInfo.GetTextElementEnumerator(stringLiteral.Value);
+                var preview = new StringBuilder();
+                var count = 0;
+                while (enumerator.MoveNext() && count < 100)
+                {
+                    preview.Append(enumerator.GetTextElement());
+                    count++;
+                }
+
+                if (count == 100)
+                {
+                    preview.Append("...");
+                }
+
+                return $"'{preview}' size:{stringLiteral.Value.Length}";
             }
             case LuaIntegerToken integerLiteral:
             {
@@ -121,7 +187,38 @@ public class LuaRenderBuilder(SearchContext context)
         return string.Empty;
     }
 
-    private void RenderNameDeclaration(LuaDeclaration declaration, StringBuilder sb)
+    private string RenderCallExpr(LuaCallExprSyntax callExpr)
+    {
+        var declarationTree = context.Compilation.GetDeclarationTree(callExpr.Tree.Document.Id);
+        var declaration = declarationTree?.FindDeclaration(callExpr, context);
+        var sb = new StringBuilder();
+        if (declaration is not null)
+        {
+            switch (declaration)
+            {
+                case MethodLuaDeclaration method:
+                {
+                    sb.Append(
+                        $"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
+                    break;
+                }
+                default:
+                {
+                    RenderDeclaration(declaration, sb);
+                    break;
+                }
+            }
+
+            var declarationElement = declaration.SyntaxElement;
+            var comments =
+                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+            LuaCommentRender.RenderCommentDescription(comments, sb);
+        }
+
+        return sb.ToString();
+    }
+
+    private void RenderDeclaration(LuaDeclaration declaration, StringBuilder sb)
     {
         switch (declaration)
         {
@@ -168,10 +265,5 @@ public class LuaRenderBuilder(SearchContext context)
                 break;
             }
         }
-    }
-
-    private void RenderComment(LuaCommentSyntax comment, StringBuilder sb)
-    {
-        sb.Append($"\n{comment}\n");
     }
 }

@@ -1,6 +1,27 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class EnumDetailType(string name, LuaType? baseType) : BasicDetailType(name, NamedTypeKind.Enum)
+namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+
+public class EnumDetailType(string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Enum, context)
 {
-    public LuaType? BaseType { get; } = baseType;
+    private LuaType? _baseType = null;
+
+    public LuaType? BaseType
+    {
+        get
+        {
+            if (!LazyInit)
+            {
+                DoLazyInit();
+            }
+
+            return _baseType;
+        }
+    }
+
+    protected override void DoLazyInit()
+    {
+        base.DoLazyInit();
+        _baseType = Index.GetSupers(Name).FirstOrDefault();
+    }
 }

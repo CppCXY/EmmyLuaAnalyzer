@@ -40,6 +40,14 @@ public static class TypeHelper
         {
             return UnionTypeMerge(rightUnionType, left);
         }
+        else if (left.Equals(Builtin.Unknown))
+        {
+            return right;
+        }
+        else if (right.Equals(Builtin.Unknown))
+        {
+            return left;
+        }
         else
         {
             return new LuaUnionType(new List<LuaType> { left, right });
@@ -67,6 +75,10 @@ public static class TypeHelper
         if (right is LuaUnionType rightUnionType)
         {
             types.AddRange(rightUnionType.UnionTypes);
+        }
+        else if (right.Equals(Builtin.Unknown))
+        {
+            return left;
         }
         else
         {
