@@ -134,7 +134,8 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 
     public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
-    public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    public LuaExprSyntax? Value =>
+        IsValue ? FirstChild<LuaExprSyntax>() : ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
     public LuaTableExprSyntax? ParentTable => Parent as LuaTableExprSyntax;
 
@@ -142,7 +143,7 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     {
         get
         {
-            if (NameKey is {} nameKey)
+            if (NameKey is { } nameKey)
             {
                 return nameKey.RepresentText;
             }
@@ -154,7 +155,7 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
             {
                 return $"[{number}]";
             }
-            else if (StringKey is {} stringToken)
+            else if (StringKey is { } stringToken)
             {
                 return stringToken.Value;
             }
@@ -167,7 +168,7 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     {
         get
         {
-            if (NameKey is {} nameKey)
+            if (NameKey is { } nameKey)
             {
                 return nameKey;
             }
@@ -175,7 +176,7 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
             {
                 return number;
             }
-            else if (StringKey is {} stringToken)
+            else if (StringKey is { } stringToken)
             {
                 return stringToken;
             }
@@ -236,7 +237,7 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
             {
                 if (literal.Literal is LuaStringToken stringToken)
                 {
-                    return  stringToken.Value;
+                    return stringToken.Value;
                 }
                 else if (literal.Literal is LuaIntegerToken luaIntegerToken)
                 {

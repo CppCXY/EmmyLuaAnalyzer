@@ -135,8 +135,8 @@ public static class GenericInfer
             return;
         }
 
-        LuaType keyType = Builtin.Any;
-        LuaType valueType = Builtin.Any;
+        LuaType keyType = Builtin.Unknown;
+        LuaType valueType = Builtin.Unknown;
 
         foreach (var fieldSyntax in tableExpr.FieldList)
         {
@@ -187,7 +187,7 @@ public static class GenericInfer
     {
         if (expr is LuaTableExprSyntax tableExpr)
         {
-            LuaType valueType = Builtin.Any;
+            LuaType valueType = Builtin.Unknown;
 
             foreach (var fieldSyntax in tableExpr.FieldList)
             {

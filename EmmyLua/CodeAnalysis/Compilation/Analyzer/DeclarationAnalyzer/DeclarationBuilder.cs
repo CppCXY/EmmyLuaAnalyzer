@@ -650,13 +650,13 @@ public class DeclarationBuilder : ILuaElementWalker
         }
 
         var mainRetType = GetRetType(docList);
-        var isColon = false;
+        var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
         LuaMethodType method =
             genericParameters.Count != 0
                 ? new LuaGenericMethodType(
                     genericParameters,
-                    new LuaSignature(mainRetType, parameters), overloads, isColon)
-                : new LuaMethodType(new LuaSignature(mainRetType, parameters), overloads, isColon);
+                    new LuaSignature(mainRetType, parameters), overloads, isColonDefine)
+                : new LuaMethodType(new LuaSignature(mainRetType, parameters), overloads, isColonDefine);
         if (closureExprSyntax.Block is { } block)
         {
             var unResolved = new UnResolvedMethod(method, block, ResolveState.UnResolveReturn);
