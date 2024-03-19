@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -25,6 +26,35 @@ public static class LuaCommentRender
         {
             RenderSeparator(sb);
             sb.Append(comment.CommentText);
+        }
+    }
+
+    public static void RenderStatComment(LuaDeclaration declaration, StringBuilder sb)
+    {
+        var declarationElement = declaration.SyntaxElement;
+        var comments =
+            declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+        RenderCommentDescription(comments, sb);
+    }
+
+    public static void RenderParamComment(ParameterLuaDeclaration parameterLuaDeclaration, StringBuilder sb)
+    {
+        var declarationElement = parameterLuaDeclaration.SyntaxElement;
+        var comments =
+            declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+        if (comments is null)
+        {
+            return;
+        }
+
+        var tagParams = comments.SelectMany(it => it.DocList).OfType<LuaDocTagParamSyntax>();
+        foreach (var tagParam in tagParams)
+        {
+            if (tagParam.Name?.RepresentText == parameterLuaDeclaration.Name && tagParam.Description != null)
+            {
+                RenderSeparator(sb);
+                sb.Append(tagParam.Description.CommentText);
+            }
         }
     }
 }

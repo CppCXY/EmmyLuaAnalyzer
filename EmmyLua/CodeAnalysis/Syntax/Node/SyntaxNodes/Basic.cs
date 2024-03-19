@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Kind;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -93,5 +94,24 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
 {
     public IEnumerable<LuaSyntaxToken> Details => ChildTokens(LuaTokenKind.TkDocDetail);
 
-    public string CommentText => string.Join("\n\n", Details.Select(it => it.RepresentText));
+    public string CommentText
+    {
+        get
+        {
+            var sb = new StringBuilder();
+            foreach (var token in ChildrenWithTokens)
+            {
+                if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail , RepresentText: {} text})
+                {
+                    sb.Append(text);
+                }
+                else if(token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocContinue })
+                {
+                    sb.Append('\n');
+                }
+            }
+
+            return sb.ToString();
+        }
+    }
 }

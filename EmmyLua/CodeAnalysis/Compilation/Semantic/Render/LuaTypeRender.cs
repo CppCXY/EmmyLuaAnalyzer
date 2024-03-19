@@ -60,6 +60,11 @@ public static class LuaTypeRender
                 RenderFunctionType(methodType, context, sb, level, false);
                 break;
             }
+            case LuaMultiReturnType multiReturnType:
+            {
+                RenderMultiReturnType(multiReturnType, context, sb, level);
+                break;
+            }
             default:
             {
                 sb.Append("unknown");
@@ -202,7 +207,23 @@ public static class LuaTypeRender
 
         sb.Append(')');
 
-        sb.Append("=>");
+        sb.Append("->");
         InnerRenderType(mainSignature.ReturnType, context, sb, 0);
+    }
+
+    private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, SearchContext context, StringBuilder sb, int level)
+    {
+        sb.Append('(');
+        for (var i = 0; i < multiReturnType.RetTypes.Count; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(',');
+            }
+
+            InnerRenderType(multiReturnType.RetTypes[i], context, sb, level + 1);
+        }
+
+        sb.Append(')');
     }
 }

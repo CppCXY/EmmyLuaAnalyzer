@@ -7,13 +7,12 @@ using EmmyLua.CodeAnalysis.Workspace;
 var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    ---@class A<T>
-    ---@field x T
+    ---你说的对
+    ---但是元神
+    ---
+    ---可是雪啊
+    ---@param a number @我懂了啊
     local t = {}
-    
-    ---@type A<number>
-    local d = 123
-    
     """, new LuaLanguage());
 workspace.AddDocument(document);
     

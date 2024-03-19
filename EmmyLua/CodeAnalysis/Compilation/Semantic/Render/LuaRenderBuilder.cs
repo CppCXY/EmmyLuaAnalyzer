@@ -32,10 +32,6 @@ public class LuaRenderBuilder(SearchContext context)
         if (declaration is not null)
         {
             RenderDeclaration(declaration, sb);
-            var declarationElement = declaration.SyntaxElement;
-            var comments =
-                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
-            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
 
         return sb.ToString();
@@ -70,10 +66,7 @@ public class LuaRenderBuilder(SearchContext context)
                 RenderBelongType(prefixType, sb);
             }
 
-            var declarationElement = declaration.SyntaxElement;
-            var comments =
-                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
-            LuaCommentRender.RenderCommentDescription(comments, sb);
+            LuaCommentRender.RenderStatComment(declaration, sb);
         }
 
         return sb.ToString();
@@ -134,11 +127,6 @@ public class LuaRenderBuilder(SearchContext context)
         if (declaration is not null)
         {
             RenderDeclaration(declaration, sb);
-
-            var declarationElement = declaration.SyntaxElement;
-            var comments =
-                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
-            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
 
         return sb.ToString();
@@ -164,7 +152,7 @@ public class LuaRenderBuilder(SearchContext context)
                     preview.Append("...");
                 }
 
-                return $"'{preview}' size:{stringLiteral.Value.Length}";
+                return $"'{preview}'";
             }
             case LuaIntegerToken integerLiteral:
             {
@@ -200,6 +188,7 @@ public class LuaRenderBuilder(SearchContext context)
                 {
                     sb.Append(
                         $"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
+                    LuaCommentRender.RenderStatComment(method, sb);
                     break;
                 }
                 default:
@@ -208,11 +197,6 @@ public class LuaRenderBuilder(SearchContext context)
                     break;
                 }
             }
-
-            var declarationElement = declaration.SyntaxElement;
-            var comments =
-                declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
-            LuaCommentRender.RenderCommentDescription(comments, sb);
         }
 
         return sb.ToString();
@@ -226,12 +210,14 @@ public class LuaRenderBuilder(SearchContext context)
             {
                 sb.Append(
                     $"```lua\n(local) {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
+                LuaCommentRender.RenderStatComment(declaration, sb);
                 break;
             }
             case GlobalLuaDeclaration global:
             {
                 sb.Append(
                     $"```lua\n(global) {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
+                LuaCommentRender.RenderStatComment(declaration, sb);
                 break;
             }
             case MethodLuaDeclaration method:
@@ -247,7 +233,7 @@ public class LuaRenderBuilder(SearchContext context)
                     sb.Append(
                         $"```lua\nfunction {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
                 }
-
+                LuaCommentRender.RenderStatComment(declaration, sb);
                 break;
             }
             case ParameterLuaDeclaration parameter:
@@ -261,7 +247,7 @@ public class LuaRenderBuilder(SearchContext context)
                 {
                     sb.Append($"```lua\n(parameter) {parameter.Name}\n\n```");
                 }
-
+                LuaCommentRender.RenderParamComment(parameter, sb);
                 break;
             }
         }
