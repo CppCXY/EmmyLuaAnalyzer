@@ -85,7 +85,7 @@ public static class LuaTypeRender
                 {
                     if (i > 0)
                     {
-                        sb.Append(", ");
+                        sb.Append(',');
                     }
 
                     InnerRenderType(genericType.GenericArgs[i], context, sb, level + 1);
@@ -101,9 +101,9 @@ public static class LuaTypeRender
             }
             default:
             {
+                var detailType = namedType.GetDetailType(context);
                 if (level == 0)
                 {
-                    var detailType = namedType.GetDetailType(context);
                     if (detailType is AliasDetailType { OriginType: { } originType })
                     {
                         // ReSharper disable once UselessBinaryOperation
@@ -117,6 +117,21 @@ public static class LuaTypeRender
             }
         }
     }
+
+    // private static void RenderClassType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
+    // {
+    //     sb.Append("class ");
+    // }
+    //
+    // private static void RenderInterfaceType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
+    // {
+    //     sb.Append("class ");
+    // }
+    //
+    // private static void RenderEnumType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
+    // {
+    //     sb.Append("class ");
+    // }
 
     private static void RenderArrayType(LuaArrayType arrayType, SearchContext context, StringBuilder sb, int level)
     {

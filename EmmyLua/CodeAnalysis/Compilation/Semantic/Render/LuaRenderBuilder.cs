@@ -245,7 +245,7 @@ public class LuaRenderBuilder(SearchContext context)
                 }
                 else
                 {
-                    sb.Append($"```lua\n(parameter) {parameter.Name}\n\n```");
+                    sb.Append($"```lua\n(parameter) {parameter.Name}\n```");
                 }
                 LuaCommentRender.RenderParamComment(parameter, sb);
                 break;

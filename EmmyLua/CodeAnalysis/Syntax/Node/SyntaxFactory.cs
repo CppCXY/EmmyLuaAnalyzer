@@ -145,8 +145,15 @@ public static class SyntaxFactory
         }
         catch (OverflowException)
         {
-            tree.PushDiagnostic(new Compile.Diagnostic.Diagnostic(DiagnosticSeverity.Error,
+            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
                 $"The integer literal '{text}' is too large to be represented in type 'long'",
+                new SourceRange(startOffset, greenNode.Length)));
+            return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
+        }
+        catch (Exception e)
+        {
+            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                $"The integer literal '{text}' is invalid, {e.Message}",
                 new SourceRange(startOffset, greenNode.Length)));
             return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
         }
