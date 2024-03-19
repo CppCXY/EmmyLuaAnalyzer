@@ -12,7 +12,7 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
         return Equals(obj as LuaType);
     }
 
-    public bool Equals(LuaType? other)
+    public virtual bool Equals(LuaType? other)
     {
         if (ReferenceEquals(this, other))
         {
@@ -67,6 +67,11 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
         return Equals(obj as LuaNamedType);
     }
 
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaNamedType);
+    }
+
     public bool Equals(LuaNamedType? other)
     {
         if (ReferenceEquals(this, other))
@@ -114,9 +119,30 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
     }
 }
 
-public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union)
+public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union), IEquatable<LuaUnionType>
 {
     public HashSet<LuaType> UnionTypes { get; } = [..unionTypes];
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaUnionType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaUnionType);
+    }
+
+    public bool Equals(LuaUnionType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && UnionTypes.SetEquals(other.UnionTypes);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(base.GetHashCode(), UnionTypes);
+    }
 
     public override bool SubTypeOf(LuaType? other, SearchContext context)
     {
@@ -144,15 +170,20 @@ public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), I
 {
     public List<LuaType> TupleTypes { get; } = tupleTypes;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaTupleType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaTupleType);
+    }
+
     public bool Equals(LuaTupleType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && TupleTypes.Equals(other.TupleTypes);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaTupleType);
     }
 
     public override int GetHashCode()
@@ -191,15 +222,20 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
 {
     public LuaType BaseType { get; } = baseType;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaArrayType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaArrayType);
+    }
+
     public bool Equals(LuaArrayType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && BaseType.Equals(other.BaseType);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaArrayType);
     }
 
     public override int GetHashCode()
@@ -234,15 +270,20 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
 {
     public List<LuaType> GenericArgs { get; } = genericArgs;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaGenericType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaGenericType);
+    }
+
     public bool Equals(LuaGenericType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && GenericArgs.Equals(other.GenericArgs);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaGenericType);
     }
 
     public override int GetHashCode()
@@ -270,15 +311,20 @@ public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiter
 {
     public string Content { get; } = content;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaStringLiteralType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaStringLiteralType);
+    }
+
     public bool Equals(LuaStringLiteralType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && Content == other.Content;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaStringLiteralType);
     }
 
     public override int GetHashCode()
@@ -296,15 +342,20 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
 {
     public long Value { get; } = value;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaIntegerLiteralType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaIntegerLiteralType);
+    }
+
     public bool Equals(LuaIntegerLiteralType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && Value == other.Value;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaIntegerLiteralType);
     }
 
     public override int GetHashCode()
@@ -323,15 +374,20 @@ public class LuaTableLiteralType(string tableId)
 {
     public string TableId { get; } = tableId;
 
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaTableLiteralType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaTableLiteralType);
+    }
+
     public bool Equals(LuaTableLiteralType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && TableId == other.TableId;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaTableLiteralType);
     }
 
     public override int GetHashCode()

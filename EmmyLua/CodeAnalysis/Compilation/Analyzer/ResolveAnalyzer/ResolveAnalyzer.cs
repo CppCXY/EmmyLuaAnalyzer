@@ -65,6 +65,59 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 }
             }
         }
+        else if(unResolved is UnResolvedForRangeParameter unResolvedForRangeParameter)
+        {
+            var exprList = unResolvedForRangeParameter.ExprList;
+            switch (exprList.Count)
+            {
+                case 0:
+                {
+                    changed = true;
+                    unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
+                    return;
+                }
+                // ipairs and pairs
+                case 1:
+                {
+                    var iterExpr = exprList.First();
+                    var iterType = Context.Infer(iterExpr);
+                    if (iterType is LuaMethodType methodType)
+                    {
+                        var returnType = methodType.MainSignature.ReturnType;
+                        var returnTypes = new List<LuaType>();
+                        if (returnType is LuaMultiReturnType multiReturnType)
+                        {
+                            returnTypes.AddRange(multiReturnType.RetTypes);
+                        }
+                        else
+                        {
+                            returnTypes.Add(returnType);
+                        }
+                        for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
+                        {
+                            var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
+                            if (parameter.DeclarationType is null)
+                            {
+                                parameter.DeclarationType = i < returnTypes.Count ? returnTypes[i] : Builtin.Unknown;
+                            }
+                        }
+
+                        changed = true;
+                        unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
+                    }
+
+                    return;
+                }
+                // custom iterator
+                default:
+                {
+                    // TODO: implement custom iterator
+                    changed = true;
+                    unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
+                    break;
+                }
+            }
+        }
     }
 
     private void ResolveIndex(UnResolved unResolved, ref bool changed)

@@ -344,6 +344,7 @@ public class DeclarationBuilder : ILuaElementWalker
     private void AnalyzeForRangeStatDeclaration(LuaForRangeStatSyntax forRangeStatSyntax)
     {
         var dic = FindParamDeclarations(forRangeStatSyntax);
+        var parameters = new List<ParameterLuaDeclaration>();
         foreach (var param in forRangeStatSyntax.IteratorNames)
         {
             if (param.Name is { } name)
@@ -355,8 +356,12 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
 
                 AddDeclaration(declaration);
+                parameters.Add(declaration);
             }
         }
+
+        var unResolved = new UnResolvedForRangeParameter(parameters, forRangeStatSyntax.ExprList.ToList());
+        AddUnResolved(unResolved);
     }
 
     private void AnalyzeForStatDeclaration(LuaForStatSyntax forStatSyntax)

@@ -13,6 +13,11 @@ public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Retur
         return Equals(obj as LuaMultiReturnType);
     }
 
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaMultiReturnType);
+    }
+
     public bool Equals(LuaMultiReturnType? other)
     {
         if (ReferenceEquals(this, other))
@@ -21,6 +26,16 @@ public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Retur
         }
 
         return other is not null ? RetTypes.SequenceEqual(other.RetTypes) : base.Equals(other);
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var returnTypes = new List<LuaType>();
+        foreach (var retType in RetTypes)
+        {
+            returnTypes.Add(retType.Instantiate(genericReplace));
+        }
+        return new LuaMultiReturnType(returnTypes);
     }
 
     public override int GetHashCode()
@@ -363,6 +378,11 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
     public override bool Equals(object? obj)
     {
         return Equals(obj as LuaMethodType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaMethodType);
     }
 
     public bool Equals(LuaMethodType? other)

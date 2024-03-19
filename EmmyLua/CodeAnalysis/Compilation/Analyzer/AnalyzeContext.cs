@@ -49,6 +49,13 @@ public class UnResolvedSource(DocumentId documentId, LuaBlockSyntax block, Resol
     public LuaBlockSyntax Block { get; } = block;
 }
 
+public class UnResolvedForRangeParameter(List<ParameterLuaDeclaration> parameterLuaDeclarations, List<LuaExprSyntax> exprList) : UnResolved(ResolveState.UnResolvedType)
+{
+    public List<ParameterLuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
+
+    public List<LuaExprSyntax> ExprList { get; } = exprList;
+}
+
 public class AnalyzeContext(List<LuaDocument> documents)
 {
     public List<LuaDocument> LuaDocuments { get; } = documents;

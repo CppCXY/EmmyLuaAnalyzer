@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compile;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compile;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -23,3 +24,4 @@ foreach (var diagnostic in diagnostics)
 {
     Console.WriteLine(diagnostic);
 }
+

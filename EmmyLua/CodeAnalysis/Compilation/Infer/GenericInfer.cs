@@ -39,7 +39,11 @@ public static class GenericInfer
                 UnionTypeInstantiateByExpr(unionType, expr, genericParameter, result, context);
                 break;
             }
-
+            case LuaTupleType tupleType:
+            {
+                TupleTypeInstantiateByExpr(tupleType, expr, genericParameter, result, context);
+                break;
+            }
         }
     }
 
@@ -77,6 +81,11 @@ public static class GenericInfer
                 UnionTypeInstantiateByType(unionType, exprType, genericParameter, result, context);
                 break;
             }
+            case LuaTupleType tupleType:
+            {
+                TupleTypeInstantiateByType(tupleType, exprType, genericParameter, result, context);
+                break;
+            }
         }
     }
 
@@ -95,7 +104,7 @@ public static class GenericInfer
         {
             if (IsGenericParameter(genericType.Name, genericParameter))
             {
-                result.Add(genericType.Name, Builtin.Table);
+                result.TryAdd(genericType.Name, Builtin.Table);
             }
 
             GenericTableTypeInstantiate(genericType, table, genericParameter, result, context);
@@ -175,7 +184,7 @@ public static class GenericInfer
     {
         if (IsGenericParameter(namedType.Name, genericParameter))
         {
-            result.Add(namedType.Name, exprType);
+            result.TryAdd(namedType.Name, exprType);
         }
     }
 
@@ -278,5 +287,55 @@ public static class GenericInfer
         SearchContext context)
     {
         // TODO: Not implemented
+    }
+
+    private static void TupleTypeInstantiateByExpr(LuaTupleType tupleType,
+        LuaExprSyntax expr,
+        HashSet<string> genericParameter,
+        Dictionary<string, LuaType> result,
+        SearchContext context)
+    {
+        if (expr is LuaTableExprSyntax tableExpr)
+        {
+            var arrayCount = 0;
+            foreach (var fieldSyntax in tableExpr.FieldList)
+            {
+                if (fieldSyntax.IsValue)
+                {
+                    if (arrayCount >= tupleType.TupleTypes.Count)
+                    {
+                        break;
+                    }
+
+                    if (fieldSyntax.Value is not null)
+                    {
+                        InferInstantiateByExpr(tupleType.TupleTypes[arrayCount], fieldSyntax.Value, genericParameter,
+                            result, context);
+                    }
+
+                    arrayCount++;
+                }
+            }
+        }
+        else
+        {
+            var exprType = context.Infer(expr);
+            InferInstantiateByType(tupleType, exprType, genericParameter, result, context);
+        }
+    }
+
+    private static void TupleTypeInstantiateByType(LuaTupleType tupleType,
+        LuaType exprType,
+        HashSet<string> genericParameter,
+        Dictionary<string, LuaType> result,
+        SearchContext context)
+    {
+        if (exprType is LuaTupleType tupleType2)
+        {
+            for (var i = 0; i < tupleType.TupleTypes.Count && i < tupleType2.TupleTypes.Count; i++)
+            {
+                InferInstantiateByType(tupleType.TupleTypes[i], tupleType2.TupleTypes[i], genericParameter, result, context);
+            }
+        }
     }
 }
