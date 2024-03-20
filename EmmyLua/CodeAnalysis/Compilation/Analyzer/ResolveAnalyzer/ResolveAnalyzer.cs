@@ -278,13 +278,18 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         }
         else if (unResolved.IsTypeDeclaration && type is LuaTableLiteralType tableLiteralType)
         {
-            var members = Compilation.ProjectIndex.GetMembers(tableLiteralType.TableId);
-            var documentId = declaration.SyntaxElement?.Tree.Document.Id;
-            if (documentId is { } id)
+            var declarationType = unResolved.LuaDeclaration.DeclarationType;
+            if (declarationType is LuaNamedType namedType)
             {
-                foreach (var member in members)
+                var typeName = namedType.Name;
+                var members = Compilation.ProjectIndex.GetMembers(tableLiteralType.TableId);
+                var documentId = declaration.SyntaxElement?.Tree.Document.Id;
+                if (documentId is { } id)
                 {
-                    Compilation.ProjectIndex.AddMember(id, member.Name, member);
+                    foreach (var member in members)
+                    {
+                        Compilation.ProjectIndex.AddMember(id, typeName, member);
+                    }
                 }
             }
         }

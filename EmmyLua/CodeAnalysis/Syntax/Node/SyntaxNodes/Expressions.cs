@@ -73,6 +73,24 @@ public class LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
     public LuaCallArgListSyntax? ArgList => FirstChild<LuaCallArgListSyntax>();
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
+
+    public string Name
+    {
+        get
+        {
+            var expr = PrefixExpr;
+            if (expr is LuaIndexExprSyntax indexExpr)
+            {
+                return indexExpr?.Name ?? string.Empty;
+            }
+            else if (expr is LuaNameExprSyntax nameExpr)
+            {
+                return nameExpr.Name?.RepresentText ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+    }
 }
 
 public class LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
@@ -134,8 +152,7 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 
     public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
-    public LuaExprSyntax? Value =>
-        IsValue ? FirstChild<LuaExprSyntax>() : ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().LastOrDefault();
 
     public LuaTableExprSyntax? ParentTable => Parent as LuaTableExprSyntax;
 

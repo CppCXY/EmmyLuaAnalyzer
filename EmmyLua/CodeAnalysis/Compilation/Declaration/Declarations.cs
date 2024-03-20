@@ -111,15 +111,20 @@ public class LocalLuaDeclaration(
     public bool IsConst => localName.Attribute?.IsConst == true;
 
     public bool IsClose => localName.Attribute?.IsClose == true;
+
+    public bool IsTypeDefine { get; internal set; } = false;
 }
 
 public class GlobalLuaDeclaration(
     string name,
     int position,
     LuaNameExprSyntax varName,
-    LuaType? declarationType) : LuaDeclaration(name, position, varName, declarationType, DeclarationFeature.Global)
+    LuaType? declarationType
+    ) : LuaDeclaration(name, position, varName, declarationType, DeclarationFeature.Global)
 {
     public LuaNameExprSyntax VarName => varName;
+
+    public bool IsTypeDefine { get; internal set; } = false;
 }
 
 public class DocParameterLuaDeclaration(

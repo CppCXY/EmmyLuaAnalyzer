@@ -31,6 +31,117 @@ public static class LuaTypeRender
         return "()=>void";
     }
 
+    public static string RenderDefinedType(LuaType? type, SearchContext context)
+    {
+        if (type is LuaNamedType namedType)
+        {
+            var sb = new StringBuilder();
+            InnerRenderDetailType(namedType, context, sb, 0);
+            return sb.ToString();
+        }
+
+        return "unknown";
+    }
+
+    private static void InnerRenderDetailType(LuaNamedType namedType, SearchContext context, StringBuilder sb, int level)
+    {
+        var detailType = namedType.GetDetailType(context);
+        if (detailType is AliasDetailType { OriginType: { } originType })
+        {
+            InnerRenderType(originType, context, sb, level + 1);
+        }
+        else if (detailType is ClassDetailType classType)
+        {
+            sb.Append(classType.Name);
+            var generics = classType.Generics;
+            if (generics.Count > 0)
+            {
+                sb.Append('<');
+                for (var i = 0; i < generics.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    var generic = generics[i];
+                    sb.Append(generic.Name);
+                    if (generic.DeclarationType is { } baseType)
+                    {
+                        sb.Append(':');
+                        InnerRenderType(baseType, context, sb, level + 1);
+                    }
+                }
+
+                sb.Append('>');
+            }
+
+            var supers = classType.Supers;
+            if (supers.Count > 0)
+            {
+                sb.Append(" extends ");
+                for (var i = 0; i < supers.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    InnerRenderType(supers[i], context, sb, level + 1);
+                }
+            }
+        }
+        else if (detailType is InterfaceDetailType interfaceType)
+        {
+            sb.Append(interfaceType.Name);
+            var generics = interfaceType.Generics;
+            if (generics.Count > 0)
+            {
+                sb.Append('<');
+                for (var i = 0; i < generics.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    var generic = generics[i];
+                    sb.Append(generic.Name);
+                    if (generic.DeclarationType is { } baseType)
+                    {
+                        sb.Append(':');
+                        InnerRenderType(baseType, context, sb, level + 1);
+                    }
+                }
+
+                sb.Append('>');
+            }
+
+            var supers = interfaceType.Supers;
+            if (supers.Count > 0)
+            {
+                sb.Append(" extends ");
+                for (var i = 0; i < supers.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    InnerRenderType(supers[i], context, sb, level + 1);
+                }
+            }
+        }
+        else if (detailType is EnumDetailType enumType)
+        {
+            sb.Append($"enum {enumType.Name}");
+        }
+        else
+        {
+            InnerRenderType(namedType, context, sb, level);
+        }
+    }
+
     private static void InnerRenderType(LuaType type, SearchContext context, StringBuilder sb, int level)
     {
         switch (type)

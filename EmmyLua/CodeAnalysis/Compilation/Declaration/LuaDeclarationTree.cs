@@ -23,6 +23,10 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             {
                 return FindIndexDeclaration(indexExpr, context);
             }
+            case LuaTableFieldSyntax tableField:
+            {
+                return FindTableFieldDeclaration(tableField, context);
+            }
             case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
             {
                 var scope = FindScope(element);
@@ -45,6 +49,13 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             }
             return context.Compilation.ProjectIndex.GetGlobal(name.RepresentText).FirstOrDefault();
         }
+
+        return null;
+    }
+
+    private LuaDeclaration? FindTableFieldDeclaration(LuaTableFieldSyntax tableField, SearchContext context)
+    {
+        // if (tableField.ParentTable is parentTable)
 
         return null;
     }

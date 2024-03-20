@@ -9,7 +9,7 @@ public static class CallExprInfer
     {
         LuaType returnType = Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
-        var accessPath = callExpr.AccessPath;
+        var accessPath = callExpr.Name;
         if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(accessPath))
         {
             return InferRequire(callExpr, context);

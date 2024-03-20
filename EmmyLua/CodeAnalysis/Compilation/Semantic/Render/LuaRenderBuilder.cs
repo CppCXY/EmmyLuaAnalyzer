@@ -20,6 +20,7 @@ public class LuaRenderBuilder(SearchContext context)
             LuaLocalNameSyntax localName => RenderLocalName(localName),
             LuaLiteralExprSyntax literalExpr => RenderLiteralExpr(literalExpr),
             LuaCallExprSyntax callExpr => RenderCallExpr(callExpr),
+            LuaTableFieldSyntax tableField => RenderTableField(tableField),
             _ => string.Empty
         };
     }
@@ -31,7 +32,7 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderDeclaration(declaration, sb);
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
 
         return sb.ToString();
@@ -44,29 +45,7 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            switch (declaration)
-            {
-                case MethodLuaDeclaration method:
-                {
-                    sb.Append(
-                        $"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
-                    break;
-                }
-                default:
-                {
-                    sb.Append(
-                        $"```lua\n(field) {declaration.Name}:{LuaTypeRender.RenderType(declaration.DeclarationType, context)}\n```");
-                    break;
-                }
-            }
-
-            var prefixType = context.Infer(indexExpr.PrefixExpr);
-            if (!prefixType.Equals(Builtin.Unknown))
-            {
-                RenderBelongType(prefixType, sb);
-            }
-
-            LuaCommentRender.RenderStatComment(declaration, sb);
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
 
         return sb.ToString();
@@ -80,32 +59,6 @@ public class LuaRenderBuilder(SearchContext context)
         }
     }
 
-    private void RenderBelongType(LuaType prefixType, StringBuilder sb)
-    {
-        if (!prefixType.Equals(Builtin.Unknown))
-        {
-            var parentTypeDescription = "class";
-            if (prefixType is LuaNamedType namedType)
-            {
-                var detailType = namedType.GetDetailType(context);
-                if (detailType.IsAlias)
-                {
-                    parentTypeDescription = "alias";
-                }
-                else if (detailType.IsEnum)
-                {
-                    parentTypeDescription = "enum";
-                }
-                else if (detailType.IsInterface)
-                {
-                    parentTypeDescription = "interface";
-                }
-            }
-
-            sb.Append($"\nin {parentTypeDescription} `{LuaTypeRender.RenderType(prefixType, context)}`");
-        }
-    }
-
     private string RenderParamDef(LuaParamDefSyntax paramDef)
     {
         var declarationTree = context.Compilation.GetDeclarationTree(paramDef.Tree.Document.Id);
@@ -113,7 +66,7 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderDeclaration(declaration, sb);
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
 
         return sb.ToString();
@@ -126,7 +79,7 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            RenderDeclaration(declaration, sb);
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
 
         return sb.ToString();
@@ -182,74 +135,22 @@ public class LuaRenderBuilder(SearchContext context)
         var sb = new StringBuilder();
         if (declaration is not null)
         {
-            switch (declaration)
-            {
-                case MethodLuaDeclaration method:
-                {
-                    sb.Append(
-                        $"```lua\n(method) {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
-                    LuaCommentRender.RenderStatComment(method, sb);
-                    break;
-                }
-                default:
-                {
-                    RenderDeclaration(declaration, sb);
-                    break;
-                }
-            }
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
 
         return sb.ToString();
     }
 
-    private void RenderDeclaration(LuaDeclaration declaration, StringBuilder sb)
+    private string RenderTableField(LuaTableFieldSyntax tableField)
     {
-        switch (declaration)
+        var declarationTree = context.Compilation.GetDeclarationTree(tableField.Tree.Document.Id);
+        var declaration = declarationTree?.FindDeclaration(tableField, context);
+        var sb = new StringBuilder();
+        if (declaration is not null)
         {
-            case LocalLuaDeclaration local:
-            {
-                sb.Append(
-                    $"```lua\n(local) {local.Name}:{LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
-                LuaCommentRender.RenderStatComment(declaration, sb);
-                break;
-            }
-            case GlobalLuaDeclaration global:
-            {
-                sb.Append(
-                    $"```lua\n(global) {global.Name}:{LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
-                LuaCommentRender.RenderStatComment(declaration, sb);
-                break;
-            }
-            case MethodLuaDeclaration method:
-            {
-                var isLocal = method.MethodDef?.IsLocal ?? false;
-                if (isLocal)
-                {
-                    sb.Append(
-                        $"```lua\nlocal function {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
-                }
-                else
-                {
-                    sb.Append(
-                        $"```lua\nfunction {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
-                }
-                LuaCommentRender.RenderStatComment(declaration, sb);
-                break;
-            }
-            case ParameterLuaDeclaration parameter:
-            {
-                if (parameter.DeclarationType is { } declarationType)
-                {
-                    sb.Append(
-                        $"```lua\n(parameter) {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n```");
-                }
-                else
-                {
-                    sb.Append($"```lua\n(parameter) {parameter.Name}\n```");
-                }
-                LuaCommentRender.RenderParamComment(parameter, sb);
-                break;
-            }
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
         }
+
+        return sb.ToString();
     }
 }

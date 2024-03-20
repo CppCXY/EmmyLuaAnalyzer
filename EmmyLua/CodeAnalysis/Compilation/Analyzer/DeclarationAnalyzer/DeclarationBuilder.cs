@@ -276,10 +276,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 AddUnResolved(unResolveDeclaration);
                 if (i == 0)
                 {
-                    var ty = FindFirstLocalOrAssignType(localStatSyntax);
-                    if (ty is not null)
+                    var definedType = FindFirstLocalOrAssignType(localStatSyntax);
+                    if (definedType is not null)
                     {
-                        declaration.DeclarationType = ty;
+                        declaration.DeclarationType = definedType;
+                        declaration.IsTypeDefine = true;
                         unResolveDeclaration.IsTypeDeclaration = true;
                     }
                 }
@@ -527,10 +528,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
                             if (i == 0)
                             {
-                                var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
-                                if (declarationType is not null)
+                                var definedType = FindFirstLocalOrAssignType(luaAssignStat);
+                                if (definedType is not null)
                                 {
-                                    declaration.DeclarationType = declarationType;
+                                    declaration.DeclarationType = definedType;
+                                    declaration.IsTypeDefine = true;
                                     unResolveDeclaration.IsTypeDeclaration = true;
                                 }
                             }
@@ -1026,7 +1028,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (param is { Name: { } name })
             {
-                var type = Context.Infer(param.Type);
+                var type = param.Type is not null ? Context.Infer(param.Type) : null;
                 var declaration =
                     new GenericParameterLuaDeclaration(name.RepresentText, GetPosition(name), param, type);
                 ProjectIndex.AddGenericParam(DocumentId, namedType.Name, declaration);
