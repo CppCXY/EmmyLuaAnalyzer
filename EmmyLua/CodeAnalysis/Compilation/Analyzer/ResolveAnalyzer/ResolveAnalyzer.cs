@@ -290,8 +290,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     {
                         Compilation.ProjectIndex.AddMember(id, typeName, member);
                     }
+                    Compilation.ProjectIndex.AddRelatedType(id, tableLiteralType.TableId, namedType);
                 }
             }
+
         }
     }
 }

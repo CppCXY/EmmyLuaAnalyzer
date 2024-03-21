@@ -21,6 +21,8 @@ public class LuaRenderBuilder(SearchContext context)
             LuaLiteralExprSyntax literalExpr => RenderLiteralExpr(literalExpr),
             LuaCallExprSyntax callExpr => RenderCallExpr(callExpr),
             LuaTableFieldSyntax tableField => RenderTableField(tableField),
+            LuaDocNameTypeSyntax docNameType => RenderDocNameType(docNameType),
+            LuaDocGenericTypeSyntax docGenericType => RenderDocGenericType(docGenericType),
             _ => string.Empty
         };
     }
@@ -49,14 +51,6 @@ public class LuaRenderBuilder(SearchContext context)
         }
 
         return sb.ToString();
-    }
-
-    private void RenderSeparator(StringBuilder sb)
-    {
-        if (sb.Length > 0)
-        {
-            sb.Append("\n___\n");
-        }
     }
 
     private string RenderParamDef(LuaParamDefSyntax paramDef)
@@ -145,6 +139,32 @@ public class LuaRenderBuilder(SearchContext context)
     {
         var declarationTree = context.Compilation.GetDeclarationTree(tableField.Tree.Document.Id);
         var declaration = declarationTree?.FindDeclaration(tableField, context);
+        var sb = new StringBuilder();
+        if (declaration is not null)
+        {
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
+        }
+
+        return sb.ToString();
+    }
+
+    private string RenderDocNameType(LuaDocNameTypeSyntax docNameType)
+    {
+        var declarationTree = context.Compilation.GetDeclarationTree(docNameType.Tree.Document.Id);
+        var declaration = declarationTree?.FindDeclaration(docNameType, context);
+        var sb = new StringBuilder();
+        if (declaration is not null)
+        {
+            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
+        }
+
+        return sb.ToString();
+    }
+
+    private string RenderDocGenericType(LuaDocGenericTypeSyntax docGenericType)
+    {
+        var declarationTree = context.Compilation.GetDeclarationTree(docGenericType.Tree.Document.Id);
+        var declaration = declarationTree?.FindDeclaration(docGenericType, context);
         var sb = new StringBuilder();
         if (declaration is not null)
         {

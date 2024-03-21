@@ -87,8 +87,11 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
     {
         if (luaType is LuaNamedType namedType)
         {
-            return GetMembers(namedType.Name)
+            var fieldDeclarations = GetMembers(namedType.Name)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
+            // TODO generic
+
+            return fieldDeclarations;
         }
         else if (luaType is LuaUnionType unionType)
         {
@@ -96,5 +99,46 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
         }
 
         return Enumerable.Empty<LuaDeclaration>();
+    }
+
+    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
+    {
+        var declarations = new List<LuaDeclaration>();
+        if (indexExpr is { Name: { } name })
+        {
+            declarations.AddRange(FindMember(luaType, name));
+        }
+
+        if (declarations.Count == 0)
+        {
+            LuaType keyType = Builtin.Unknown;
+            if (indexExpr.DotOrColonIndexName != null)
+            {
+                keyType = Builtin.String;
+            }
+            else if (indexExpr.IndexKeyExpr is LuaLiteralExprSyntax literal)
+            {
+                if (literal.Literal is LuaStringToken)
+                {
+                    keyType = Builtin.String;
+                }
+                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
+                {
+                    keyType = Builtin.Integer;
+                }
+            }
+            else
+            {
+                keyType = Infer(indexExpr.KeyElement);
+            }
+
+            var op = Compilation.ProjectIndex.TypeOperatorStorage.GetBestMatchedIndexOperator(luaType, keyType);
+            if (op != null)
+            {
+                declarations.Add(new TypeIndexDeclaration(op.Ret, op.DefineElement as LuaDocTagFieldSyntax));
+            }
+        }
+
+        return declarations;
     }
 }

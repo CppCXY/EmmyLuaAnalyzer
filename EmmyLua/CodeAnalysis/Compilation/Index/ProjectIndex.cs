@@ -75,6 +75,11 @@ public class ProjectIndex(LuaCompilation compilation)
         Id2Type.Add(documentId, name, baseType);
     }
 
+    public void AddRelatedType(DocumentId documentId, string name, LuaType relatedType)
+    {
+        Id2Type.Add(documentId, name, relatedType);
+    }
+
     public void AddEnum(DocumentId documentId, string name, LuaType? baseType, NamedTypeLuaDeclaration luaDeclaration)
     {
         AddType(documentId, name, luaDeclaration, NamedTypeKind.Enum);

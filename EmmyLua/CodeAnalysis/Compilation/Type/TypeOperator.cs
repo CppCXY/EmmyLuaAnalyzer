@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public enum TypeOperatorKind
 {
     None,
+
     // math
     Add, // +
     Sub, // -
@@ -24,6 +26,7 @@ public enum TypeOperatorKind
 
     // concat
     Concat, // ..
+
     // len
     Len, // #
 
@@ -68,12 +71,20 @@ public static class TypeOperatorKindHelper
     };
 }
 
-public class TypeOperator(TypeOperatorKind kind)
+public class TypeOperator(TypeOperatorKind kind, LuaSyntaxElement defineElement)
 {
     public TypeOperatorKind Kind { get; } = kind;
+
+    public LuaSyntaxElement DefineElement { get; } = defineElement;
 }
 
-public class BinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right, LuaType ret) : TypeOperator(kind)
+public class BinaryOperator(
+    TypeOperatorKind kind,
+    LuaType left,
+    LuaType right,
+    LuaType ret,
+    LuaSyntaxElement defineElement)
+    : TypeOperator(kind, defineElement)
 {
     public LuaType Left { get; } = left;
     public LuaType Right { get; } = right;
@@ -109,7 +120,8 @@ public class BinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right, 
     };
 }
 
-public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret) : TypeOperator(kind)
+public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, LuaSyntaxElement defineElement)
+    : TypeOperator(kind, defineElement)
 {
     public LuaType Operand { get; } = operand;
     public LuaType Ret { get; } = ret;
@@ -124,7 +136,8 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret) 
     public bool IsLen => Kind == TypeOperatorKind.Len;
 }
 
-public class IndexOperator(LuaType type, LuaType key, LuaType ret) : TypeOperator(TypeOperatorKind.Index)
+public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaSyntaxElement defineElement)
+    : TypeOperator(TypeOperatorKind.Index, defineElement)
 {
     public LuaType Type { get; } = type;
     public LuaType Key { get; } = key;

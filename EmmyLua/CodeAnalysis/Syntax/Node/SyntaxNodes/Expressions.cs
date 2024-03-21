@@ -201,6 +201,9 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
             return null;
         }
     }
+
+    public IEnumerable<LuaCommentSyntax> Comments =>
+        Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
 }
 
 public class LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

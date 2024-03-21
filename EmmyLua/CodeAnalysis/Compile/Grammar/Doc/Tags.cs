@@ -632,6 +632,7 @@ public static class TagParser
             p.Expect(LuaTokenKind.TkName);
             if (p.Current is LuaTokenKind.TkLeftParen)
             {
+                p.Bump();
                 var cm = TypesParser.Type(p);
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
                 {

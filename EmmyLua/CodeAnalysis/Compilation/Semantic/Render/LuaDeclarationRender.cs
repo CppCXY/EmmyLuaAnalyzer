@@ -46,7 +46,7 @@ public static class LuaDeclarationRender
                 if (parameter.DeclarationType is { } declarationType)
                 {
                     sb.Append(
-                        $"```lua\n(parameter) {parameter.Name}:{LuaTypeRender.RenderType(declarationType, context)}\n```");
+                        $"```lua\n(parameter) {parameter.Name} : {LuaTypeRender.RenderType(declarationType, context)}\n```");
                 }
                 else
                 {
@@ -54,6 +54,97 @@ public static class LuaDeclarationRender
                 }
 
                 LuaCommentRender.RenderParamComment(parameter, sb);
+                break;
+            }
+            case DocFieldLuaDeclaration docField:
+            {
+                if (docField.FieldDef is { } fieldDef)
+                {
+                    sb.Append(
+                        $"```lua\n {docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
+                    LuaCommentRender.RenderDocFieldComment(docField, sb);
+                }
+                // TODO: handle TypedFieldDef
+                // else if (docField.TypedFieldDef is { } typedFieldDef)
+                // {
+                //     sb.Append(
+                //         $"```lua\n {docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
+                //     LuaCommentRender.RenderDocFieldComment(docField, sb);
+                // }
+
+                break;
+            }
+            case TableFieldLuaDeclaration tableField:
+            {
+                var constExpr = string.Empty;
+                if (tableField.TableField is { IsValue: false, Value: LuaLiteralExprSyntax expr })
+                {
+                    switch (expr.Literal)
+                    {
+                        case LuaStringToken stringLiteral:
+                        {
+                            constExpr = $" = '{stringLiteral.Value}'";
+                            break;
+                        }
+                        case LuaIntegerToken integerLiteral:
+                        {
+                            constExpr = $" = {integerLiteral.Value}";
+                            break;
+                        }
+                        case LuaFloatToken floatToken:
+                        {
+                            constExpr = $" = {floatToken.Value}";
+                            break;
+                        }
+                        case LuaComplexToken complexToken:
+                        {
+                            constExpr = $" = {complexToken}";
+                            break;
+                        }
+                    }
+                }
+                sb.Append(
+                    $"```lua\n(field) {tableField.Name} : {LuaTypeRender.RenderType(tableField.DeclarationType, context)}{constExpr}\n```");
+                LuaCommentRender.RenderTableFieldComment(tableField, sb);
+                break;
+            }
+            case NamedTypeLuaDeclaration namedTypeLuaDeclaration:
+            {
+                var declarationType = namedTypeLuaDeclaration.DeclarationType;
+                var typeDescription = "class";
+                if (declarationType is LuaNamedType namedType)
+                {
+                    var detailType = namedType.GetDetailType(context);
+                    if (detailType.IsAlias)
+                    {
+                        typeDescription = "alias";
+                    }
+                    else if (detailType.IsEnum)
+                    {
+                        typeDescription = "enum";
+                    }
+                    else if (detailType.IsInterface)
+                    {
+                        typeDescription = "interface";
+                    }
+                }
+
+                sb.Append(
+                    $"```lua\n{typeDescription} {namedTypeLuaDeclaration.Name} : {LuaTypeRender.RenderType(namedTypeLuaDeclaration.DeclarationType, context)}\n```");
+                // LuaCommentRender.RenderStatComment(declaration, sb);
+                break;
+            }
+            case TypeIndexDeclaration typeIndexDeclaration:
+            {
+                var field = typeIndexDeclaration.Field;
+                if (field is { TypeField: { } typeField, Type: { } type })
+                {
+                    var keyType = context.Infer(typeField);
+                    var valueTType = context.Infer(type);
+                    sb.Append(
+                        $"```lua\n(index) [{LuaTypeRender.RenderType(keyType, context)}] : {LuaTypeRender.RenderType(valueTType, context)}\n```");
+                }
+
                 break;
             }
         }

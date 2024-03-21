@@ -776,7 +776,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -784,7 +784,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -792,7 +792,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -800,7 +800,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -808,7 +808,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -816,14 +816,14 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "unm":
                 {
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType);
+                    var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -831,7 +831,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -839,7 +839,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -847,7 +847,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -855,14 +855,14 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bnot":
                 {
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType);
+                    var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -870,7 +870,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -878,7 +878,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -886,35 +886,35 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType);
+                    var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "len":
                 {
                     var retType = Context.Infer(operatorSyntax.ReturnType);
-                    var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType);
+                    var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "eq":
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean);
+                    var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "lt":
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean);
+                    var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "le":
                 {
                     var type = Context.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean);
+                    var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean, operatorSyntax);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, op);
                     break;
                 }
@@ -959,7 +959,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var keyType = Context.Infer(typeField);
                     var valueType = Context.Infer(type4);
-                    var indexOperator = new IndexOperator(namedType, keyType, valueType);
+                    var indexOperator = new IndexOperator(namedType, keyType, valueType, tagField);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, indexOperator);
                     break;
                 }
@@ -1004,7 +1004,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     var keyType = Context.Infer(typeField);
                     var valueType = Context.Infer(type4);
-                    var indexOperator = new IndexOperator(namedType, keyType, valueType);
+                    var indexOperator = new IndexOperator(namedType, keyType, valueType, field);
                     ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, indexOperator);
                     break;
                 }
@@ -1056,37 +1056,37 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         var className = luaDocTableTypeSyntax.UniqueId;
         var tableType = new LuaTableLiteralType(className);
-        foreach (var fieldSyntax in luaDocTableTypeSyntax.FieldList)
+        foreach (var field in luaDocTableTypeSyntax.FieldList)
         {
-            if (fieldSyntax is { NameField: { } nameToken, Type: { } type1 })
+            if (field is { NameField: { } nameToken, Type: { } type1 })
             {
                 var type = Context.Infer(type1);
-                var declaration = new DocFieldLuaDeclaration(nameToken.RepresentText, GetPosition(fieldSyntax),
-                    fieldSyntax, type);
+                var declaration = new DocFieldLuaDeclaration(nameToken.RepresentText, GetPosition(field),
+                    field, type);
                 AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, className, declaration);
             }
-            else if (fieldSyntax is { IntegerField: { } integerField, Type: { } type2 })
+            else if (field is { IntegerField: { } integerField, Type: { } type2 })
             {
                 var type = Context.Infer(type2);
-                var declaration = new DocFieldLuaDeclaration($"[{integerField.Value}]", GetPosition(fieldSyntax),
-                    fieldSyntax, type);
+                var declaration = new DocFieldLuaDeclaration($"[{integerField.Value}]", GetPosition(field),
+                    field, type);
                 AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, className, declaration);
             }
-            else if (fieldSyntax is { StringField: { } stringField, Type: { } type3 })
+            else if (field is { StringField: { } stringField, Type: { } type3 })
             {
                 var type = Context.Infer(type3);
-                var declaration = new DocFieldLuaDeclaration(stringField.Value, GetPosition(fieldSyntax), fieldSyntax,
+                var declaration = new DocFieldLuaDeclaration(stringField.Value, GetPosition(field), field,
                     type);
                 AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, className, declaration);
             }
-            else if (fieldSyntax is { TypeField: { } typeField, Type: { } type4 })
+            else if (field is { TypeField: { } typeField, Type: { } type4 })
             {
                 var keyType = Context.Infer(typeField);
                 var valueType = Context.Infer(type4);
-                var indexOperator = new IndexOperator(tableType, keyType, valueType);
+                var indexOperator = new IndexOperator(tableType, keyType, valueType, field);
                 ProjectIndex.TypeOperatorStorage.AddTypeOperator(DocumentId, indexOperator);
             }
         }

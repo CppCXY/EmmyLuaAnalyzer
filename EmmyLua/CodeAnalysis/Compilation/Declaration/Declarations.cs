@@ -120,7 +120,7 @@ public class GlobalLuaDeclaration(
     int position,
     LuaNameExprSyntax varName,
     LuaType? declarationType
-    ) : LuaDeclaration(name, position, varName, declarationType, DeclarationFeature.Global)
+) : LuaDeclaration(name, position, varName, declarationType, DeclarationFeature.Global)
 {
     public LuaNameExprSyntax VarName => varName;
 
@@ -148,7 +148,8 @@ public class ParameterLuaDeclaration(
 
     public LuaDocTagTypedParamSyntax? TypedParamDef => SyntaxElement as LuaDocTagTypedParamSyntax;
 
-    public ParameterLuaDeclaration WithType(LuaType type) => new ParameterLuaDeclaration(Name, Position, SyntaxElement, type);
+    public ParameterLuaDeclaration WithType(LuaType type) =>
+        new ParameterLuaDeclaration(Name, Position, SyntaxElement, type);
 }
 
 public class MethodLuaDeclaration(
@@ -229,4 +230,19 @@ public class LabelLuaDeclaration(
     LuaLabelStatSyntax labelStat) : LuaDeclaration(name, position, labelStat, null)
 {
     public LuaLabelStatSyntax LabelStat => labelStat;
+}
+
+public class VirtualDeclaration(LuaType? luaType, LuaSyntaxElement? element = null)
+    : LuaDeclaration(string.Empty, 0, element, luaType);
+
+public class TypeIndexDeclaration(LuaType? luaType, LuaDocTagFieldSyntax? field)
+    : VirtualDeclaration(luaType, field)
+{
+    public LuaDocTagFieldSyntax? Field => SyntaxElement as LuaDocTagFieldSyntax;
+}
+
+public class TypeOpDeclaration(LuaType? luaType, LuaDocTagOperatorSyntax? opField)
+    : VirtualDeclaration(luaType, opField)
+{
+    public LuaDocTagOperatorSyntax? OpField => SyntaxElement as LuaDocTagOperatorSyntax;
 }
