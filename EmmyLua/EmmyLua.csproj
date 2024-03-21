@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>

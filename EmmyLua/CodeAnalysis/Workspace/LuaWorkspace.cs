@@ -44,6 +44,11 @@ public class LuaWorkspace
         Compilation = new LuaCompilation(this);
         ModuleGraph = new ModuleGraph(this);
         ModuleGraph.UpdatePattern(features.RequirePattern);
+        if (features.InitStdLib)
+        {
+            var stdLib = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "std");
+            LoadWorkspace(stdLib);
+        }
     }
 
     public void LoadWorkspace(string workspace)

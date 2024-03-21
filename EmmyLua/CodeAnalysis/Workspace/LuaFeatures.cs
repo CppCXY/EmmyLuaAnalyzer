@@ -31,4 +31,6 @@ public class LuaFeatures
     [
         "require"
     ];
+
+    public bool InitStdLib { get; set; } = true;
 }
