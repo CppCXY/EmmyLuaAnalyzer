@@ -106,8 +106,13 @@ public class LuaCompilation
         {
             return null;
         }
+        var declarationTree = DeclarationTrees.GetValueOrDefault(document.Id);
+        if (declarationTree is null)
+        {
+            return null;
+        }
 
-        return new SemanticModel(this, document);
+        return new SemanticModel(this, document, declarationTree);
     }
 
     private void Analyze()

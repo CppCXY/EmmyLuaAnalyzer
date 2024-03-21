@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
@@ -16,12 +17,15 @@ public class SemanticModel
 
     public LuaRenderBuilder RenderBuilder { get; }
 
-    public SemanticModel(LuaCompilation compilation, LuaDocument document)
+    public LuaDeclarationTree DeclarationTree { get; }
+
+    public SemanticModel(LuaCompilation compilation, LuaDocument document, LuaDeclarationTree declarationTree)
     {
         Compilation = compilation;
         Document = document;
         Context = new(compilation);
         RenderBuilder = new(Context);
+        DeclarationTree = declarationTree;
     }
 
     // 渲染符号的文档和类型

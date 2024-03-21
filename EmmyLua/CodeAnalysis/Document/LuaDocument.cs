@@ -3,7 +3,7 @@ using System;
 
 namespace EmmyLua.CodeAnalysis.Document;
 
-public readonly struct DocumentId(int id)
+public readonly struct DocumentId(int id) : IEquatable<DocumentId>
 {
     public static DocumentId VirtualDocumentId { get; } = new(0);
 
@@ -18,7 +18,12 @@ public readonly struct DocumentId(int id)
 
     public override bool Equals(object? obj)
     {
-        return obj is DocumentId other && other.Id == Id;
+        return obj is DocumentId other && Equals(other);
+    }
+
+    public bool Equals(DocumentId other)
+    {
+        return other.Id == Id;
     }
 
     public static bool operator ==(DocumentId left, DocumentId right)
@@ -30,7 +35,6 @@ public readonly struct DocumentId(int id)
     {
         return !(left == right);
     }
-
 }
 
 public class LuaDocument
@@ -81,7 +85,7 @@ public class LuaDocument
     public static LuaDocument FromUri(string uri, string text, LuaLanguage language)
     {
         var uri2 = new Uri(uri);
-        return  new LuaDocument(text, language, DocumentId.VirtualDocumentId, uri2.AbsoluteUri, uri2.LocalPath);
+        return new LuaDocument(text, language, DocumentId.VirtualDocumentId, uri2.AbsoluteUri, uri2.LocalPath);
     }
 
     public static LuaDocument FromPath(string path, string text, LuaLanguage language)

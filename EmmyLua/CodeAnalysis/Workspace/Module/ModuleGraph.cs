@@ -41,7 +41,7 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         }
 
         // 取得相对于workspace的路径
-        var relativePath = Path.GetRelativePath(workspace, document.Path);
+        var relativePath = workspace.Length == 0 ? document.Path : Path.GetRelativePath(workspace, document.Path);
         var normalPath = relativePath.Replace('\\', '/');
         foreach (var regex in Pattern)
         {
@@ -108,12 +108,16 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public string GetWorkspace(LuaDocument document)
     {
         var workspace = string.Empty;
-
-        foreach (var pair in WorkspaceModule)
+        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
         {
-            if (document.Path.StartsWith(pair.Key))
+            workspace = moduleIndex.Workspace;
+        }
+
+        foreach (var item in WorkspaceModule)
+        {
+            if (item.Value.Children.Values.Any(it => it.Document == document))
             {
-                workspace = pair.Key;
+                workspace = item.Key;
                 break;
             }
         }
