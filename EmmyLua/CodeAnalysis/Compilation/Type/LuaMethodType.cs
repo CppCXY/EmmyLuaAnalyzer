@@ -166,7 +166,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
             MatchCount = matchedParam
         };
 
-        if (skipParam > Parameters.Count || args.Count == 0)
+        if (skipParam >= Parameters.Count || args.Count == 0)
         {
             return matchResult;
         }

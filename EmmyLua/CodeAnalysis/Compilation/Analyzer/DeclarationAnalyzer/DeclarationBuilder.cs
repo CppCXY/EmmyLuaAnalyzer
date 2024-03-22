@@ -464,7 +464,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
 
                 var declaration = new DocParameterLuaDeclaration(name.RepresentText, GetPosition(name), name, ty);
-                dic.Add(name.RepresentText, declaration);
+                dic.TryAdd(name.RepresentText, declaration);
                 AddDeclaration(declaration);
             }
             else if (tagParamSyntax is { VarArgs: { } varArgs, Type: { } type2 })
@@ -472,7 +472,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 var ty = Context.Infer(type2);
                 var declaration =
                     new DocParameterLuaDeclaration(varArgs.RepresentText, GetPosition(varArgs), varArgs, ty);
-                dic.Add("...", declaration);
+                dic.TryAdd("...", declaration);
                 AddDeclaration(declaration);
             }
         }
