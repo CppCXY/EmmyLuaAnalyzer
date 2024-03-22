@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.ExtensionUtil;
 using MediatR;

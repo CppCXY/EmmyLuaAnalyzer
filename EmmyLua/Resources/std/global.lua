@@ -103,9 +103,8 @@ function getmetatable(object) end
 --- will iterate over the key–value pairs (1,`t[1]`), (2,`t[2]`), ..., up to
 --- the first absent index.
 ---@generic V
----@param t table<any, V>
----@return fun(tbl: table<int, V>):int, V
----@overload fun(t:V[]): (fun(tbl: table<K, V>):K, V)
+---@param t table<any, V> | V[]
+---@return fun(tbl: any):int, V
 function ipairs(t) end
 
 ---
@@ -188,9 +187,8 @@ function next(table, index) end
 --- See function `next` for the caveats of modifying the table during its
 --- traversal.
 ---@generic K, V
----@param t table<K, V>
----@return fun(tbl: table<K, V>):K, V
----@overload fun(t:V[]): (fun(tbl: table<K, V>):K, V)
+---@param t table<K, V> | V[]
+---@return fun(tbl: any):K, V
 function pairs(t) end
 ---
 --- Calls function `f` with the given arguments in *protected mode*. This

@@ -277,7 +277,15 @@ public static class GenericInfer
             var newType = unionType.Remove(Builtin.Nil);
             InferInstantiateByExpr(newType, expr, genericParameter, result, context);
         }
-        // TODO: other cases
+
+        foreach (var luaType in unionType.UnionTypes)
+        {
+            InferInstantiateByExpr(luaType, expr, genericParameter, result, context);
+            if (genericParameter.Count == result.Count)
+            {
+                break;
+            }
+        }
     }
 
     private static void UnionTypeInstantiateByType(LuaUnionType unionType,
@@ -286,7 +294,14 @@ public static class GenericInfer
         Dictionary<string, LuaType> result,
         SearchContext context)
     {
-        // TODO: Not implemented
+        foreach (var luaType in unionType.UnionTypes)
+        {
+            InferInstantiateByType(luaType, exprType, genericParameter, result, context);
+            if (genericParameter.Count == result.Count)
+            {
+                break;
+            }
+        }
     }
 
     private static void TupleTypeInstantiateByExpr(LuaTupleType tupleType,

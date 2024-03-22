@@ -147,6 +147,14 @@ public static class LuaDeclarationRender
 
                 break;
             }
+            case IndexLuaDeclaration indexLuaDeclaration:
+            {
+                var indexExpr = indexLuaDeclaration.IndexExpr;
+                sb.Append(
+                    $"```lua\n(field) {indexExpr.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}\n```");
+                LuaCommentRender.RenderStatComment(indexLuaDeclaration, sb);
+                break;
+            }
         }
     }
 

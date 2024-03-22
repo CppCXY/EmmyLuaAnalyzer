@@ -48,6 +48,19 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
     private LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr, SearchContext context)
     {
+        if (nameExpr.Name is { RepresentText: "self" })
+        {
+            var closures = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>();
+            foreach (var closure in closures)
+            {
+                var stat = closure.Parent;
+                if (stat is LuaFuncStatSyntax { IndexExpr.PrefixExpr: { } expr })
+                {
+                    return FindDeclaration(expr, context);
+                }
+            }
+        }
+
         if (nameExpr.Name is { } name)
         {
             var scope = FindScope(nameExpr);
