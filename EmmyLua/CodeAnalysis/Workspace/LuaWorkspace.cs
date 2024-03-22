@@ -42,7 +42,7 @@ public class LuaWorkspace
     {
         Features = features;
         Compilation = new LuaCompilation(this);
-        ModuleGraph = new ModuleGraph(this);
+        ModuleGraph = new ModuleGraph();
         ModuleGraph.UpdatePattern(features.RequirePattern);
         if (features.InitStdLib)
         {
@@ -153,12 +153,6 @@ public class LuaWorkspace
         if (Documents.TryGetValue(documentId, out var document))
         {
             var newDocument = document.WithText(text);
-            if (!newDocument.IsVirtual)
-            {
-                ModuleGraph.RemoveDocument(document);
-                ModuleGraph.AddDocument(newDocument);
-            }
-
             Documents[documentId] = newDocument;
             Compilation.RemoveSyntaxTree(documentId);
             Compilation.AddSyntaxTree(documentId, newDocument.SyntaxTree);

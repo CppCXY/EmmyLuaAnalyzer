@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.ExtensionUtil;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -36,25 +37,11 @@ public class GotoDefineHandler(LuaWorkspace workspace) : DefinitionHandlerBase
             if (node is not null)
             {
                 var declaration = declarationTree.FindDeclaration(node, semanticModel.Context);
-                if (declaration?.SyntaxElement is { Range: { } range, Tree.Document: {} defineDocument })
+                if (declaration?.SyntaxElement is { Location: {} location })
                 {
-                    return Task.FromResult<LocationOrLocationLinks?>(LocationOrLocationLinks.From(new Location()
-                    {
-                        Uri = defineDocument.Uri,
-                        Range = new()
-                        {
-                            Start = new Position()
-                            {
-                                Line = document.GetLine(range.StartOffset),
-                                Character = document.GetCol(range.StartOffset)
-                            },
-                            End = new Position()
-                            {
-                                Line = document.GetLine(range.EndOffset),
-                                Character = document.GetCol(range.EndOffset)
-                            }
-                        }
-                    }));
+                    return Task.FromResult<LocationOrLocationLinks?>(LocationOrLocationLinks.From(
+                        location.ToLspLocation()
+                        ));
                 }
             }
         }

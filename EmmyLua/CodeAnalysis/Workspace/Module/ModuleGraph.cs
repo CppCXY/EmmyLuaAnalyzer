@@ -3,15 +3,13 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph(LuaWorkspace luaWorkspace)
+public class ModuleGraph
 {
-    public LuaWorkspace Workspace { get; } = luaWorkspace;
+    private Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
-    public Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
+    private Dictionary<DocumentId, ModuleIndex> DocumentIndex { get; } = new();
 
-    public Dictionary<DocumentId, ModuleIndex> DocumentIndex { get; } = new();
-
-    public List<Regex> Pattern { get; } = new();
+    private List<Regex> Pattern { get; } = new();
 
     public void UpdatePattern(List<string> pattern)
     {
@@ -25,23 +23,25 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public void AddDocuments(string workspace, List<LuaDocument> documents)
     {
-        foreach (var document in documents)
-        {
-            AddDocument(workspace, document);
-        }
-    }
-
-    public void AddDocument(string workspace, LuaDocument document)
-    {
-        var documentId = document.Id;
+        workspace = Path.GetFullPath(workspace);
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             root = new ModuleNode();
             WorkspaceModule.Add(workspace, root);
         }
 
+        foreach (var document in documents)
+        {
+            AddDocument(root, workspace, document);
+        }
+    }
+
+    public void AddDocument(ModuleNode root, string workspace, LuaDocument document)
+    {
+        var documentId = document.Id;
+
         // 取得相对于workspace的路径
-        var relativePath = workspace.Length == 0 ? document.Path : Path.GetRelativePath(workspace, document.Path);
+        var relativePath = Path.GetRelativePath(workspace, document.Path);
         var normalPath = relativePath.Replace('\\', '/');
         foreach (var regex in Pattern)
         {
@@ -71,21 +71,42 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public void AddDocument(LuaDocument document)
     {
-        AddDocument(GetWorkspace(document), document);
-    }
+        var workspace = GetWorkspace(document);
+        if (workspace.Length == 0)
+        {
+            return;
+        }
 
-    public void RemoveDocument(LuaDocument document)
-    {
-        RemoveDocument(GetWorkspace(document), document);
-    }
-
-    public void RemoveDocument(string workspace, LuaDocument document)
-    {
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
         }
 
+        AddDocument(root, workspace, document);
+    }
+
+    public void RemoveDocument(LuaDocument document)
+    {
+        var workspace = string.Empty;
+        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
+        {
+            workspace = moduleIndex.Workspace;
+        }
+
+        if (workspace.Length == 0)
+        {
+            return;
+        }
+
+        if (!WorkspaceModule.TryGetValue(workspace, out var root))
+        {
+            return;
+        }
+        RemoveDocument(root, document);
+    }
+
+    private void RemoveDocument(ModuleNode root, LuaDocument document)
+    {
         if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
         {
             var modulePaths = moduleIndex.ModulePath.Split('.');
@@ -108,16 +129,12 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public string GetWorkspace(LuaDocument document)
     {
         var workspace = string.Empty;
-        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
+        var documentFullPath = Path.GetFullPath(document.Path);
+        foreach (var node in WorkspaceModule)
         {
-            workspace = moduleIndex.Workspace;
-        }
-
-        foreach (var item in WorkspaceModule)
-        {
-            if (item.Value.Children.Values.Any(it => it.Document == document))
+            if (documentFullPath.StartsWith(node.Key))
             {
-                workspace = item.Key;
+                workspace = node.Key;
                 break;
             }
         }
