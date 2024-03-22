@@ -4,7 +4,7 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 
-var workspace = LuaWorkspace.Create();
+// var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
     ---@protected

@@ -51,6 +51,11 @@ public struct Marker(int position)
 
         return new CompleteMarker(Position, finish, kind, false);
     }
+
+    public bool IsInvalid(IMarkerEventContainer p)
+    {
+        return (p.Events.Count - 1) == position;
+    }
 }
 
 public struct CompleteMarker(int start, int finish, LuaSyntaxKind kind, bool isComplete)

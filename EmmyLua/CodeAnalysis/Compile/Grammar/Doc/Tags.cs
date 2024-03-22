@@ -555,6 +555,7 @@ public static class TagParser
 
     private static CompleteMarker SimpleTag(LuaDocParser p, LuaSyntaxKind kind)
     {
+        p.SetState(LuaDocLexerState.Normal);
         var m = p.Marker();
         p.Bump();
         DescriptionParser.Description(p);

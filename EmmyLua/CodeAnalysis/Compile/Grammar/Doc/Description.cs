@@ -29,6 +29,11 @@ public static class DescriptionParser
             p.Bump();
         }
 
+        if (m.IsInvalid(p))
+        {
+            return CompleteMarker.Empty;
+        }
+
         return m.Complete(p, LuaSyntaxKind.Description);
     }
 
