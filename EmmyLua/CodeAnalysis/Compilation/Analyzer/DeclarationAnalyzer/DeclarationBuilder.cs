@@ -77,7 +77,8 @@ public class DeclarationBuilder : ILuaElementWalker
         return null;
     }
 
-    private static int GetPosition(LuaSyntaxElement element) => element.Range.StartOffset;
+    // TODO: replace property
+    private static int GetPosition(LuaSyntaxElement element) => element.Position;
 
     private void AddDeclaration(LuaDeclaration luaDeclaration)
     {
@@ -220,6 +221,16 @@ public class DeclarationBuilder : ILuaElementWalker
             case LuaLabelStatSyntax labelStatSyntax:
             {
                 AnalyzeLuaLabel(labelStatSyntax);
+                break;
+            }
+            case LuaNameExprSyntax nameExpr:
+            {
+                IndexNameExpr(nameExpr);
+                break;
+            }
+            case LuaIndexExprSyntax indexExpr:
+            {
+                IndexIndexExpr(indexExpr);
                 break;
             }
         }
@@ -1070,5 +1081,15 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             AddUnResolved(new UnResolvedSource(DocumentId, block, ResolveState.UnResolveReturn));
         }
+    }
+
+    private void IndexNameExpr(LuaNameExprSyntax nameExpr)
+    {
+        ProjectIndex.AddNameExpr(DocumentId, nameExpr);
+    }
+
+    private void IndexIndexExpr(LuaIndexExprSyntax indexExpr)
+    {
+        ProjectIndex.AddIndexExpr(DocumentId, indexExpr);
     }
 }

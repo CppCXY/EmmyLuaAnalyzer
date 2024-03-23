@@ -109,7 +109,11 @@ public class CfgBuilder
                 }
                 case LuaDoStatSyntax doStat:
                 {
-                    currentBlock = BuildBlock(doStat.Block, currentBlock);
+                    if (doStat.Block is not null)
+                    {
+                        currentBlock = BuildBlock(doStat.Block, currentBlock);
+                    }
+
                     if (currentBlock == _graph.ExitNode)
                     {
                         currentBlock = _graph.CreateNode();

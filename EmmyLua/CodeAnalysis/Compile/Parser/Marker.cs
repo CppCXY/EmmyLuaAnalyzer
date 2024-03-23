@@ -54,7 +54,7 @@ public struct Marker(int position)
 
     public bool IsInvalid(IMarkerEventContainer p)
     {
-        return (p.Events.Count - 1) == position;
+        return (p.Events.Count - 1) == Position;
     }
 }
 

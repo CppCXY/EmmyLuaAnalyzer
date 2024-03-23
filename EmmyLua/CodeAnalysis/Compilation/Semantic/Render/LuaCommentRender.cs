@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
@@ -29,11 +30,17 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderStatComment(LuaDeclaration declaration, StringBuilder sb)
+    public static void RenderDeclarationStatComment(LuaDeclaration declaration, StringBuilder sb)
     {
         var declarationElement = declaration.SyntaxElement;
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
+        RenderCommentDescription(comments, sb);
+    }
+
+    public static void RenderStatComment(LuaStatSyntax statSyntax, StringBuilder sb)
+    {
+        var comments = statSyntax.Comments;
         RenderCommentDescription(comments, sb);
     }
 
@@ -58,25 +65,14 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderDocFieldComment(DocFieldLuaDeclaration docField, StringBuilder sb)
+    public static void RenderDocFieldComment(DocFieldLuaDeclaration fieldDeclaration, StringBuilder sb)
     {
-        // var declarationElement = docField.SyntaxElement;
-        // var comments =
-        //     declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
-        // if (comments is null)
-        // {
-        //     return;
-        // }
-        //
-        // var tagParams = comments.SelectMany(it => it.DocList).OfType<LuaDocTagFieldSyntax>();
-        // foreach (var tagParam in tagParams)
-        // {
-        //     if (tagParam.Name?.RepresentText == docField.Name && tagParam.Description != null)
-        //     {
-        //         RenderSeparator(sb);
-        //         sb.Append(tagParam.Description.CommentText);
-        //     }
-        // }
+        var docField = fieldDeclaration.FieldDef;
+        if (docField is { Description.CommentText: { } commentText })
+        {
+            RenderSeparator(sb);
+            sb.Append(commentText);
+        }
     }
 
     public static void RenderTableFieldComment(TableFieldLuaDeclaration tableField, StringBuilder sb)

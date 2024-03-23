@@ -12,8 +12,6 @@ public class ProjectIndex(LuaCompilation compilation)
 {
     private LuaCompilation Compilation { get; } = compilation;
 
-    private IndexStorage<string, LuaDeclaration> NameDeclaration { get; } = new();
-
     private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
@@ -32,9 +30,12 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
 
+    private IndexStorage<string, LuaNameExprSyntax> NameExprs { get; } = new();
+
+    private IndexStorage<string, LuaIndexExprSyntax> IndexExprs { get; } = new();
+
     public void Remove(DocumentId documentId)
     {
-        NameDeclaration.Remove(documentId);
         Members.Remove(documentId);
         GlobalDeclaration.Remove(documentId);
         Supers.Remove(documentId);
@@ -43,18 +44,19 @@ public class ProjectIndex(LuaCompilation compilation)
         TypeOperatorStorage.Remove(documentId);
         ExportTypes.Remove(documentId);
         Id2Type.Remove(documentId);
+        NamedTypeKinds.Remove(documentId);
+        NameExprs.Remove(documentId);
+        IndexExprs.Remove(documentId);
     }
 
     public void AddMember(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         Members.Add(documentId, name, luaDeclaration);
-        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
     public void AddGlobal(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         GlobalDeclaration.Add(documentId, name, luaDeclaration);
-        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
     public void AddSuper(DocumentId documentId, string name, LuaType type)
@@ -65,7 +67,6 @@ public class ProjectIndex(LuaCompilation compilation)
     public void AddType(DocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration, NamedTypeKind kind)
     {
         NamedType.Add(documentId, name, luaDeclaration);
-        NameDeclaration.Add(documentId, name, luaDeclaration);
         NamedTypeKinds.Add(documentId, name, kind);
     }
 
@@ -97,12 +98,27 @@ public class ProjectIndex(LuaCompilation compilation)
     public void AddGenericParam(DocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
     {
         GenericParam.Add(documentId, name, luaDeclaration);
-        NameDeclaration.Add(documentId, name, luaDeclaration);
     }
 
     public void AddExportType(DocumentId documentId, LuaType type)
     {
         ExportTypes[documentId] = type;
+    }
+
+    public void AddNameExpr(DocumentId documentId, LuaNameExprSyntax nameExpr)
+    {
+        if (nameExpr.Name is { RepresentText: { } name })
+        {
+            NameExprs.Add(documentId, name, nameExpr);
+        }
+    }
+
+    public void AddIndexExpr(DocumentId documentId, LuaIndexExprSyntax indexExpr)
+    {
+        if (indexExpr is { Name: { } name })
+        {
+            IndexExprs.Add(documentId, name, indexExpr);
+        }
     }
 
     public IEnumerable<LuaDeclaration> GetMembers(string name)
@@ -133,11 +149,6 @@ public class ProjectIndex(LuaCompilation compilation)
     public IEnumerable<LuaType> GetTypeFromId(string name)
     {
         return Id2Type.Get<LuaType>(name);
-    }
-
-    public IEnumerable<LuaDeclaration> GetDeclarations(string name)
-    {
-        return NameDeclaration.Get<LuaDeclaration>(name);
     }
 
     public NamedTypeLuaDeclaration? GetTypeLuaDeclaration(string name)
@@ -180,4 +191,8 @@ public class ProjectIndex(LuaCompilation compilation)
 
         return new ClassDetailType(name, context);
     }
+
+    public IEnumerable<LuaNameExprSyntax> GetNameExprs(string name) => NameExprs.Get<LuaNameExprSyntax>(name);
+
+    public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name) => IndexExprs.Get<LuaIndexExprSyntax>(name);
 }

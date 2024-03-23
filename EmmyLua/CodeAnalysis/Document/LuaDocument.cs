@@ -37,7 +37,7 @@ public readonly struct DocumentId(int id) : IEquatable<DocumentId>
     }
 }
 
-public class LuaDocument
+public sealed class LuaDocument
 {
     public DocumentId Id { get; set; }
 
@@ -49,11 +49,11 @@ public class LuaDocument
 
     private LuaSyntaxTree? _syntaxTree;
 
-    public string Text { get; }
+    public string Text { get; private set; }
 
     public LuaLanguage Language { get; }
 
-    private LineIndex LineIndex { get; }
+    private LineIndex LineIndex { get; set; }
 
     public int GetCol(int offset)
     {
@@ -111,8 +111,10 @@ public class LuaDocument
         return new LuaLocation(this, range, baseLine);
     }
 
-    public LuaDocument WithText(string text)
+    public void ReplaceText(string text)
     {
-        return new LuaDocument(text, Language, Id, Uri, Path);
+        _syntaxTree = null;
+        LineIndex = LineIndex.Parse(text);
+        Text = text;
     }
 }

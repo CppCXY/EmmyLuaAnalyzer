@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
@@ -12,6 +13,7 @@ using EmmyLua.CodeAnalysis.Syntax.Walker;
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
 public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : IEquatable<LuaSyntaxElement>
 {
     public GreenNode Green { get; } = green;
 
@@ -455,12 +457,34 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         Tree.PushDiagnostic(diagnostic);
     }
 
-    public string UniqueId => $"{Tree.Document.Id.Id}_{Range.StartOffset}_{Range.Length}_{(int)Green.SyntaxKind}";
+    public string UniqueId => $"{Tree.Document.Id.Id}_{Range.StartOffset}_{Range.Length}_{Green.RawKind}";
 
     public int Position => Range.StartOffset;
 
     public override int GetHashCode()
     {
-         return HashCode.Combine(Tree.Document.Id.Id, Range.StartOffset, Range.Length, (int)Green.SyntaxKind);
+        return HashCode.Combine(Tree.Document.Id, Range, Green.RawKind);
+    }
+
+    public bool Equals(LuaSyntaxElement? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Tree.Document.Id == other.Tree.Document.Id
+               && Range.Equals(other.Range)
+               && Green.RawKind == other.Green.RawKind;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaSyntaxElement);
     }
 }

@@ -133,7 +133,7 @@ public class BinaryOperator(
     {
         get
         {
-            if (left is LuaNamedType namedType)
+            if (Left is LuaNamedType namedType)
             {
                 return namedType.Name;
             }

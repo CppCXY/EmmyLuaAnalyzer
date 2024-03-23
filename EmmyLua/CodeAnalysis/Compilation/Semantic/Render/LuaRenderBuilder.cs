@@ -3,6 +3,7 @@ using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -99,7 +100,26 @@ public class LuaRenderBuilder(SearchContext context)
                     preview.Append("...");
                 }
 
-                return $"'{preview}'";
+                var display = $"\"{preview}\"";
+                if (literalExpr.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
+                    && context.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
+                {
+                    var sb = new StringBuilder();
+                    sb.Append($"```lua\nmodule {display}\n```");
+                    var moduleDocument = context.Compilation.Workspace.ModuleGraph.FindModule(stringLiteral.Value);
+                    if (moduleDocument is not null)
+                    {
+                        LuaModuleRender.RenderModule(moduleDocument, sb, context);
+                    }
+
+                    display = sb.ToString();
+                }
+                else
+                {
+                    display = $"```lua\n{display}\n```";
+                }
+
+                return display;
             }
             case LuaIntegerToken integerLiteral:
             {

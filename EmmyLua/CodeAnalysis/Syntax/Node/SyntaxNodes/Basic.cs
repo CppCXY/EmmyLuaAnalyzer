@@ -151,6 +151,8 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
     public LuaDocTypeSyntax? Type => IsTypeField
         ? ChildNodes<LuaDocTypeSyntax>().LastOrDefault()
         : FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
 }
 
 public class LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

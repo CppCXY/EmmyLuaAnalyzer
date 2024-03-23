@@ -31,6 +31,8 @@ public class GreenNode
 
     public bool IsToken => _flag is NodeFlags.Token;
 
+    public int RawKind => _kind;
+
     public GreenNode(LuaSyntaxKind kind, int length, IEnumerable<GreenNode> children)
     {
         _flag = NodeFlags.Node;

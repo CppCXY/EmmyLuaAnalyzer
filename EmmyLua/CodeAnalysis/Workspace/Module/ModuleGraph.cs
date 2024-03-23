@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph
+public class ModuleGraph(LuaWorkspace workspace)
 {
     private Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
@@ -62,7 +62,7 @@ public class ModuleGraph
                     node = child;
                 }
 
-                node.Document = document;
+                node.DocumentId = documentId;
                 DocumentIndex.Add(documentId, new ModuleIndex(workspace, modulePath.Replace('/', '.')));
                 break;
             }
@@ -121,7 +121,7 @@ public class ModuleGraph
                 node = child;
             }
 
-            node.Document = null;
+            node.DocumentId = null;
             DocumentIndex.Remove(document.Id);
         }
     }
@@ -159,9 +159,9 @@ public class ModuleGraph
                 node = child;
             }
 
-            if (node.Document is { } document)
+            if (node.DocumentId is { } documentId)
             {
-                return document;
+                return workspace.GetDocument(documentId);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
@@ -15,7 +16,9 @@ public class SemanticModel
 
     public SearchContext Context { get; }
 
-    public LuaRenderBuilder RenderBuilder { get; }
+    private LuaRenderBuilder RenderBuilder { get; }
+
+    private References References { get; }
 
     public LuaDeclarationTree DeclarationTree { get; }
 
@@ -25,6 +28,7 @@ public class SemanticModel
         Document = document;
         Context = new(compilation);
         RenderBuilder = new(Context);
+        References = new(Context);
         DeclarationTree = declarationTree;
     }
 
@@ -37,6 +41,11 @@ public class SemanticModel
         }
 
         return RenderBuilder.Render(symbol);
+    }
+
+    public IEnumerable<LuaLocation> FindReferences(LuaSyntaxElement element)
+    {
+        return References.FindReferences(element);
     }
 
     public IEnumerable<Diagnostic> GetDiagnostic()

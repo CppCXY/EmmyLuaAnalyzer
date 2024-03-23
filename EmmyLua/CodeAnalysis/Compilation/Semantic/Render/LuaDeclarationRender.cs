@@ -39,7 +39,7 @@ public static class LuaDeclarationRender
                     RenderInClass(method.SyntaxElement, context, sb);
                 }
 
-                LuaCommentRender.RenderStatComment(declaration, sb);
+                LuaCommentRender.RenderDeclarationStatComment(declaration, sb);
                 break;
             }
             case ParameterLuaDeclaration parameter:
@@ -151,7 +151,7 @@ public static class LuaDeclarationRender
                 var indexExpr = indexLuaDeclaration.IndexExpr;
                 sb.Append(
                     $"```lua\n(field) {indexExpr.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}\n```");
-                LuaCommentRender.RenderStatComment(indexLuaDeclaration, sb);
+                LuaCommentRender.RenderDeclarationStatComment(indexLuaDeclaration, sb);
                 break;
             }
         }
@@ -211,13 +211,13 @@ public static class LuaDeclarationRender
         {
             sb.Append(
                 $"```lua\nlocal {local.Name}{attrib} : {LuaTypeRender.RenderDefinedType(local.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderStatComment(local, sb);
+            LuaCommentRender.RenderDeclarationStatComment(local, sb);
         }
         else
         {
             sb.Append(
                 $"```lua\nlocal {local.Name}{attrib} : {LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderStatComment(local, sb);
+            LuaCommentRender.RenderDeclarationStatComment(local, sb);
         }
     }
 
@@ -227,13 +227,13 @@ public static class LuaDeclarationRender
         {
             sb.Append(
                 $"```lua\nglobal {global.Name}: {LuaTypeRender.RenderDefinedType(global.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderStatComment(global, sb);
+            LuaCommentRender.RenderDeclarationStatComment(global, sb);
         }
         else
         {
             sb.Append(
                 $"```lua\nglobal {global.Name} : {LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderStatComment(global, sb);
+            LuaCommentRender.RenderDeclarationStatComment(global, sb);
         }
     }
 }
