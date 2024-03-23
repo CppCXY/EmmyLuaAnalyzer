@@ -37,7 +37,7 @@ public class LuaDocArrayTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaS
 public class LuaDocTableTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
-    public IEnumerable<LuaDocTagTypedFieldSyntax> FieldList => ChildNodes<LuaDocTagTypedFieldSyntax>();
+    public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
 
 public class LuaDocFuncTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
@@ -64,33 +64,6 @@ public class LuaDocParenTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaS
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
-}
-
-public class LuaDocTagTypedFieldSyntax(
-    GreenNode greenNode,
-    LuaSyntaxTree tree,
-    LuaSyntaxElement? parent,
-    int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
-{
-    public bool IsNameField => FirstChild<LuaNameToken>() != null;
-
-    public bool IsStringField => FirstChild<LuaStringToken>() != null;
-
-    public bool IsIntegerField => FirstChild<LuaIntegerToken>() != null;
-
-    public bool IsTypeField => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault() != null;
-
-    public LuaNameToken? NameField => FirstChild<LuaNameToken>();
-
-    public LuaStringToken? StringField => FirstChild<LuaStringToken>();
-
-    public LuaIntegerToken? IntegerField => FirstChild<LuaIntegerToken>();
-
-    public LuaDocTypeSyntax? TypeField =>
-        ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
-
-    public LuaDocTypeSyntax? Type => ChildNodesAfterToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon).FirstOrDefault();
 }
 
 public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

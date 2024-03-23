@@ -5,14 +5,15 @@ namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class TypeOperatorStorage
 {
-    private Dictionary<TypeOperatorKind, IndexEntry<TypeOperator>> TypeOperators { get; } = new();
+    private Dictionary<string, IndexEntry<TypeOperator>> TypeOperators { get; } = new();
 
     public void AddTypeOperator(DocumentId documentId, TypeOperator typeOperator)
     {
-        if (!TypeOperators.TryGetValue(typeOperator.Kind, out var entry))
+        var belongTypeName = typeOperator.BelongTypeName;
+        if (!TypeOperators.TryGetValue(typeOperator.BelongTypeName, out var entry))
         {
             entry = new IndexEntry<TypeOperator>();
-            TypeOperators.Add(typeOperator.Kind, entry);
+            TypeOperators.Add(belongTypeName, entry);
         }
 
         entry.Add(documentId, typeOperator);
@@ -25,7 +26,7 @@ public class TypeOperatorStorage
 
     private void RemoveOperator(DocumentId documentId)
     {
-        var waitRemove = new List<TypeOperatorKind>();
+        var waitRemove = new List<string>();
         foreach (var (key, entry) in TypeOperators)
         {
             entry.Remove(documentId);
@@ -41,47 +42,13 @@ public class TypeOperatorStorage
         }
     }
 
-    public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
+    public IEnumerable<TypeOperator> GetTypeOperators(string typeName)
     {
-        if (!TypeOperators.TryGetValue(kind, out var entry))
+        if (TypeOperators.TryGetValue(typeName, out var entry))
         {
-            return null;
+            return entry.Files.Values.SelectMany(it => it);
         }
 
-        var bestMatched = entry.Files.Values
-            .SelectMany(it => it)
-            .OfType<BinaryOperator>()
-            .FirstOrDefault(it => it.Left.Equals(left) && it.Right.Equals(right));
-
-        return bestMatched;
-    }
-
-    public UnaryOperator? GetBestMatchedUnaryOperator(TypeOperatorKind kind, LuaType type)
-    {
-        if (!TypeOperators.TryGetValue(kind, out var entry))
-        {
-            return null;
-        }
-
-        var bestMatched = entry.Files.Values
-            .SelectMany(it => it)
-            .OfType<UnaryOperator>()
-            .FirstOrDefault(it => it.Operand.Equals(type));
-
-        return bestMatched;
-    }
-
-    public IndexOperator? GetBestMatchedIndexOperator(LuaType type, LuaType key)
-    {
-        if (!TypeOperators.TryGetValue(TypeOperatorKind.Index, out var entry))
-        {
-            return null;
-        }
-
-        var bestMatched = entry.Files.Values
-            .SelectMany(it => it)
-            .OfType<IndexOperator>()
-            .FirstOrDefault(it => it.Type.Equals(type) && it.Key.Equals(key));
-        return bestMatched;
+        return Enumerable.Empty<TypeOperator>();
     }
 }

@@ -115,3 +115,46 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
         }
     }
 }
+
+public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public VisibilityKind Visibility
+    {
+        get
+        {
+            var tk = FirstChildToken(LuaTokenKind.TkTagVisibility);
+            return tk == null ? VisibilityKind.Public : VisibilityKindHelper.ToVisibilityKind(tk.Text);
+        }
+    }
+
+    public bool IsNameField => FirstChildToken(LuaTokenKind.TkName) != null;
+
+    public bool IsStringField => FirstChildToken(LuaTokenKind.TkString) != null;
+
+    public bool IsIntegerField => FirstChildToken(LuaTokenKind.TkInt) != null;
+
+    public bool IsTypeField =>
+        ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault() != null;
+
+    public LuaNameToken? NameField => FirstChild<LuaNameToken>();
+
+    public LuaStringToken? StringField => FirstChild<LuaStringToken>();
+
+    public LuaIntegerToken? IntegerField => FirstChild<LuaIntegerToken>();
+
+    public LuaDocTypeSyntax? TypeField =>
+        ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault();
+
+    public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
+
+    public LuaDocTypeSyntax? Type => IsTypeField
+        ? ChildNodes<LuaDocTypeSyntax>().LastOrDefault()
+        : FirstChild<LuaDocTypeSyntax>();
+}
+
+public class LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaDocFieldSyntax> FieldList => ChildNodes<LuaDocFieldSyntax>();
+}

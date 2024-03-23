@@ -96,6 +96,16 @@ public class LuaDeclaration(
     public virtual LuaDeclaration WithType(LuaType type) =>
         new LuaDeclaration(Name, Position, SyntaxElement, type, Feature);
 
+    public virtual LuaDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
+    {
+        if (DeclarationType is {} type)
+        {
+            return WithType(type.Instantiate(genericMap));
+        }
+
+        return this;
+    }
+
     public override string ToString()
     {
         return $"{Name}";
@@ -201,15 +211,13 @@ public class NamedTypeLuaDeclaration(
 public class DocFieldLuaDeclaration(
     string name,
     int position,
-    LuaSyntaxElement fieldDef,
+    LuaDocFieldSyntax fieldDef,
     LuaType? declarationType) : LuaDeclaration(name, position, fieldDef, declarationType)
 {
-    public LuaDocTagFieldSyntax? FieldDef => SyntaxElement as LuaDocTagFieldSyntax;
-
-    public LuaDocTagTypedFieldSyntax? TypedFieldDef => SyntaxElement as LuaDocTagTypedFieldSyntax;
+    public LuaDocFieldSyntax? FieldDef => SyntaxElement as LuaDocFieldSyntax;
 
     public override DocFieldLuaDeclaration WithType(LuaType type) =>
-        new DocFieldLuaDeclaration(Name, Position, SyntaxElement!, type);
+        new DocFieldLuaDeclaration(Name, Position, FieldDef!, type);
 }
 
 public class TableFieldLuaDeclaration(
@@ -271,25 +279,32 @@ public class LabelLuaDeclaration(
         new LabelLuaDeclaration(Name, Position, LabelStat);
 }
 
-public class VirtualDeclaration(LuaType? luaType, LuaSyntaxElement? element = null)
-    : LuaDeclaration(string.Empty, 0, element, luaType)
+public class TypeIndexDeclaration(LuaType keyType, LuaType valueType, LuaDocFieldSyntax? field)
+    : LuaDeclaration(string.Empty, 0, field, valueType)
 {
-    public override VirtualDeclaration WithType(LuaType type) =>
-        new VirtualDeclaration(type, SyntaxElement);
-}
+    public LuaDocFieldSyntax? Field => SyntaxElement as LuaDocFieldSyntax;
 
-public class TypeIndexDeclaration(LuaType? luaType, LuaDocTagFieldSyntax? field)
-    : VirtualDeclaration(luaType, field)
-{
-    public LuaDocTagFieldSyntax? Field => SyntaxElement as LuaDocTagFieldSyntax;
+    public LuaType KeyType => keyType;
 
-    public override VirtualDeclaration WithType(LuaType type) => new TypeIndexDeclaration(type, Field);
+    public LuaType ValueType => DeclarationType!;
+
+    public override TypeIndexDeclaration WithType(LuaType type) => new TypeIndexDeclaration(KeyType, type, Field);
+
+    public override LuaDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
+    {
+        return new TypeIndexDeclaration(KeyType.Instantiate(genericMap), ValueType.Instantiate(genericMap), Field);
+    }
 }
 
 public class TypeOpDeclaration(LuaType? luaType, LuaDocTagOperatorSyntax? opField)
-    : VirtualDeclaration(luaType, opField)
+    : LuaDeclaration(string.Empty, 0, opField, luaType)
 {
     public LuaDocTagOperatorSyntax? OpField => SyntaxElement as LuaDocTagOperatorSyntax;
 
-    public override VirtualDeclaration WithType(LuaType type) => new TypeOpDeclaration(type, OpField);
+    public override TypeOpDeclaration WithType(LuaType type) => new TypeOpDeclaration(type, OpField);
+
+    // public override LuaDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
+    // {
+    //     return new TypeOpDeclaration(luaType.Instantiate(genericMap), OpField);
+    // }
 }

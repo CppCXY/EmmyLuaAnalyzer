@@ -1,10 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
-using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using Microsoft.VisualBasic.CompilerServices;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -15,6 +13,8 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
     private Dictionary<LuaSyntaxElement, LuaType> Caches { get; } = new();
 
     private Dictionary<LuaType, List<LuaDeclaration>> MemberCaches { get; } = new();
+
+    private Dictionary<LuaType, Dictionary<TypeOperatorKind, List<TypeOperator>>> TypeOperatorCaches { get; } = new();
 
     private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
 
@@ -108,7 +108,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
 
     private IEnumerable<LuaDeclaration> GetGenericMembers(LuaGenericType genericType)
     {
-        if (MemberCaches.TryGetValue(genericType, out var instanceMembers))
+        if (allowCache && MemberCaches.TryGetValue(genericType, out var instanceMembers))
         {
             return instanceMembers;
         }
@@ -126,19 +126,14 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
         instanceMembers = new List<LuaDeclaration>();
         foreach (var member in members)
         {
-            var declarationType = member.DeclarationType;
-            if (declarationType is not null)
-            {
-                declarationType = declarationType.Instantiate(genericMap);
-                instanceMembers.Add(member.WithType(declarationType));
-            }
-            else
-            {
-                instanceMembers.Add(member);
-            }
+            instanceMembers.Add(member.Instantiate(genericMap));
         }
 
-        MemberCaches.TryAdd(genericType, instanceMembers);
+        if (allowCache)
+        {
+            MemberCaches.TryAdd(genericType, instanceMembers);
+        }
+
         return instanceMembers;
     }
 
@@ -191,13 +186,103 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
                 keyType = Infer(indexExpr.KeyElement);
             }
 
-            var op = Compilation.ProjectIndex.TypeOperatorStorage.GetBestMatchedIndexOperator(luaType, keyType);
+            var op = GetBestMatchedIndexOperator(luaType, keyType);
             if (op != null)
             {
-                declarations.Add(new TypeIndexDeclaration(op.Ret, op.DefineElement as LuaDocTagFieldSyntax));
+                declarations.Add(op.LuaDeclaration);
             }
         }
 
         return declarations;
+    }
+
+    private IEnumerable<TypeOperator> GetOperators(TypeOperatorKind kind, LuaNamedType left)
+    {
+        if (left is LuaGenericType genericType)
+        {
+            if (allowCache)
+            {
+                if (TypeOperatorCaches.TryGetValue(genericType, out var cache))
+                {
+                    if (cache.TryGetValue(kind, out var operators))
+                    {
+                        return operators;
+                    }
+                }
+            }
+
+            var originOperators = Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
+                .Where(it => it.Kind == kind).ToList();
+
+            var genericParams = Compilation.ProjectIndex.GetGenericParams(genericType.Name).ToList();
+            var genericArgs = genericType.GenericArgs;
+
+            var genericMap = new Dictionary<string, LuaType>();
+            for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
+            {
+                genericMap[genericParams[i].Name] = genericArgs[i];
+            }
+
+            var instanceOperators = originOperators.Select(op => op.Instantiate(genericMap)).ToList();
+            if (allowCache)
+            {
+                if (!TypeOperatorCaches.TryGetValue(genericType, out var cache))
+                {
+                    cache = new Dictionary<TypeOperatorKind, List<TypeOperator>>();
+                    TypeOperatorCaches.Add(genericType, cache);
+                }
+
+                cache[kind] = instanceOperators;
+            }
+
+            return instanceOperators;
+        }
+        else
+        {
+            return Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
+                .Where(it => it.Kind == kind);
+        }
+    }
+
+    public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
+    {
+        if (left is not LuaNamedType namedType)
+        {
+            return null;
+        }
+
+        var operators = GetOperators(kind, namedType);
+
+        var bestMatched = operators
+            .OfType<BinaryOperator>()
+            .FirstOrDefault(it => it.Right.Equals(right));
+
+        return bestMatched;
+    }
+
+    public UnaryOperator? GetBestMatchedUnaryOperator(TypeOperatorKind kind, LuaType type)
+    {
+        if (type is not LuaNamedType namedType)
+        {
+            return null;
+        }
+
+        var operators = GetOperators(kind, namedType);
+
+        return operators.OfType<UnaryOperator>().FirstOrDefault();
+    }
+
+    public IndexOperator? GetBestMatchedIndexOperator(LuaType type, LuaType key)
+    {
+        if (type is not LuaNamedType namedType)
+        {
+            return null;
+        }
+
+        var operators = GetOperators(TypeOperatorKind.Index, namedType);
+        var bestMatched = operators
+            .OfType<IndexOperator>()
+            .FirstOrDefault(it => it.Key.Equals(key));
+        return bestMatched;
     }
 }

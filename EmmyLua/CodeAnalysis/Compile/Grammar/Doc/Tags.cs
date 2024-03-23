@@ -171,7 +171,7 @@ public static class TagParser
                 }
                 else if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    DefineBody(p);
+                    Fields.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -190,7 +190,7 @@ public static class TagParser
                 }
                 else if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    DefineBody(p);
+                    Fields.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -204,7 +204,7 @@ public static class TagParser
             {
                 if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    DefineBody(p);
+                    Fields.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -374,36 +374,12 @@ public static class TagParser
 
     private static CompleteMarker TagField(LuaDocParser p)
     {
-        p.SetState(LuaDocLexerState.FieldStart);
+        p.SetState(LuaDocLexerState.Normal);
         var m = p.Marker();
         p.Bump();
         try
         {
-            p.Accept(LuaTokenKind.TkDocVisibility);
-            p.SetState(LuaDocLexerState.Normal);
-            switch (p.Current)
-            {
-                case LuaTokenKind.TkLeftBracket:
-                {
-                    p.Bump();
-                    TypesParser.Type(p);
-                    p.Expect(LuaTokenKind.TkRightBracket);
-                    break;
-                }
-                case LuaTokenKind.TkName:
-                {
-                    p.Bump();
-                    break;
-                }
-                default:
-                {
-                    throw new UnexpectedTokenException("expected <name> or [", p.Current);
-                }
-            }
-
-            p.Accept(LuaTokenKind.TkNullable);
-            TypesParser.Type(p);
-            DescriptionParser.Description(p);
+            Fields.Field(p, false);
             return m.Complete(p, LuaSyntaxKind.DocField);
         }
         catch (UnexpectedTokenException e)
@@ -669,36 +645,6 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocModule, e.Message);
-        }
-    }
-
-    private static CompleteMarker DefineBody(LuaDocParser p)
-    {
-        var m = p.Marker();
-        p.Bump();
-
-        try
-        {
-            if (p.Current is LuaTokenKind.TkRightBrace)
-            {
-                p.Bump();
-                return m.Complete(p, LuaSyntaxKind.TypeBody);
-            }
-
-            var cm = TypesParser.TypedField(p);
-            while (cm.IsComplete && (p.Current is LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon))
-            {
-                p.Bump();
-                cm = TypesParser.TypedField(p);
-            }
-
-            p.Expect(LuaTokenKind.TkRightBrace);
-
-            return m.Complete(p, LuaSyntaxKind.TypeBody);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.TypeBody, e.Message);
         }
     }
 

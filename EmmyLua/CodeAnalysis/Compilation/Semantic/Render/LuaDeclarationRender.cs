@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -60,18 +61,19 @@ public static class LuaDeclarationRender
             {
                 if (docField.FieldDef is { } fieldDef)
                 {
+                    var visibilityText = fieldDef.Visibility switch
+                    {
+                        VisibilityKind.Public => "public ",
+                        VisibilityKind.Protected => "protected ",
+                        VisibilityKind.Private => "private ",
+                        _ => ""
+                    };
+
+
                     sb.Append(
-                        $"```lua\n {docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
+                        $"```lua\n(field) {visibilityText}{docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
                     LuaCommentRender.RenderDocFieldComment(docField, sb);
                 }
-                // TODO: handle TypedFieldDef
-                // else if (docField.TypedFieldDef is { } typedFieldDef)
-                // {
-                //     sb.Append(
-                //         $"```lua\n {docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
-                //     LuaCommentRender.RenderDocFieldComment(docField, sb);
-                // }
-
                 break;
             }
             case TableFieldLuaDeclaration tableField:
@@ -136,13 +138,10 @@ public static class LuaDeclarationRender
             }
             case TypeIndexDeclaration typeIndexDeclaration:
             {
-                var field = typeIndexDeclaration.Field;
-                if (field is { TypeField: { } typeField, Type: { } type })
+                if (typeIndexDeclaration is { KeyType: { } keyType, ValueType: { } valueType })
                 {
-                    var keyType = context.Infer(typeField);
-                    var valueTType = context.Infer(type);
                     sb.Append(
-                        $"```lua\n(index) [{LuaTypeRender.RenderType(keyType, context)}] : {LuaTypeRender.RenderType(valueTType, context)}\n```");
+                        $"```lua\n(index) [{LuaTypeRender.RenderType(keyType, context)}] : {LuaTypeRender.RenderType(valueType, context)}\n```");
                 }
 
                 break;

@@ -127,70 +127,12 @@ public static class TypesParser
 
         try
         {
-            if (p.Current is LuaTokenKind.TkRightBrace)
-            {
-                p.Bump();
-                return m.Complete(p, LuaSyntaxKind.TypeTable);
-            }
-
-            var cm = TypedField(p);
-            while (cm.IsComplete && (p.Current is LuaTokenKind.TkComma or LuaTokenKind.TkSemicolon))
-            {
-                p.Bump();
-                cm = TypedField(p);
-            }
-
-            p.Expect(LuaTokenKind.TkRightBrace);
-
+            Fields.DefineBody(p);
             return m.Complete(p, LuaSyntaxKind.TypeTable);
         }
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.TypeTable, e.Message);
-        }
-    }
-
-    public static CompleteMarker TypedField(LuaDocParser p)
-    {
-        var m = p.Marker();
-        try
-        {
-            switch (p.Current)
-            {
-                case LuaTokenKind.TkName:
-                {
-                    p.Bump();
-                    break;
-                }
-                case LuaTokenKind.TkLeftBracket:
-                {
-                    p.Bump();
-                    switch (p.Current)
-                    {
-                        case LuaTokenKind.TkString or LuaTokenKind.TkInt:
-                        {
-                            p.Bump();
-                            break;
-                        }
-                        default:
-                        {
-                            Type(p);
-                            break;
-                        }
-                    }
-
-                    p.Expect(LuaTokenKind.TkRightBracket);
-                    break;
-                }
-            }
-
-            p.Expect(LuaTokenKind.TkColon);
-            Type(p);
-            return m.Complete(p, LuaSyntaxKind.TypedField);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, LuaSyntaxKind.TypedField, e.Message);
         }
     }
 

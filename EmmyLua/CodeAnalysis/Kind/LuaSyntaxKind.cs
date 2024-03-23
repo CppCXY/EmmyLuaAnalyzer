@@ -48,7 +48,7 @@ public enum LuaSyntaxKind : ushort
     // comment
     Comment,
 
-    // doc
+    // doc tag
     DocClass,
     DocEnum,
     DocInterface,
@@ -74,7 +74,10 @@ public enum LuaSyntaxKind : ushort
     DocOperator,
     DocModule,
 
-    // Type
+    DocDetailField,
+    DocBody,
+
+    // doc Type
     TypeArray,
     TypeUnion,
     TypeFun,
@@ -84,15 +87,10 @@ public enum LuaSyntaxKind : ushort
     TypeParen,
     TypeLiteral,
     TypeName,
-    TypeBody,
 
-    // parameter
+    // doc parameter
     TypedParameter,
     GenericParameter,
-
-    // a: number
-    TypedField,
-
     GenericDeclareList,
 
     // start with '#' or '@'

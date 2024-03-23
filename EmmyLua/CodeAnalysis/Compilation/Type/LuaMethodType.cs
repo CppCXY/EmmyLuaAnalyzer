@@ -292,11 +292,12 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
         }
 
         var newReturnType = ReturnType.Instantiate(genericParameterMap);
-        for (var i = 0; i < Parameters.Count; i++)
+        foreach (var parameter in Parameters)
         {
-            var parameter = Parameters[i];
-            var newParameterType = parameter.DeclarationType?.Instantiate(genericParameterMap) ?? Builtin.Any;
-            newParameters.Add(parameter.WithType(newParameterType));
+            if (parameter.Instantiate(genericParameterMap) is ParameterLuaDeclaration declaration)
+            {
+                newParameters.Add(declaration);
+            }
         }
 
         return new LuaSignature(newReturnType, newParameters);
@@ -330,8 +331,10 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
     public LuaSignature Instantiate(Dictionary<string, LuaType> genericReplace)
     {
         var newReturnType = ReturnType.Instantiate(genericReplace);
-        var newParameters = Parameters.Select(parameter =>
-            parameter.WithType(parameter.DeclarationType?.Instantiate(genericReplace) ?? Builtin.Any)).ToList();
+        var newParameters = Parameters
+            .Select(parameter => parameter.Instantiate(genericReplace))
+            .Cast<ParameterLuaDeclaration>()
+            .ToList();
         return new LuaSignature(newReturnType, newParameters);
     }
 }
