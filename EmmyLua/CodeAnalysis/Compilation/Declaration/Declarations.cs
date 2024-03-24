@@ -171,6 +171,25 @@ public class ParameterLuaDeclaration(
 
     public LuaDocTagTypedParamSyntax? TypedParamDef => SyntaxElement as LuaDocTagTypedParamSyntax;
 
+    public bool IsVararg
+    {
+        get
+        {
+            if (ParamDef is { } paramDef)
+            {
+                return paramDef.IsVarArgs;
+            }
+            else if(TypedParamDef is { } typedParamDef)
+            {
+                return typedParamDef.IsVarArgs;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
     public override ParameterLuaDeclaration WithType(LuaType type) =>
         new ParameterLuaDeclaration(Name, Position, SyntaxElement, type);
 }

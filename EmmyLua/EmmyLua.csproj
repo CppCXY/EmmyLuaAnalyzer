@@ -10,4 +10,8 @@
     <ItemGroup>
         <Content Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Linter\" />
+    </ItemGroup>
 </Project>

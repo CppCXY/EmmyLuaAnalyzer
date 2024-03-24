@@ -19,6 +19,11 @@ public struct SourceRange(int startOffset = 0, int length = 0): IEquatable<Sourc
         return offset >= StartOffset && offset < EndOffset;
     }
 
+    public bool Intersect(SourceRange range)
+    {
+        return StartOffset < range.EndOffset && range.StartOffset < EndOffset;
+    }
+
     public SourceRange Merge(SourceRange range)
     {
         var start = Math.Min(StartOffset, range.StartOffset);

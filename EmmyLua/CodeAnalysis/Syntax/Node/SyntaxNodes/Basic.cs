@@ -148,6 +148,27 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
 
     public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
 
+    public LuaSyntaxElement? FieldElement
+    {
+        get
+        {
+            if (IsNameField)
+            {
+                return NameField!;
+            }
+            else if (IsStringField)
+            {
+                return StringField!;
+            }
+            else if (IsIntegerField)
+            {
+                return IntegerField!;
+            }
+
+            return null;
+        }
+    }
+
     public LuaDocTypeSyntax? Type => IsTypeField
         ? ChildNodes<LuaDocTypeSyntax>().LastOrDefault()
         : FirstChild<LuaDocTypeSyntax>();

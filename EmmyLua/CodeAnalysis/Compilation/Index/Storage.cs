@@ -76,6 +76,8 @@ public class IndexStorage<TKey, TStubElement>
     public IEnumerable<TStubElement> GetAll() =>
         _indexMap.Values.SelectMany(
             it => it.Files.Values.SelectMany(it2 => it2));
+
+    public bool ContainsKey(TKey key) => _indexMap.ContainsKey(key);
 }
 
 public class SyntaxStorage<TKey, TSyntaxElement, TElement>

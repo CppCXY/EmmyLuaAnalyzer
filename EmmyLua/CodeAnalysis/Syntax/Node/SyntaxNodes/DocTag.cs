@@ -137,6 +137,8 @@ public class LuaDocTagTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, 
     public LuaDotsToken? VarArgs => FirstChild<LuaDotsToken>();
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+
+    public bool IsVarArgs => VarArgs != null;
 }
 
 public class LuaDocTagCastSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

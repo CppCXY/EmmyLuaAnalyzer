@@ -233,6 +233,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 IndexIndexExpr(indexExpr);
                 break;
             }
+            case LuaDocNameTypeSyntax docNameType:
+            {
+                IndexDocNameType(docNameType);
+                break;
+            }
         }
     }
 
@@ -1091,5 +1096,10 @@ public class DeclarationBuilder : ILuaElementWalker
     private void IndexIndexExpr(LuaIndexExprSyntax indexExpr)
     {
         ProjectIndex.AddIndexExpr(DocumentId, indexExpr);
+    }
+
+    private void IndexDocNameType(LuaDocNameTypeSyntax docNameType)
+    {
+        ProjectIndex.AddNameType(DocumentId, docNameType);
     }
 }

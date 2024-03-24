@@ -10,55 +10,6 @@ public class LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEle
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
-
-    private string? _accessPath = null;
-
-    public string AccessPath
-    {
-        get
-        {
-            if (_accessPath != null)
-            {
-                return _accessPath;
-            }
-
-            var sb = new StringBuilder();
-            var expr = this;
-            while (true)
-            {
-                switch (expr)
-                {
-                    case LuaIndexExprSyntax indexExpr:
-                    {
-                        if (indexExpr.IsDotIndex || indexExpr.IsColonIndex)
-                        {
-                            sb.Insert(0, '.');
-                            sb.Insert(0, indexExpr.DotOrColonIndexName!.Text);
-                        }
-
-                        expr = indexExpr.PrefixExpr;
-                        break;
-                    }
-                    case LuaCallExprSyntax callExpr:
-                    {
-                        expr = callExpr.PrefixExpr;
-                        break;
-                    }
-                    case LuaNameExprSyntax nameExpr:
-                    {
-                        sb.Insert(0, nameExpr.Name!.Text);
-                        _accessPath = sb.ToString();
-                        return _accessPath;
-                    }
-                    default:
-                    {
-                        _accessPath = sb.ToString();
-                        return _accessPath;
-                    }
-                }
-            }
-        }
-    }
 }
 
 public class LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

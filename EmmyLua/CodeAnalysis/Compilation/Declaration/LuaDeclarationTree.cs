@@ -36,6 +36,22 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             {
                 return FindTypeDeclaration(docGenericType.Name?.RepresentText, context);
             }
+            case LuaDocTagClassSyntax docTagClass:
+            {
+                return FindTypeDeclaration(docTagClass.Name?.RepresentText, context);
+            }
+            case LuaDocTagInterfaceSyntax docTagInterface:
+            {
+                return FindTypeDeclaration(docTagInterface.Name?.RepresentText, context);
+            }
+            case LuaDocTagAliasSyntax docTagAlias:
+            {
+                return FindTypeDeclaration(docTagAlias.Name?.RepresentText, context);
+            }
+            case LuaDocTagEnumSyntax docTagEnum:
+            {
+                return FindTypeDeclaration(docTagEnum.Name?.RepresentText, context);
+            }
             case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
             {
                 var scope = FindScope(element);
@@ -103,7 +119,10 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
     {
         if (name is not null)
         {
-            return context.Compilation.ProjectIndex.GetNamedType(name).FirstOrDefault();
+            if (context.Compilation.ProjectIndex.IsDefinedType(name))
+            {
+                return context.Compilation.ProjectIndex.GetNamedType(name).FirstOrDefault();
+            }
         }
 
         return null;

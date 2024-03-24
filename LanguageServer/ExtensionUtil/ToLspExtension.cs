@@ -60,4 +60,35 @@ public static class LocationExtension
             }
         };
     }
+
+    public static (string, TextEdit) ToTextEdit(this LuaLocation location, string text)
+    {
+        return (
+            location.Document.Uri,
+            new()
+            {
+                Range = location.Range.ToLspRange(location.Document),
+                NewText = text
+            });
+    }
+    
+    public static SourceRange ToSourceRange(this Range range, LuaDocument document)
+    {
+        var start = document.GetOffset(range.Start.Line, range.Start.Character);
+        var length = document.GetOffset(range.End.Line, range.End.Character) - start;
+        return new()
+        {
+            StartOffset = start,
+            Length = length
+        };
+    }
+
+    public static Position ToLspPosition(this int pos, LuaDocument document)
+    {
+        return new()
+        {
+            Line = document.GetLine(pos),
+            Character = document.GetCol(pos)
+        };
+    }
 }

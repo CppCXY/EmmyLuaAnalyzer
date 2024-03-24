@@ -34,6 +34,8 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, LuaIndexExprSyntax> IndexExprs { get; } = new();
 
+    private IndexStorage<string, LuaDocNameTypeSyntax> NameTypes { get; } = new();
+
     public void Remove(DocumentId documentId)
     {
         Members.Remove(documentId);
@@ -47,6 +49,7 @@ public class ProjectIndex(LuaCompilation compilation)
         NamedTypeKinds.Remove(documentId);
         NameExprs.Remove(documentId);
         IndexExprs.Remove(documentId);
+        NameTypes.Remove(documentId);
     }
 
     public void AddMember(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -118,6 +121,14 @@ public class ProjectIndex(LuaCompilation compilation)
         if (indexExpr is { Name: { } name })
         {
             IndexExprs.Add(documentId, name, indexExpr);
+        }
+    }
+
+    public void AddNameType(DocumentId documentId, LuaDocNameTypeSyntax nameType)
+    {
+        if (nameType is { Name.RepresentText: { } name })
+        {
+            NameTypes.Add(documentId, name, nameType);
         }
     }
 
@@ -195,4 +206,11 @@ public class ProjectIndex(LuaCompilation compilation)
     public IEnumerable<LuaNameExprSyntax> GetNameExprs(string name) => NameExprs.Get<LuaNameExprSyntax>(name);
 
     public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name) => IndexExprs.Get<LuaIndexExprSyntax>(name);
+
+    public IEnumerable<LuaDocNameTypeSyntax> GetNameTypes(string name) => NameTypes.Get<LuaDocNameTypeSyntax>(name);
+
+    public bool IsDefinedType(string name)
+    {
+        return NamedTypeKinds.ContainsKey(name);
+    }
 }

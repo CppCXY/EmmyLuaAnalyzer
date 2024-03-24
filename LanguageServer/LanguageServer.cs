@@ -2,8 +2,13 @@
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.Definition;
+using LanguageServer.DocumentColor;
+using LanguageServer.DocumentSymbol;
 using LanguageServer.Hover;
+using LanguageServer.InlayHint;
 using LanguageServer.References;
+using LanguageServer.Rename;
+using LanguageServer.SemanticToken;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,6 +56,12 @@ var server = await From(options =>
         .WithHandler<HoverHandler>()
         .WithHandler<DefinitionHandler>()
         .WithHandler<ReferencesHandler>()
+        .WithHandler<RenameHandler>()
+        .WithHandler<InlayHintHandler>()
+        .WithHandler<DocumentSymbolHandler>()
+        .WithHandler<DocumentColorHandler>()
+        .WithHandler<ColorPresentationHandler>()
+        .WithHandler<SemanticTokenHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));

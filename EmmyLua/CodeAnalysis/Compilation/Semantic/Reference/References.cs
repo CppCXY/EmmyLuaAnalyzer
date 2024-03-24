@@ -25,6 +25,7 @@ public class References(SearchContext context)
             DocFieldLuaDeclaration fieldDeclaration => DocFieldReferences(fieldDeclaration),
             // EnumFieldLuaDeclaration
             TableFieldLuaDeclaration tableFieldDeclaration => TableFieldReferences(tableFieldDeclaration),
+            NamedTypeLuaDeclaration namedTypeDeclaration => NamedTypeReferences(namedTypeDeclaration),
             _ => Enumerable.Empty<LuaLocation>()
         };
     }
@@ -126,7 +127,11 @@ public class References(SearchContext context)
         var references = new List<LuaLocation>();
         if (fieldDeclaration is { Name: { } name, FieldDef: { } fieldDef })
         {
-            references.Add(fieldDef.Location);
+            if (fieldDef.FieldElement is { } fieldElement)
+            {
+                references.Add(fieldElement.Location);
+            }
+
             references.AddRange(FieldReferences(fieldDeclaration, name));
         }
 
@@ -140,6 +145,26 @@ public class References(SearchContext context)
         {
             references.Add(fieldDef.Location);
             references.AddRange(FieldReferences(declaration, name));
+        }
+
+        return references;
+    }
+
+    private IEnumerable<LuaLocation> NamedTypeReferences(NamedTypeLuaDeclaration declaration)
+    {
+        var references = new List<LuaLocation>();
+        if (declaration is { Name: { } name, NameToken: { } nameToken })
+        {
+            references.Add(nameToken.Location);
+            var nameTypes = context.Compilation.ProjectIndex.GetNameTypes(name);
+            foreach (var nameType in nameTypes)
+            {
+                var declarationTree = context.Compilation.GetDeclarationTree(nameType.Tree.Document.Id);
+                if (declarationTree?.FindDeclaration(nameType, context) == declaration)
+                {
+                    references.Add(nameType.Location);
+                }
+            }
         }
 
         return references;
