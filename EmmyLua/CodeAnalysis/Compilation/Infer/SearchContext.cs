@@ -6,7 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
-public class SearchContext(LuaCompilation compilation, bool allowCache = true)
+public class SearchContext(LuaCompilation compilation, bool allowCache = true, bool cacheUnknown = true)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
@@ -32,7 +32,18 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true)
 
         if (allowCache)
         {
-            return Caches.TryGetValue(element, out var luaType) ? luaType : Caches[element] = InferCore(element);
+            if (Caches.TryGetValue(element, out var luaType))
+            {
+                return luaType;
+            }
+
+            luaType = InferCore(element);
+            if (!luaType.Equals(Builtin.Unknown))
+            {
+                Caches[element] = luaType;
+            }
+
+            return luaType;
         }
         else
         {

@@ -7,13 +7,15 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
+    // TODO 有较大的性能问题, 需要优化, 可能要建立依赖关系图
     public override void Analyze(AnalyzeContext analyzeContext)
     {
+        Context = new SearchContext(Compilation, true, false);
         bool changed;
+        var resolvedCount = 0;
         do
         {
             changed = false;
-            var resolvedCount = 0;
             for (var i = 0; i < analyzeContext.UnResolves.Count - resolvedCount;)
             {
                 var unResolved = analyzeContext.UnResolves[i];

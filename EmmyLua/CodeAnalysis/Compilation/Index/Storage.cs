@@ -69,6 +69,11 @@ public class IndexStorage<TKey, TStubElement>
         return Get(key).FirstOrDefault();
     }
 
+    public TStubElement? GetLastOne(TKey key)
+    {
+        return Get(key).LastOrDefault();
+    }
+
     public IEnumerable<TValue> Get<TValue>(TKey key)
         where TValue : TStubElement
         => Get(key).OfType<TValue>();

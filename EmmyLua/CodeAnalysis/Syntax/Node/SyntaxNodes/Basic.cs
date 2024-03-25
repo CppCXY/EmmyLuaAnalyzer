@@ -169,6 +169,27 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
         }
     }
 
+    public string? Name
+    {
+        get
+        {
+            if (IsNameField)
+            {
+                return NameField!.RepresentText;
+            }
+            else if (IsStringField)
+            {
+                return StringField!.Value;
+            }
+            else if (IsIntegerField)
+            {
+                return $"[{IntegerField!.Value}]";
+            }
+
+            return null;
+        }
+    }
+
     public LuaDocTypeSyntax? Type => IsTypeField
         ? ChildNodes<LuaDocTypeSyntax>().LastOrDefault()
         : FirstChild<LuaDocTypeSyntax>();

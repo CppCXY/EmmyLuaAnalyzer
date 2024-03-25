@@ -52,6 +52,10 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             {
                 return FindTypeDeclaration(docTagEnum.Name?.RepresentText, context);
             }
+            case LuaDocFieldSyntax docField:
+            {
+                return FindDocFieldDeclaration(docField, context);
+            }
             case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
             {
                 var scope = FindScope(element);
@@ -123,6 +127,17 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             {
                 return context.Compilation.ProjectIndex.GetNamedType(name).FirstOrDefault();
             }
+        }
+
+        return null;
+    }
+
+    private LuaDeclaration? FindDocFieldDeclaration(LuaDocFieldSyntax docField, SearchContext context)
+    {
+        var parentType = context.Compilation.ProjectIndex.GetParentType(docField);
+        if (parentType is not null && docField.Name is { } name)
+        {
+            return context.FindMember(parentType, name).FirstOrDefault();
         }
 
         return null;

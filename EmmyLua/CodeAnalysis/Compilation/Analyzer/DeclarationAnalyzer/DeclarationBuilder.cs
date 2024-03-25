@@ -967,7 +967,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 var type = Context.Infer(type1);
                 var declaration = new DocFieldLuaDeclaration(nameField.RepresentText, GetPosition(nameField),
                     field, type);
-                AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
@@ -976,7 +975,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 var type = Context.Infer(type2);
                 var declaration = new DocFieldLuaDeclaration($"[{integerField.Value}]", GetPosition(integerField),
                     field, type);
-                AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
@@ -985,7 +983,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 var type = Context.Infer(type3);
                 var declaration = new DocFieldLuaDeclaration(stringField.Value, GetPosition(stringField),
                     field, type);
-                AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }

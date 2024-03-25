@@ -14,6 +14,8 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
+    private IndexStorage<string, string> ParentTypes { get; } = new();
+
     private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
 
     private IndexStorage<string, LuaType> Supers { get; } = new();
@@ -39,6 +41,7 @@ public class ProjectIndex(LuaCompilation compilation)
     public void Remove(DocumentId documentId)
     {
         Members.Remove(documentId);
+        ParentTypes.Remove(documentId);
         GlobalDeclaration.Remove(documentId);
         Supers.Remove(documentId);
         NamedType.Remove(documentId);
@@ -55,6 +58,10 @@ public class ProjectIndex(LuaCompilation compilation)
     public void AddMember(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         Members.Add(documentId, name, luaDeclaration);
+        if (luaDeclaration.SyntaxElement is not null)
+        {
+            ParentTypes.Add(documentId, luaDeclaration.SyntaxElement.UniqueId, name);
+        }
     }
 
     public void AddGlobal(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -212,5 +219,19 @@ public class ProjectIndex(LuaCompilation compilation)
     public bool IsDefinedType(string name)
     {
         return NamedTypeKinds.ContainsKey(name);
+    }
+
+    public LuaNamedType? GetParentType(LuaSyntaxElement element)
+    {
+        if (element is { UniqueId: { } id })
+        {
+            var parentType = ParentTypes.GetLastOne(id);
+            if (parentType is not null)
+            {
+                return new LuaNamedType(parentType);
+            }
+        }
+
+        return null;
     }
 }

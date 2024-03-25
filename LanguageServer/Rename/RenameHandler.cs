@@ -10,6 +10,8 @@ namespace LanguageServer.Rename;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
 {
+    private RenameBuilder Builder { get; } = new();
+    
     protected override RenameRegistrationOptions CreateRegistrationOptions(RenameCapability capability,
         ClientCapabilities clientCapabilities)
     {
@@ -38,25 +40,7 @@ public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
             if (node is not null)
             {
                 var newName = request.NewName;
-                var references = semanticModel.FindReferences(node);
-                var edits = references.Select(it => it.ToTextEdit(newName));
-                var dic = new Dictionary<DocumentUri, List<TextEdit>>();
-                foreach (var edit in edits)
-                {
-                    if (!dic.TryGetValue(edit.Item1, out var list))
-                    {
-                        list = new List<TextEdit>();
-                        dic[edit.Item1] = list;
-                    }
-                    list.Add(edit.Item2);
-                }
-
-                var changes = new Dictionary<DocumentUri, IEnumerable<TextEdit>>();
-                foreach (var it in dic)
-                {
-                    changes[it.Key] = it.Value;
-                }
-                
+                var changes = Builder.Build(semanticModel, node, newName);
                 return Task.FromResult<WorkspaceEdit?>(new WorkspaceEdit()
                 {
                     Changes = changes

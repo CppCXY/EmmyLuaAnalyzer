@@ -36,7 +36,7 @@ public class ReferencesHandler(LuaWorkspace workspace) : ReferencesHandlerBase
             {
                 var references = semanticModel.FindReferences(node);
                 return Task.FromResult<LocationContainer?>(LocationContainer.From(
-                    references.Select(it => it.ToLspLocation())
+                    references.Select(it => it.Location.ToLspLocation())
                 ));
             }
         }

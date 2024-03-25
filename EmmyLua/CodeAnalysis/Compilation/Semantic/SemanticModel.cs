@@ -43,7 +43,7 @@ public class SemanticModel
         return RenderBuilder.Render(symbol);
     }
 
-    public IEnumerable<LuaLocation> FindReferences(LuaSyntaxElement element)
+    public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)
     {
         return References.FindReferences(element);
     }

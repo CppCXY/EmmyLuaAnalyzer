@@ -5,6 +5,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.SemanticToken;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandlerBase
 {
     private SemanticTokensAnalyzer Analyzer { get; } = new();

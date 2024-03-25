@@ -11,8 +11,13 @@ public class LuaDocTagSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxE
     public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
 }
 
+public interface ILuaDocTagNamedTypeSyntax
+{
+    public LuaNameToken? Name { get; }
+}
+
 public class LuaDocTagClassSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset), ILuaDocTagNamedTypeSyntax
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -46,7 +51,7 @@ public class LuaDocGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree t
 }
 
 public class LuaDocTagEnumSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset), ILuaDocTagNamedTypeSyntax
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -58,7 +63,7 @@ public class LuaDocTagEnumSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 }
 
 public class LuaDocTagInterfaceSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset), ILuaDocTagNamedTypeSyntax
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -72,7 +77,7 @@ public class LuaDocTagInterfaceSyntax(GreenNode greenNode, LuaSyntaxTree tree, L
 }
 
 public class LuaDocTagAliasSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset), ILuaDocTagNamedTypeSyntax
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 

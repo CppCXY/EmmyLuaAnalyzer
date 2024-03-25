@@ -98,7 +98,7 @@ public class SemanticTokensAnalyzer
             case LuaTokenKind.TkFor:
             case LuaTokenKind.TkFunction:
             case LuaTokenKind.TkIn:
-            case LuaTokenKind.TkLocal:
+            // case LuaTokenKind.TkLocal:
             case LuaTokenKind.TkRepeat:
             case LuaTokenKind.TkReturn:
             case LuaTokenKind.TkThen:

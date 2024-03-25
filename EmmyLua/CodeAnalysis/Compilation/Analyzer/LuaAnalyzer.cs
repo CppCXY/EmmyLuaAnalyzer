@@ -7,7 +7,7 @@ public abstract class LuaAnalyzer(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public SearchContext Context { get; } = new(compilation, false);
+    public SearchContext Context { get; protected set; } = new(compilation, false);
 
     public virtual void Analyze(AnalyzeContext analyzeContext)
     {
