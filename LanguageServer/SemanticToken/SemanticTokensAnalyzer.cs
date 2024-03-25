@@ -111,12 +111,12 @@ public class SemanticTokensAnalyzer
                 builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Keyword, string.Empty);
                 break;
             }
-            case LuaTokenKind.TkString:
-            case LuaTokenKind.TkLongString:
-            {
-                builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.String, string.Empty);
-                break;
-            }
+            // case LuaTokenKind.TkString:
+            // case LuaTokenKind.TkLongString:
+            // {
+            //     builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.String, string.Empty);
+            //     break;
+            // }
             case LuaTokenKind.TkAnd:
             case LuaTokenKind.TkOr:
             case LuaTokenKind.TkConcat:

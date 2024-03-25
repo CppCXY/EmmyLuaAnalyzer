@@ -21,7 +21,7 @@ public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandle
             }),
             Legend = Analyzer.Legend,
             Range = true,
-            Full = true
+            Full = true,
         };
     }
 

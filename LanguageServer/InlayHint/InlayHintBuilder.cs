@@ -142,8 +142,11 @@ public class InlayHintBuilder
         if (semanticModel.Context.Infer(closureExpr) is LuaMethodType method)
         {
             var mainSignature = method.MainSignature;
-            var parameterDic = mainSignature.Parameters
-                .ToDictionary(it => it.Name, it => it.DeclarationType);
+            var parameterDic = new Dictionary<string, LuaType?>();
+            foreach (var parameter in mainSignature.Parameters)
+            {
+                parameterDic.TryAdd(parameter.Name, parameter.DeclarationType);
+            }
             var parameters = closureExpr.ParamList?
                 .Params.Select(it => it.Name).ToList() ?? [];
 
