@@ -38,7 +38,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
             }
 
             luaType = InferCore(element);
-            if (!luaType.Equals(Builtin.Unknown))
+            if (cacheUnknown || !luaType.Equals(Builtin.Unknown))
             {
                 Caches[element] = luaType;
             }

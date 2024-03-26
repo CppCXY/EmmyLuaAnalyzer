@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -7,51 +6,87 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
+    private SearchContext Context { get; } = new(compilation, true, false);
+
     // TODO 有较大的性能问题, 需要优化, 可能要建立依赖关系图
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        Context = new SearchContext(Compilation, true, false);
-        bool changed;
-        var resolvedCount = 0;
+        var resolveDependencyGraph = new ResolveDependencyGraph(Context);
+        resolveDependencyGraph.Build(analyzeContext.UnResolves);
         do
         {
-            changed = false;
-            for (var i = 0; i < analyzeContext.UnResolves.Count - resolvedCount;)
+            foreach (var canResolved in resolveDependencyGraph.CanResolvedList)
             {
-                var unResolved = analyzeContext.UnResolves[i];
-                if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
+                var unResolved = canResolved.UnResolved;
+                var state = canResolved.State;
+                switch (state)
                 {
-                    ResolveType(unResolved, ref changed);
-                }
-                else if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
-                {
-                    ResolveIndex(unResolved, ref changed);
-                }
-                else if ((unResolved.ResolvedState & ResolveState.UnResolveReturn) != 0)
-                {
-                    ResolveReturn(unResolved, ref changed);
-                }
-
-                if (unResolved.ResolvedState == ResolveState.Resolved)
-                {
-                    if (i < analyzeContext.UnResolves.Count - resolvedCount - 1)
+                    case ResolveState.UnResolvedType:
                     {
-                        // Move the resolved object to the end of the list
-                        (analyzeContext.UnResolves[i], analyzeContext.UnResolves[analyzeContext.UnResolves.Count - resolvedCount - 1]) = (
-                            analyzeContext.UnResolves[analyzeContext.UnResolves.Count - resolvedCount - 1],
-                            analyzeContext.UnResolves[i]);
+                        ResolveType(unResolved);
+                        break;
                     }
-                    resolvedCount++;
-                }
-                else
-                {
-                    i++;
+                    case ResolveState.UnResolvedIndex:
+                    {
+                        ResolveIndex(unResolved);
+                        break;
+                    }
+                    case ResolveState.UnResolveReturn:
+                    {
+                        ResolveReturn(unResolved);
+                        break;
+                    }
                 }
             }
-        } while (changed);
+
+        } while (resolveDependencyGraph.CalcDependency());
+
+        Context.ClearCache();
     }
 
-    private void ResolveType(UnResolved unResolved, ref bool changed)
+    // private void ResolveStep1(List<UnResolved> unResolvedList)
+    // {
+    //     bool changed;
+    //     var resolvedCount = 0;
+    //     do
+    //     {
+    //         changed = false;
+    //         for (var i = 0; i < unResolvedList.Count - resolvedCount;)
+    //         {
+    //             var unResolved = unResolvedList[i];
+    //             if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
+    //             {
+    //                 ResolveType(unResolved, ref changed);
+    //             }
+    //             else if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
+    //             {
+    //                 ResolveIndex(unResolved, ref changed);
+    //             }
+    //             else if ((unResolved.ResolvedState & ResolveState.UnResolveReturn) != 0)
+    //             {
+    //                 ResolveReturn(unResolved, ref changed);
+    //             }
+    //
+    //             if (unResolved.ResolvedState == ResolveState.Resolved)
+    //             {
+    //                 if (i < unResolvedList.Count - resolvedCount - 1)
+    //                 {
+    //                     // Move the resolved object to the end of the list
+    //                     (unResolvedList[i], unResolvedList[unResolvedList.Count - resolvedCount - 1]) =
+    //                         (unResolvedList[unResolvedList.Count - resolvedCount - 1], unResolvedList[i]);
+    //                 }
+    //
+    //                 resolvedCount++;
+    //             }
+    //             else
+    //             {
+    //                 i++;
+    //             }
+    //         }
+    //     } while (changed);
+    // }
+
+    private void ResolveType(UnResolved unResolved)
     {
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
@@ -62,20 +97,16 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (!exprType.Equals(Builtin.Unknown))
                 {
                     MergeType(unResolvedDeclaration, exprType, exprRef.RetId);
-                    unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
-                    changed = true;
                 }
             }
         }
-        else if(unResolved is UnResolvedForRangeParameter unResolvedForRangeParameter)
+        else if (unResolved is UnResolvedForRangeParameter unResolvedForRangeParameter)
         {
             var exprList = unResolvedForRangeParameter.ExprList;
             switch (exprList.Count)
             {
                 case 0:
                 {
-                    changed = true;
-                    unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
                     return;
                 }
                 // ipairs and pairs
@@ -95,6 +126,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         {
                             returnTypes.Add(returnType);
                         }
+
                         for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
                         {
                             var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
@@ -104,25 +136,21 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             }
                         }
 
-                        changed = true;
-                        unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
                     }
 
                     return;
                 }
                 // custom iterator
-                default:
-                {
-                    // TODO: implement custom iterator
-                    changed = true;
-                    unResolved.ResolvedState &= ~ResolveState.UnResolvedType;
-                    break;
-                }
+                // default:
+                // {
+                //     // TODO: implement custom iterator
+                //     break;
+                // }
             }
         }
     }
 
-    private void ResolveIndex(UnResolved unResolved, ref bool changed)
+    private void ResolveIndex(UnResolved unResolved)
     {
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
@@ -134,47 +162,29 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (ty is LuaNamedType namedType)
                 {
                     Compilation.ProjectIndex.AddMember(documentId, namedType.Name, declaration);
-                    unResolved.ResolvedState &= ~ResolveState.UnResolvedIndex;
-                    changed = true;
                 }
             }
         }
     }
 
-    private void ResolveReturn(UnResolved unResolved, ref bool changed)
+    private void ResolveReturn(UnResolved unResolved)
     {
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var methodType = unResolvedMethod.MethodType;
             if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
             {
-                unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
-                changed = true;
                 return;
             }
 
             var block = unResolvedMethod.Block;
-            var complete = false;
-            var returnType = AnalyzeBlockReturns(block, ref complete);
-            if (!complete)
-            {
-                return;
-            }
-
+            var returnType = AnalyzeBlockReturns(block);
             methodType.MainSignature.ReturnType = returnType;
-            unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
-            changed = true;
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
             var block = unResolvedSource.Block;
-            var complete = false;
-            var returnType = AnalyzeBlockReturns(block, ref complete);
-            if (!complete)
-            {
-                return;
-            }
-
+            var returnType = AnalyzeBlockReturns(block);
             if (returnType is LuaMultiReturnType multiReturnType)
             {
                 var mainReturn = multiReturnType.RetTypes.ElementAtOrDefault(0);
@@ -185,12 +195,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
 
             Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId, returnType);
-            unResolved.ResolvedState &= ~ResolveState.UnResolveReturn;
-            changed = true;
         }
     }
 
-    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, ref bool complete)
+    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock)
     {
         LuaType returnType = Builtin.Unknown;
         var cfg = Context.Compilation.GetControlFlowGraph(mainBlock);
@@ -219,7 +227,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             var mainReturn = Context.Infer(rets[0]);
                             if (mainReturn.Equals(Builtin.Unknown))
                             {
-                                complete = false;
                                 return returnType;
                             }
 
@@ -234,7 +241,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 var retType = Context.Infer(ret);
                                 if (retType.Equals(Builtin.Unknown))
                                 {
-                                    complete = false;
                                     return returnType;
                                 }
 
@@ -257,7 +263,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
         }
 
-        complete = true;
         return returnType;
     }
 
@@ -292,10 +297,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     {
                         Compilation.ProjectIndex.AddMember(id, typeName, member);
                     }
+
                     Compilation.ProjectIndex.AddRelatedType(id, tableLiteralType.TableId, namedType);
                 }
             }
-
         }
     }
+
 }
