@@ -108,7 +108,7 @@ public class LineIndex
     {
         if (line >= _indexs.Count)
         {
-            line = _indexs.Count - 1;
+            return source.Length;
         }
         if (line < 0)
         {

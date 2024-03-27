@@ -24,6 +24,7 @@ public class References(SearchContext context)
             DocFieldLuaDeclaration fieldDeclaration => DocFieldReferences(fieldDeclaration),
             TableFieldLuaDeclaration tableFieldDeclaration => TableFieldReferences(tableFieldDeclaration),
             NamedTypeLuaDeclaration namedTypeDeclaration => NamedTypeReferences(namedTypeDeclaration),
+            ParameterLuaDeclaration parameterDeclaration => ParameterReferences(parameterDeclaration),
             _ => Enumerable.Empty<LuaReference>()
         };
     }
@@ -213,5 +214,56 @@ public class References(SearchContext context)
         }
 
         return references;
+    }
+
+    private IEnumerable<LuaReference> ParameterReferences(ParameterLuaDeclaration declaration)
+    {
+        var references = new List<LuaReference>();
+        if (declaration is { ParamDefPtr: { } paramDefPtr, TypedParamPtr: { } typedParamPtr })
+        {
+            if (paramDefPtr.ToNode(context) is { } paramDef)
+            {
+                if (DocParameterReferences(paramDef) is { } luaReference)
+                {
+                    references.Add(luaReference);
+                }
+
+                var documentId = paramDefPtr.DocumentId;
+                var declarationTree = context.Compilation.GetDeclarationTree(documentId);
+                if (declarationTree is not null)
+                {
+                    references.AddRange(LocalReferences(declaration, declarationTree));
+                }
+            }
+            else if (typedParamPtr.ToNode(context) is { Name: { } typedParamName })
+            {
+                references.Add(new LuaReference(typedParamName.Location, typedParamName));
+            }
+        }
+
+        return references;
+    }
+
+    private LuaReference? DocParameterReferences(LuaParamDefSyntax paramDefSyntax)
+    {
+        var paramDefName = paramDefSyntax.Name?.RepresentText;
+        var stat = paramDefSyntax.Ancestors.OfType<LuaStatSyntax>().FirstOrDefault();
+        if (stat is null || paramDefName is null)
+        {
+            return null;
+        }
+
+        foreach (var comment in stat.Comments)
+        {
+            foreach (var tagParamSyntax in comment.DocList.OfType<LuaDocTagParamSyntax>())
+            {
+                if (tagParamSyntax.Name is { RepresentText: { } name } && name == paramDefName)
+                {
+                    return new LuaReference(tagParamSyntax.Name.Location, tagParamSyntax.Name);
+                }
+            }
+        }
+
+        return null;
     }
 }

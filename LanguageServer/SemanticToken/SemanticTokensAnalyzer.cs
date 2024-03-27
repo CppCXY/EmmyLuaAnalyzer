@@ -111,12 +111,18 @@ public class SemanticTokensAnalyzer
                 builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Keyword, string.Empty);
                 break;
             }
-            // case LuaTokenKind.TkString:
-            // case LuaTokenKind.TkLongString:
-            // {
-            //     builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.String, string.Empty);
-            //     break;
-            // }
+            case LuaTokenKind.TkString:
+            case LuaTokenKind.TkLongString:
+            {
+                var range = token.Range.ToLspRange(semanticModel.Document);
+                if (range.Start.Line == range.End.Line)
+                {
+                    builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.String,
+                        string.Empty);
+                }
+
+                break;
+            }
             case LuaTokenKind.TkAnd:
             case LuaTokenKind.TkOr:
             case LuaTokenKind.TkConcat:
@@ -149,7 +155,11 @@ public class SemanticTokensAnalyzer
             }
             case LuaTokenKind.TkDocDetail:
             {
-                builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Comment, string.Empty);
+                var range = token.Range.ToLspRange(semanticModel.Document);
+                if (range.Start.Line == range.End.Line)
+                {
+                    builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Comment, string.Empty);
+                }
                 break;
             }
             // TODO 
