@@ -4,9 +4,9 @@ namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class IndexEntry<TStubElement>
 {
-    public Dictionary<DocumentId, List<TStubElement>> Files { get; } = new();
+    public Dictionary<LuaDocumentId, List<TStubElement>> Files { get; } = new();
 
-    public void Add(DocumentId documentId, TStubElement element)
+    public void Add(LuaDocumentId documentId, TStubElement element)
     {
         if (!Files.TryGetValue(documentId, out var elements))
         {
@@ -17,7 +17,7 @@ public class IndexEntry<TStubElement>
         elements.Add(element);
     }
 
-    public void Remove(DocumentId documentId)
+    public void Remove(LuaDocumentId documentId)
     {
         Files.Remove(documentId);
     }
@@ -28,7 +28,7 @@ public class IndexStorage<TKey, TStubElement>
 {
     private readonly Dictionary<TKey, IndexEntry<TStubElement>> _indexMap = new();
 
-    public void Add(DocumentId documentId, TKey key, TStubElement syntax)
+    public void Add(LuaDocumentId documentId, TKey key, TStubElement syntax)
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {
@@ -39,7 +39,7 @@ public class IndexStorage<TKey, TStubElement>
         entry.Add(documentId, syntax);
     }
 
-    public void Remove(DocumentId documentId)
+    public void Remove(LuaDocumentId documentId)
     {
         var waitRemove = new List<TKey>();
         foreach (var (key, entry) in _indexMap)
@@ -90,7 +90,7 @@ public class SyntaxStorage<TKey, TSyntaxElement, TElement>
 {
     private readonly Dictionary<TKey, IndexEntry<(TSyntaxElement, TElement)>> _storage = new();
 
-    public void Add(DocumentId documentId, TKey key, TSyntaxElement syntax, TElement element)
+    public void Add(LuaDocumentId documentId, TKey key, TSyntaxElement syntax, TElement element)
     {
         if (!_storage.TryGetValue(key, out var entry))
         {
@@ -101,7 +101,7 @@ public class SyntaxStorage<TKey, TSyntaxElement, TElement>
         entry.Add(documentId, (syntax, element));
     }
 
-    public void Remove(DocumentId documentId)
+    public void Remove(LuaDocumentId documentId)
     {
         var waitRemove = new List<TKey>();
         foreach (var (key, entry) in _storage)

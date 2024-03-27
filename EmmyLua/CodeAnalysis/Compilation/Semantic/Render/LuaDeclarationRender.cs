@@ -26,7 +26,8 @@ public static class LuaDeclarationRender
             }
             case MethodLuaDeclaration method:
             {
-                var isLocal = method.MethodDef?.IsLocal ?? false;
+                var luaFunc = method.FuncStatPtr.ToNode(context);
+                var isLocal = luaFunc?.IsLocal ?? false;
                 if (isLocal)
                 {
                     sb.Append(
@@ -36,10 +37,13 @@ public static class LuaDeclarationRender
                 {
                     sb.Append(
                         $"```lua\nfunction {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
-                    RenderInClass(method.SyntaxElement, context, sb);
+                    if (method.IndexExprPtr.ToNode(context) is { } indexExpr)
+                    {
+                        RenderInClass(indexExpr, context, sb);
+                    }
                 }
 
-                LuaCommentRender.RenderDeclarationStatComment(declaration, sb);
+                LuaCommentRender.RenderDeclarationStatComment(declaration, context, sb);
                 break;
             }
             case ParameterLuaDeclaration parameter:
@@ -54,12 +58,12 @@ public static class LuaDeclarationRender
                     sb.Append($"```lua\n(parameter) {parameter.Name}\n```");
                 }
 
-                LuaCommentRender.RenderParamComment(parameter, sb);
+                LuaCommentRender.RenderParamComment(parameter, context, sb);
                 break;
             }
             case DocFieldLuaDeclaration docField:
             {
-                if (docField.FieldDef is { } fieldDef)
+                if (docField.FieldDefPtr.ToNode(context) is { } fieldDef)
                 {
                     var visibilityText = fieldDef.Visibility switch
                     {
@@ -72,14 +76,16 @@ public static class LuaDeclarationRender
 
                     sb.Append(
                         $"```lua\n(field) {visibilityText}{docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
-                    LuaCommentRender.RenderDocFieldComment(docField, sb);
+                    LuaCommentRender.RenderDocFieldComment(docField, context, sb);
                 }
+
                 break;
             }
-            case TableFieldLuaDeclaration tableField:
+            case TableFieldLuaDeclaration tableFieldDeclaration:
             {
                 var constExpr = string.Empty;
-                if (tableField.TableField is { IsValue: false, Value: LuaLiteralExprSyntax expr })
+                if (tableFieldDeclaration.TableFieldPtr.ToNode(context) is
+                    { IsValue: false, Value: LuaLiteralExprSyntax expr })
                 {
                     switch (expr.Literal)
                     {
@@ -105,9 +111,10 @@ public static class LuaDeclarationRender
                         }
                     }
                 }
+
                 sb.Append(
-                    $"```lua\n(field) {tableField.Name} : {LuaTypeRender.RenderType(tableField.DeclarationType, context)}{constExpr}\n```");
-                LuaCommentRender.RenderTableFieldComment(tableField, sb);
+                    $"```lua\n(field) {tableFieldDeclaration.Name} : {LuaTypeRender.RenderType(tableFieldDeclaration.DeclarationType, context)}{constExpr}\n```");
+                LuaCommentRender.RenderTableFieldComment(tableFieldDeclaration, context, sb);
                 break;
             }
             case NamedTypeLuaDeclaration namedTypeLuaDeclaration:
@@ -148,24 +155,21 @@ public static class LuaDeclarationRender
             }
             case IndexLuaDeclaration indexLuaDeclaration:
             {
-                var indexExpr = indexLuaDeclaration.IndexExpr;
+                var indexExpr = indexLuaDeclaration.IndexExprPtr.ToNode(context);
                 sb.Append(
-                    $"```lua\n(field) {indexExpr.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}\n```");
-                LuaCommentRender.RenderDeclarationStatComment(indexLuaDeclaration, sb);
+                    $"```lua\n(field) {indexExpr?.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}\n```");
+                LuaCommentRender.RenderDeclarationStatComment(indexLuaDeclaration, context, sb);
                 break;
             }
         }
     }
 
-    private static void RenderInClass(LuaSyntaxElement? element, SearchContext context, StringBuilder sb)
+    private static void RenderInClass(LuaIndexExprSyntax indexExpr, SearchContext context, StringBuilder sb)
     {
-        if (element is LuaIndexExprSyntax indexExpr)
+        var prefixType = context.Infer(indexExpr.PrefixExpr);
+        if (!prefixType.Equals(Builtin.Unknown))
         {
-            var prefixType = context.Infer(indexExpr.PrefixExpr);
-            if (!prefixType.Equals(Builtin.Unknown))
-            {
-                RenderBelongType(prefixType, context, sb);
-            }
+            RenderBelongType(prefixType, context, sb);
         }
     }
 
@@ -197,12 +201,14 @@ public static class LuaDeclarationRender
 
     public static void RenderLocalDeclaration(LocalLuaDeclaration local, SearchContext context, StringBuilder sb)
     {
+        var localName = local.LocalNamePtr.ToNode(context);
+
         var attrib = "";
-        if (local.IsConst)
+        if (localName is { Attribute.IsConst: true })
         {
             attrib = " <const>";
         }
-        else if (local.IsClose)
+        else if (localName is { Attribute.IsClose: true })
         {
             attrib = " <close>";
         }
@@ -211,13 +217,13 @@ public static class LuaDeclarationRender
         {
             sb.Append(
                 $"```lua\nlocal {local.Name}{attrib} : {LuaTypeRender.RenderDefinedType(local.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderDeclarationStatComment(local, sb);
+            LuaCommentRender.RenderDeclarationStatComment(local, context, sb);
         }
         else
         {
             sb.Append(
                 $"```lua\nlocal {local.Name}{attrib} : {LuaTypeRender.RenderType(local.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderDeclarationStatComment(local, sb);
+            LuaCommentRender.RenderDeclarationStatComment(local, context, sb);
         }
     }
 
@@ -227,13 +233,13 @@ public static class LuaDeclarationRender
         {
             sb.Append(
                 $"```lua\nglobal {global.Name}: {LuaTypeRender.RenderDefinedType(global.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderDeclarationStatComment(global, sb);
+            LuaCommentRender.RenderDeclarationStatComment(global, context, sb);
         }
         else
         {
             sb.Append(
                 $"```lua\nglobal {global.Name} : {LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
-            LuaCommentRender.RenderDeclarationStatComment(global, sb);
+            LuaCommentRender.RenderDeclarationStatComment(global, context, sb);
         }
     }
 }

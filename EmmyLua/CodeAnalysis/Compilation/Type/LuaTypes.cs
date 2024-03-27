@@ -1,5 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -369,10 +371,10 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
     }
 }
 
-public class LuaTableLiteralType(string tableId)
-    : LuaNamedType(tableId, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
+public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
+    : LuaNamedType(tableExpr.UniqueId, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
 {
-    public string TableId { get; } = tableId;
+    public LuaSyntaxNodePtr<LuaTableExprSyntax> TableExprPtr { get; } = new(tableExpr);
 
     public override bool Equals(object? obj)
     {
@@ -387,7 +389,7 @@ public class LuaTableLiteralType(string tableId)
     public bool Equals(LuaTableLiteralType? other)
     {
         if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && TableId == other.TableId;
+        return base.Equals(other) && TableExprPtr.Equals(other.TableExprPtr);
     }
 
     public override int GetHashCode()

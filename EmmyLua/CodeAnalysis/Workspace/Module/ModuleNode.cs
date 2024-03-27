@@ -6,5 +6,5 @@ public class ModuleNode
 {
     public Dictionary<string, ModuleNode> Children { get; } = new();
 
-    public DocumentId? DocumentId { get; set; }
+    public LuaDocumentId? DocumentId { get; set; }
 }

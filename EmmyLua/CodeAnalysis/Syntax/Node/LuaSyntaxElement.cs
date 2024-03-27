@@ -475,6 +475,22 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         return token?.Parent as LuaSyntaxNode;
     }
 
+    public LuaSyntaxNode? FindNode(SourceRange range, LuaSyntaxKind kind)
+    {
+        LuaSyntaxNode? node = this as LuaSyntaxNode;
+        while (node != null)
+        {
+            if (node.Range.Equals(range) && node.Kind == kind)
+            {
+                return node;
+            }
+
+            node = node.ChildrenNode.FirstOrDefault(it => it.Range.Contain(range));
+        }
+
+        return null;
+    }
+
     public void PushDiagnostic(DiagnosticSeverity severity, string message)
     {
         var diagnostic = new Diagnostic(severity, message, Range);

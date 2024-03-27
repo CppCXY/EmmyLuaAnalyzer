@@ -19,6 +19,11 @@ public struct SourceRange(int startOffset = 0, int length = 0): IEquatable<Sourc
         return offset >= StartOffset && offset < EndOffset;
     }
 
+    public bool Contain(SourceRange range)
+    {
+        return range.StartOffset >= StartOffset && range.EndOffset <= EndOffset;
+    }
+
     public bool Intersect(SourceRange range)
     {
         return StartOffset < range.EndOffset && range.StartOffset < EndOffset;

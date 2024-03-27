@@ -94,7 +94,7 @@ public class InlayHintBuilder
             }
 
             var parameters = perfectSignature.Parameters.Skip(skipParam).ToList();
-            var hasVarArg = parameters.LastOrDefault()?.IsVararg ?? false;
+            var hasVarArg = parameters.LastOrDefault()?.ParamDefPtr.ToNode(semanticModel.Context)?.IsVarArgs?? false;
             var parameterCount = hasVarArg ? (parameters.Count - 1) : parameters.Count;
             var varCount = 0;
             for (var i = 0; i < args.Count; i++)

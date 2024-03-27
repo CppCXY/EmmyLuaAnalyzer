@@ -42,9 +42,9 @@ public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, Re
     public LuaBlockSyntax Block { get; } = block;
 }
 
-public class UnResolvedSource(DocumentId documentId, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
+public class UnResolvedSource(LuaDocumentId documentId, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
 {
-    public DocumentId DocumentId { get; } = documentId;
+    public LuaDocumentId DocumentId { get; } = documentId;
 
     public LuaBlockSyntax Block { get; } = block;
 }

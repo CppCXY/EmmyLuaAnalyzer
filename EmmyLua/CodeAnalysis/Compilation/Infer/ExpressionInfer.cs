@@ -112,7 +112,7 @@ public static class ExpressionInfer
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        return new LuaTableLiteralType(tableExpr.UniqueId);
+        return new LuaTableLiteralType(tableExpr);
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

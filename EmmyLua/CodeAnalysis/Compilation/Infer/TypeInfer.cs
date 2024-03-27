@@ -76,13 +76,13 @@ public static class TypeInfer
             if (typedParam is { Name: { } name })
             {
                 var paramDeclaration = new ParameterLuaDeclaration(
-                    name.RepresentText, name.Position, name,context.Infer(typedParam.Type));
+                    name.RepresentText, new(typedParam), context.Infer(typedParam.Type));
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
                 var paramDeclaration = new ParameterLuaDeclaration(
-                    "...", varArgs.Position, varArgs,context.Infer(typedParam.Type));
+                    "...", new(typedParam), context.Infer(typedParam.Type));
                 typedParameters.Add(paramDeclaration);
             }
         }
@@ -103,7 +103,7 @@ public static class TypeInfer
 
     private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
     {
-        if (nameType.Name is { RepresentText: {} name} )
+        if (nameType.Name is { RepresentText: { } name })
         {
             var builtInType = Builtin.FromName(name);
             if (builtInType is not null)

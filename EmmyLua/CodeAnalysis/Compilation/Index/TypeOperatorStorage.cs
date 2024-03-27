@@ -7,7 +7,7 @@ public class TypeOperatorStorage
 {
     private Dictionary<string, IndexEntry<TypeOperator>> TypeOperators { get; } = new();
 
-    public void AddTypeOperator(DocumentId documentId, TypeOperator typeOperator)
+    public void AddTypeOperator(LuaDocumentId documentId, TypeOperator typeOperator)
     {
         var belongTypeName = typeOperator.BelongTypeName;
         if (!TypeOperators.TryGetValue(typeOperator.BelongTypeName, out var entry))
@@ -19,12 +19,12 @@ public class TypeOperatorStorage
         entry.Add(documentId, typeOperator);
     }
 
-    public void Remove(DocumentId documentId)
+    public void Remove(LuaDocumentId documentId)
     {
         RemoveOperator(documentId);
     }
 
-    private void RemoveOperator(DocumentId documentId)
+    private void RemoveOperator(LuaDocumentId documentId)
     {
         var waitRemove = new List<string>();
         foreach (var (key, entry) in TypeOperators)

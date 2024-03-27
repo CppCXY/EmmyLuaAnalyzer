@@ -14,7 +14,7 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
-    private IndexStorage<string, string> ParentTypes { get; } = new();
+    private IndexStorage<LuaSyntaxNodePtr<LuaSyntaxNode>, string> ParentTypes { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
 
@@ -26,19 +26,19 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, GenericParameterLuaDeclaration> GenericParam { get; } = new();
 
-    private Dictionary<DocumentId, LuaType> ExportTypes { get; } = new();
+    private Dictionary<LuaDocumentId, LuaType> ExportTypes { get; } = new();
 
     public TypeOperatorStorage TypeOperatorStorage { get; } = new();
 
     private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
 
-    private IndexStorage<string, LuaNameExprSyntax> NameExprs { get; } = new();
+    private IndexStorage<string, LuaSyntaxNodePtr<LuaNameExprSyntax>> NameExprs { get; } = new();
 
-    private IndexStorage<string, LuaIndexExprSyntax> IndexExprs { get; } = new();
+    private IndexStorage<string, LuaSyntaxNodePtr<LuaIndexExprSyntax>> IndexExprs { get; } = new();
 
-    private IndexStorage<string, LuaDocNameTypeSyntax> NameTypes { get; } = new();
+    private IndexStorage<string, LuaSyntaxNodePtr<LuaDocNameTypeSyntax>> NameTypes { get; } = new();
 
-    public void Remove(DocumentId documentId)
+    public void Remove(LuaDocumentId documentId)
     {
         Members.Remove(documentId);
         ParentTypes.Remove(documentId);
@@ -55,43 +55,46 @@ public class ProjectIndex(LuaCompilation compilation)
         NameTypes.Remove(documentId);
     }
 
-    public void AddMember(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         Members.Add(documentId, name, luaDeclaration);
-        if (luaDeclaration.SyntaxElement is not null)
+        if (luaDeclaration.Ptr is { } ptr)
         {
-            ParentTypes.Add(documentId, luaDeclaration.SyntaxElement.UniqueId, name);
+            ParentTypes.Add(documentId, ptr.UpCast(), name);
         }
     }
 
-    public void AddGlobal(DocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         GlobalDeclaration.Add(documentId, name, luaDeclaration);
     }
 
-    public void AddSuper(DocumentId documentId, string name, LuaType type)
+    public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
     {
         Supers.Add(documentId, name, type);
     }
 
-    public void AddType(DocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration, NamedTypeKind kind)
+    public void AddType(LuaDocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration,
+        NamedTypeKind kind)
     {
         NamedType.Add(documentId, name, luaDeclaration);
         NamedTypeKinds.Add(documentId, name, kind);
     }
 
-    public void AddAlias(DocumentId documentId, string name, LuaType baseType, NamedTypeLuaDeclaration luaDeclaration)
+    public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType,
+        NamedTypeLuaDeclaration luaDeclaration)
     {
         AddType(documentId, name, luaDeclaration, NamedTypeKind.Alias);
         Id2Type.Add(documentId, name, baseType);
     }
 
-    public void AddRelatedType(DocumentId documentId, string name, LuaType relatedType)
+    public void AddRelatedType(LuaDocumentId documentId, string name, LuaType relatedType)
     {
         Id2Type.Add(documentId, name, relatedType);
     }
 
-    public void AddEnum(DocumentId documentId, string name, LuaType? baseType, NamedTypeLuaDeclaration luaDeclaration)
+    public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
+        NamedTypeLuaDeclaration luaDeclaration)
     {
         AddType(documentId, name, luaDeclaration, NamedTypeKind.Enum);
         if (baseType != null)
@@ -100,42 +103,42 @@ public class ProjectIndex(LuaCompilation compilation)
         }
     }
 
-    public void AddMethod(DocumentId documentId, string id, LuaMethodType methodType)
+    public void AddMethod(LuaDocumentId documentId, string id, LuaMethodType methodType)
     {
         Id2Type.Add(documentId, id, methodType);
     }
 
-    public void AddGenericParam(DocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
+    public void AddGenericParam(LuaDocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
     {
         GenericParam.Add(documentId, name, luaDeclaration);
     }
 
-    public void AddExportType(DocumentId documentId, LuaType type)
+    public void AddExportType(LuaDocumentId documentId, LuaType type)
     {
         ExportTypes[documentId] = type;
     }
 
-    public void AddNameExpr(DocumentId documentId, LuaNameExprSyntax nameExpr)
+    public void AddNameExpr(LuaDocumentId documentId, LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { RepresentText: { } name })
         {
-            NameExprs.Add(documentId, name, nameExpr);
+            NameExprs.Add(documentId, name, new(nameExpr));
         }
     }
 
-    public void AddIndexExpr(DocumentId documentId, LuaIndexExprSyntax indexExpr)
+    public void AddIndexExpr(LuaDocumentId documentId, LuaIndexExprSyntax indexExpr)
     {
         if (indexExpr is { Name: { } name })
         {
-            IndexExprs.Add(documentId, name, indexExpr);
+            IndexExprs.Add(documentId, name, new(indexExpr));
         }
     }
 
-    public void AddNameType(DocumentId documentId, LuaDocNameTypeSyntax nameType)
+    public void AddNameType(LuaDocumentId documentId, LuaDocNameTypeSyntax nameType)
     {
         if (nameType is { Name.RepresentText: { } name })
         {
-            NameTypes.Add(documentId, name, nameType);
+            NameTypes.Add(documentId, name, new(nameType));
         }
     }
 
@@ -174,7 +177,7 @@ public class ProjectIndex(LuaCompilation compilation)
         return NamedType.GetOne(name);
     }
 
-    public LuaType? GetExportType(DocumentId documentId)
+    public LuaType? GetExportType(LuaDocumentId documentId)
     {
         return ExportTypes.GetValueOrDefault(documentId);
     }
@@ -210,26 +213,52 @@ public class ProjectIndex(LuaCompilation compilation)
         return new ClassDetailType(name, context);
     }
 
-    public IEnumerable<LuaNameExprSyntax> GetNameExprs(string name) => NameExprs.Get<LuaNameExprSyntax>(name);
+    public IEnumerable<LuaNameExprSyntax> GetNameExprs(string name)
+    {
+        foreach (var nameExprPtr in NameExprs.Get(name))
+        {
+            if (nameExprPtr.ToNode(Compilation.Workspace) is { } node)
+            {
+                yield return node;
+            }
+        }
+    }
 
-    public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name) => IndexExprs.Get<LuaIndexExprSyntax>(name);
 
-    public IEnumerable<LuaDocNameTypeSyntax> GetNameTypes(string name) => NameTypes.Get<LuaDocNameTypeSyntax>(name);
+    public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name)
+    {
+        foreach (var indexExprPtr in IndexExprs.Get(name))
+        {
+            if (indexExprPtr.ToNode(Compilation.Workspace) is { } node)
+            {
+                yield return node;
+            }
+        }
+    }
+
+    public IEnumerable<LuaDocNameTypeSyntax> GetNameTypes(string name)
+    {
+        foreach (var nameTypePtr in NameTypes.Get(name))
+        {
+            if (nameTypePtr.ToNode(Compilation.Workspace) is { } node)
+            {
+                yield return node;
+            }
+        }
+    }
 
     public bool IsDefinedType(string name)
     {
         return NamedTypeKinds.ContainsKey(name);
     }
 
-    public LuaNamedType? GetParentType(LuaSyntaxElement element)
+    public LuaNamedType? GetParentType(LuaSyntaxNode node)
     {
-        if (element is { UniqueId: { } id })
+        var ptr = new LuaSyntaxNodePtr<LuaSyntaxNode>(node);
+        var parentType = ParentTypes.GetLastOne(ptr);
+        if (parentType is not null)
         {
-            var parentType = ParentTypes.GetLastOne(id);
-            if (parentType is not null)
-            {
-                return new LuaNamedType(parentType);
-            }
+            return new LuaNamedType(parentType);
         }
 
         return null;

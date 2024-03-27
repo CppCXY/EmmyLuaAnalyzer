@@ -40,10 +40,22 @@ public class LuaDocTableTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaS
     public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
 
+public class LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+
+    public LuaDotsToken? VarArgs => FirstChild<LuaDotsToken>();
+
+    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+
+    public bool IsVarArgs => VarArgs != null;
+}
+
 public class LuaDocFuncTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
-    public IEnumerable<LuaDocTagTypedParamSyntax> ParamList => ChildNodes<LuaDocTagTypedParamSyntax>();
+    public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildNodes<LuaDocTypedParamSyntax>();
 
     public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildNodes<LuaDocTypeSyntax>();
 }

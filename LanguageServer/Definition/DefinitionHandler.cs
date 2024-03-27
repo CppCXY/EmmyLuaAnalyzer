@@ -52,7 +52,7 @@ public class DefinitionHandler(LuaWorkspace workspace) : DefinitionHandlerBase
             if (node is not null)
             {
                 var declaration = declarationTree.FindDeclaration(node, semanticModel.Context);
-                if (declaration?.SyntaxElement is { Location: {} location })
+                if (declaration?.Ptr.ToNode(semanticModel.Context) is { Location: {} location })
                 {
                     return Task.FromResult<LocationOrLocationLinks?>(LocationOrLocationLinks.From(
                         location.ToLspLocation()

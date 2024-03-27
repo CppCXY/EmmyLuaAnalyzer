@@ -8,11 +8,11 @@ public class LuaWorkspace
 {
     public LuaFeatures Features { get; }
 
-    private Dictionary<DocumentId, LuaDocument> Documents { get; set; } = new();
+    private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 
-    private Dictionary<string, DocumentId> UrlToDocument { get; set; } = new();
+    private Dictionary<string, LuaDocumentId> UrlToDocument { get; set; } = new();
 
-    private Dictionary<string, DocumentId> PathToDocument { get; set; } = new();
+    private Dictionary<string, LuaDocumentId> PathToDocument { get; set; } = new();
 
     private int _idCounter = 1;
 
@@ -76,12 +76,12 @@ public class LuaWorkspace
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
     }
 
-    private DocumentId AllocateId()
+    private LuaDocumentId AllocateId()
     {
-        return new DocumentId(_idCounter++);
+        return new LuaDocumentId(_idCounter++);
     }
 
-    public LuaDocument? GetDocument(DocumentId id)
+    public LuaDocument? GetDocument(LuaDocumentId id)
     {
         return Documents.GetValueOrDefault(id);
     }
@@ -133,7 +133,7 @@ public class LuaWorkspace
         }
     }
 
-    public void RemoveDocument(DocumentId id)
+    public void RemoveDocument(LuaDocumentId id)
     {
         if (Documents.Remove(id, out var document))
         {
@@ -148,7 +148,7 @@ public class LuaWorkspace
         }
     }
 
-    public void UpdateDocument(DocumentId documentId, string text)
+    public void UpdateDocument(LuaDocumentId documentId, string text)
     {
         if (Documents.TryGetValue(documentId, out var document))
         {

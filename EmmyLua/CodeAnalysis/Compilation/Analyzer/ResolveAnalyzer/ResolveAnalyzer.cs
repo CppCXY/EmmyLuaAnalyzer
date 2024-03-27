@@ -38,7 +38,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     }
                 }
             }
-
         } while (resolveDependencyGraph.CalcDependency());
 
         Context.ClearCache();
@@ -135,7 +134,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 parameter.DeclarationType = i < returnTypes.Count ? returnTypes[i] : Builtin.Unknown;
                             }
                         }
-
                     }
 
                     return;
@@ -155,7 +153,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.SyntaxElement is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            if (declaration.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
                 var documentId = indexExpr.Tree.Document.Id;
                 var ty = Context.Infer(prefixExpr);
@@ -289,19 +287,16 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             if (declarationType is LuaNamedType namedType)
             {
                 var typeName = namedType.Name;
-                var members = Compilation.ProjectIndex.GetMembers(tableLiteralType.TableId);
-                var documentId = declaration.SyntaxElement?.Tree.Document.Id;
-                if (documentId is { } id)
-                {
-                    foreach (var member in members)
-                    {
-                        Compilation.ProjectIndex.AddMember(id, typeName, member);
-                    }
+                var members = Compilation.ProjectIndex.GetMembers(tableLiteralType.Name);
+                var documentId = declaration.Ptr.DocumentId;
 
-                    Compilation.ProjectIndex.AddRelatedType(id, tableLiteralType.TableId, namedType);
+                foreach (var member in members)
+                {
+                    Compilation.ProjectIndex.AddMember(documentId, typeName, member);
                 }
+
+                Compilation.ProjectIndex.AddRelatedType(documentId, tableLiteralType.Name, namedType);
             }
         }
     }
-
 }

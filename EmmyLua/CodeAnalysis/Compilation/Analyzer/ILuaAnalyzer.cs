@@ -8,5 +8,5 @@ public interface ILuaAnalyzer
 
     public void Analyze(AnalyzeContext analyzeContext);
 
-    public void RemoveCache(DocumentId documentId);
+    public void RemoveCache(LuaDocumentId documentId);
 }

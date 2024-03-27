@@ -7,7 +7,7 @@ public class ModuleGraph(LuaWorkspace workspace)
 {
     private Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
-    private Dictionary<DocumentId, ModuleIndex> DocumentIndex { get; } = new();
+    private Dictionary<LuaDocumentId, ModuleIndex> DocumentIndex { get; } = new();
 
     private List<Regex> Pattern { get; } = new();
 

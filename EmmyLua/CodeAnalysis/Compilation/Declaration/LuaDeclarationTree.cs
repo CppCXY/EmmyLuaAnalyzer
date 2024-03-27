@@ -101,7 +101,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
             var relatedType = context.Compilation.ProjectIndex.GetTypeFromId(parentTable.UniqueId).FirstOrDefault() ??
-                              new LuaTableLiteralType(parentTable.UniqueId);
+                              new LuaTableLiteralType(parentTable);
             return context.FindMember(relatedType, name).FirstOrDefault();
         }
 

@@ -109,7 +109,7 @@ public class LuaRenderBuilder(SearchContext context)
                     var moduleDocument = context.Compilation.Workspace.ModuleGraph.FindModule(stringLiteral.Value);
                     if (moduleDocument is not null)
                     {
-                        LuaModuleRender.RenderModule(moduleDocument, sb, context);
+                        LuaModuleRender.RenderModule(moduleDocument, context, sb);
                     }
 
                     display = sb.ToString();

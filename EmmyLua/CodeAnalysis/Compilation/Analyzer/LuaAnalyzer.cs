@@ -11,7 +11,7 @@ public abstract class LuaAnalyzer(LuaCompilation compilation)
     {
     }
 
-    public virtual void RemoveCache(DocumentId documentId)
+    public virtual void RemoveCache(LuaDocumentId documentId)
     {
     }
 }

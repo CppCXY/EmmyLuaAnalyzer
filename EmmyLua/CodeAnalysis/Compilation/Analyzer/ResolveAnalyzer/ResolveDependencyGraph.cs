@@ -150,7 +150,7 @@ public class ResolveDependencyGraph(SearchContext context)
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.SyntaxElement is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            if (declaration.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
                 var ty = context.Infer(prefixExpr);
                 if (ty.Equals(Builtin.Unknown))

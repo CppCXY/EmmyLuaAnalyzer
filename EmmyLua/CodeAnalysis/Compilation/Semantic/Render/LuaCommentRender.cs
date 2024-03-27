@@ -30,9 +30,9 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderDeclarationStatComment(LuaDeclaration declaration, StringBuilder sb)
+    public static void RenderDeclarationStatComment(LuaDeclaration declaration, SearchContext context, StringBuilder sb)
     {
-        var declarationElement = declaration.SyntaxElement;
+        var declarationElement = declaration.Ptr.ToNode(context);
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
         RenderCommentDescription(comments, sb);
@@ -44,9 +44,10 @@ public static class LuaCommentRender
         RenderCommentDescription(comments, sb);
     }
 
-    public static void RenderParamComment(ParameterLuaDeclaration parameterLuaDeclaration, StringBuilder sb)
+    public static void RenderParamComment(ParameterLuaDeclaration parameterLuaDeclaration, SearchContext context,
+        StringBuilder sb)
     {
-        var declarationElement = parameterLuaDeclaration.SyntaxElement;
+        var declarationElement = parameterLuaDeclaration.Ptr.ToNode(context);
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
         if (comments is null)
@@ -65,9 +66,10 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderDocFieldComment(DocFieldLuaDeclaration fieldDeclaration, StringBuilder sb)
+    public static void RenderDocFieldComment(DocFieldLuaDeclaration fieldDeclaration, SearchContext context,
+        StringBuilder sb)
     {
-        var docField = fieldDeclaration.FieldDef;
+        var docField = fieldDeclaration.FieldDefPtr.ToNode(context);
         if (docField is { Description.CommentText: { } commentText })
         {
             RenderSeparator(sb);
@@ -75,15 +77,17 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderTableFieldComment(TableFieldLuaDeclaration tableField, StringBuilder sb)
+    public static void RenderTableFieldComment(TableFieldLuaDeclaration tableFieldDeclaration, SearchContext context,
+        StringBuilder sb)
     {
-        var tableFieldSyntax = tableField.TableField;
-        var comments = tableFieldSyntax.Comments;
-
-        foreach (var comment in comments)
+        var tableFieldSyntax = tableFieldDeclaration.TableFieldPtr.ToNode(context);
+        if (tableFieldSyntax is { Comments: { } comments })
         {
-            RenderSeparator(sb);
-            sb.Append(comment.CommentText);
+            foreach (var comment in comments)
+            {
+                RenderSeparator(sb);
+                sb.Append(comment.CommentText);
+            }
         }
     }
 }

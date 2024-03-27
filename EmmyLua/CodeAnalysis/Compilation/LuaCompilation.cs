@@ -20,17 +20,17 @@ public class LuaCompilation
 {
     public LuaWorkspace Workspace { get; }
 
-    private readonly Dictionary<DocumentId, LuaSyntaxTree> _syntaxTrees = new();
+    private readonly Dictionary<LuaDocumentId, LuaSyntaxTree> _syntaxTrees = new();
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
     public ProjectIndex ProjectIndex { get; }
 
-    private HashSet<DocumentId> DirtyDocuments { get; } = [];
+    private HashSet<LuaDocumentId> DirtyDocuments { get; } = [];
 
-    internal Dictionary<DocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
+    internal Dictionary<LuaDocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
 
-    internal Dictionary<DocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
+    internal Dictionary<LuaDocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
 
     private List<LuaAnalyzer> Analyzers { get; }
 
@@ -47,7 +47,7 @@ public class LuaCompilation
         ];
     }
 
-    private void InternalAddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
+    private void InternalAddSyntaxTree(LuaDocumentId documentId, LuaSyntaxTree syntaxTree)
     {
         if (!_syntaxTrees.TryAdd(documentId, syntaxTree))
         {
@@ -58,7 +58,7 @@ public class LuaCompilation
         AddDirtyDocument(documentId);
     }
 
-    public void AddSyntaxTrees(IEnumerable<(DocumentId, LuaSyntaxTree)> syntaxTrees)
+    public void AddSyntaxTrees(IEnumerable<(LuaDocumentId, LuaSyntaxTree)> syntaxTrees)
     {
         foreach (var (documentId, syntaxTree) in syntaxTrees)
         {
@@ -68,20 +68,20 @@ public class LuaCompilation
         Analyze();
     }
 
-    public void AddSyntaxTree(DocumentId documentId, LuaSyntaxTree syntaxTree)
+    public void AddSyntaxTree(LuaDocumentId documentId, LuaSyntaxTree syntaxTree)
     {
         InternalAddSyntaxTree(documentId, syntaxTree);
         Analyze();
     }
 
-    public void RemoveSyntaxTree(DocumentId documentId)
+    public void RemoveSyntaxTree(LuaDocumentId documentId)
     {
         _syntaxTrees.Remove(documentId);
         RemoveCache(documentId);
         Analyze();
     }
 
-    public void RemoveCache(DocumentId documentId)
+    public void RemoveCache(LuaDocumentId documentId)
     {
         foreach (var luaAnalyzer in Analyzers)
         {
@@ -93,7 +93,7 @@ public class LuaCompilation
         ControlFlowGraphs.Remove(documentId);
     }
 
-    public LuaSyntaxTree? GetSyntaxTree(DocumentId documentId)
+    public LuaSyntaxTree? GetSyntaxTree(LuaDocumentId documentId)
     {
         return _syntaxTrees.GetValueOrDefault(documentId);
     }
@@ -143,17 +143,17 @@ public class LuaCompilation
         }
     }
 
-    private void AddDirtyDocument(DocumentId documentId)
+    private void AddDirtyDocument(LuaDocumentId documentId)
     {
         DirtyDocuments.Add(documentId);
     }
 
-    public LuaDeclarationTree? GetDeclarationTree(DocumentId documentId)
+    public LuaDeclarationTree? GetDeclarationTree(LuaDocumentId documentId)
     {
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    public void AddDiagnostic(DocumentId documentId, Diagnostic diagnostic)
+    public void AddDiagnostic(LuaDocumentId documentId, Diagnostic diagnostic)
     {
         var syntaxTree = GetSyntaxTree(documentId);
         if (syntaxTree is null)
@@ -170,7 +170,7 @@ public class LuaCompilation
         ))
     );
 
-    public IEnumerable<Diagnostic> GetDiagnostic(DocumentId documentId) =>
+    public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
             ? tree.Diagnostics.Select(it => it.WithLocation(
                 tree.Document.GetLocation(it.Range)
