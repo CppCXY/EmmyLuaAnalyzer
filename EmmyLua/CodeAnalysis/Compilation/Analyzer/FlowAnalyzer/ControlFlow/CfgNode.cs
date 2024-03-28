@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
@@ -7,7 +8,7 @@ public class CfgNode(int index, CfgNodeKind kind)
 {
     public CfgNodeKind Kind { get; } = kind;
 
-    public List<LuaStatSyntax> Statements { get; } = new();
+    public List<LuaSyntaxNodePtr<LuaStatSyntax>> Statements { get; } = new();
 
     public SourceRange Range
     {
@@ -28,6 +29,6 @@ public class CfgNode(int index, CfgNodeKind kind)
 
     public void AddStatement(LuaStatSyntax stat)
     {
-        Statements.Add(stat);
+        Statements.Add(new(stat));
     }
 }

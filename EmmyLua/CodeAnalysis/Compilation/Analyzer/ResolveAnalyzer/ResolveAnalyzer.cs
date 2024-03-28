@@ -210,7 +210,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             if (prevNode.Statements.Count != 0)
             {
-                if (prevNode.Statements.Last() is LuaReturnStatSyntax returnStmt)
+                if (prevNode.Statements.Last().ToNode(Context) is LuaReturnStatSyntax returnStmt)
                 {
                     var rets = returnStmt.ExprList.ToList();
                     switch (rets.Count)

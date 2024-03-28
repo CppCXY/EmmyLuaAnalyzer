@@ -55,7 +55,7 @@ public static class LuaModuleRender
 
         foreach (var prevNode in cfg.GetPredecessors(cfg.ExitNode))
         {
-            if (prevNode.Statements.LastOrDefault() is LuaReturnStatSyntax returnStmt)
+            if (prevNode.Statements.LastOrDefault().ToNode(context) is LuaReturnStatSyntax returnStmt)
             {
                 var exportElement = returnStmt.ExprList.FirstOrDefault();
                 if (exportElement is not null)

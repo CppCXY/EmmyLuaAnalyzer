@@ -101,9 +101,9 @@ public class LuaWorkspace
     {
         var document = LuaDocument.FromUri(uri, text, Features.Language);
         document.Id = AllocateId();
-        Documents.Add(document.Id, document);
-        UrlToDocument.Add(document.Uri, document.Id);
-        PathToDocument.Add(document.Path, document.Id);
+        Documents[document.Id] = document;
+        UrlToDocument[document.Uri] = document.Id;
+        PathToDocument[document.Path] = document.Id;
         ModuleGraph.AddDocument(document);
         Compilation.AddSyntaxTree(document.Id, document.SyntaxTree);
     }

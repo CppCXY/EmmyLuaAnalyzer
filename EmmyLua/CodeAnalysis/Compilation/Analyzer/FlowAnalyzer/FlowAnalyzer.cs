@@ -5,19 +5,16 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 
-public class FlowAnalyzer : LuaAnalyzer
+public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    private List<FlowAnalyzerBase> Analyzers { get; } = new();
+    // private List<FlowAnalyzerBase> Analyzers { get; } = new();
+    //
+    // private void AddAnalyzer(FlowAnalyzerBase analyzer)
+    // {
+    //     Analyzers.Add(analyzer);
+    // }
 
-    private void AddAnalyzer(FlowAnalyzerBase analyzer)
-    {
-        Analyzers.Add(analyzer);
-    }
-
-    public FlowAnalyzer(LuaCompilation compilation) : base(compilation)
-    {
-        AddAnalyzer(new ReachableAnalyzer(compilation));
-    }
+    // AddAnalyzer(new ReachableAnalyzer(compilation));
 
     public override void Analyze(AnalyzeContext analyzeContext)
     {
@@ -42,13 +39,13 @@ public class FlowAnalyzer : LuaAnalyzer
                 }
             }
 
-            foreach (var analyzer in Analyzers)
-            {
-                foreach (var cfg in Compilation.ControlFlowGraphs[documentId].Values)
-                {
-                    analyzer.Analyze(cfg, syntaxTree);
-                }
-            }
+            // foreach (var analyzer in Analyzers)
+            // {
+            //     foreach (var cfg in Compilation.ControlFlowGraphs[documentId].Values)
+            //     {
+            //         analyzer.Analyze(cfg, syntaxTree);
+            //     }
+            // }
         }
     }
 }

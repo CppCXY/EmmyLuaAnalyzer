@@ -200,7 +200,7 @@ public class ResolveDependencyGraph(SearchContext context)
         {
             if (prevNode.Statements.Count != 0)
             {
-                if (prevNode.Statements.Last() is LuaReturnStatSyntax returnStmt)
+                if (prevNode.Statements.Last().ToNode(context) is LuaReturnStatSyntax returnStmt)
                 {
                     var rets = returnStmt.ExprList.ToList();
                     switch (rets.Count)
