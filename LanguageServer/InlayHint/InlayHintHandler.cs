@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -18,13 +18,7 @@ public class InlayHintHandler(LuaWorkspace workspace) : InlayHintsHandlerBase
         return new InlayHintRegistrationOptions()
         {
             ResolveProvider = true,
-            DocumentSelector = new TextDocumentSelector
-            (
-                new TextDocumentFilter()
-                {
-                    Pattern = "**/*.lua"
-                }
-            ),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace)
         };
     }
 

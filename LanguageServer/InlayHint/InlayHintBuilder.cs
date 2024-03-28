@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using InlayHintType = OmniSharp.Extensions.LanguageServer.Protocol.Models.InlayHint;
 

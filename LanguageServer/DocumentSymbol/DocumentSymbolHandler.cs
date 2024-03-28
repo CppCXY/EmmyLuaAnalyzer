@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -16,13 +17,7 @@ public class DocumentSymbolHandler(LuaWorkspace workspace) : DocumentSymbolHandl
         return new()
         {
             Label = "EmmyLua",
-            DocumentSelector = new TextDocumentSelector
-            (
-                new TextDocumentFilter()
-                {
-                    Pattern = "**/*.lua"
-                }
-            )
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace)
         };
     }
 

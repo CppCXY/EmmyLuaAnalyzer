@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -23,13 +23,6 @@ public class TextDocumentHandler(
 {
     private TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;
 
-    private TextDocumentSelector TextDocumentSelector { get; } = new TextDocumentSelector(
-        new TextDocumentFilter
-        {
-            Pattern = "**/*.lua"
-        }
-    );
-
     public override TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
         => new(uri, "lua");
 
@@ -38,7 +31,7 @@ public class TextDocumentHandler(
         ClientCapabilities clientCapabilities)
         => new()
         {
-            DocumentSelector = TextDocumentSelector,
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
             Change = Change,
             Save = new SaveOptions() { IncludeText = false }
         };

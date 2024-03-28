@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using DocumentSymbolType = OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentSymbol;
 

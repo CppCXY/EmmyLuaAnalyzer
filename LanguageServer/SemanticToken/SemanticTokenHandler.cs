@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -9,16 +10,13 @@ namespace LanguageServer.SemanticToken;
 public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandlerBase
 {
     private SemanticTokensAnalyzer Analyzer { get; } = new();
-    
+
     protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability,
         ClientCapabilities clientCapabilities)
     {
         return new()
         {
-            DocumentSelector = new TextDocumentSelector(new TextDocumentFilter()
-            {
-                Pattern = "**/*.lua"
-            }),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
             Legend = Analyzer.Legend,
             Range = true,
             Full = true,
@@ -34,10 +32,12 @@ public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandle
         {
             Analyzer.Tokenize(builder, semanticModel, cancellationToken);
         }
+
         return Task.CompletedTask;
     }
 
-    protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params, CancellationToken cancellationToken)
+    protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params,
+        CancellationToken cancellationToken)
     {
         return Task.FromResult(new SemanticTokensDocument(Analyzer.Legend));
     }

@@ -6,7 +6,9 @@ public class LuaFeatures
 {
     public LuaLanguage Language { get; set; } = new();
 
-    public string Extensions { get; set; } = "*.lua";
+    public List<string> Extensions { get; set; } = [
+        "*.lua"
+    ];
 
     public List<string> ExcludeFolders { get; set; } =
     [

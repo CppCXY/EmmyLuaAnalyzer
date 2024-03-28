@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using LuaDiagnostic = EmmyLua.CodeAnalysis.Compile.Diagnostic.Diagnostic;
 
-namespace LanguageServer.ExtensionUtil;
+namespace LanguageServer.Util;
 
 public static class LocationExtension
 {

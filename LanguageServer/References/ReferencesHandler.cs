@@ -1,11 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.References;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ReferencesHandler(LuaWorkspace workspace) : ReferencesHandlerBase
 {
     protected override ReferenceRegistrationOptions CreateRegistrationOptions(ReferenceCapability capability,
@@ -13,13 +14,7 @@ public class ReferencesHandler(LuaWorkspace workspace) : ReferencesHandlerBase
     {
         return new ReferenceRegistrationOptions()
         {
-            DocumentSelector = new TextDocumentSelector
-            (
-                new TextDocumentFilter()
-                {
-                    Pattern = "**/*.lua"
-                }
-            )
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace)
         };
     }
 

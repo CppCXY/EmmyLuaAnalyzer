@@ -53,8 +53,9 @@ public class LuaWorkspace
 
     public void LoadWorkspace(string workspace)
     {
-        var files = Directory.GetFiles(workspace, Features.Extensions, SearchOption.AllDirectories)
-            .Where(file => !Features.ExcludeFolders.Any(file.Contains));
+        var files =
+            Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories)
+                .Where(file => !Features.ExcludeFolders.Any(file.Contains)));
 
         var documents =
             new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));

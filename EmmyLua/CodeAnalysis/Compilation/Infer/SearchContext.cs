@@ -89,14 +89,52 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         }
     }
 
-    private IEnumerable<LuaDeclaration> GetMembers(string name)
+    private IEnumerable<LuaDeclaration> GetRawMembers(string name)
     {
-        if (name is "_G" or "_ENV")
+        if (name is "_G" or "_ENV" or "global")
         {
             return Compilation.ProjectIndex.GetGlobals();
         }
 
         return Compilation.ProjectIndex.GetMembers(name);
+    }
+
+    private IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    {
+        var hashSet = new HashSet<LuaType>();
+        var supers = Compilation.ProjectIndex.GetSupers(name).ToList();
+        hashSet.UnionWith(supers);
+        foreach (var super in supers)
+        {
+            if (super is LuaNamedType namedType)
+            {
+                var detailType = namedType.GetDetailType(this);
+                if (detailType.IsClass)
+                {
+                    hashSet.UnionWith(Compilation.ProjectIndex.GetSupers(namedType.Name));
+                }
+            }
+        }
+
+        List<LuaDeclaration> members = new List<LuaDeclaration>();
+        foreach (var luaType in hashSet)
+        {
+            if (luaType is LuaNamedType namedType && namedType.Name != name)
+            {
+                members.AddRange(GetRawMembers(namedType.Name));
+            }
+        }
+
+        return members;
+    }
+
+    private IEnumerable<LuaDeclaration> GetMembers(string name)
+    {
+        var selfMembers = GetRawMembers(name);
+        var baseMembers = GetBaseMembers(name);
+        var allMembers = selfMembers.Concat(baseMembers);
+        var distinctMembers = allMembers.GroupBy(m => m.Name).Select(g => g.First());
+        return distinctMembers;
     }
 
     public IEnumerable<LuaDeclaration> GetMembers(LuaType luaType)
@@ -124,7 +162,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
             return instanceMembers;
         }
 
-        var members = Compilation.ProjectIndex.GetMembers(genericType.Name);
+        var members = GetMembers(genericType.Name);
         var genericParams = Compilation.ProjectIndex.GetGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 

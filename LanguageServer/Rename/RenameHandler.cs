@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.ExtensionUtil;
+using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -17,13 +17,7 @@ public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
     {
         return new RenameRegistrationOptions()
         {
-            DocumentSelector = new TextDocumentSelector
-            (
-                new TextDocumentFilter()
-                {
-                    Pattern = "**/*.lua"
-                }
-            ),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
             PrepareProvider = false
         };
     }

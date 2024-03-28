@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Completion;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
 using LanguageServer.DocumentSymbol;
@@ -62,6 +63,7 @@ var server = await From(options =>
         .WithHandler<DocumentColorHandler>()
         .WithHandler<ColorPresentationHandler>()
         .WithHandler<SemanticTokenHandler>()
+        .WithHandler<CompletionHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));

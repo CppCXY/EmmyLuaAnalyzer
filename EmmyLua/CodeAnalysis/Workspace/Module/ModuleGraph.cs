@@ -102,6 +102,7 @@ public class ModuleGraph(LuaWorkspace workspace)
         {
             return;
         }
+
         RemoveDocument(root, document);
     }
 
@@ -166,5 +167,84 @@ public class ModuleGraph(LuaWorkspace workspace)
         }
 
         return null;
+    }
+
+    public struct ModuleInfo(string name, string uri, bool isFile)
+    {
+        public string Name { get; } = name;
+
+        public string Uri { get; } = uri;
+
+        public bool IsFile { get; } = isFile;
+    }
+
+    public List<ModuleInfo> GetCurrentModuleNames(string modulePath)
+    {
+        var moduleInfos = new List<ModuleInfo>();
+        var parts = modulePath.Split('.');
+        if (parts.Length <= 1)
+        {
+            foreach (var moduleNode in WorkspaceModule)
+            {
+                var node = moduleNode.Value;
+                foreach (var child in node.Children)
+                {
+                    var uri = string.Empty;
+                    if (child.Value.DocumentId.HasValue)
+                    {
+                        var document = workspace.GetDocument(child.Value.DocumentId.Value);
+                        uri = document?.Uri ?? string.Empty;
+                    }
+
+                    if (uri.Length == 0)
+                    {
+                        uri = new Uri(Path.Join(moduleNode.Key, child.Key)).AbsoluteUri;
+                    }
+
+                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue));
+                }
+            }
+
+            return moduleInfos;
+        }
+
+        parts = parts[..^1];
+        var moduleBasePath = string.Join('/', parts);
+        foreach (var moduleNode in WorkspaceModule)
+        {
+            var node = moduleNode.Value;
+            foreach (var path in parts)
+            {
+                if (!node.Children.TryGetValue(path, out var child))
+                {
+                    node = null;
+                    break;
+                }
+
+                node = child;
+            }
+
+            if (node is not null)
+            {
+                foreach (var child in node.Children)
+                {
+                    var uri = string.Empty;
+                    if (child.Value.DocumentId.HasValue)
+                    {
+                        var document = workspace.GetDocument(child.Value.DocumentId.Value);
+                        uri = document?.Uri ?? string.Empty;
+                    }
+
+                    if (uri.Length == 0)
+                    {
+                        uri = new Uri(Path.Join(moduleNode.Key, moduleBasePath, child.Key)).AbsoluteUri;
+                    }
+
+                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue));
+                }
+            }
+        }
+
+        return moduleInfos;
     }
 }
