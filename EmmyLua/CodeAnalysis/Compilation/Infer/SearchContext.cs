@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -145,6 +146,18 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         }
         else if (luaType is LuaNamedType namedType)
         {
+            var detailType = namedType.GetDetailType(this);
+            if (detailType.IsAlias && detailType is AliasDetailType { OriginType: {} originType, Name: {} name })
+            {
+                // TODO 防止错误递归 ---@alias a a
+                if (originType is LuaNamedType { Name: { } originName } && originName == name)
+                {
+                    return Enumerable.Empty<LuaDeclaration>();
+                }
+
+                return GetMembers(originType);
+            }
+
             return GetMembers(namedType.Name);
         }
         else if (luaType is LuaUnionType unionType)
