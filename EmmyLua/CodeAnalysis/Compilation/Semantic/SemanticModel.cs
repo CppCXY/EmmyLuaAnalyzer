@@ -57,4 +57,14 @@ public class SemanticModel
                ))
                ?? Enumerable.Empty<Diagnostic>();
     }
+
+    public IEnumerable<LuaDeclaration> GetGlobals()
+    {
+        return Compilation.ProjectIndex.GetGlobals();
+    }
+
+    public IEnumerable<string> GetRequiredModules()
+    {
+        // return Compilation.ProjectIndex.GetRequiredModules();
+    }
 }

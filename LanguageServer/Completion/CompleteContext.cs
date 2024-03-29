@@ -26,4 +26,6 @@ public class CompleteContext(SemanticModel semanticModel, LuaSyntaxToken trigger
     {
         Continue = false;
     }
+    
+    
 }

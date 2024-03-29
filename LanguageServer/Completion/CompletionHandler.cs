@@ -6,6 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
 {
     private CompletionBuilder Builder { get; } = new();

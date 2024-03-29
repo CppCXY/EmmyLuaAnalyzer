@@ -8,7 +8,8 @@ namespace LanguageServer.Completion;
 public class CompletionBuilder
 {
     private List<ICompleteProviderBase> Providers { get; } = [
-        new RequireProvider()
+        new RequireProvider(),
+        new GlobalProvider()
     ];
     
     public List<CompletionItem> Build(SemanticModel semanticModel, LuaSyntaxToken token, CancellationToken cancellationToken)

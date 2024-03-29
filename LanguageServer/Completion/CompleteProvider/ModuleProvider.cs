@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion.CompleteProvider;
 
-public class GlobalProvider : ICompleteProviderBase
+public class ModuleProvider: ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {
