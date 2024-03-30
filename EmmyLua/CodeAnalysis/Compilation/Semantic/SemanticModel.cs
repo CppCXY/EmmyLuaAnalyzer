@@ -63,8 +63,8 @@ public class SemanticModel
         return Compilation.ProjectIndex.GetGlobals();
     }
 
-    public IEnumerable<string> GetRequiredModules()
+    public IEnumerable<LuaDeclaration> GetDeclarations(LuaSyntaxElement beforeToken)
     {
-        // return Compilation.ProjectIndex.GetRequiredModules();
+        return DeclarationTree.GetDeclarations(beforeToken);
     }
 }

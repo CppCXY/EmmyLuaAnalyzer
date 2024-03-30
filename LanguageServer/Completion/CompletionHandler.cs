@@ -19,6 +19,10 @@ public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
             DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
             ResolveProvider = true,
             TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", "," },
+            CompletionItem = new()
+            {
+                LabelDetailsSupport = true
+            }
         };
     }
 
@@ -28,13 +32,10 @@ public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
         var semanticModel = workspace.Compilation.GetSemanticModel(uri);
         if (semanticModel is not null)
         {
-            var pos = request.Position;
-            var token = semanticModel.Document.SyntaxTree.SyntaxRoot.TokenAt(pos.Line, pos.Character);
-            if (token is not null)
-            {
-                var completions = Builder.Build(semanticModel, token, cancellationToken);
-                return Task.FromResult(CompletionList.From(completions));
-            }
+            var context = new CompleteContext(semanticModel, request.Position, cancellationToken);
+
+            var completions = Builder.Build(context);
+            return Task.FromResult(CompletionList.From(completions));
         }
 
         return Task.FromResult(new CompletionList());

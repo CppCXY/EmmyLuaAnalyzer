@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Syntax.Node;
-using LanguageServer.Completion.CompleteProvider;
+﻿using LanguageServer.Completion.CompleteProvider;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
@@ -9,12 +7,15 @@ public class CompletionBuilder
 {
     private List<ICompleteProviderBase> Providers { get; } = [
         new RequireProvider(),
-        new GlobalProvider()
+        new GlobalProvider(),
+        new KeywordsProvider(),
+        new MemberProvider(),
+        new ModuleProvider(),
+        new LocalEnvProvider()
     ];
     
-    public List<CompletionItem> Build(SemanticModel semanticModel, LuaSyntaxToken token, CancellationToken cancellationToken)
+    public List<CompletionItem> Build(CompleteContext completeContext)
     {
-        var completeContext = new CompleteContext(semanticModel, token, cancellationToken);
         try
         {
             foreach (var provider in Providers)

@@ -445,6 +445,13 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public LuaLocation Location => Tree.Document.GetLocation(Range);
 
+    // 0 based line and col
+    public LuaSyntaxToken? TokenAt(int line, int col)
+    {
+        var offset = Tree.Document.GetOffset(line, col);
+        return TokenAt(offset);
+    }
+
     public LuaSyntaxToken? TokenAt(int offset)
     {
         var node = this;
@@ -462,9 +469,13 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         return null;
     }
 
-    // 0 based line and col
-    public LuaSyntaxToken? TokenAt(int line, int col)
+    public LuaSyntaxToken? TokenLeftBiasedAt(int line, int col)
     {
+        if (col > 0)
+        {
+            col--;
+        }
+
         var offset = Tree.Document.GetOffset(line, col);
         return TokenAt(offset);
     }

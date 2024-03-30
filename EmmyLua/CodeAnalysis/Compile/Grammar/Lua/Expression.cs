@@ -344,8 +344,16 @@ public static class ExpressionParser
                 case LuaTokenKind.TkDot or LuaTokenKind.TkColon or LuaTokenKind.TkLeftBracket:
                 {
                     var m1 = cm.Precede(p);
-                    IndexStruct(p);
-                    cm = m1.Complete(p, LuaSyntaxKind.IndexExpr);
+                    try
+                    {
+                        IndexStruct(p);
+                        cm = m1.Complete(p, LuaSyntaxKind.IndexExpr);
+                    }
+                    catch (UnexpectedTokenException e)
+                    {
+                        cm = m1.Fail(p, LuaSyntaxKind.IndexExpr, e.Message);
+                    }
+
                     break;
                 }
                 case LuaTokenKind.TkString or LuaTokenKind.TkLongString or LuaTokenKind.TkLeftParen

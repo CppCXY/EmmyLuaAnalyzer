@@ -5,6 +5,7 @@ using LanguageServer.Completion;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
 using LanguageServer.DocumentSymbol;
+using LanguageServer.ExecuteCommand;
 using LanguageServer.Hover;
 using LanguageServer.InlayHint;
 using LanguageServer.References;
@@ -64,6 +65,7 @@ var server = await From(options =>
         .WithHandler<ColorPresentationHandler>()
         .WithHandler<SemanticTokenHandler>()
         .WithHandler<CompletionHandler>()
+        .WithHandler<ExecuteCommandHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));

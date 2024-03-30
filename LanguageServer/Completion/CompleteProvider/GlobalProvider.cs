@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LanguageServer.Completion.CompleteProvider;
 
@@ -8,27 +6,19 @@ public class GlobalProvider : ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {
-        if (!IsMatch(context))
+        if (context.TriggerToken?.Parent is not LuaNameExprSyntax)
         {
             return;
         }
-        
-        var semanticModel = context.SemanticModel;
+
         var globals = context.SemanticModel.GetGlobals();
         foreach (var globalDecl in globals)
         {
-            context.Add(new CompletionItem
-            {
-                Label = globalDecl.Name,
-                Kind = CompletionItemKind.Variable,
-                Detail = LuaTypeRender.RenderType(globalDecl.DeclarationType, semanticModel.Context)
-            });
+            context.AddRange(
+                CompletionItemBuilder.Create(globalDecl.Name, globalDecl.DeclarationType, context.SemanticModel)
+                    .WithData(globalDecl.Ptr.Stringify)
+                    .Build()
+            );
         }
-    }
-
-    private bool IsMatch(CompleteContext context)
-    {
-        var token = context.TriggerToken;
-        return token.Parent is LuaNameExprSyntax;
     }
 }

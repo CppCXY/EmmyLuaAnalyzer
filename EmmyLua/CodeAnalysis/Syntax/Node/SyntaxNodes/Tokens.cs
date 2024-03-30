@@ -101,3 +101,6 @@ public class LuaDotsToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElem
 
 public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaSyntaxToken(greenNode, tree, parent, startOffset);
+
+public class LuaWhitespaceToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset);

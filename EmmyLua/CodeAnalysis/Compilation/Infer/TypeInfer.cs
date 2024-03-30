@@ -126,8 +126,12 @@ public static class TypeInfer
 
     private static LuaType InferTupleType(LuaDocTupleTypeSyntax tupleType, SearchContext context)
     {
-        var types = tupleType.TypeList.Select(context.Infer).ToList();
-        return new LuaTupleType(types);
+        var tupleMembers = tupleType.TypeList
+            .Select((it, i) =>
+                // lua from 1 start
+                new TupleMemberDeclaration(i + 1, context.Infer(it), new(it)))
+            .ToList();
+        return new LuaTupleType(tupleMembers);
     }
 
     private static LuaType InferGenericType(LuaDocGenericTypeSyntax genericType, SearchContext context)

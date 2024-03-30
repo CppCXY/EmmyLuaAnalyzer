@@ -8,13 +8,16 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node;
 public readonly struct LuaSyntaxNodePtr<TNode>(LuaDocumentId documentId, SourceRange range, LuaSyntaxKind kind)
     where TNode : LuaSyntaxNode
 {
-    public LuaDocumentId DocumentId { get; } =documentId;
+    public static LuaSyntaxNodePtr<TNode> Empty { get; } =
+        new(LuaDocumentId.VirtualDocumentId, new SourceRange(), LuaSyntaxKind.None);
+
+    public LuaDocumentId DocumentId { get; } = documentId;
 
     public SourceRange Range { get; } = range;
 
     public LuaSyntaxKind Kind { get; } = kind;
 
-    public LuaSyntaxNodePtr(TNode syntaxNode): this(syntaxNode.Tree.Document.Id, syntaxNode.Range, syntaxNode.Kind)
+    public LuaSyntaxNodePtr(TNode syntaxNode) : this(syntaxNode.Tree.Document.Id, syntaxNode.Range, syntaxNode.Kind)
     {
     }
 
@@ -49,4 +52,7 @@ public readonly struct LuaSyntaxNodePtr<TNode>(LuaDocumentId documentId, SourceR
     {
         return new LuaSyntaxNodePtr<LuaSyntaxNode>(DocumentId, Range, Kind);
     }
+
+    // same as unique id
+    public string Stringify => $"{DocumentId.Id}_{Range.StartOffset}_{Range.Length}_{(int)Kind}";
 }

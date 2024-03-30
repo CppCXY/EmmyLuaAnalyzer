@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -168,9 +169,9 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
     }
 }
 
-public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
+public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration) : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
 {
-    public List<LuaType> TupleTypes { get; } = tupleTypes;
+    public List<TupleMemberDeclaration> TupleDeclaration { get; } = tupleDeclaration;
 
     public override bool Equals(object? obj)
     {
@@ -185,12 +186,18 @@ public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), I
     public bool Equals(LuaTupleType? other)
     {
         if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && TupleTypes.Equals(other.TupleTypes);
+        if (other is not null)
+        {
+            return TupleDeclaration.Select(it=>it.DeclarationType)
+                .SequenceEqual(other.TupleDeclaration.Select(it=>it.DeclarationType));
+        }
+
+        return false;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), TupleTypes);
+        return HashCode.Combine(base.GetHashCode(), TupleDeclaration);
     }
 
     public override bool SubTypeOf(LuaType? other, SearchContext context)
@@ -205,17 +212,17 @@ public class LuaTupleType(List<LuaType> tupleTypes) : LuaType(TypeKind.Tuple), I
             return false;
         }
 
-        if (TupleTypes.Count != tupleType.TupleTypes.Count)
+        if (TupleDeclaration.Count != tupleType.TupleDeclaration.Count)
         {
             return false;
         }
 
-        return !TupleTypes.Where((t, i) => !t.SubTypeOf(tupleType.TupleTypes[i], context)).Any();
+        return !TupleDeclaration.Where((t, i) => !t.DeclarationType!.SubTypeOf(tupleType.TupleDeclaration[i].DeclarationType, context)).Any();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
-        var newTupleTypes = TupleTypes.Select(t => t.Instantiate(genericReplace)).ToList();
+        var newTupleTypes = TupleDeclaration.Select(t => t.Instantiate(genericReplace)).Cast<TupleMemberDeclaration>().ToList();
         return new LuaTupleType(newTupleTypes);
     }
 }

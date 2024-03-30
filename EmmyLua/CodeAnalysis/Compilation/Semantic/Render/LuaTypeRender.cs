@@ -28,7 +28,7 @@ public static class LuaTypeRender
             return sb.ToString();
         }
 
-        return "()=>void";
+        return "() -> void";
     }
 
     public static string RenderDefinedType(LuaType? type, SearchContext context)
@@ -276,14 +276,14 @@ public static class LuaTypeRender
     private static void RenderTupleType(LuaTupleType tupleType, SearchContext context, StringBuilder sb, int level)
     {
         sb.Append('[');
-        for (var i = 0; i < tupleType.TupleTypes.Count; i++)
+        for (var i = 0; i < tupleType.TupleDeclaration.Count; i++)
         {
             if (i > 0)
             {
                 sb.Append(',');
             }
 
-            InnerRenderType(tupleType.TupleTypes[i], context, sb, level + 1);
+            InnerRenderType(tupleType.TupleDeclaration[i].DeclarationType!, context, sb, level + 1);
         }
 
         sb.Append(']');
@@ -333,7 +333,7 @@ public static class LuaTypeRender
 
         sb.Append(')');
 
-        sb.Append("->");
+        sb.Append(" -> ");
         InnerRenderType(mainSignature.ReturnType, context, sb, 0);
     }
 

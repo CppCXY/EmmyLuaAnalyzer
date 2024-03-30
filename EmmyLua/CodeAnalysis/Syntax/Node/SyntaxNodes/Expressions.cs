@@ -186,6 +186,8 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
 {
     public bool IsDotIndex => FirstChildToken(LuaTokenKind.TkDot) != null;
 
+    public LuaSyntaxToken? Dot => FirstChildToken(LuaTokenKind.TkDot);
+
     public bool IsColonIndex => FirstChildToken(LuaTokenKind.TkColon) != null;
 
     public bool IsKeyIndex => FirstChildToken(LuaTokenKind.TkLeftBracket) != null;

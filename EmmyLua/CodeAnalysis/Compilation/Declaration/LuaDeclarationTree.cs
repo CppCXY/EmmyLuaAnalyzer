@@ -158,4 +158,22 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
         return null;
     }
+
+    public IEnumerable<LuaDeclaration> GetDeclarations(LuaSyntaxElement beforeToken)
+    {
+        var token = SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
+        if (token is not null)
+        {
+            var result = new List<LuaDeclaration>();
+            var scope = FindScope(token);
+            scope?.WalkUp(beforeToken.Position, 0, declaration =>
+            {
+                result.Add(declaration);
+                return ScopeFoundState.NotFounded;
+            });
+            return result;
+        }
+
+        return Enumerable.Empty<LuaDeclaration>();
+    }
 }

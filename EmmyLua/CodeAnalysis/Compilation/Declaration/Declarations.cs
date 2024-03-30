@@ -275,3 +275,22 @@ public class TypeOpDeclaration(LuaType? luaType, LuaSyntaxNodePtr<LuaDocTagOpera
 
     public override TypeOpDeclaration WithType(LuaType type) => new (type, OpFieldPtr);
 }
+
+public class TupleMemberDeclaration(int i, LuaType? luaType, LuaSyntaxNodePtr<LuaDocTypeSyntax> typePtr)
+    : LuaDeclaration($"[{i}]", typePtr.UpCast(), luaType)
+{
+    public int Index { get; } = i;
+
+    public LuaSyntaxNodePtr<LuaDocTypeSyntax> TypePtr => Ptr.Cast<LuaDocTypeSyntax>();
+
+    public override TupleMemberDeclaration WithType(LuaType type) => new(Index, type, TypePtr);
+}
+
+public class VirtualDeclaration(
+    string name,
+    LuaType? declarationType
+) : LuaDeclaration(name, LuaSyntaxNodePtr<LuaSyntaxNode>.Empty, declarationType)
+{
+    public override VirtualDeclaration WithType(LuaType type) =>
+        new(Name, type);
+}

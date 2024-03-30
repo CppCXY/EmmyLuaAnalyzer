@@ -111,6 +111,7 @@ public static class SyntaxFactory
                 LuaTokenKind.TkNil => new LuaNilToken(greenNode, tree, parent, startOffset),
                 LuaTokenKind.TkDots => new LuaDotsToken(greenNode, tree, parent, startOffset),
                 LuaTokenKind.TkName => new LuaNameToken(greenNode, tree, parent, startOffset),
+                LuaTokenKind.TkEndOfLine or LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(greenNode, tree, parent, startOffset),
                 _ => new LuaSyntaxToken(greenNode, tree, parent, startOffset)
             };
         }

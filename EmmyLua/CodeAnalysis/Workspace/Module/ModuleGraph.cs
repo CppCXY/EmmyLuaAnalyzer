@@ -3,8 +3,10 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph(LuaWorkspace workspace)
+public class ModuleGraph(LuaWorkspace luaWorkspace)
 {
+    private LuaWorkspace Workspace { get; } = luaWorkspace;
+
     private Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
     private Dictionary<LuaDocumentId, ModuleIndex> DocumentIndex { get; } = new();
@@ -162,14 +164,14 @@ public class ModuleGraph(LuaWorkspace workspace)
 
             if (node.DocumentId is { } documentId)
             {
-                return workspace.GetDocument(documentId);
+                return Workspace.GetDocument(documentId);
             }
         }
 
         return null;
     }
 
-    public struct ModuleInfo(string name, string uri, bool isFile)
+    public readonly struct ModuleInfo(string name, string uri, bool isFile)
     {
         public string Name { get; } = name;
 
@@ -192,7 +194,7 @@ public class ModuleGraph(LuaWorkspace workspace)
                     var uri = string.Empty;
                     if (child.Value.DocumentId.HasValue)
                     {
-                        var document = workspace.GetDocument(child.Value.DocumentId.Value);
+                        var document = Workspace.GetDocument(child.Value.DocumentId.Value);
                         uri = document?.Uri ?? string.Empty;
                     }
 
@@ -231,7 +233,7 @@ public class ModuleGraph(LuaWorkspace workspace)
                     var uri = string.Empty;
                     if (child.Value.DocumentId.HasValue)
                     {
-                        var document = workspace.GetDocument(child.Value.DocumentId.Value);
+                        var document = Workspace.GetDocument(child.Value.DocumentId.Value);
                         uri = document?.Uri ?? string.Empty;
                     }
 
@@ -246,5 +248,44 @@ public class ModuleGraph(LuaWorkspace workspace)
         }
 
         return moduleInfos;
+    }
+
+    public readonly struct RequiredModuleInfo(string name, string modulePath, LuaDocumentId documentId)
+    {
+        public string Name { get; } = name;
+
+        public string ModulePath { get; } = modulePath;
+
+        public LuaDocumentId DocumentId { get; } = documentId;
+    }
+
+    public List<RequiredModuleInfo> GetAllModules()
+    {
+        var moduleInfos = new List<RequiredModuleInfo>();
+        foreach (var moduleIndex in DocumentIndex)
+        {
+            string name = moduleIndex.Value.ModulePath;
+            var lastDotIndex = moduleIndex.Value.ModulePath.LastIndexOf('.');
+            if (lastDotIndex >= 0 && lastDotIndex < moduleIndex.Value.ModulePath.Length - 1)
+            {
+                name = moduleIndex.Value.ModulePath.Substring(lastDotIndex + 1);
+            }
+
+            moduleInfos.Add(new RequiredModuleInfo(name, moduleIndex.Value.ModulePath, moduleIndex.Key));
+        }
+
+        return moduleInfos;
+    }
+
+    public RequiredModuleInfo GetModuleInfo(LuaDocumentId documentId)
+    {
+        if (DocumentIndex.TryGetValue(documentId, out var moduleIndex))
+        {
+            var parts = moduleIndex.ModulePath.Split('.');
+            var name = parts[^1];
+            return new RequiredModuleInfo(name, moduleIndex.ModulePath, documentId);
+        }
+
+        return new RequiredModuleInfo(string.Empty, string.Empty, documentId);
     }
 }

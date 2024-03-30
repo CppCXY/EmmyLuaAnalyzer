@@ -117,7 +117,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
             }
         }
 
-        List<LuaDeclaration> members = new List<LuaDeclaration>();
+        var members = new List<LuaDeclaration>();
         foreach (var luaType in hashSet)
         {
             if (luaType is LuaNamedType namedType && namedType.Name != name)
@@ -164,6 +164,10 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         {
             return unionType.UnionTypes.SelectMany(GetMembers);
         }
+        else if (luaType is LuaTupleType tupleType)
+        {
+            return tupleType.TupleDeclaration;
+        }
 
         return Enumerable.Empty<LuaDeclaration>();
     }
@@ -203,15 +207,93 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
     {
         if (luaType is LuaNamedType namedType)
         {
+            if (namedType is { Name: "table" })
+            {
+                return FindTableMember(namedType, memberName);
+            }
+
             var fieldDeclarations = GetMembers(namedType)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
-            // TODO generic
 
             return fieldDeclarations;
         }
         else if (luaType is LuaUnionType unionType)
         {
             return unionType.UnionTypes.SelectMany(it => FindMember(it, memberName));
+        }
+        else if (luaType is LuaTupleType tupleType)
+        {
+            return GetMembers(tupleType).Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
+        }
+
+        return Enumerable.Empty<LuaDeclaration>();
+    }
+
+    private IEnumerable<LuaDeclaration> FindTableMember(LuaNamedType namedType, string memberName)
+    {
+        if (namedType is LuaGenericType genericTable)
+        {
+            var args = genericTable.GenericArgs;
+            if (args.Count != 2)
+            {
+                return Enumerable.Empty<LuaDeclaration>();
+            }
+
+            var firstType = genericTable.GenericArgs[0];
+            var secondType = genericTable.GenericArgs[1];
+
+            if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
+                && memberName.StartsWith("["))
+            {
+                return [new VirtualDeclaration(memberName, secondType)];
+            }
+            else if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
+            {
+                return [new VirtualDeclaration(memberName, secondType)];
+            }
+        }
+        return Enumerable.Empty<LuaDeclaration>();
+    }
+
+    private IEnumerable<LuaDeclaration> FindTableMember(LuaNamedType namedType, LuaType keyType)
+    {
+        if (namedType is LuaGenericType genericTable)
+        {
+            var args = genericTable.GenericArgs;
+            if (args.Count != 2)
+            {
+                return Enumerable.Empty<LuaDeclaration>();
+            }
+
+            var firstType = genericTable.GenericArgs[0];
+            var secondType = genericTable.GenericArgs[1];
+
+            if (keyType.SubTypeOf(firstType, this))
+            {
+                return [new VirtualDeclaration("", secondType)];
+            }
+        }
+        return Enumerable.Empty<LuaDeclaration>();
+    }
+
+    private IEnumerable<LuaDeclaration> FindIndexMember(LuaType luaType, LuaType keyType)
+    {
+        if (luaType is LuaNamedType namedType)
+        {
+            if (namedType is { Name: "table" })
+            {
+                return FindTableMember(namedType, keyType);
+            }
+
+            var op = GetBestMatchedIndexOperator(luaType, keyType);
+            if (op is not null)
+            {
+                return [op.LuaDeclaration];
+            }
+        }
+        else if (luaType is LuaUnionType unionType)
+        {
+            return unionType.UnionTypes.SelectMany(it => FindIndexMember(it, keyType));
         }
 
         return Enumerable.Empty<LuaDeclaration>();
@@ -223,6 +305,11 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         if (indexExpr is { Name: { } name })
         {
             declarations.AddRange(FindMember(luaType, name));
+        }
+        else if (indexExpr is { IndexKeyExpr: { } keyExpr })
+        {
+            var keyExprType = Infer(keyExpr);
+            declarations.AddRange(FindIndexMember(luaType, keyExprType));
         }
 
         if (declarations.Count == 0)

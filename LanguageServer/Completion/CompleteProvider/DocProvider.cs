@@ -1,6 +1,6 @@
 ﻿namespace LanguageServer.Completion.CompleteProvider;
 
-public class DocTypeProvider
+public class DocProvider
 {
     
 }

@@ -1,34 +1,59 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LanguageServer.ExecuteCommand.Commands;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion.CompleteProvider;
 
-public class ModuleProvider: ICompleteProviderBase
+public class ModuleProvider : ICompleteProviderBase
 {
+    private HashSet<string> BuiltinModules { get; } =
+    [
+        "io", "os", "string", "table", "math", "debug", "coroutine", "package", "bit32", "utf8"
+    ];
+
     public void AddCompletion(CompleteContext context)
     {
-        if (!IsMatch(context))
+        if (context.TriggerToken?.Parent is not LuaNameExprSyntax nameExpr)
         {
             return;
         }
-        
+
         var semanticModel = context.SemanticModel;
-        var globals = context.SemanticModel.GetGlobals();
-        foreach (var globalDecl in globals)
+        var modules = semanticModel.Compilation.Workspace.ModuleGraph.GetAllModules();
+        var localNames = semanticModel.GetDeclarations(context.TriggerToken).Select(it=>it.Name).ToHashSet();
+        foreach (var module in modules)
         {
-            context.Add(new CompletionItem
+            if (AllowModule(module.Name, localNames))
             {
-                Label = globalDecl.Name,
-                Kind = CompletionItemKind.Variable,
-                Detail = LuaTypeRender.RenderType(globalDecl.DeclarationType, semanticModel.Context)
-            });
+                context.Add(new CompletionItem
+                {
+                    Label = module.Name,
+                    Kind = CompletionItemKind.Module,
+                    LabelDetails = new CompletionItemLabelDetails()
+                    {
+                        Detail = $" (in {module.ModulePath})",
+                    },
+                    Data = module.DocumentId.ToString(),
+                    Command = AutoRequire.MakeCommand(
+                        string.Empty, semanticModel.Document.Id, module.DocumentId,
+                        nameExpr.Position)
+                });
+            }
         }
     }
 
-    private bool IsMatch(CompleteContext context)
+    private bool AllowModule(string name, HashSet<string> localNames)
     {
-        var token = context.TriggerToken;
-        return token.Parent is LuaNameExprSyntax;
+        if (BuiltinModules.Contains(name))
+        {
+            return false;
+        }
+
+        if (localNames.Contains(name))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
