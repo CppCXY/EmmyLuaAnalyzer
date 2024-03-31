@@ -38,7 +38,7 @@ public readonly struct LuaDocumentId(int id) : IEquatable<LuaDocumentId>
 
     public override string ToString()
     {
-        return id.ToString();
+        return Id.ToString();
     }
 }
 

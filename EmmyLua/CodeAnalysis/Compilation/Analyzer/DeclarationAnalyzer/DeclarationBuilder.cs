@@ -520,6 +520,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
+                    if (indexExpr.Name is null)
+                    {
+                        break;
+                    }
+
                     var declaration =
                         new IndexLuaDeclaration(indexExpr.Name, new(indexExpr), luaType);
                     if (i == 0)

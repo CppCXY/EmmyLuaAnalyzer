@@ -62,8 +62,6 @@ public class LuaDocTagEnumSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
 public class LuaDocTagInterfaceSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagNamedTypeSyntax(greenNode, tree, parent, startOffset)
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
-
     public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
 
     public bool HasExtendType => FirstChildToken(LuaTokenKind.TkColon) != null;

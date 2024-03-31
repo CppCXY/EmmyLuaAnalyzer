@@ -30,7 +30,7 @@ public class CompletionBuilder
             }
             return completeContext.CompletionItems.ToList();
         }
-        catch (OperationCanceledException e)
+        catch (OperationCanceledException)
         {
             return new();
         }

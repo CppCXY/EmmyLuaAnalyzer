@@ -15,8 +15,8 @@ namespace LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class TextDocumentHandler(
-    ILogger<TextDocumentHandler> logger,
-    ILanguageServerConfiguration configuration,
+    // ILogger<TextDocumentHandler> logger,
+    // ILanguageServerConfiguration configuration,
     LuaWorkspace workspace,
     ILanguageServerFacade languageServerFacade
 ) : TextDocumentSyncHandlerBase
