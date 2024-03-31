@@ -46,7 +46,7 @@ public class LuaWorkspace
         ModuleGraph.UpdatePattern(features.RequirePattern);
         if (features.InitStdLib)
         {
-            var stdLib = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "std");
+            var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
             LoadWorkspace(stdLib);
         }
     }
