@@ -12,7 +12,7 @@ public class LocalEnvProvider : ICompleteProviderBase
             return;
         }
 
-        var varDeclarations = context.SemanticModel.GetDeclarations(context.TriggerToken);
+        var varDeclarations = context.SemanticModel.GetLocalDeclarations(context.TriggerToken);
         foreach (var varDeclaration in varDeclarations)
         {
             if (varDeclaration.Feature == DeclarationFeature.Local)

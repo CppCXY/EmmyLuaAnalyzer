@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
@@ -94,7 +95,7 @@ public class InlayHintBuilder
             }
 
             var parameters = perfectSignature.Parameters.Skip(skipParam).ToList();
-            var hasVarArg = parameters.LastOrDefault()?.ParamDefPtr.ToNode(semanticModel.Context)?.IsVarArgs?? false;
+            var hasVarArg = parameters.LastOrDefault()?.ParamDefPtr.ToNode(semanticModel.Context)?.IsVarArgs ?? false;
             var parameterCount = hasVarArg ? (parameters.Count - 1) : parameters.Count;
             var varCount = 0;
             for (var i = 0; i < args.Count; i++)
@@ -128,6 +129,32 @@ public class InlayHintBuilder
                 }
             }
         }
+
+        if (callExpr.PrefixExpr is { } prefixExpr)
+        {
+            var luaDeclaration = semanticModel.DeclarationTree.FindDeclaration(prefixExpr, semanticModel.Context);
+            if (luaDeclaration is MethodLuaDeclaration methodLuaDeclaration)
+            {
+                var funcStat = methodLuaDeclaration.FuncStatPtr.ToNode(semanticModel.Context);
+                
+                if (funcStat is { Comments: { } comments })
+                {
+                    foreach (var comment in comments)
+                    {
+                        if (comment.IsAsync)
+                        {
+                            hints.Add(new InlayHintType()
+                            {
+                                Position = callExpr.Range.StartOffset.ToLspPosition(semanticModel.Document),
+                                Label = new StringOrInlayHintLabelParts("await:"),
+                                Kind = InlayHintKind.Type,
+                                PaddingRight = true
+                            });
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void ClosureExprHint(SemanticModel semanticModel, List<InlayHintType> hints,
@@ -147,12 +174,13 @@ public class InlayHintBuilder
             {
                 parameterDic.TryAdd(parameter.Name, parameter.DeclarationType);
             }
+
             var parameters = closureExpr.ParamList?
                 .Params.Select(it => it.Name).ToList() ?? [];
 
             foreach (var parameter in parameters)
             {
-                if(parameter is { RepresentText: {} name })
+                if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
                     if (type is not null && !type.Equals(Builtin.Unknown))
@@ -170,7 +198,7 @@ public class InlayHintBuilder
             }
         }
     }
-    
+
     private void IndexExprHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaIndexExprSyntax indexExpr,
         CancellationToken cancellationToken)
     {
@@ -180,7 +208,7 @@ public class InlayHintBuilder
         }
 
         var document = semanticModel.Document;
-        if (indexExpr is { PrefixExpr: {} prefixExpr, KeyElement: {} keyElement })
+        if (indexExpr is { PrefixExpr: { } prefixExpr, KeyElement: { } keyElement })
         {
             if (document.GetLine(prefixExpr.Range.EndOffset) != document.GetLine(keyElement.Range.StartOffset))
             {
@@ -195,6 +223,5 @@ public class InlayHintBuilder
                 });
             }
         }
-        
     }
 }

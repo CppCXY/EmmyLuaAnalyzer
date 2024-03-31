@@ -7,11 +7,12 @@ public class CompletionBuilder
 {
     private List<ICompleteProviderBase> Providers { get; } = [
         new RequireProvider(),
+        new FuncParamProvider(),
+        new LocalEnvProvider(),
         new GlobalProvider(),
         new KeywordsProvider(),
         new MemberProvider(),
         new ModuleProvider(),
-        new LocalEnvProvider(),
         new DocProvider()
     ];
     
