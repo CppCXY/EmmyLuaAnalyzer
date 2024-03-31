@@ -176,13 +176,16 @@ public class MethodLuaDeclaration(
 public class NamedTypeLuaDeclaration(
     string name,
     LuaSyntaxNodePtr<LuaDocTagNamedTypeSyntax> typeDefinePtr,
-    LuaType type)
+    LuaType type,
+    NamedTypeKind kind)
     : LuaDeclaration(name, typeDefinePtr.UpCast(), type)
 {
+    public NamedTypeKind Kind { get; } = kind;
+
     public LuaSyntaxNodePtr<LuaDocTagNamedTypeSyntax> TypeDefinePtr => Ptr.Cast<LuaDocTagNamedTypeSyntax>();
 
     public override NamedTypeLuaDeclaration WithType(LuaType type) =>
-        new (Name, TypeDefinePtr, type);
+        new (Name, TypeDefinePtr, type, Kind);
 }
 
 public class DocFieldLuaDeclaration(

@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -66,5 +67,10 @@ public class SemanticModel
     public IEnumerable<LuaDeclaration> GetDeclarations(LuaSyntaxElement beforeToken)
     {
         return DeclarationTree.GetDeclarations(beforeToken);
+    }
+
+    public LuaType? GetExportType(LuaDocumentId documentId)
+    {
+        return Compilation.ProjectIndex.GetExportType(documentId);
     }
 }

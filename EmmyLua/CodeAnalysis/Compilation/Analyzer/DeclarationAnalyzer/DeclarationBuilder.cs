@@ -401,7 +401,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
 
         var tagNameTypeSyntax = docList.OfType<LuaDocTagNamedTypeSyntax>().FirstOrDefault();
-        if (tagNameTypeSyntax is {Name.RepresentText: {} name})
+        if (tagNameTypeSyntax is { Name.RepresentText: { } name })
         {
             return new LuaNamedType(name);
         }
@@ -664,7 +664,12 @@ public class DeclarationBuilder : ILuaElementWalker
         if (tagClassSyntax is { Name: { } name })
         {
             var luaClass = new LuaNamedType(name.RepresentText);
-            var declaration = new NamedTypeLuaDeclaration(name.RepresentText, new(tagClassSyntax), luaClass);
+            var declaration = new NamedTypeLuaDeclaration(
+                name.RepresentText,
+                new(tagClassSyntax),
+                luaClass,
+                NamedTypeKind.Class
+            );
             AddDeclaration(declaration);
             ProjectIndex.AddType(DocumentId, name.RepresentText, declaration, NamedTypeKind.Class);
 
@@ -694,7 +699,11 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             var luaAlias = new LuaNamedType(name.RepresentText);
             var baseTy = Context.Infer(type);
-            var declaration = new NamedTypeLuaDeclaration(name.RepresentText, new(tagAliasSyntax), luaAlias);
+            var declaration = new NamedTypeLuaDeclaration(
+                name.RepresentText,
+                new(tagAliasSyntax),
+                luaAlias,
+                NamedTypeKind.Alias);
             AddDeclaration(declaration);
             ProjectIndex.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
         }
@@ -708,7 +717,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 ? Context.Infer(type)
                 : Builtin.Integer;
             var luaEnum = new LuaNamedType(name.RepresentText);
-            var declaration = new NamedTypeLuaDeclaration(name.RepresentText, new(tagEnumSyntax), luaEnum);
+            var declaration = new NamedTypeLuaDeclaration(
+                name.RepresentText,
+                new(tagEnumSyntax),
+                luaEnum,
+                NamedTypeKind.Enum);
             AddDeclaration(declaration);
             ProjectIndex.AddEnum(DocumentId, name.RepresentText, baseType, declaration);
             foreach (var field in tagEnumSyntax.FieldList)
@@ -731,7 +744,12 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             var luaInterface = new LuaNamedType(name.RepresentText);
             var declaration =
-                new NamedTypeLuaDeclaration(name.RepresentText, new(tagInterfaceSyntax), luaInterface);
+                new NamedTypeLuaDeclaration(
+                    name.RepresentText,
+                    new(tagInterfaceSyntax),
+                    luaInterface,
+                    NamedTypeKind.Interface
+                );
             AddDeclaration(declaration);
 
             ProjectIndex.AddType(DocumentId, name.RepresentText, declaration, NamedTypeKind.Interface);

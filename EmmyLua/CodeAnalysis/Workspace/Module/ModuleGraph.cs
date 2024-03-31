@@ -171,13 +171,15 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         return null;
     }
 
-    public readonly struct ModuleInfo(string name, string uri, bool isFile)
+    public readonly struct ModuleInfo(string name, string uri, bool isFile, LuaDocumentId? documentId)
     {
         public string Name { get; } = name;
 
         public string Uri { get; } = uri;
 
         public bool IsFile { get; } = isFile;
+
+        public LuaDocumentId? DocumentId { get; } = documentId;
     }
 
     public List<ModuleInfo> GetCurrentModuleNames(string modulePath)
@@ -203,7 +205,8 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                         uri = new Uri(Path.Join(moduleNode.Key, child.Key)).AbsoluteUri;
                     }
 
-                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue));
+                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue,
+                        child.Value.DocumentId));
                 }
             }
 
@@ -242,7 +245,8 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                         uri = new Uri(Path.Join(moduleNode.Key, moduleBasePath, child.Key)).AbsoluteUri;
                     }
 
-                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue));
+                    moduleInfos.Add(new ModuleInfo(child.Key, uri, child.Value.DocumentId.HasValue,
+                        child.Value.DocumentId));
                 }
             }
         }

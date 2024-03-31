@@ -11,6 +11,8 @@ public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
 {
     private CompletionBuilder Builder { get; } = new();
 
+    private CompletionDocumentResolver DocumentResolver { get; } = new(workspace);
+
     protected override CompletionRegistrationOptions CreateRegistrationOptions(CompletionCapability capability,
         ClientCapabilities clientCapabilities)
     {
@@ -18,7 +20,7 @@ public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
         {
             DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
             ResolveProvider = true,
-            TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", "," },
+            TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", ",", "@" },
             CompletionItem = new()
             {
                 LabelDetailsSupport = true
@@ -43,6 +45,6 @@ public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
 
     public override Task<CompletionItem> Handle(CompletionItem request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(request);
+        return Task.FromResult(DocumentResolver.Resolve(request));
     }
 }

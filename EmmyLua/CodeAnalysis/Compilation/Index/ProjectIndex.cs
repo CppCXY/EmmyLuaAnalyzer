@@ -45,10 +45,10 @@ public class ProjectIndex(LuaCompilation compilation)
         GlobalDeclaration.Remove(documentId);
         Supers.Remove(documentId);
         NamedType.Remove(documentId);
-        GenericParam.Remove(documentId);
-        TypeOperatorStorage.Remove(documentId);
-        ExportTypes.Remove(documentId);
         Id2Type.Remove(documentId);
+        GenericParam.Remove(documentId);
+        ExportTypes.Remove(documentId);
+        TypeOperatorStorage.Remove(documentId);
         NamedTypeKinds.Remove(documentId);
         NameExprs.Remove(documentId);
         IndexExprs.Remove(documentId);
@@ -262,5 +262,10 @@ public class ProjectIndex(LuaCompilation compilation)
         }
 
         return null;
+    }
+
+    public IEnumerable<NamedTypeLuaDeclaration> GetNamedTypes()
+    {
+        return NamedType.GetAll();
     }
 }

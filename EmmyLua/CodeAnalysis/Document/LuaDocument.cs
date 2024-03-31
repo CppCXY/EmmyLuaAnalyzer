@@ -35,6 +35,11 @@ public readonly struct LuaDocumentId(int id) : IEquatable<LuaDocumentId>
     {
         return !(left == right);
     }
+
+    public override string ToString()
+    {
+        return id.ToString();
+    }
 }
 
 public sealed class LuaDocument

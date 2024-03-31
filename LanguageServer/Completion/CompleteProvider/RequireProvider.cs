@@ -38,7 +38,7 @@ public class RequireProvider : ICompleteProviderBase
                     Detail = moduleInfo.Uri,
                     FilterText = filterText,
                     InsertText = filterText,
-                    Data = moduleInfo.Uri
+                    Data = moduleInfo.DocumentId?.Id.ToString()
                 });
             }
             context.StopHere();

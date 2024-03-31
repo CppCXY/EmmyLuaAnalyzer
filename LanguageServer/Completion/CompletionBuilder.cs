@@ -11,7 +11,8 @@ public class CompletionBuilder
         new KeywordsProvider(),
         new MemberProvider(),
         new ModuleProvider(),
-        new LocalEnvProvider()
+        new LocalEnvProvider(),
+        new DocProvider()
     ];
     
     public List<CompletionItem> Build(CompleteContext completeContext)

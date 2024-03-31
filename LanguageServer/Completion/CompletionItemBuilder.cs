@@ -151,7 +151,10 @@ public class CompletionItemBuilder
                     {
                         Label = Label,
                         Kind = Kind,
-                        Detail = LuaTypeRender.RenderType(Type, Context),
+                        LabelDetails = new CompletionItemLabelDetails()
+                        {
+                            Description = LuaTypeRender.RenderType(Type, Context),
+                        },
                         InsertText = InsertText,
                         Data = Data,
                         Command = Command,
