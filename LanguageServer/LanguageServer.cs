@@ -11,6 +11,7 @@ using LanguageServer.InlayHint;
 using LanguageServer.References;
 using LanguageServer.Rename;
 using LanguageServer.SemanticToken;
+using LanguageServer.SignatureHelper;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,7 @@ var server = await From(options =>
         .WithHandler<SemanticTokenHandler>()
         .WithHandler<CompletionHandler>()
         .WithHandler<ExecuteCommandHandler>()
+        .WithHandler<SignatureHelperHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));

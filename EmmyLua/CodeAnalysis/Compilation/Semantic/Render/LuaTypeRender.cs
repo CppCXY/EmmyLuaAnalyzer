@@ -176,6 +176,18 @@ public static class LuaTypeRender
                 RenderMultiReturnType(multiReturnType, context, sb, level);
                 break;
             }
+            case LuaStringLiteralType stringLiteralType:
+            {
+                sb.Append('"');
+                sb.Append(stringLiteralType.Content);
+                sb.Append('"');
+                break;
+            }
+            case LuaIntegerLiteralType integerLiteralType:
+            {
+                sb.Append(integerLiteralType.Value);
+                break;
+            }
             default:
             {
                 sb.Append("unknown");

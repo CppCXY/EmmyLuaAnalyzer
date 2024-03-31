@@ -35,6 +35,7 @@ public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Retur
         {
             returnTypes.Add(retType.Instantiate(genericReplace));
         }
+
         return new LuaMultiReturnType(returnTypes);
     }
 
@@ -430,6 +431,23 @@ public class LuaGenericMethodType : LuaMethodType
     {
         GenericParameterDeclarations = genericParameterDeclarations;
         GenericParameterNames = genericParameterDeclarations.Select(declaration => declaration.Name).ToHashSet();
+    }
+
+    public List<LuaSignature> GetInstantiatedSignatures(
+        LuaCallExprSyntax callExpr,
+        List<LuaExprSyntax> args,
+        SearchContext context)
+    {
+        var signatures = new List<LuaSignature>
+            { MainSignature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context) };
+
+        if (Overloads is not null)
+        {
+            signatures.AddRange(Overloads.Select(signature =>
+                signature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context)));
+        }
+
+        return signatures;
     }
 
     public override LuaSignature FindPerfectMatchSignature(LuaCallExprSyntax callExpr, List<LuaExprSyntax> args,
