@@ -168,23 +168,37 @@ public static class SyntaxFactory
         if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
             var hexFloatText = text[2..].ToString();
-            var parts = hexFloatText.Split('.');
-            long integerPart = 0;
-            if (parts[0].Length != 0)
-            {
-                integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
-            }
-
-            long fractionPart = 0;
-            if (parts[1].Length != 0)
-            {
-                fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
-            }
-
-            var fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
-            value = integerPart + fractionValue;
             var exponentPosition = hexFloatText.IndexOf('p', StringComparison.CurrentCultureIgnoreCase);
-            if (exponentPosition != 0)
+            var floatPart = hexFloatText;
+            if (exponentPosition != -1)
+            {
+                floatPart = hexFloatText[..exponentPosition];
+            }
+
+            long integerPart = 0;
+            var fractionValue = 0.0;
+            if (floatPart.IndexOf('.') != -1)
+            {
+                var parts = floatPart.Split('.');
+                if (parts[0].Length != 0)
+                {
+                    integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
+                }
+
+                long fractionPart = 0;
+                if (parts[1].Length != 0)
+                {
+                    fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
+                }
+                fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
+            }
+            else
+            {
+                integerPart = long.Parse(floatPart, NumberStyles.AllowHexSpecifier);
+            }
+
+            value = integerPart + fractionValue;
+            if (exponentPosition != -1)
             {
                 var exponent = hexFloatText[(exponentPosition + 1)..];
                 if (int.TryParse(exponent, out var exp))

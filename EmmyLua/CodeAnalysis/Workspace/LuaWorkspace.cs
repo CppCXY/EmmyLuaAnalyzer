@@ -47,7 +47,6 @@ public class LuaWorkspace
         if (features.InitStdLib)
         {
             var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
-            Console.Error.WriteLine($"open std from: {stdLib}");
             LoadWorkspace(stdLib, true);
         }
     }
