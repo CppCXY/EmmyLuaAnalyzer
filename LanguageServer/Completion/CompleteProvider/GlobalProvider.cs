@@ -12,7 +12,7 @@ public class GlobalProvider : ICompleteProviderBase
         }
 
         var localHashSet = context.SemanticModel
-            .GetLocalDeclarations(context.TriggerToken)
+            .GetDeclarationsBefore(context.TriggerToken)
             .Select(it => it.Name)
             .ToHashSet();
         

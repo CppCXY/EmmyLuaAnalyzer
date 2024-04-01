@@ -64,7 +64,7 @@ public class SemanticModel
         return Compilation.ProjectIndex.GetGlobals();
     }
 
-    public IEnumerable<LuaDeclaration> GetLocalDeclarations(LuaSyntaxElement beforeToken)
+    public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
         return DeclarationTree.GetDeclarations(beforeToken);
     }

@@ -12,18 +12,15 @@ public class LocalEnvProvider : ICompleteProviderBase
             return;
         }
 
-        var varDeclarations = context.SemanticModel.GetLocalDeclarations(context.TriggerToken);
+        var varDeclarations = context.SemanticModel.GetDeclarationsBefore(context.TriggerToken);
         foreach (var varDeclaration in varDeclarations)
         {
-            if (varDeclaration.Feature == DeclarationFeature.Local)
-            {
-                context.AddRange(
-                    CompletionItemBuilder
-                        .Create(varDeclaration.Name, varDeclaration.DeclarationType, context.SemanticModel)
-                        .WithData(varDeclaration.Ptr.Stringify)
-                        .Build()
-                );
-            }
+            context.AddRange(
+                CompletionItemBuilder
+                    .Create(varDeclaration.Name, varDeclaration.DeclarationType, context.SemanticModel)
+                    .WithData(varDeclaration.Ptr.Stringify)
+                    .Build()
+            );
         }
     }
 }
