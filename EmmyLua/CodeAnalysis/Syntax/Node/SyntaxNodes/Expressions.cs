@@ -111,23 +111,33 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     {
         get
         {
-            if (NameKey is { } nameKey)
+            // optimize
+            if (ChildrenElements != null)
             {
-                return nameKey.RepresentText;
+                foreach (var element in ChildrenElements)
+                {
+                    switch (element)
+                    {
+                        case LuaNameToken nameToken:
+                        {
+                            return nameToken.RepresentText;
+                        }
+                        case LuaIntegerToken integerToken:
+                        {
+                            return $"[{integerToken.Value}]";
+                        }
+                        case LuaStringToken stringToken:
+                        {
+                            return stringToken.Value;
+                        }
+                        case LuaSyntaxToken { Kind: LuaTokenKind.TkEq }:
+                        {
+                            goto endLoop;
+                        }
+                    }
+                }
             }
-            else if (NumberKey is LuaIntegerToken integerToken)
-            {
-                return $"[{integerToken.Value}]";
-            }
-            else if (NumberKey is { } number)
-            {
-                return $"[{number}]";
-            }
-            else if (StringKey is { } stringToken)
-            {
-                return stringToken.Value;
-            }
-
+            endLoop:
             return null;
         }
     }
@@ -136,19 +146,36 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     {
         get
         {
-            if (NameKey is { } nameKey)
+            if (ChildrenElements != null)
             {
-                return nameKey;
+                foreach (var element in ChildrenElements)
+                {
+                    switch (element)
+                    {
+                        case LuaNameToken nameToken:
+                        {
+                            return nameToken;
+                        }
+                        case LuaIntegerToken integerToken:
+                        {
+                            return integerToken;
+                        }
+                        case LuaStringToken stringToken:
+                        {
+                            return stringToken;
+                        }
+                        case LuaExprSyntax exprSyntax:
+                        {
+                            return exprSyntax;
+                        }
+                        case LuaSyntaxToken { Kind: LuaTokenKind.TkEq }:
+                        {
+                            goto endLoop;
+                        }
+                    }
+                }
             }
-            else if (NumberKey is { } number)
-            {
-                return number;
-            }
-            else if (StringKey is { } stringToken)
-            {
-                return stringToken;
-            }
-
+            endLoop:
             return null;
         }
     }

@@ -3,7 +3,7 @@ using System;
 
 namespace EmmyLua.CodeAnalysis.Document;
 
-public readonly struct LuaDocumentId(int id) : IEquatable<LuaDocumentId>
+public readonly struct LuaDocumentId(int id)
 {
     public static LuaDocumentId VirtualDocumentId { get; } = new(0);
 
@@ -16,19 +16,9 @@ public readonly struct LuaDocumentId(int id) : IEquatable<LuaDocumentId>
         return Id.GetHashCode();
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is LuaDocumentId other && Equals(other);
-    }
-
-    public bool Equals(LuaDocumentId other)
-    {
-        return other.Id == Id;
-    }
-
     public static bool operator ==(LuaDocumentId left, LuaDocumentId right)
     {
-        return left.Equals(right);
+        return left.Id == right.Id;
     }
 
     public static bool operator !=(LuaDocumentId left, LuaDocumentId right)

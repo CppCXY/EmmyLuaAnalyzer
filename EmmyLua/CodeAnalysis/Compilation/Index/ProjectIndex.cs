@@ -14,7 +14,7 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
-    private IndexStorage<LuaSyntaxNodePtr<LuaSyntaxNode>, string> ParentTypes { get; } = new();
+    private IndexStorage<string, string> ParentTypes { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
 
@@ -58,10 +58,7 @@ public class ProjectIndex(LuaCompilation compilation)
     public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         Members.Add(documentId, name, luaDeclaration);
-        if (luaDeclaration.Ptr is { } ptr)
-        {
-            ParentTypes.Add(documentId, ptr.UpCast(), name);
-        }
+        ParentTypes.Add(documentId, luaDeclaration.Ptr.Stringify, name);
     }
 
     public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -255,7 +252,7 @@ public class ProjectIndex(LuaCompilation compilation)
     public LuaNamedType? GetParentType(LuaSyntaxNode node)
     {
         var ptr = new LuaSyntaxNodePtr<LuaSyntaxNode>(node);
-        var parentType = ParentTypes.GetLastOne(ptr);
+        var parentType = ParentTypes.GetLastOne(ptr.Stringify);
         if (parentType is not null)
         {
             return new LuaNamedType(parentType);

@@ -1051,7 +1051,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 // TODO get type from ---@field ---@type
                 var declaration =
                     new TableFieldLuaDeclaration(fieldName, new(fieldSyntax), null);
-                AddDeclaration(declaration);
                 ProjectIndex.AddMember(DocumentId, tableUniqueId, declaration);
                 var unResolveDeclaration =
                     new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);

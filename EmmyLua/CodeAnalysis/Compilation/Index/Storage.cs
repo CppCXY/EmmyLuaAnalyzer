@@ -4,15 +4,28 @@ namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class IndexEntry<TStubElement>
 {
+    private LuaDocumentId _hotDocumentId = LuaDocumentId.VirtualDocumentId;
+
+    private List<TStubElement>? _hotElements = null;
+
     public Dictionary<LuaDocumentId, List<TStubElement>> Files { get; } = new();
 
     public void Add(LuaDocumentId documentId, TStubElement element)
     {
+        if (documentId == _hotDocumentId && _hotElements is not null)
+        {
+            _hotElements.Add(element);
+            return;
+        }
+
         if (!Files.TryGetValue(documentId, out var elements))
         {
             elements = new List<TStubElement>();
             Files.Add(documentId, elements);
         }
+
+        _hotDocumentId = documentId;
+        _hotElements = elements;
 
         elements.Add(element);
     }
@@ -20,6 +33,11 @@ public class IndexEntry<TStubElement>
     public void Remove(LuaDocumentId documentId)
     {
         Files.Remove(documentId);
+        if (_hotDocumentId == documentId)
+        {
+            _hotDocumentId = LuaDocumentId.VirtualDocumentId;
+            _hotElements = null;
+        }
     }
 }
 
@@ -28,7 +46,7 @@ public class IndexStorage<TKey, TStubElement>
 {
     private readonly Dictionary<TKey, IndexEntry<TStubElement>> _indexMap = new();
 
-    public void Add(LuaDocumentId documentId, TKey key, TStubElement syntax)
+    public void Add(LuaDocumentId documentId, TKey key, TStubElement element)
     {
         if (!_indexMap.TryGetValue(key, out var entry))
         {
@@ -36,7 +54,7 @@ public class IndexStorage<TKey, TStubElement>
             _indexMap.Add(key, entry);
         }
 
-        entry.Add(documentId, syntax);
+        entry.Add(documentId, element);
     }
 
     public void Remove(LuaDocumentId documentId)
