@@ -124,7 +124,7 @@ public class LuaCompilation
                 foreach (var documentId in DirtyDocuments)
                 {
                     var document = Workspace.GetDocument(documentId);
-                    if (document is not null)
+                    if (document is not null && document.Text.Length < Workspace.Features.DontIndexMaxFileSize)
                     {
                         list.Add(document);
                     }

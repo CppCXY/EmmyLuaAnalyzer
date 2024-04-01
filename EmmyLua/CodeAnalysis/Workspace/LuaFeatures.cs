@@ -35,4 +35,6 @@ public class LuaFeatures
     ];
 
     public bool InitStdLib { get; set; } = true;
+
+    public int DontIndexMaxFileSize { get; set; } = 204800;
 }

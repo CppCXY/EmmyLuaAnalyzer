@@ -203,9 +203,9 @@ public class DeclarationBuilder : ILuaElementWalker
                 AnalyzeInterfaceTagDeclaration(tagInterfaceSyntax);
                 break;
             }
-            case LuaTableFieldSyntax tableFieldSyntax:
+            case LuaTableExprSyntax tableSyntax:
             {
-                AnalyzeTableFieldDeclaration(tableFieldSyntax);
+                AnalyzeTableExprDeclaration(tableSyntax);
                 break;
             }
             case LuaDocTableTypeSyntax tableTypeSyntax:
@@ -1041,19 +1041,22 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void AnalyzeTableFieldDeclaration(LuaTableFieldSyntax tableFieldSyntax)
+    private void AnalyzeTableExprDeclaration(LuaTableExprSyntax tableExprSyntax)
     {
-        if (tableFieldSyntax is { Name: { } fieldName, ParentTable: { } table, Value: { } value })
+        var tableUniqueId = tableExprSyntax.UniqueId;
+        foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
-            var parentId = table.UniqueId;
-            // TODO get type from ---@field ---@type
-            var declaration =
-                new TableFieldLuaDeclaration(fieldName, new(tableFieldSyntax), null);
-            AddDeclaration(declaration);
-            ProjectIndex.AddMember(DocumentId, parentId, declaration);
-            var unResolveDeclaration =
-                new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
-            AddUnResolved(unResolveDeclaration);
+            if (fieldSyntax is { Name: { } fieldName, Value: { } value })
+            {
+                // TODO get type from ---@field ---@type
+                var declaration =
+                    new TableFieldLuaDeclaration(fieldName, new(fieldSyntax), null);
+                AddDeclaration(declaration);
+                ProjectIndex.AddMember(DocumentId, tableUniqueId, declaration);
+                var unResolveDeclaration =
+                    new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
+                AddUnResolved(unResolveDeclaration);
+            }
         }
     }
 
