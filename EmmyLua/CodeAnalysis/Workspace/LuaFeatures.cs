@@ -7,7 +7,7 @@ public class LuaFeatures
     public LuaLanguage Language { get; set; } = new();
 
     public List<string> Extensions { get; set; } = [
-        "*.lua"
+        "*.lua", "*.lua.txt"
     ];
 
     public List<string> ExcludeFolders { get; set; } =

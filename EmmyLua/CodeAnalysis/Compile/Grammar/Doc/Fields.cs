@@ -46,7 +46,7 @@ public static class Fields
 
             TypesParser.Type(p);
 
-            if (inBody)
+            if (!inBody)
             {
                 DescriptionParser.Description(p);
             }

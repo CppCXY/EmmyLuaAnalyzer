@@ -47,15 +47,19 @@ public class LuaWorkspace
         if (features.InitStdLib)
         {
             var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
-            LoadWorkspace(stdLib);
+            Console.Error.WriteLine($"open std from: {stdLib}");
+            LoadWorkspace(stdLib, true);
         }
     }
 
-    public void LoadWorkspace(string workspace)
+    public void LoadWorkspace(string workspace, bool notFilter = false)
     {
         var files =
-            Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories)
-                .Where(file => !Features.ExcludeFolders.Any(file.Contains)));
+            Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories));
+        if (!notFilter)
+        {
+            files = files.Where(it => !Features.ExcludeFolders.Any(it.Contains));
+        }
 
         var documents =
             new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));

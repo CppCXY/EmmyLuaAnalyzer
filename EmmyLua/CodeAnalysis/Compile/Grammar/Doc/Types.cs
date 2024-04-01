@@ -123,7 +123,6 @@ public static class TypesParser
     public static CompleteMarker TableType(LuaDocParser p)
     {
         var m = p.Marker();
-        p.Bump();
 
         try
         {
