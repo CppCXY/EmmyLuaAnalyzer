@@ -210,8 +210,8 @@ public static class ExpressionParser
                 case LuaTokenKind.TkLeftBracket:
                 {
                     p.Bump();
-                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkFloat
-                        or LuaTokenKind.TkComplex)
+                    if ((p.Current is LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkFloat
+                        or LuaTokenKind.TkComplex) && p.LookAhead is LuaTokenKind.TkRightBracket)
                     {
                         p.Bump();
                     }
