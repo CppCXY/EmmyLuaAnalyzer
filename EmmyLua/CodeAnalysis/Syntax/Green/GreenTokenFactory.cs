@@ -4,27 +4,31 @@ namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
 using System.Collections.Generic;
 
+
 public class GreenTokenFactory
 {
-    private static readonly Dictionary<LuaTokenKind, Dictionary<int, GreenNode>> Caches = new();
+    private struct Key(LuaTokenKind kind, int length)
+    {
+        public LuaTokenKind Kind { get; } = kind;
+        public int Length { get; } = length;
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Kind, Length);
+        }
+    }
+
+    private static readonly Dictionary<Key, GreenNode> Caches = new();
 
     public GreenNode Create(LuaTokenKind kind, int length)
     {
-        if (Caches.TryGetValue(kind, out var cache))
+        var key = new Key(kind, length);
+        if (Caches.TryGetValue(key, out var node))
         {
-            if (cache.TryGetValue(length, out var node))
-            {
-                return node;
-            }
+            return node;
         }
-        else
-        {
-            cache = new Dictionary<int, GreenNode>();
-            Caches.Add(kind, cache);
-        }
-
-        var greenNode = new GreenNode(kind, length);
-        cache.Add(length, greenNode);
-        return greenNode;
+        var green = new GreenNode(kind, length);
+        Caches.Add(key, green);
+        return green;
     }
 }

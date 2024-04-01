@@ -78,7 +78,6 @@ public class LuaCompilation
     {
         _syntaxTrees.Remove(documentId);
         RemoveCache(documentId);
-        Analyze();
     }
 
     public void RemoveCache(LuaDocumentId documentId)
