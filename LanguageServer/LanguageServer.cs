@@ -84,7 +84,7 @@ var server = await From(options =>
         })
         .OnInitialized((server, request, response, token) =>
         {
-            server.Services.GetService<LuaConfig>()?.Watch(Path.Combine(workspacePath, ".luarc"));
+            server.Services.GetService<LuaConfig>()?.Watch(Path.Combine(workspacePath, ".luarc.json"));
             server.Services.GetService<LuaWorkspace>()?.LoadWorkspace(workspacePath);
             return Task.CompletedTask;
         });
