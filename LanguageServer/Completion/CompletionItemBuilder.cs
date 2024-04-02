@@ -114,7 +114,7 @@ public class CompletionItemBuilder
                         Detail = RenderSignatureParams(mainSignature, methodType.ColonDefine),
                         Description = LuaTypeRender.RenderType(mainSignature.ReturnType, Context)
                     },
-                    InsertText = RenderInsertTextFuncParams(Label,mainSignature,methodType.ColonDefine),
+                    InsertText = RenderInsertTextFuncParams(Label, mainSignature, methodType.ColonDefine),
                     InsertTextFormat = InsertTextFormat.Snippet,
                     Data = Data,
                     Command = Command,
@@ -134,7 +134,7 @@ public class CompletionItemBuilder
                                 Detail = RenderSignatureParams(signature, methodType.ColonDefine),
                                 Description = LuaTypeRender.RenderType(signature.ReturnType, Context),
                             },
-                            InsertText = RenderInsertTextFuncParams(Label,signature,methodType.ColonDefine),
+                            InsertText = RenderInsertTextFuncParams(Label, signature, methodType.ColonDefine),
                             InsertTextFormat = InsertTextFormat.Snippet,
                             Data = Data,
                             Command = Command,
