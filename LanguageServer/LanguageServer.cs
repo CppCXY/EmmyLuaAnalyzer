@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.Completion;
+using LanguageServer.Configuration;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
 using LanguageServer.DocumentSymbol;
@@ -72,6 +73,7 @@ var server = await From(options =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
             services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+            services.AddSingleton<LuaConfig>(server => new LuaConfig(server.GetRequiredService<ILogger<LuaConfig>>()));
         })
         .OnInitialize((server, request, token) =>
         {
@@ -80,6 +82,7 @@ var server = await From(options =>
         })
         .OnInitialized((server, request, response, token) =>
         {
+            server.Services.GetService<LuaConfig>()?.Watch(Path.Combine(workspacePath, ".luarc"));
             server.Services.GetService<LuaWorkspace>()?.LoadWorkspace(workspacePath);
             return Task.CompletedTask;
         });

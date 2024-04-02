@@ -25,6 +25,7 @@ public class References(SearchContext context)
             TableFieldLuaDeclaration tableFieldDeclaration => TableFieldReferences(tableFieldDeclaration),
             NamedTypeLuaDeclaration namedTypeDeclaration => NamedTypeReferences(namedTypeDeclaration),
             ParameterLuaDeclaration parameterDeclaration => ParameterReferences(parameterDeclaration),
+            IndexLuaDeclaration indexDeclaration => IndexExprReferences(indexDeclaration),
             _ => Enumerable.Empty<LuaReference>()
         };
     }
@@ -265,5 +266,17 @@ public class References(SearchContext context)
         }
 
         return null;
+    }
+
+    private IEnumerable<LuaReference> IndexExprReferences(IndexLuaDeclaration declaration)
+    {
+        var references = new List<LuaReference>();
+        if (declaration is { IndexExprPtr: { } indexExprPtr }
+            && indexExprPtr.ToNode(context) is { Name: { } name })
+        {
+            references.AddRange(FieldReferences(declaration, name));
+        }
+
+        return references;
     }
 }
