@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
+// many bug need fix
 public class CfgBuilder
 {
     private ControlFlowGraph _graph = null!;
@@ -45,7 +46,7 @@ public class CfgBuilder
                         }
                         else
                         {
-                            label.PushDiagnostic(DiagnosticSeverity.Error, $"No Visible label {label.RepresentText}");
+                            // label.PushDiagnostic(DiagnosticSeverity.Error, $"No Visible label {label.RepresentText}");
                         }
                     }
 
@@ -53,7 +54,7 @@ public class CfgBuilder
                 }
             }
 
-            gotoNode.GotoStat.Goto.PushDiagnostic(DiagnosticSeverity.Error, "Label not found");
+            // gotoNode.GotoStat.Goto.PushDiagnostic(DiagnosticSeverity.Error, "Label not found");
         }
 
         var graph = _graph;
@@ -277,7 +278,7 @@ public class CfgBuilder
         var nextBlock = _graph.CreateNode();
         if (loop is null)
         {
-            breakStat.PushDiagnostic(DiagnosticSeverity.Error, "Break statement outside of loop");
+            // breakStat.PushDiagnostic(DiagnosticSeverity.Error, "Break statement outside of loop");
             return nextBlock;
         }
 

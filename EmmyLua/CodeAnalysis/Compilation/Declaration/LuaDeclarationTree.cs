@@ -176,4 +176,21 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
         return Enumerable.Empty<LuaDeclaration>();
     }
+
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
+    {
+        var scope = FindScope(nameExpr);
+        if (scope is null)
+        {
+            return false;
+        }
+
+        var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
+        if (closure is not null)
+        {
+            return closure.Position > declaration.Position;
+        }
+
+        return false;
+    }
 }
