@@ -5,6 +5,7 @@ using LanguageServer.Completion;
 using LanguageServer.Configuration;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
+using LanguageServer.DocumentRender;
 using LanguageServer.DocumentSymbol;
 using LanguageServer.ExecuteCommand;
 using LanguageServer.Hover;
@@ -69,6 +70,7 @@ var server = await From(options =>
         .WithHandler<CompletionHandler>()
         .WithHandler<ExecuteCommandHandler>()
         .WithHandler<SignatureHelperHandler>()
+        .WithHandler<EmmyAnnotatorHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
