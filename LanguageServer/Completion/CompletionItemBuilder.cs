@@ -62,7 +62,7 @@ public class CompletionItemBuilder
         return this;
     }
 
-    public CompletionItemBuilder WithInsertText(string insertText)
+    public CompletionItemBuilder WithInsertText(string? insertText)
     {
         InsertText = insertText;
         return this;
@@ -114,7 +114,8 @@ public class CompletionItemBuilder
                         Detail = RenderSignatureParams(mainSignature, methodType.ColonDefine),
                         Description = LuaTypeRender.RenderType(mainSignature.ReturnType, Context)
                     },
-                    InsertText = InsertText,
+                    InsertText = RenderInnerTextFuncParams(Label,mainSignature,methodType.ColonDefine),
+                    InsertTextFormat = InsertTextFormat.Snippet,
                     Data = Data,
                     Command = Command,
                     TextEdit = TextOrReplaceEdit
@@ -165,6 +166,47 @@ public class CompletionItemBuilder
                 break;
             }
         }
+    }
+
+    private string RenderInnerTextFuncParams(string name, LuaSignature signature, bool colonDefine)
+    {
+        var sb = new StringBuilder();
+        sb.Append(name);
+        sb.Append('(');
+        var parameters = signature.Parameters;
+        int paramsCnt = 1;
+        switch ((colonDefine, Colon))
+        {
+            case (true, false):
+            {
+                sb.Append("${1:self}");
+                if (parameters.Count > 0)
+                {
+                    sb.Append(", ");
+                }
+                paramsCnt++;
+                break;
+            }
+            case (false, true):
+            {
+                parameters = parameters.Skip(1).ToList();
+                break;
+            }
+        }
+
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            var parameter = parameters[i];
+            sb.Append($"${{{paramsCnt}:{parameter.Name}}}");
+            if (i < parameters.Count - 1)
+            {
+                sb.Append(", ");
+            }
+            paramsCnt++;
+        }
+
+        sb.Append(')');
+        return sb.ToString();
     }
 
     private string RenderSignatureParams(LuaSignature signature, bool colonDefine)
