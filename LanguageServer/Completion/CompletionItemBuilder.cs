@@ -62,7 +62,7 @@ public class CompletionItemBuilder
         return this;
     }
 
-    public CompletionItemBuilder WithInsertText(string? insertText)
+    public CompletionItemBuilder WithInsertText(string insertText)
     {
         InsertText = insertText;
         return this;
