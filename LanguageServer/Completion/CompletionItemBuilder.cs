@@ -114,7 +114,7 @@ public class CompletionItemBuilder
                         Detail = RenderSignatureParams(mainSignature, methodType.ColonDefine),
                         Description = LuaTypeRender.RenderType(mainSignature.ReturnType, Context)
                     },
-                    InsertText = RenderInnerTextFuncParams(Label,mainSignature,methodType.ColonDefine),
+                    InsertText = RenderInsertTextFuncParams(Label,mainSignature,methodType.ColonDefine),
                     InsertTextFormat = InsertTextFormat.Snippet,
                     Data = Data,
                     Command = Command,
@@ -134,7 +134,8 @@ public class CompletionItemBuilder
                                 Detail = RenderSignatureParams(signature, methodType.ColonDefine),
                                 Description = LuaTypeRender.RenderType(signature.ReturnType, Context),
                             },
-                            InsertText = InsertText,
+                            InsertText = RenderInsertTextFuncParams(Label,signature,methodType.ColonDefine),
+                            InsertTextFormat = InsertTextFormat.Snippet,
                             Data = Data,
                             Command = Command,
                             TextEdit = TextOrReplaceEdit
@@ -168,7 +169,7 @@ public class CompletionItemBuilder
         }
     }
 
-    private string RenderInnerTextFuncParams(string name, LuaSignature signature, bool colonDefine)
+    private string RenderInsertTextFuncParams(string name, LuaSignature signature, bool colonDefine)
     {
         var sb = new StringBuilder();
         sb.Append(name);
