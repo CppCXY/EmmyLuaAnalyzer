@@ -9,7 +9,7 @@ public class References(SearchContext context)
 {
     public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(element.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(element.DocumentId);
         if (declarationTree is null)
         {
             return Enumerable.Empty<LuaReference>();
@@ -62,7 +62,7 @@ public class References(SearchContext context)
 
         foreach (var nameExpr in nameExprs)
         {
-            var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree.Document.Id);
+            var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.DocumentId);
             if (declarationTree?.FindDeclaration(nameExpr, context) == declaration)
             {
                 references.Add(new LuaReference(nameExpr.Location, nameExpr));
@@ -78,7 +78,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.ProjectIndex.GetIndexExprs(fieldName);
         foreach (var indexExpr in indexExprs)
         {
-            var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.Tree.Document.Id);
+            var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.DocumentId);
             if (declarationTree?.FindDeclaration(indexExpr, context) == declaration)
             {
                 references.Add(new LuaReference(indexExpr.KeyElement.Location, indexExpr.KeyElement));
@@ -206,7 +206,7 @@ public class References(SearchContext context)
             var nameTypes = context.Compilation.ProjectIndex.GetNameTypes(name);
             foreach (var nameType in nameTypes)
             {
-                var declarationTree = context.Compilation.GetDeclarationTree(nameType.Tree.Document.Id);
+                var declarationTree = context.Compilation.GetDeclarationTree(nameType.DocumentId);
                 if (declarationTree?.FindDeclaration(nameType, context) == declaration && nameType.Name is { } name2)
                 {
                     references.Add(new LuaReference(name2.Location, name2));

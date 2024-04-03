@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Kind;
+﻿using System.Collections.Immutable;
+using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
@@ -17,7 +18,7 @@ public class GreenNode
 
     private readonly ushort _kind;
 
-    private List<GreenNode>? _children;
+    private ImmutableArray<GreenNode>? _children;
 
     public IEnumerable<GreenNode> Children => IsNode ? _children! : Enumerable.Empty<GreenNode>();
 
@@ -33,12 +34,12 @@ public class GreenNode
 
     public int RawKind => _kind;
 
-    public GreenNode(LuaSyntaxKind kind, int length, IEnumerable<GreenNode> children)
+    public GreenNode(LuaSyntaxKind kind, int length, ImmutableArray<GreenNode>? children)
     {
         _flag = NodeFlags.Node;
         _kind = (ushort)kind;
         Length = length;
-        _children = children.ToList();
+        _children = children;
     }
 
     public GreenNode(LuaTokenKind kind,  int length)
@@ -50,6 +51,6 @@ public class GreenNode
 
     public GreenNode With(int length)
     {
-        return _flag is NodeFlags.Node ? new GreenNode(SyntaxKind, length, Children) : new GreenNode(TokenKind, length);
+        return _flag is NodeFlags.Node ? new GreenNode(SyntaxKind, length, _children) : new GreenNode(TokenKind, length);
     }
 }

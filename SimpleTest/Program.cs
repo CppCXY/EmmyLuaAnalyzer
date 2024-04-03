@@ -7,7 +7,7 @@ using EmmyLua.CodeAnalysis.Workspace;
 // var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    table.
+    print(lua)
     """, new LuaLanguage());
 // workspace.AddDocument(document);
     

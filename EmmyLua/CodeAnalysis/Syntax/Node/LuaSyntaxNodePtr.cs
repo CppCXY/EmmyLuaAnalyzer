@@ -17,7 +17,7 @@ public readonly struct LuaSyntaxNodePtr<TNode>(LuaDocumentId documentId, SourceR
 
     public LuaSyntaxKind Kind { get; } = kind;
 
-    public LuaSyntaxNodePtr(TNode syntaxNode) : this(syntaxNode.Tree.Document.Id, syntaxNode.Range, syntaxNode.Kind)
+    public LuaSyntaxNodePtr(TNode syntaxNode) : this(syntaxNode.DocumentId, syntaxNode.Range, syntaxNode.Kind)
     {
     }
 

@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using System.Collections.Immutable;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
@@ -84,7 +85,7 @@ public class GreenNodeBuilder
 
 
         Children.RemoveRange(childStart, childEnd - childStart + 1);
-        var green = new GreenNode(parentInfo.Kind, length, nodeChildren);
+        var green = new GreenNode(parentInfo.Kind, length, nodeChildren.ToImmutableArray());
         if (childEnd + 1 < childCount)
         {
             Children.Insert(childStart, green);
