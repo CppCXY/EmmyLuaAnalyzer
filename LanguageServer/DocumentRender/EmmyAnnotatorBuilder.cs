@@ -30,7 +30,7 @@ public class EmmyAnnotatorBuilder
                     if (nameExpr.Name is { RepresentText: { } name2 } nameToken && name2 != "self")
                     {
                         var declaration = declarationTree.FindDeclaration(nameExpr, context);
-                        if (declaration?.Feature == DeclarationFeature.Global)
+                        if (declaration?.Feature == DeclarationFeature.Global || declaration is null)
                         {
                             globalAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
@@ -38,7 +38,7 @@ public class EmmyAnnotatorBuilder
                         {
                             paramAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
-                        else if (declaration is not null && declarationTree.IsUpValue(nameExpr, declaration))
+                        else if (declarationTree.IsUpValue(nameExpr, declaration))
                         {
                             upvalueAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }

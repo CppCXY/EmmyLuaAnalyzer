@@ -30,7 +30,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderNameExpr(LuaNameExprSyntax nameExpr)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.DocumentId);
         var declaration = declarationTree?.FindDeclaration(nameExpr, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -43,7 +43,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderIndexExpr(LuaIndexExprSyntax indexExpr)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.DocumentId);
         var declaration = declarationTree?.FindDeclaration(indexExpr, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -56,7 +56,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderParamDef(LuaParamDefSyntax paramDef)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(paramDef.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(paramDef.DocumentId);
         var declaration = declarationTree?.FindDeclaration(paramDef, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -69,7 +69,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderLocalName(LuaLocalNameSyntax localName)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(localName.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(localName.DocumentId);
         var declaration = declarationTree?.FindDeclaration(localName, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -144,7 +144,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderCallExpr(LuaCallExprSyntax callExpr)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(callExpr.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(callExpr.DocumentId);
         var declaration = declarationTree?.FindDeclaration(callExpr, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -157,7 +157,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderTableField(LuaTableFieldSyntax tableField)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(tableField.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(tableField.DocumentId);
         var declaration = declarationTree?.FindDeclaration(tableField, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -170,7 +170,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderDocNameType(LuaDocNameTypeSyntax docNameType)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(docNameType.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(docNameType.DocumentId);
         var declaration = declarationTree?.FindDeclaration(docNameType, context);
         var sb = new StringBuilder();
         if (declaration is not null)
@@ -183,7 +183,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private string RenderDocGenericType(LuaDocGenericTypeSyntax docGenericType)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(docGenericType.Tree.Document.Id);
+        var declarationTree = context.Compilation.GetDeclarationTree(docGenericType.DocumentId);
         var declaration = declarationTree?.FindDeclaration(docGenericType, context);
         var sb = new StringBuilder();
         if (declaration is not null)

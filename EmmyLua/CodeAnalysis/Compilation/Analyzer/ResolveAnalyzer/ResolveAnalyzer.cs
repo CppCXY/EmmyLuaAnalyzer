@@ -155,7 +155,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
-                var documentId = indexExpr.Tree.Document.Id;
+                var documentId = indexExpr.DocumentId;
                 var ty = Context.Infer(prefixExpr);
                 if (ty is LuaNamedType namedType)
                 {

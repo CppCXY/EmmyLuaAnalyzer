@@ -20,6 +20,8 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public LuaSyntaxTree Tree { get; } = tree;
 
+    public LuaDocumentId DocumentId => Tree.Document.Id;
+
     public SourceRange Range { get; } = new(startOffset, green.Length);
 
     public int ChildPosition { get; internal set; } = 0;
@@ -507,13 +509,13 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         Tree.PushDiagnostic(diagnostic);
     }
 
-    public string UniqueId => $"{Tree.Document.Id.Id}_{Range.StartOffset}_{Range.Length}_{Green.RawKind}";
+    public string UniqueId => $"{DocumentId}_{Range.StartOffset}_{Range.Length}_{Green.RawKind}";
 
     public int Position => Range.StartOffset;
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Tree.Document.Id, Range, Green.RawKind);
+        return HashCode.Combine(DocumentId, Range, Green.RawKind);
     }
 
     public bool Equals(LuaSyntaxElement? other)
@@ -528,7 +530,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
             return true;
         }
 
-        return Tree.Document.Id == other.Tree.Document.Id
+        return DocumentId == other.DocumentId
                && Range.Equals(other.Range)
                && Green.RawKind == other.Green.RawKind;
     }

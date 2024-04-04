@@ -9,7 +9,7 @@ public static class DeclarationInfer
 {
     public static LuaDeclarationTree? GetSymbolTree(LuaSyntaxElement element, SearchContext context)
     {
-        return context.Compilation.GetDeclarationTree(element.Tree.Document.Id);
+        return context.Compilation.GetDeclarationTree(element.DocumentId);
     }
 
     public static LuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
@@ -26,7 +26,7 @@ public static class DeclarationInfer
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        return context.Compilation.ProjectIndex.GetExportType(source.Tree.Document.Id) ?? Builtin.Unknown;
+        return context.Compilation.ProjectIndex.GetExportType(source.DocumentId) ?? Builtin.Unknown;
     }
 
     public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
