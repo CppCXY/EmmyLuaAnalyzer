@@ -1,7 +1,7 @@
-﻿namespace LanguageServer.Configuration;
+﻿namespace LanguageServer.Configuration.Json;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class LuaRc
+public class LuaRc
 {
     public Diagnostics? Diagnostics { get; set; }
 
@@ -15,7 +15,7 @@ internal class LuaRc
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class Diagnostics
+public class Diagnostics
 {
     public List<string>? Disable { get; set; }
 
@@ -27,7 +27,7 @@ internal class Diagnostics
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class Runtime
+public class Runtime
 {
     public string? Version { get; set; } = "5.4";
 
@@ -37,7 +37,7 @@ internal class Runtime
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class Workspace
+public class Workspace
 {
     public int? MaxPreload { get; set; } = 10000;
 
@@ -56,13 +56,13 @@ internal class Workspace
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class Type
+public class Type
 {
     public bool CastNumberToInteger { get; set; } = false;
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class Doc
+public class Doc
 {
     public List<string>? PrivateName { get; set; } = ["_"];
 }

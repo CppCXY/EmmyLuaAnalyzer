@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
-    public LuaFeatures Features { get; }
+    public LuaFeatures Features { get; set; }
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 

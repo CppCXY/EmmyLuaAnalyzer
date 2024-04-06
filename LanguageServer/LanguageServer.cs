@@ -73,7 +73,7 @@ var server = await From(options =>
         .WithHandler<EmmyAnnotatorHandler>()
         .WithServices(services =>
         {
-            services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create(""));
+            services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create());
             services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
             services.AddSingleton<LuaConfig>(server => new LuaConfig(server.GetRequiredService<ILogger<LuaConfig>>()));
         })
@@ -84,8 +84,12 @@ var server = await From(options =>
         })
         .OnInitialized((server, request, response, token) =>
         {
-            server.Services.GetService<LuaConfig>()?.Watch(Path.Combine(workspacePath, ".luarc.json"));
-            server.Services.GetService<LuaWorkspace>()?.LoadWorkspace(workspacePath);
+            var luaConfig = server.Services.GetRequiredService<LuaConfig>();
+            var luaWorkspace = server.Services.GetRequiredService<LuaWorkspace>();
+            luaConfig.Watch(Path.Combine(workspacePath, ".luarc.json"));
+            
+            luaWorkspace.Features = luaConfig.GetFeatures();
+            luaWorkspace.LoadWorkspace(workspacePath);
             return Task.CompletedTask;
         });
 }).ConfigureAwait(false);

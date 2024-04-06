@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Configuration.Json;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -17,7 +20,51 @@ public class LuaConfig
 
     private string LuaRcPath { get; set; } = string.Empty;
 
-    private LuaRc? DotLuaRc { get; set; }
+    private LuaRc _dotLuaRc;
+    
+    private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+    
+    private LuaRc DotLuaRc
+    {
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _dotLuaRc;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
+        set
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                _dotLuaRc = value;
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+    }
+
+    public void UpdateConfig(Action<LuaRc> updateAction)
+    {
+        _lock.EnterWriteLock();
+        try
+        {
+            updateAction(DotLuaRc!);
+            SaveLuaRc(LuaRcPath);
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
 
     private FileSystemWatcher Watcher { get; } = new();
 
@@ -25,6 +72,7 @@ public class LuaConfig
     {
         Watcher.Changed += OnChanged;
         Logger = logger;
+        _dotLuaRc = new();
     }
 
     private void OnChanged(object sender, FileSystemEventArgs e)
@@ -58,7 +106,12 @@ public class LuaConfig
             }
 
             var fileText = File.ReadAllText(path);
-            DotLuaRc = JsonConvert.DeserializeObject<LuaRc>(fileText, SerializerSettings);
+            // ReSharper disable once IdentifierTypo
+            var luarc = JsonConvert.DeserializeObject<LuaRc>(fileText, SerializerSettings);
+            if (luarc is not null)
+            {
+                DotLuaRc = luarc;
+            }
         }
         catch (Exception exception)
         {
@@ -70,11 +123,6 @@ public class LuaConfig
     {
         try
         {
-            if (DotLuaRc is null)
-            {
-                return;
-            }
-
             var json = JsonConvert.SerializeObject(DotLuaRc, SerializerSettings);
             File.WriteAllText(path, json);
         }
@@ -82,5 +130,54 @@ public class LuaConfig
         {
             Logger.LogError(exception.ToString());
         }
+    }
+    
+    public LuaFeatures GetFeatures()
+    {
+        var features = new LuaFeatures();
+        var rc = DotLuaRc;
+        if (rc.Workspace?.IgnoreDirs is { } ignoreDirs)
+        {
+            features.ExcludeFolders = ignoreDirs;
+        }
+
+        if (rc.Workspace?.PreloadFileSize is { } preloadFileSize)
+        {
+            features.DontIndexMaxFileSize = preloadFileSize;
+        }
+
+        if (rc.Runtime?.Version is { } version)
+        {
+            switch (version)
+            {
+                case "Lua5.1":
+                {
+                    features.Language.LanguageLevel = LuaLanguageLevel.Lua51;
+                    break;
+                }
+                case "Lua5.2":
+                {
+                    features.Language.LanguageLevel = LuaLanguageLevel.Lua52;
+                    break;
+                }
+                case "Lua5.3":
+                {
+                    features.Language.LanguageLevel = LuaLanguageLevel.Lua53;
+                    break;
+                }
+                case "Lua5.4":
+                {
+                    features.Language.LanguageLevel = LuaLanguageLevel.Lua54;
+                    break;
+                }
+                case "LuaJIT":
+                {
+                    features.Language.LanguageLevel = LuaLanguageLevel.LuaJIT;
+                    break;
+                }
+            }
+        }
+        
+        return features;
     }
 }
