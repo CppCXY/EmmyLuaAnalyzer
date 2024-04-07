@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
 public readonly struct CfgEdge(int sourceIndex, int targetIndex)
 {

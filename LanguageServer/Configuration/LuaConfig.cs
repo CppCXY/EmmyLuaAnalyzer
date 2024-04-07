@@ -24,7 +24,7 @@ public class LuaConfig
     
     private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
     
-    private LuaRc DotLuaRc
+    public LuaRc DotLuaRc
     {
         get
         {

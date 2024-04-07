@@ -30,7 +30,7 @@ public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
         {
             var document = semanticModel.Document;
             var pos = request.Position;
-            var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+            var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
             if (node is not null)
             {
                 var newName = request.NewName;

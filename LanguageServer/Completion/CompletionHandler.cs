@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Configuration;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -7,7 +8,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace LanguageServer.Completion;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class CompletionHandler(LuaWorkspace workspace) : CompletionHandlerBase
+public class CompletionHandler(LuaWorkspace workspace, LuaConfig config) : CompletionHandlerBase
 {
     private CompletionBuilder Builder { get; } = new();
 

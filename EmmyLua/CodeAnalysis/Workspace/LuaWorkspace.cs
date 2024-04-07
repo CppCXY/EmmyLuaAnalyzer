@@ -53,11 +53,12 @@ public class LuaWorkspace
 
     public void LoadWorkspace(string workspace, bool notFilter = false)
     {
+        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(workspace, it)).ToList();
         var files =
             Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories));
         if (!notFilter)
         {
-            files = files.Where(it => !Features.ExcludeFolders.Any(it.Contains));
+            files = files.Where(it => !excludeFolders.Any(it.StartsWith));
         }
 
         var documents =

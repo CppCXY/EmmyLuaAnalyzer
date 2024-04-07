@@ -1,21 +1,26 @@
-﻿namespace LanguageServer.Configuration.Json;
+﻿using Newtonsoft.Json;
+
+namespace LanguageServer.Configuration.Json;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class LuaRc
 {
-    public Diagnostics? Diagnostics { get; set; }
+    public DiagnosticsConfig? Diagnostics { get; set; }
 
-    public Runtime? Runtime { get; set; }
+    public RuntimeConfig? Runtime { get; set; }
 
-    public Workspace? Workspace { get; set; }
+    public WorkspaceConfig? Workspace { get; set; }
 
-    public Type? Type { get; set; }
+    public TypeConfig? Type { get; set; }
 
-    public Doc? Doc { get; set; }
+    [JsonProperty("doc")]
+    public DocumentConfig? Document { get; set; }
+    
+    public CompletionConfig? Completion { get; set; }
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Diagnostics
+public class DiagnosticsConfig
 {
     public List<string>? Disable { get; set; }
 
@@ -27,7 +32,7 @@ public class Diagnostics
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Runtime
+public class RuntimeConfig
 {
     public string? Version { get; set; } = "5.4";
 
@@ -37,7 +42,7 @@ public class Runtime
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Workspace
+public class WorkspaceConfig
 {
     public int? MaxPreload { get; set; } = 10000;
 
@@ -56,13 +61,19 @@ public class Workspace
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Type
+public class TypeConfig
 {
     public bool CastNumberToInteger { get; set; } = false;
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Doc
+public class DocumentConfig
 {
     public List<string>? PrivateName { get; set; } = ["_"];
+}
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public class CompletionConfig
+{
+    public bool AutoFillArguments { get; set; } = false;
 }

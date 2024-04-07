@@ -487,6 +487,23 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         return token?.Parent as LuaSyntaxNode;
     }
 
+    public LuaSyntaxNode? NameNodeAt(int line, int col)
+    {
+        var token = TokenAt(line, col);
+        if (token is null)
+        {
+            return null;
+        }
+
+        if (token is LuaNameToken or LuaNumberToken or LuaStringToken)
+        {
+            return token.Parent as LuaSyntaxNode;
+        }
+
+        token = TokenLeftBiasedAt(line, col);
+        return token?.Parent as LuaSyntaxNode;
+    }
+
     public LuaSyntaxNode? FindNode(SourceRange range, LuaSyntaxKind kind)
     {
         LuaSyntaxNode? node = this as LuaSyntaxNode;

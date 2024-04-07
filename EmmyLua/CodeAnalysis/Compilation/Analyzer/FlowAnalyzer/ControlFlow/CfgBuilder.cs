@@ -4,14 +4,15 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 
-// many bug need fix
 public class CfgBuilder
 {
     private ControlFlowGraph _graph = null!;
 
     private Dictionary<CfgNode, CfgNode> _loopExits = new();
 
-    private Dictionary<CfgNode, Dictionary<string, CfgNode>> _scopeLabels = new();
+    private Dictionary<string, CfgNode> _scopeLabels = new();
+
+    private Stack<CfgNode> _loops = new();
 
     private class GotoNode(CfgNode source, LuaGotoStatSyntax gotoStat)
     {
@@ -25,7 +26,6 @@ public class CfgBuilder
     {
         _graph = new ControlFlowGraph();
         var lastNode = BuildBlock(block, _graph.EntryNode);
-        RecordScope(_graph.EntryNode);
         if (lastNode != _graph.ExitNode)
         {
             _graph.AddEdge(lastNode, _graph.ExitNode);
@@ -33,28 +33,17 @@ public class CfgBuilder
 
         foreach (var gotoNode in _gotoNodes)
         {
-            var scopeNode = FindScopeStart(gotoNode.Source);
-            if (scopeNode is not null)
+            if (gotoNode.GotoStat.LabelName is { } label)
             {
-                if (_scopeLabels.TryGetValue(scopeNode, out var labels))
+                if (_scopeLabels.TryGetValue(label.RepresentText, out var target))
                 {
-                    if (gotoNode.GotoStat.LabelName is { } label)
-                    {
-                        if (labels.TryGetValue(label.RepresentText, out var target))
-                        {
-                            _graph.AddEdge(gotoNode.Source, target);
-                        }
-                        else
-                        {
-                            // label.PushDiagnostic(DiagnosticSeverity.Error, $"No Visible label {label.RepresentText}");
-                        }
-                    }
-
-                    continue;
+                    _graph.AddEdge(gotoNode.Source, target);
+                }
+                else
+                {
+                    label.PushDiagnostic(DiagnosticSeverity.Error, $"No Visible label {label.RepresentText}");
                 }
             }
-
-            // gotoNode.GotoStat.Goto.PushDiagnostic(DiagnosticSeverity.Error, "Label not found");
         }
 
         var graph = _graph;
@@ -91,7 +80,7 @@ public class CfgBuilder
                 case LuaReturnStatSyntax returnStat:
                 {
                     currentBlock = BuildReturn(returnStat, currentBlock);
-                    if (stat != block.StatList.Last())
+                    if (!stat.Equals(block.StatList.Last()))
                     {
                         currentBlock = _graph.CreateNode();
                     }
@@ -160,9 +149,15 @@ public class CfgBuilder
             lastBlocks.Add(BuildBlock(ifStat.ThenBlock, thenBlock));
         }
 
+        var existElseClause = false;
         foreach (var elseIfOrElseClause in ifStat.IfClauseStatementList)
         {
             var elseIfCondition = elseIfOrElseClause.Condition;
+            if (elseIfCondition is null)
+            {
+                existElseClause = true;
+            }
+
             var elseIfBlock = _graph.CreateNode();
             _graph.AddEdge(sourceBlock, elseIfBlock, elseIfCondition);
             if (elseIfOrElseClause.Block is not null)
@@ -172,6 +167,11 @@ public class CfgBuilder
         }
 
         var nextBlock = _graph.CreateNode();
+        if (!existElseClause)
+        {
+            _graph.AddEdge(sourceBlock, nextBlock);
+        }
+
         foreach (var lastBlock in lastBlocks)
         {
             if (lastBlock != _graph.ExitNode)
@@ -186,77 +186,87 @@ public class CfgBuilder
     private CfgNode BuildWhile(LuaWhileStatSyntax whileStat, CfgNode sourceBlock)
     {
         var condition = whileStat.Condition;
-        var loopBlock = _graph.CreateNode(CfgNodeKind.Loop);
-        _graph.AddEdge(sourceBlock, loopBlock, condition);
+        var loopNode = _graph.CreateNode(CfgNodeKind.Loop);
+        _loops.Push(loopNode);
+        _graph.AddEdge(sourceBlock, loopNode, condition);
         var bodyBlock = _graph.CreateNode();
-        _graph.AddEdge(loopBlock, bodyBlock);
+        _graph.AddEdge(loopNode, bodyBlock);
 
         var nextBlock = _graph.CreateNode();
-        _loopExits.Add(loopBlock, nextBlock);
+        _graph.AddEdge(sourceBlock, nextBlock);
+        _loopExits.Add(loopNode, nextBlock);
         if (whileStat.Block is not null)
         {
             var lastBlock = BuildBlock(whileStat.Block, bodyBlock);
-            _graph.AddEdge(lastBlock, loopBlock);
+            _graph.AddEdge(lastBlock, loopNode);
             _graph.AddEdge(lastBlock, nextBlock);
         }
 
+        _loops.Pop();
         return nextBlock;
     }
 
     private CfgNode BuildRepeat(LuaRepeatStatSyntax repeatStat, CfgNode sourceBlock)
     {
-        var loopBlock = _graph.CreateNode(CfgNodeKind.Loop);
-        _graph.AddEdge(sourceBlock, loopBlock);
+        var loopNode = _graph.CreateNode(CfgNodeKind.Loop);
+        _loops.Push(loopNode);
+        _graph.AddEdge(sourceBlock, loopNode);
         var bodyBlock = _graph.CreateNode();
-        _graph.AddEdge(loopBlock, bodyBlock);
+        _graph.AddEdge(loopNode, bodyBlock);
 
         var nextBlock = _graph.CreateNode();
-        _loopExits.Add(loopBlock, nextBlock);
+        _loopExits.Add(loopNode, nextBlock);
         if (repeatStat.Block is not null)
         {
             var lastBlock = BuildBlock(repeatStat.Block, bodyBlock);
-            _graph.AddEdge(lastBlock, loopBlock, repeatStat.Condition);
+            _graph.AddEdge(lastBlock, loopNode, repeatStat.Condition);
             _graph.AddEdge(lastBlock, nextBlock);
         }
 
+        _loops.Pop();
         return nextBlock;
     }
 
     private CfgNode BuildForStat(LuaForStatSyntax forStat, CfgNode sourceBlock)
     {
-        var loopBlock = _graph.CreateNode(CfgNodeKind.Loop);
-        _graph.AddEdge(sourceBlock, loopBlock);
+        var loopNode = _graph.CreateNode(CfgNodeKind.Loop);
+        _loops.Push(loopNode);
+        _graph.AddEdge(sourceBlock, loopNode);
         var bodyBlock = _graph.CreateNode();
-        _graph.AddEdge(loopBlock, bodyBlock);
+        _graph.AddEdge(loopNode, bodyBlock);
 
         var nextBlock = _graph.CreateNode();
-        _loopExits.Add(loopBlock, nextBlock);
+        _loopExits.Add(loopNode, nextBlock);
         if (forStat.Block is not null)
         {
             var lastBlock = BuildBlock(forStat.Block, bodyBlock);
-            _graph.AddEdge(lastBlock, loopBlock);
+            _graph.AddEdge(lastBlock, loopNode);
             _graph.AddEdge(lastBlock, nextBlock);
         }
 
+        _loops.Pop();
         return nextBlock;
     }
 
     private CfgNode BuildForRangeStat(LuaForRangeStatSyntax forRangeStat, CfgNode sourceBlock)
     {
-        var loopBlock = _graph.CreateNode(CfgNodeKind.Loop);
-        _graph.AddEdge(sourceBlock, loopBlock);
+        var loopNode = _graph.CreateNode(CfgNodeKind.Loop);
+        _loops.Push(loopNode);
+        _graph.AddEdge(sourceBlock, loopNode);
         var bodyBlock = _graph.CreateNode();
-        _graph.AddEdge(loopBlock, bodyBlock);
+        _graph.AddEdge(loopNode, bodyBlock);
 
         var nextBlock = _graph.CreateNode();
-        _loopExits.Add(loopBlock, nextBlock);
+        _graph.AddEdge(sourceBlock, nextBlock);
+        _loopExits.Add(loopNode, nextBlock);
         if (forRangeStat.Block is not null)
         {
             var lastBlock = BuildBlock(forRangeStat.Block, bodyBlock);
-            _graph.AddEdge(lastBlock, loopBlock);
+            _graph.AddEdge(lastBlock, loopNode);
             _graph.AddEdge(lastBlock, nextBlock);
         }
 
+        _loops.Pop();
         return nextBlock;
     }
 
@@ -269,16 +279,16 @@ public class CfgBuilder
 
     private CfgNode BuildBreak(LuaBreakStatSyntax breakStat, CfgNode sourceBlock)
     {
-        var loop = sourceBlock;
-        while (loop is { Kind: not CfgNodeKind.Loop } node)
+        CfgNode? loop = null;
+        if (_loops.Count != 0)
         {
-            loop = _graph.GetPredecessors(node).FirstOrDefault();
+            loop = _loops.Peek();
         }
 
         var nextBlock = _graph.CreateNode();
         if (loop is null)
         {
-            // breakStat.PushDiagnostic(DiagnosticSeverity.Error, "Break statement outside of loop");
+            breakStat.PushDiagnostic(DiagnosticSeverity.Error, "Break statement outside of loop");
             return nextBlock;
         }
 
@@ -290,37 +300,15 @@ public class CfgBuilder
         return nextBlock;
     }
 
-    private CfgNode? FindScopeStart(CfgNode? node)
-    {
-        while (node is not null && !_scopeLabels.ContainsKey(node))
-        {
-            node = _graph.GetPredecessors(node).FirstOrDefault();
-        }
-
-        return node;
-    }
-
-    private void RecordScope(CfgNode scopeNode)
-    {
-        if (!_scopeLabels.ContainsKey(scopeNode))
-        {
-            _scopeLabels[scopeNode] = new();
-        }
-    }
-
     private CfgNode BuildLabel(LuaLabelStatSyntax labelStat, CfgNode sourceBlock)
     {
         var labelBlock = _graph.CreateNode(CfgNodeKind.Label);
         _graph.AddEdge(sourceBlock, labelBlock);
-        if (labelStat.Name is not null)
+        if (labelStat.Name is {RepresentText: {} name })
         {
-            var scopeNode = FindScopeStart(sourceBlock);
-            if (scopeNode is not null)
+            if (!_scopeLabels.TryAdd(name, labelBlock))
             {
-                if (_scopeLabels.TryGetValue(scopeNode, out var labels))
-                {
-                    labels[labelStat.Name.RepresentText] = labelBlock;
-                }
+                labelStat.PushDiagnostic(DiagnosticSeverity.Error, $"Label {name} already defined");
             }
         }
 

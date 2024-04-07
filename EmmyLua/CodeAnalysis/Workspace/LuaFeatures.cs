@@ -26,7 +26,6 @@ public class LuaFeatures
 
     public Dictionary<string, string> VirtualModule { get; set; } = new()
     {
-        { "socket.core", "xxx.lua" }
     };
 
     public HashSet<string> RequireLikeFunction { get; set; } =

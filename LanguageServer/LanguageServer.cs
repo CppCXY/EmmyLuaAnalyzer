@@ -90,6 +90,7 @@ var server = await From(options =>
             
             luaWorkspace.Features = luaConfig.GetFeatures();
             luaWorkspace.LoadWorkspace(workspacePath);
+            
             return Task.CompletedTask;
         });
 }).ConfigureAwait(false);
