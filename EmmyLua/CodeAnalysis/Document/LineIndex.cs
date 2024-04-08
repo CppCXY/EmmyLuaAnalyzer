@@ -72,9 +72,9 @@ public class LineIndex
 
     public int GetCol(int offset, string source)
     {
-        if (offset >= source.Length)
+        if (offset > source.Length)
         {
-            offset = source.Length - 1;
+            offset = source.Length;
         }
         if (offset < 0)
         {
