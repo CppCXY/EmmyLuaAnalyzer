@@ -20,6 +20,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
     private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
 
     private const int MaxDepth = 1000;
+    private const int MaxNestedDepth = 999;
 
     // 推断深度
     private int _currentDepth = 0;
@@ -100,23 +101,37 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         return Compilation.ProjectIndex.GetMembers(name);
     }
 
-    private IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    private void GetNestedMembers(string name, int depth, in HashSet<LuaType> result, in HashSet<string> namesSet)
     {
-        var hashSet = new HashSet<LuaType>();
+        if (depth > MaxNestedDepth)
+            return;
+
         var supers = Compilation.ProjectIndex.GetSupers(name).ToList();
-        hashSet.UnionWith(supers);
+        result.UnionWith(supers);
+        depth++;
+
         foreach (var super in supers)
         {
             if (super is LuaNamedType namedType)
             {
                 var detailType = namedType.GetDetailType(this);
-                if (detailType.IsClass)
+                if (detailType.IsClass && !namesSet.Contains(namedType.Name))
                 {
-                    hashSet.UnionWith(Compilation.ProjectIndex.GetSupers(namedType.Name));
+                    namesSet.Add(namedType.Name);
+                    GetNestedMembers(namedType.Name, depth, result, namesSet);
                 }
             }
         }
+    }
 
+    private IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    {
+        var hashSet = new HashSet<LuaType>();
+        var namesSet = new HashSet<string>
+        {
+            name
+        };
+        GetNestedMembers(name, 0, hashSet, namesSet);
         var members = new List<LuaDeclaration>();
         foreach (var luaType in hashSet)
         {
