@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Compile.Parser;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
@@ -13,10 +13,10 @@ public class LuaGreenTreeBuilder(LuaParser parser)
 
     private GreenNodeBuilder NodeBuilder { get; } = new();
 
-    private List<Diagnostic> Diagnostics { get; } = new();
+    private List<Diagnostics.Diagnostic> Diagnostics { get; } = new();
 
     // 多返回值
-    public (GreenNode, List<Diagnostic>) Build()
+    public (GreenNode, List<Diagnostics.Diagnostic>) Build()
     {
         Parser.Parse();
         Diagnostics.AddRange(Parser.Lexer.Diagnostics);
@@ -92,11 +92,11 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                             MarkEvent.EatToken(var tkRange, _) => tkRange,
                             _ => throw new UnreachableException(),
                         };
-                        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                        Diagnostics.Add(new Diagnostics.Diagnostic(DiagnosticSeverity.Error, error.Err, range));
                     }
                     else
                     {
-                        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
+                        Diagnostics.Add(new Diagnostics.Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
                             Parser.Lexer.Document.Text.Length
                         )));
                     }

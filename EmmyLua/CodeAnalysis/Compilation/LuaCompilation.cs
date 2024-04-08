@@ -8,7 +8,7 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -34,6 +34,8 @@ public class LuaCompilation
 
     private List<LuaAnalyzer> Analyzers { get; }
 
+    private LuaDiagnostics Diagnostics { get; }
+
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
@@ -45,6 +47,7 @@ public class LuaCompilation
             new ResolveAnalyzer(this),
             new TypeAnalyzer(this)
         ];
+        Diagnostics = new LuaDiagnostics(this);
     }
 
     private void InternalAddSyntaxTree(LuaDocumentId documentId, LuaSyntaxTree syntaxTree)
@@ -113,6 +116,22 @@ public class LuaCompilation
         return new SemanticModel(this, document, declarationTree);
     }
 
+    public SemanticModel? GetSemanticModel(LuaDocumentId documentId)
+    {
+        var document = Workspace.GetDocument(documentId);
+        if (document is null)
+        {
+            return null;
+        }
+        var declarationTree = DeclarationTrees.GetValueOrDefault(documentId);
+        if (declarationTree is null)
+        {
+            return null;
+        }
+
+        return new SemanticModel(this,document, declarationTree);
+    }
+
     private void Analyze()
     {
         if (DirtyDocuments.Count != 0)
@@ -134,6 +153,11 @@ public class LuaCompilation
                 {
                     analyzer.Analyze(analyzeContext);
                 }
+
+                foreach (var document in list)
+                {
+                    Diagnostics.Check(document);
+                }
             }
             finally
             {
@@ -152,29 +176,18 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    public void AddDiagnostic(LuaDocumentId documentId, Diagnostic diagnostic)
-    {
-        var syntaxTree = GetSyntaxTree(documentId);
-        if (syntaxTree is null)
-        {
-            return;
-        }
-
-        syntaxTree.PushDiagnostic(diagnostic);
-    }
-
-    public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
+    public IEnumerable<Diagnostics.Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
         tree => tree.Diagnostics.Select(it => it.WithLocation(
             tree.Document.GetLocation(it.Range)
         ))
     );
 
-    public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
+    public IEnumerable<Diagnostics.Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
             ? tree.Diagnostics.Select(it => it.WithLocation(
                 tree.Document.GetLocation(it.Range)
             ))
-            : Enumerable.Empty<Diagnostic>();
+            : Enumerable.Empty<Diagnostics.Diagnostic>();
 
     public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
     {

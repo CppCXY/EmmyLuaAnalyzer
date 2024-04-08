@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Diagnostic;
+﻿using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 

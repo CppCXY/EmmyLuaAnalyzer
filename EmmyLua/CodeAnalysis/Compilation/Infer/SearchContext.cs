@@ -100,23 +100,26 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         return Compilation.ProjectIndex.GetMembers(name);
     }
 
-    private IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    private void CollectSupers(string name, HashSet<LuaType> hashSet)
     {
-        var hashSet = new HashSet<LuaType>();
         var supers = Compilation.ProjectIndex.GetSupers(name).ToList();
-        hashSet.UnionWith(supers);
         foreach (var super in supers)
         {
-            if (super is LuaNamedType namedType)
+            if (hashSet.Add(super) && super is LuaNamedType namedType)
             {
                 var detailType = namedType.GetDetailType(this);
                 if (detailType.IsClass)
                 {
-                    hashSet.UnionWith(Compilation.ProjectIndex.GetSupers(namedType.Name));
+                    CollectSupers(namedType.Name, hashSet);
                 }
             }
         }
+    }
 
+    private IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    {
+        var hashSet = new HashSet<LuaType>();
+        CollectSupers(name, hashSet);
         var members = new List<LuaDeclaration>();
         foreach (var luaType in hashSet)
         {

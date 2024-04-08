@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Document;
@@ -16,7 +15,7 @@ public class LuaSyntaxTree
 
     public GreenNode GreenRoot { get; }
 
-    public List<Diagnostic> Diagnostics { get; }
+    public List<Diagnostics.Diagnostic> Diagnostics { get; }
 
     private LuaSourceSyntax? _root;
 
@@ -42,7 +41,7 @@ public class LuaSyntaxTree
         return new LuaSyntaxTree(document, root, diagnostics);
     }
 
-    private LuaSyntaxTree(LuaDocument document, GreenNode root, List<Compile.Diagnostic.Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaDocument document, GreenNode root, List<Diagnostics.Diagnostic> diagnostics)
     {
         Document = document;
         GreenRoot = root;
@@ -97,7 +96,7 @@ public class LuaSyntaxTree
         }
     }
 
-    public void PushDiagnostic(Compile.Diagnostic.Diagnostic diagnostic)
+    public void PushDiagnostic(Diagnostics.Diagnostic diagnostic)
     {
         Diagnostics.Add(diagnostic);
     }

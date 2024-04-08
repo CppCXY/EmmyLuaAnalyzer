@@ -1,21 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.DataFlow;
-using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 
 public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
 {
-    // private List<FlowAnalyzerBase> Analyzers { get; } = new();
-    //
-    // private void AddAnalyzer(FlowAnalyzerBase analyzer)
-    // {
-    //     Analyzers.Add(analyzer);
-    // }
-
-    // AddAnalyzer(new ReachableAnalyzer(compilation));
-
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         foreach (var document in analyzeContext.LuaDocuments)
@@ -38,14 +27,6 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
                     cfgDict.Add(block, builder.Build(block));
                 }
             }
-
-            // foreach (var analyzer in Analyzers)
-            // {
-            //     foreach (var cfg in Compilation.ControlFlowGraphs[documentId].Values)
-            //     {
-            //         analyzer.Analyze(cfg, syntaxTree);
-            //     }
-            // }
         }
     }
 }

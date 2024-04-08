@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compile.Diagnostic;
+namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public class Diagnostic(
     DiagnosticSeverity severity,

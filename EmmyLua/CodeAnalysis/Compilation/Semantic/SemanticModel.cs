@@ -3,7 +3,6 @@ using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compile.Diagnostic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -49,14 +48,14 @@ public class SemanticModel
         return References.FindReferences(element);
     }
 
-    public IEnumerable<Diagnostic> GetDiagnostic()
+    public IEnumerable<Diagnostics.Diagnostic> GetDiagnostic()
     {
         var tree = Compilation.GetSyntaxTree(Document.Id);
 
         return tree?.Diagnostics.Select(it => it.WithLocation(
                    tree.Document.GetLocation(it.Range)
                ))
-               ?? Enumerable.Empty<Diagnostic>();
+               ?? Enumerable.Empty<Diagnostics.Diagnostic>();
     }
 
     public IEnumerable<LuaDeclaration> GetGlobals()

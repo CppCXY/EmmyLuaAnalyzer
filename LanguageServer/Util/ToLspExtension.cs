@@ -1,8 +1,12 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Diagnostic = OmniSharp.Extensions.LanguageServer.Protocol.Models.Diagnostic;
+using DiagnosticSeverity = OmniSharp.Extensions.LanguageServer.Protocol.Models.DiagnosticSeverity;
+using DiagnosticTag = OmniSharp.Extensions.LanguageServer.Protocol.Models.DiagnosticTag;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
-using LuaDiagnostic = EmmyLua.CodeAnalysis.Compile.Diagnostic.Diagnostic;
+using LuaDiagnostic = EmmyLua.CodeAnalysis.Diagnostics.Diagnostic;
 
 namespace LanguageServer.Util;
 
@@ -21,23 +25,23 @@ public static class LocationExtension
     {
         return new()
         {
-            Code = diagnostic.Code.ToString(),
+            Code = DiagnosticCodeHelper.GetName(diagnostic.Code),
             Message = diagnostic.Message,
             Tags = diagnostic.Tag switch
             {
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticTag.Unnecessary =>
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Unnecessary =>
                     new[] { DiagnosticTag.Unnecessary },
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticTag.Deprecated => new[] { DiagnosticTag.Deprecated },
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Deprecated => new[] { DiagnosticTag.Deprecated },
                 _ => Array.Empty<DiagnosticTag>()
             },
             Range = diagnostic.Range.ToLspRange(document),
             Severity = diagnostic.Severity switch
             {
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Error => DiagnosticSeverity.Error,
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Warning => DiagnosticSeverity.Warning,
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Information =>
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Error => DiagnosticSeverity.Error,
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Warning => DiagnosticSeverity.Warning,
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Information =>
                     DiagnosticSeverity.Information,
-                EmmyLua.CodeAnalysis.Compile.Diagnostic.DiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
+                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
                 _ => throw new UnreachableException()
             },
             Source = "EmmyLua"

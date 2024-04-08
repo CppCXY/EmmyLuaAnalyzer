@@ -72,9 +72,9 @@ public class LineIndex
 
     public int GetCol(int offset, string source)
     {
-        if (offset >= source.Length)
+        if (offset > source.Length)
         {
-            offset = source.Length - 1;
+            offset = source.Length;
         }
         if (offset < 0)
         {
@@ -90,7 +90,7 @@ public class LineIndex
             for (var pos = lineOffset.StartOffset; pos <= offset; pos++)
             {
                 col++;
-                if (char.IsSurrogate(source[pos]))
+                if (pos < source.Length && char.IsSurrogate(source[pos]))
                 {
                     pos++;
                 }
