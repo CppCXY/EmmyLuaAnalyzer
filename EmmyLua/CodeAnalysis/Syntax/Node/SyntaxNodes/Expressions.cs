@@ -1,5 +1,4 @@
-﻿using System.Text;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -34,7 +33,8 @@ public class LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
             {
                 return indexExpr?.Name ?? string.Empty;
             }
-            else if (expr is LuaNameExprSyntax nameExpr)
+
+            if (expr is LuaNameExprSyntax nameExpr)
             {
                 return nameExpr.Name?.RepresentText ?? string.Empty;
             }
@@ -233,20 +233,20 @@ public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
             {
                 return DotOrColonIndexName.RepresentText;
             }
-            else if (IndexKeyExpr is LuaLiteralExprSyntax literal)
+
+            if (IndexKeyExpr is LuaLiteralExprSyntax literal)
             {
                 if (literal.Literal is LuaStringToken stringToken)
                 {
                     return stringToken.Value;
                 }
-                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
+
+                if (literal.Literal is LuaIntegerToken luaIntegerToken)
                 {
                     return $"[{luaIntegerToken.Value}]";
                 }
-                else
-                {
-                    return literal.Literal.RepresentText;
-                }
+
+                return literal.Literal.RepresentText;
             }
 
             return null;

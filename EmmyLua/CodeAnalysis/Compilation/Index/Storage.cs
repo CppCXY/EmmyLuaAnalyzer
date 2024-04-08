@@ -6,7 +6,7 @@ public class IndexEntry<TStubElement>
 {
     private LuaDocumentId _hotDocumentId = LuaDocumentId.VirtualDocumentId;
 
-    private List<TStubElement>? _hotElements = null;
+    private List<TStubElement>? _hotElements;
 
     public Dictionary<LuaDocumentId, List<TStubElement>> Files { get; } = new();
 

@@ -7,11 +7,11 @@ public class ClassDetailType(
     string name,
     SearchContext context) : BasicDetailType(name, NamedTypeKind.Class, context)
 {
-    private List<LuaType>? _supers = null;
+    private List<LuaType>? _supers;
 
-    private List<GenericParameterLuaDeclaration>? _generics = null;
+    private List<GenericParameterLuaDeclaration>? _generics;
 
-    private NamedTypeLuaDeclaration? _declaration = null;
+    private NamedTypeLuaDeclaration? _declaration;
 
     public List<LuaType> Supers
     {

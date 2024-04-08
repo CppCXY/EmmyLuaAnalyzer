@@ -10,7 +10,7 @@ public class DeclarationNode(int position)
 
     public DeclarationNode? Next { get; set; }
 
-    public DeclarationNodeContainer? Parent { get; set; } = null;
+    public DeclarationNodeContainer? Parent { get; set; }
 
     public int Position { get; } = position;
 }
@@ -119,7 +119,7 @@ public class LocalLuaDeclaration(
 {
     public LuaSyntaxNodePtr<LuaLocalNameSyntax> LocalNamePtr => Ptr.Cast<LuaLocalNameSyntax>();
 
-    public bool IsTypeDefine { get; internal set; } = false;
+    public bool IsTypeDefine { get; internal set; }
 
     public override LocalLuaDeclaration WithType(LuaType type) =>
         new(Name, LocalNamePtr, type)
@@ -136,7 +136,7 @@ public class GlobalLuaDeclaration(
 {
     public LuaSyntaxNodePtr<LuaNameExprSyntax> VarNamePtr => Ptr.Cast<LuaNameExprSyntax>();
 
-    public bool IsTypeDefine { get; internal set; } = false;
+    public bool IsTypeDefine { get; internal set; }
 
     public override GlobalLuaDeclaration WithType(LuaType type) =>
         new(Name, VarNamePtr, type)

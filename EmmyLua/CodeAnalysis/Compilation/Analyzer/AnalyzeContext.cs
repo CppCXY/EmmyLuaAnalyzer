@@ -12,7 +12,7 @@ public class LuaExprRef(LuaExprSyntax expr, int retId = 0)
 }
 
 [Flags]
-public enum ResolveState : int
+public enum ResolveState
 {
     Resolved = 0,
     UnResolvedIndex = 0x001,

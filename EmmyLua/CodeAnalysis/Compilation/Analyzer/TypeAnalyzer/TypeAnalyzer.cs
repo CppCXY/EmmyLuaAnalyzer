@@ -1,9 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
 // TODO: Implement TypeAnalyzer
 public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)

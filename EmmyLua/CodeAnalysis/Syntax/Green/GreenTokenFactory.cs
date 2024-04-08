@@ -2,9 +2,6 @@
 
 namespace EmmyLua.CodeAnalysis.Syntax.Green;
 
-using System.Collections.Generic;
-
-
 public class GreenTokenFactory
 {
     private struct Key(LuaTokenKind kind, int length)

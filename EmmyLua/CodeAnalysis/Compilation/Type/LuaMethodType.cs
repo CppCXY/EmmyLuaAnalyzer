@@ -55,7 +55,7 @@ public enum SignatureMatchType
 
 public struct SignatureMatchResult
 {
-    public static readonly SignatureMatchResult NotMatch = new SignatureMatchResult()
+    public static readonly SignatureMatchResult NotMatch = new SignatureMatchResult
     {
         MatchType = SignatureMatchType.DoNotMatch,
         MatchCount = 0
@@ -161,7 +161,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
     private SignatureMatchResult InnerMatch(List<LuaExprSyntax> args, SearchContext context, int skipParam,
         int matchedParam = 0)
     {
-        var matchResult = new SignatureMatchResult()
+        var matchResult = new SignatureMatchResult
         {
             MatchType = SignatureMatchType.ParamPartialMatch,
             MatchCount = matchedParam

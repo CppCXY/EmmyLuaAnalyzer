@@ -16,7 +16,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 
     private LuaTokenData _current = new(LuaTokenKind.TkEof, new SourceRange());
 
-    private int _originTokenIndex = 0;
+    private int _originTokenIndex;
 
     private List<LuaTokenData> OriginLuaTokenList { get; set; } = new();
 
@@ -156,7 +156,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 
     public RollbackPoint GetRollbackPoint()
     {
-        var rollbackPoint = new RollbackPoint()
+        var rollbackPoint = new RollbackPoint
         {
             EventPosition = Events.Count - 1,
             OriginTokenIndex = _originTokenIndex - 1,

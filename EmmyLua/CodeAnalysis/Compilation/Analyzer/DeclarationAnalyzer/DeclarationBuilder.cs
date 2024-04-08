@@ -12,9 +12,9 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationBuilder : ILuaElementWalker
 {
-    private DeclarationScope? _topScope = null;
+    private DeclarationScope? _topScope;
 
-    private DeclarationScope? _curScope = null;
+    private DeclarationScope? _curScope;
 
     private Stack<DeclarationScope> _scopeStack = new();
 

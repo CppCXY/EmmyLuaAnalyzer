@@ -30,10 +30,8 @@ public class GreenNodeBuilder
         {
             return greenNode.SyntaxKind is LuaSyntaxKind.Comment;
         }
-        else
-        {
-            return greenNode.TokenKind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine;
-        }
+
+        return greenNode.TokenKind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine;
     }
 
     public void FinishNode()

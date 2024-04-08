@@ -19,7 +19,7 @@ public class BasicDetailType(string name, NamedTypeKind kind, SearchContext cont
 
     public bool IsAlias => Kind == NamedTypeKind.Alias;
 
-    protected bool LazyInit { get; set; } = false;
+    protected bool LazyInit { get; set; }
 
     protected ProjectIndex Index => Context.Compilation.ProjectIndex;
 

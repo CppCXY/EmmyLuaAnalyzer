@@ -4,7 +4,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 public class EnumDetailType(string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Enum, context)
 {
-    private LuaType? _baseType = null;
+    private LuaType? _baseType;
 
     public LuaType? BaseType
     {

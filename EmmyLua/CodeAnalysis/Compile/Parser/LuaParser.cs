@@ -200,10 +200,8 @@ public class LuaParser : IMarkerEventContainer
                 var tokenData = Tokens[_tokenIndex];
                 return Lexer.Document.Text.AsSpan(tokenData.Range.StartOffset, tokenData.Range.Length);
             }
-            else
-            {
-                return "";
-            }
+
+            return "";
         }
     }
 

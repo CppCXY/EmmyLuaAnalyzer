@@ -93,7 +93,7 @@ public static class OperatorKind
     {
         public int Left = left;
         public int Right = right;
-    };
+    }
 
     public static readonly PriorityTable[] Priority =
     [

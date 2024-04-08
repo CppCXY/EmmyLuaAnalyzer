@@ -6,7 +6,6 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
@@ -176,18 +175,18 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    public IEnumerable<Diagnostics.Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
+    public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
         tree => tree.Diagnostics.Select(it => it.WithLocation(
             tree.Document.GetLocation(it.Range)
         ))
     );
 
-    public IEnumerable<Diagnostics.Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
+    public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
             ? tree.Diagnostics.Select(it => it.WithLocation(
                 tree.Document.GetLocation(it.Range)
             ))
-            : Enumerable.Empty<Diagnostics.Diagnostic>();
+            : Enumerable.Empty<Diagnostic>();
 
     public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
     {

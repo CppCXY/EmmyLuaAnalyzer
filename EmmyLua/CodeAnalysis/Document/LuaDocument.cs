@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Tree;
-using System;
 
 namespace EmmyLua.CodeAnalysis.Document;
 

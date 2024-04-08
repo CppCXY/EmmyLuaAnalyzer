@@ -6,11 +6,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 public class InterfaceDetailType(
     string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Interface, context)
 {
-    private List<LuaType>? _supers = null;
+    private List<LuaType>? _supers;
 
-    private List<GenericParameterLuaDeclaration>? _generics = null;
+    private List<GenericParameterLuaDeclaration>? _generics;
 
-    private NamedTypeLuaDeclaration? _declaration = null;
+    private NamedTypeLuaDeclaration? _declaration;
 
 
     public List<LuaType> Supers

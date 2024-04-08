@@ -24,9 +24,7 @@ public class LuaFeatures
         "?.lua"
     ];
 
-    public Dictionary<string, string> VirtualModule { get; set; } = new()
-    {
-    };
+    public Dictionary<string, string> VirtualModule { get; set; } = new();
 
     public HashSet<string> RequireLikeFunction { get; set; } =
     [

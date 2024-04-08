@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public static class TypeHelper
 {
@@ -36,22 +34,23 @@ public static class TypeHelper
         {
             return UnionTypeMerge(leftUnionType, right);
         }
-        else if (right is LuaUnionType rightUnionType)
+
+        if (right is LuaUnionType rightUnionType)
         {
             return UnionTypeMerge(rightUnionType, left);
         }
-        else if (left.Equals(Builtin.Unknown))
+
+        if (left.Equals(Builtin.Unknown))
         {
             return right;
         }
-        else if (right.Equals(Builtin.Unknown))
+
+        if (right.Equals(Builtin.Unknown))
         {
             return left;
         }
-        else
-        {
-            return new LuaUnionType(new List<LuaType> { left, right });
-        }
+
+        return new LuaUnionType(new List<LuaType> { left, right });
     }
 
     public static LuaType Remove(this LuaType left, LuaType right)

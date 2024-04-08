@@ -156,11 +156,13 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
             {
                 return NameField!;
             }
-            else if (IsStringField)
+
+            if (IsStringField)
             {
                 return StringField!;
             }
-            else if (IsIntegerField)
+
+            if (IsIntegerField)
             {
                 return IntegerField!;
             }
@@ -177,11 +179,13 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
             {
                 return NameField!.RepresentText;
             }
-            else if (IsStringField)
+
+            if (IsStringField)
             {
                 return StringField!.Value;
             }
-            else if (IsIntegerField)
+
+            if (IsIntegerField)
             {
                 return $"[{IntegerField!.Value}]";
             }

@@ -5,7 +5,7 @@ public class LineIndex
     public static LineIndex Parse(string text)
     {
         var lineIndex = new LineIndex();
-        var lineOffset = new LineOffset()
+        var lineOffset = new LineOffset
         {
             StartOffset = 0,
             Length = 0,
@@ -33,7 +33,7 @@ public class LineIndex
                 }
 
                 if (pos + 1 >= text.Length) continue;
-                lineOffset = new LineOffset()
+                lineOffset = new LineOffset
                 {
                     StartOffset = pos + 1,
                     Length = 0,
@@ -57,7 +57,7 @@ public class LineIndex
 
     public int GetLine(int offset)
     {
-        var index = _indexs.BinarySearch(new LineOffset()
+        var index = _indexs.BinarySearch(new LineOffset
         {
             StartOffset = offset,
         }, Comparer<LineOffset>.Create((a, b) => a.StartOffset.CompareTo(b.StartOffset)));

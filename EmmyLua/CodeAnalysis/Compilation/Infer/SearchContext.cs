@@ -4,7 +4,6 @@ using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public class SearchContext(LuaCompilation compilation, bool allowCache = true, bool cacheUnknown = true)
@@ -22,7 +21,7 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
     private const int MaxDepth = 1000;
 
     // 推断深度
-    private int _currentDepth = 0;
+    private int _currentDepth;
 
     public LuaType Infer(LuaSyntaxElement? element)
     {
@@ -46,10 +45,8 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
 
             return luaType;
         }
-        else
-        {
-            return InferCore(element);
-        }
+
+        return InferCore(element);
     }
 
     public void ClearCache()
@@ -147,7 +144,8 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         {
             return GetGenericMembers(genericType);
         }
-        else if (luaType is LuaNamedType namedType)
+
+        if (luaType is LuaNamedType namedType)
         {
             var detailType = namedType.GetDetailType(this);
             if (detailType.IsAlias && detailType is AliasDetailType { OriginType: {} originType, Name: {} name })
@@ -163,11 +161,13 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
 
             return GetMembers(namedType.Name);
         }
-        else if (luaType is LuaUnionType unionType)
+
+        if (luaType is LuaUnionType unionType)
         {
             return unionType.UnionTypes.SelectMany(GetMembers);
         }
-        else if (luaType is LuaTupleType tupleType)
+
+        if (luaType is LuaTupleType tupleType)
         {
             return tupleType.TupleDeclaration;
         }
@@ -220,11 +220,13 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
 
             return fieldDeclarations;
         }
-        else if (luaType is LuaUnionType unionType)
+
+        if (luaType is LuaUnionType unionType)
         {
             return unionType.UnionTypes.SelectMany(it => FindMember(it, memberName));
         }
-        else if (luaType is LuaTupleType tupleType)
+
+        if (luaType is LuaTupleType tupleType)
         {
             return GetMembers(tupleType).Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
         }
@@ -250,7 +252,8 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
             {
                 return [new VirtualDeclaration(memberName, secondType)];
             }
-            else if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
+
+            if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
             {
                 return [new VirtualDeclaration(memberName, secondType)];
             }
@@ -389,11 +392,9 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
 
             return instanceOperators;
         }
-        else
-        {
-            return Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
-                .Where(it => it.Kind == kind);
-        }
+
+        return Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
+            .Where(it => it.Kind == kind);
     }
 
     public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)

@@ -4,7 +4,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 public class AliasDetailType(string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Alias, context)
 {
-    private LuaType? _originType = null;
+    private LuaType? _originType;
 
     public LuaType? OriginType
     {

@@ -58,14 +58,13 @@ public static class TypeInfer
         {
             return new LuaIntegerLiteralType(literalType.Integer.Value);
         }
-        else if (literalType.String != null)
+
+        if (literalType.String != null)
         {
             return new LuaStringLiteralType(literalType.String.Value);
         }
-        else
-        {
-            return Builtin.Unknown;
-        }
+
+        return Builtin.Unknown;
     }
 
     public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)

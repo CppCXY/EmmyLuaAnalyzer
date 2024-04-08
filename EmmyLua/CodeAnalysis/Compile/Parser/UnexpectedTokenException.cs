@@ -7,7 +7,7 @@ public class UnexpectedTokenException : ApplicationException
     // 定义一个私有字段，用于存储 Token 值
     private LuaTokenKind Token { get; set; }
 
-    public UnexpectedTokenException() : base()
+    public UnexpectedTokenException()
     {
     }
 
