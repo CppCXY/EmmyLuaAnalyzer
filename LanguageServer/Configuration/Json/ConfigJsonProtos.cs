@@ -25,7 +25,11 @@ public class DiagnosticsConfig
     public List<string>? Disable { get; set; }
 
     public Dictionary<string, string>? GroupFileStatus { get; set; }
+    
+    public Dictionary<string, string>? GroupSeverity { get; set; }
 
+    public List<string>? Globals { get; set; } = [];
+    
     public string? IgnoredFiles { get; set; }
 
     public string? LibraryFiles { get; set; }
@@ -58,6 +62,8 @@ public class WorkspaceConfig
     ];
 
     public bool CheckThirdParty { get; set; } = false;
+
+    public List<string>? UserThirdParty { get; set; } = [];
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
@@ -75,5 +81,15 @@ public class DocumentConfig
 // ReSharper disable once ClassNeverInstantiated.Global
 public class CompletionConfig
 {
-    public bool AutoFillArguments { get; set; } = false;
+    public bool Enable { get; set; } = true;
+    
+    public bool AutoRequire { get; set; } = true;
+    
+    public bool CallSnippet { get; set; } = false;
+
+    public int DisplayContext { get; set; } = 1;
+    
+    public string KeyWordSnippet { get; set; } = "Both";
+    
+    public string Postfix { get; set; } = "@";
 }

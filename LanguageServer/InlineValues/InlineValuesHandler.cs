@@ -1,0 +1,34 @@
+﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Util;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+
+namespace LanguageServer.InlineValues;
+
+public class InlineValuesHandler(LuaWorkspace workspace): InlineValuesHandlerBase
+{
+    private InlineValuesBuilder Builder { get; } = new();
+    
+    protected override InlineValueRegistrationOptions CreateRegistrationOptions(InlineValueClientCapabilities capability,
+        ClientCapabilities clientCapabilities)
+    {
+        return new InlineValueRegistrationOptions
+        {
+            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace)
+        };
+    }
+
+    public override Task<Container<InlineValueBase>?> Handle(InlineValueParams request, CancellationToken cancellationToken)
+    {
+        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
+        if (semanticModel is not null)
+        {
+            var result =  Builder.Build(semanticModel, request.Range, request.Context);
+            return Task.FromResult<Container<InlineValueBase>?>(new Container<InlineValueBase>(result));
+        }
+        
+        return Task.FromResult<Container<InlineValueBase>?>(null);
+    }
+}

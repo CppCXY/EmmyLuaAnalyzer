@@ -10,6 +10,7 @@ using LanguageServer.DocumentSymbol;
 using LanguageServer.ExecuteCommand;
 using LanguageServer.Hover;
 using LanguageServer.InlayHint;
+using LanguageServer.InlineValues;
 using LanguageServer.Monitor;
 using LanguageServer.References;
 using LanguageServer.Rename;
@@ -73,6 +74,7 @@ var server = await From(options =>
         .WithHandler<ExecuteCommandHandler>()
         .WithHandler<SignatureHelperHandler>()
         .WithHandler<EmmyAnnotatorHandler>()
+        .WithHandler<InlineValuesHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create());
