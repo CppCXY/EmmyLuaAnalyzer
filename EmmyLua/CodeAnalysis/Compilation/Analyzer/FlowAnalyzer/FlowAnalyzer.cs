@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 
-public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
+public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Flow")
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {

@@ -16,6 +16,8 @@ public class LuaWorkspace
 
     private int _idCounter = 1;
 
+    public LuaWorkspaceMonitor? Monitor { get; set; }
+
     public LuaCompilation Compilation { get; }
 
     public ModuleGraph ModuleGraph { get; }
@@ -53,7 +55,8 @@ public class LuaWorkspace
 
     public void LoadWorkspace(string workspace, bool notFilter = false)
     {
-        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(workspace, it)).ToList();
+        Monitor?.OnStartLoadWorkspace();
+        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(workspace, it.Trim('\\', '/'))).ToList();
         var files =
             Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories));
         if (!notFilter)
@@ -79,6 +82,7 @@ public class LuaWorkspace
         }
 
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
+        Monitor?.OnFinishLoadWorkspace();
     }
 
     private LuaDocumentId AllocateId()

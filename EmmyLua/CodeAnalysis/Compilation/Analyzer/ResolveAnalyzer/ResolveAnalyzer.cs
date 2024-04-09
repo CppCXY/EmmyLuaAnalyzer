@@ -4,11 +4,10 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
-public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
+public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Resolve")
 {
     private SearchContext Context { get; } = new(compilation, true, false);
 
-    // TODO 有较大的性能问题, 需要优化, 可能要建立依赖关系图
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         var resolveDependencyGraph = new ResolveDependencyGraph(Context);
@@ -281,21 +280,29 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             declaration.DeclarationType = type;
         }
-        else if (unResolved.IsTypeDeclaration && type is LuaTableLiteralType tableLiteralType)
+        else if (unResolved.IsTypeDeclaration && TypeHelper.IsExtensionType(type))
         {
             var declarationType = unResolved.LuaDeclaration.DeclarationType;
             if (declarationType is LuaNamedType namedType)
             {
-                var typeName = namedType.Name;
-                var members = Compilation.ProjectIndex.GetMembers(tableLiteralType.Name);
-                var documentId = declaration.Ptr.DocumentId;
-
-                foreach (var member in members)
+                if (type is LuaTableLiteralType tableType)
                 {
-                    Compilation.ProjectIndex.AddMember(documentId, typeName, member);
-                }
+                    var typeName = namedType.Name;
+                    var members = Compilation.ProjectIndex.GetMembers(tableType.Name);
+                    var documentId = declaration.Ptr.DocumentId;
 
-                Compilation.ProjectIndex.AddRelatedType(documentId, tableLiteralType.Name, namedType);
+                    foreach (var member in members)
+                    {
+                        Compilation.ProjectIndex.AddMember(documentId, typeName, member);
+                    }
+
+                    Compilation.ProjectIndex.AddRelatedType(documentId, tableType.Name, namedType);
+                }
+                else
+                {
+                    var documentId = declaration.Ptr.DocumentId;
+                    Compilation.ProjectIndex.AddSuper(documentId, namedType.Name, type);
+                }
             }
         }
     }

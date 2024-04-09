@@ -150,11 +150,13 @@ public class LuaCompilation
                 var analyzeContext = new AnalyzeContext(list);
                 foreach (var analyzer in Analyzers)
                 {
+                    Workspace.Monitor?.OnAnalyzing(analyzer.Name);
                     analyzer.Analyze(analyzeContext);
                 }
 
                 foreach (var document in list)
                 {
+                    Workspace.Monitor?.OnDiagnosticChecking(document.Path, list.Count);
                     Diagnostics.Check(document);
                 }
             }

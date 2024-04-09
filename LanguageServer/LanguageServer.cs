@@ -10,6 +10,7 @@ using LanguageServer.DocumentSymbol;
 using LanguageServer.ExecuteCommand;
 using LanguageServer.Hover;
 using LanguageServer.InlayHint;
+using LanguageServer.Monitor;
 using LanguageServer.References;
 using LanguageServer.Rename;
 using LanguageServer.SemanticToken;
@@ -17,6 +18,7 @@ using LanguageServer.SignatureHelper;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Serilog;
 using Serilog.Events;
@@ -76,22 +78,25 @@ var server = await From(options =>
             services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create());
             services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
             services.AddSingleton<LuaConfig>(server => new LuaConfig(server.GetRequiredService<ILogger<LuaConfig>>()));
+            services.AddSingleton<ProcessMonitor>(server => new ProcessMonitor(server.GetRequiredService<ILanguageServerFacade>()));
         })
         .OnInitialize((server, request, token) =>
         {
             workspacePath = request.RootPath;
             return Task.CompletedTask;
         })
-        .OnInitialized((server, request, response, token) =>
+        .OnStarted(async (server, token) =>
         {
             var luaConfig = server.Services.GetRequiredService<LuaConfig>();
             var luaWorkspace = server.Services.GetRequiredService<LuaWorkspace>();
-            luaConfig.Watch(Path.Combine(workspacePath, ".luarc.json"));
+            var processMonitor = server.Services.GetRequiredService<ProcessMonitor>();
+            luaWorkspace.Monitor = processMonitor;
             
+            luaConfig.Watch(Path.Combine(workspacePath, ".luarc.json"));
             luaWorkspace.Features = luaConfig.GetFeatures();
             luaWorkspace.LoadWorkspace(workspacePath);
             
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         });
 }).ConfigureAwait(false);
 await server.WaitForExit.ConfigureAwait(false);

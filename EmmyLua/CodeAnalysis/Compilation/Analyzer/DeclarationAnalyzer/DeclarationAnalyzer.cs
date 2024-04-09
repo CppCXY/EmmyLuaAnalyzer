@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
-public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation)
+public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Declaration")
 {
     public SearchContext Context { get; } = new(compilation, false);
 

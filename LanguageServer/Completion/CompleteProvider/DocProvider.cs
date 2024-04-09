@@ -11,7 +11,7 @@ public class DocProvider : ICompleteProviderBase
     [
         "class", "enum", "interface", "alias", "module", "field", "param", "return", "see", "deprecated",
         "type", "overload", "generic", "async", "cast", "private", "protected", "public", "operator",
-        "meta", "version", "as", "nodiscard", "diagnostic", "package",
+        "meta", "version", "as", "nodiscard", "diagnostic", // "package",
     ];
 
     public void AddCompletion(CompleteContext context)

@@ -101,4 +101,13 @@ public static class TypeHelper
 
         return new LuaUnionType(types);
     }
+
+    public static bool IsExtensionType(LuaType type)
+    {
+        return type is LuaNamedType namedType && namedType.Name switch
+        {
+            "integer" or "number" or "thread" or "void" or "unknown" or "nil" or "any" => false,
+            _ => true,
+        };
+    }
 }

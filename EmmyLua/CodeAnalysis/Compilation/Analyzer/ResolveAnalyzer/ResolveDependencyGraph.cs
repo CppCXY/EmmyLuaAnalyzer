@@ -60,16 +60,20 @@ public class ResolveDependencyGraph(SearchContext context)
 
     public void Build(List<UnResolved> unResolvedList)
     {
+        // index first
+        foreach (var unResolved in unResolvedList)
+        {
+            if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
+            {
+                CalcResolveIndex(unResolved);
+            }
+        }
+        // other
         foreach (var unResolved in unResolvedList)
         {
             if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
             {
                 CalcResolveType(unResolved);
-            }
-
-            if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
-            {
-                CalcResolveIndex(unResolved);
             }
 
             if ((unResolved.ResolvedState & ResolveState.UnResolveReturn) != 0)
