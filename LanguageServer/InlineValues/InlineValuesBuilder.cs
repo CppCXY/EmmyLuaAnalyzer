@@ -10,10 +10,23 @@ public class InlineValuesBuilder
 {
     public List<InlineValueBase> Build(SemanticModel semanticModel, Range range, InlineValueContext context)
     {
-        var sourceRange = range.ToSourceRange(semanticModel.Document);
-
         var result = new List<InlineValueBase>();
-        foreach (var node in semanticModel.Document.SyntaxTree.SyntaxRoot.DescendantsInRange(sourceRange))
+        var stopRange = context.StoppedLocation;
+        var token = semanticModel.Document.SyntaxTree.SyntaxRoot.TokenAt(stopRange.End.Line, stopRange.End.Character);
+        if (token is null)
+        {
+            return result;
+        }
+
+        var baseRange = token.Ancestors.OfType<LuaFuncStatSyntax>().FirstOrDefault()?.Range ??
+                        range.ToSourceRange(semanticModel.Document);
+        var stopOffset = semanticModel.Document.GetOffset(stopRange.End.Line, stopRange.End.Character);
+        if (baseRange.StartOffset < stopOffset)
+        {
+            baseRange = baseRange with { Length = stopOffset - baseRange.StartOffset };
+        }
+
+        foreach (var node in semanticModel.Document.SyntaxTree.SyntaxRoot.DescendantsInRange(baseRange))
         {
             switch (node)
             {
