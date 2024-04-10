@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.Configuration.Json;
+using LanguageServer.Server;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -9,7 +10,7 @@ namespace LanguageServer.Configuration;
 
 public class LuaConfig
 {
-    private ILogger<LuaConfig> Logger { get; }
+    private ILogger<ServerContext> Logger { get; }
     
     private JsonSerializerSettings SerializerSettings { get; } = new()
     {
@@ -68,7 +69,7 @@ public class LuaConfig
 
     private FileSystemWatcher Watcher { get; } = new();
 
-    public LuaConfig(ILogger<LuaConfig> logger)
+    public LuaConfig(ILogger<ServerContext> logger)
     {
         Watcher.Changed += OnChanged;
         Logger = logger;

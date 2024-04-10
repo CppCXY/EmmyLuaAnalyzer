@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,9 +16,7 @@ namespace LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class TextDocumentHandler(
-    // ILogger<TextDocumentHandler> logger,
-    // ILanguageServerConfiguration configuration,
-    LuaWorkspace workspace,
+    ServerContext context,
     ILanguageServerFacade languageServerFacade
 ) : TextDocumentSyncHandlerBase
 {
@@ -31,7 +30,7 @@ public class TextDocumentHandler(
         ClientCapabilities clientCapabilities)
         => new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             Change = Change,
             Save = new SaveOptions() { IncludeText = false }
         };
@@ -39,16 +38,15 @@ public class TextDocumentHandler(
     public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        var document = workspace.GetDocumentByUri(uri);
-        if (document is not null && string.Equals(document.Text, request.TextDocument.Text, StringComparison.Ordinal))
+        context.ReadyWrite(() =>
         {
-            return Unit.Task;
-        }
-        workspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
-        if (workspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
-        {
-            PushDiagnostic(request.TextDocument, semanticModel);
-        }
+            context.LuaWorkspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
+            if (context.LuaWorkspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
+            {
+                PushDiagnostic(request.TextDocument, semanticModel);
+            }
+        });
+
 
         return Unit.Task;
     }
@@ -57,8 +55,12 @@ public class TextDocumentHandler(
     {
         var changes = request.ContentChanges.ToList();
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        workspace.UpdateDocumentByUri(uri, changes[0].Text);
-        PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
+        context.ReadyWrite(() =>
+        {
+            context.LuaWorkspace.UpdateDocumentByUri(uri, changes[0].Text);
+            PushDiagnostic(request.TextDocument, context.LuaWorkspace.Compilation.GetSemanticModel(uri)!);
+        });
+
         return Unit.Task;
     }
 
@@ -69,7 +71,11 @@ public class TextDocumentHandler(
 
     public override Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
     {
-        workspace.CloseDocument(request.TextDocument.Uri.ToUnencodedString());
+        context.ReadyWrite(() =>
+        {
+            context.LuaWorkspace.CloseDocument(request.TextDocument.Uri.ToUnencodedString());
+        });
+        
         return Unit.Task;
     }
 
@@ -85,5 +91,4 @@ public class TextDocumentHandler(
             Uri = identifier.Uri,
         });
     }
-    
 }

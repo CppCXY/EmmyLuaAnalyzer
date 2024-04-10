@@ -1,7 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Monitor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
-namespace LanguageServer.Monitor;
+namespace LanguageServer.Server.Monitor;
 
 public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWorkspaceMonitor
 {

@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -7,7 +7,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace LanguageServer.SemanticToken;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandlerBase
+public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandlerBase
 {
     private SemanticTokensAnalyzer Analyzer { get; } = new();
 
@@ -16,7 +16,7 @@ public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandle
     {
         return new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             Legend = Analyzer.Legend,
             Range = true,
             Full = true,
@@ -26,13 +26,16 @@ public class SemanticTokenHandler(LuaWorkspace workspace) : SemanticTokensHandle
     protected override Task Tokenize(SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier,
         CancellationToken cancellationToken)
     {
-        var uri = identifier.TextDocument.Uri.ToUnencodedString();
-        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
-        if (semanticModel is not null)
+        context.ReadyRead(() =>
         {
-            Analyzer.Tokenize(builder, semanticModel, cancellationToken);
-        }
-
+            var uri = identifier.TextDocument.Uri.ToUnencodedString();
+            var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
+            if (semanticModel is not null)
+            {
+                Analyzer.Tokenize(builder, semanticModel, cancellationToken);
+            }
+        });
+        
         return Task.CompletedTask;
     }
 

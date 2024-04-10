@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -10,11 +11,10 @@ namespace LanguageServer.ExecuteCommand;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class ExecuteCommandHandler(
-    LuaWorkspace workspace,
-    ILanguageServerFacade languageServerFacade,
+    ServerContext context,
     ILogger<ExecuteCommandHandler> logger) : ExecuteCommandHandlerBase
 {
-    private CommandExecutor Executor { get; } = new(workspace, languageServerFacade, logger);
+    private CommandExecutor Executor { get; } = new(context, logger);
 
     protected override ExecuteCommandRegistrationOptions CreateRegistrationOptions(ExecuteCommandCapability capability,
         ClientCapabilities clientCapabilities)

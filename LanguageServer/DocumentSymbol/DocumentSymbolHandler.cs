@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -7,7 +8,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace LanguageServer.DocumentSymbol;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class DocumentSymbolHandler(LuaWorkspace workspace) : DocumentSymbolHandlerBase
+public class DocumentSymbolHandler(ServerContext context) : DocumentSymbolHandlerBase
 {
     private DocumentSymbolBuilder Builder { get; } = new();
 
@@ -17,7 +18,7 @@ public class DocumentSymbolHandler(LuaWorkspace workspace) : DocumentSymbolHandl
         return new()
         {
             Label = "EmmyLua",
-            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace)
+            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace)
         };
     }
 
@@ -25,16 +26,18 @@ public class DocumentSymbolHandler(LuaWorkspace workspace) : DocumentSymbolHandl
         CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
-        if (semanticModel is not null)
+        SymbolInformationOrDocumentSymbolContainer? container = null;
+        context.ReadyRead(() =>
         {
-            var symbols = Builder.Build(semanticModel);
-            return Task.FromResult<SymbolInformationOrDocumentSymbolContainer?>(
-                SymbolInformationOrDocumentSymbolContainer.From(symbols.Select(
-                    it => new SymbolInformationOrDocumentSymbol(it)))
-            );
-        }
-
-        return Task.FromResult<SymbolInformationOrDocumentSymbolContainer?>(null);
+            var semanticModel = context.GetSemanticModel(uri);
+            if (semanticModel is not null)
+            {
+                var symbols = Builder.Build(semanticModel);
+                container = SymbolInformationOrDocumentSymbolContainer.From(
+                    symbols.Select(it => new SymbolInformationOrDocumentSymbol(it)));
+            }
+        });
+        
+        return Task.FromResult<SymbolInformationOrDocumentSymbolContainer?>(container);
     }
 }

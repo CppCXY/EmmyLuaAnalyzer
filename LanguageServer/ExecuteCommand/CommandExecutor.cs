@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.ExecuteCommand.Commands;
+using LanguageServer.Server;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -11,14 +12,13 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 namespace LanguageServer.ExecuteCommand;
 
 public class CommandExecutor(
-    LuaWorkspace workspace,
-    ILanguageServerFacade languageServerFacade,
+    ServerContext context,
     ILogger<ExecuteCommandHandler> logger)
 {
-    public LuaWorkspace Workspace { get; } = workspace;
+    private ILanguageServerFacade Facade { get; } = context.Server;
 
-    private ILanguageServerFacade Facade { get; } = languageServerFacade;
-
+    public ServerContext Context { get; } = context;
+    
     private List<ICommandBase> Commands { get; } =
     [
         new AutoRequire()
@@ -36,7 +36,7 @@ public class CommandExecutor(
         {
             await cmd.ExecuteAsync(arguments, this);
         }
-
+        
         return await Unit.Task;
     }
 

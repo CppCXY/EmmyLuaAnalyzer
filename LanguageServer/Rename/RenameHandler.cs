@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -8,7 +9,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace LanguageServer.Rename;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
+public class RenameHandler(ServerContext context) : RenameHandlerBase
 {
     private RenameBuilder Builder { get; } = new();
     
@@ -17,7 +18,7 @@ public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
     {
         return new RenameRegistrationOptions()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             PrepareProvider = false
         };
     }
@@ -25,23 +26,27 @@ public class RenameHandler(LuaWorkspace workspace) : RenameHandlerBase
     public override Task<WorkspaceEdit?> Handle(RenameParams request, CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUnencodedString();
-        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
-        if (semanticModel is not null)
+        WorkspaceEdit? workspaceEdit = null;
+        context.ReadyRead(() =>
         {
-            var document = semanticModel.Document;
-            var pos = request.Position;
-            var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
-            if (node is not null)
+            var semanticModel = context.GetSemanticModel(uri);
+            if (semanticModel is not null)
             {
-                var newName = request.NewName;
-                var changes = Builder.Build(semanticModel, node, newName);
-                return Task.FromResult<WorkspaceEdit?>(new WorkspaceEdit()
+                var document = semanticModel.Document;
+                var pos = request.Position;
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
+                if (node is not null)
                 {
-                    Changes = changes
-                });
+                    var newName = request.NewName;
+                    var changes = Builder.Build(semanticModel, node, newName);
+                    workspaceEdit = new WorkspaceEdit()
+                    {
+                        Changes = changes
+                    };
+                }
             }
-        }
-
-        return Task.FromResult<WorkspaceEdit?>(null);
+        });
+        
+        return Task.FromResult<WorkspaceEdit?>(workspaceEdit);
     }
 }

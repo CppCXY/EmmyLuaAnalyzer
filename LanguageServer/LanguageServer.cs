@@ -15,6 +15,8 @@ using LanguageServer.Monitor;
 using LanguageServer.References;
 using LanguageServer.Rename;
 using LanguageServer.SemanticToken;
+using LanguageServer.Server;
+using LanguageServer.Server.Monitor;
 using LanguageServer.SignatureHelper;
 using LanguageServer.TextDocument;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,28 +79,23 @@ var server = await From(options =>
         .WithHandler<InlineValuesHandler>()
         .WithServices(services =>
         {
-            services.AddSingleton<LuaWorkspace>(_ => LuaWorkspace.Create());
+            services.AddSingleton<ServerContext>(
+                server => new ServerContext(
+                    server.GetRequiredService<ILogger<ServerContext>>(),
+                    server.GetRequiredService<ILanguageServerFacade>())
+            );
             services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
-            services.AddSingleton<LuaConfig>(server => new LuaConfig(server.GetRequiredService<ILogger<LuaConfig>>()));
-            services.AddSingleton<ProcessMonitor>(server => new ProcessMonitor(server.GetRequiredService<ILanguageServerFacade>()));
         })
         .OnInitialize((server, request, token) =>
         {
             workspacePath = request.RootPath;
             return Task.CompletedTask;
         })
-        .OnStarted(async (server, token) =>
+        .OnStarted((server, _) =>
         {
-            var luaConfig = server.Services.GetRequiredService<LuaConfig>();
-            var luaWorkspace = server.Services.GetRequiredService<LuaWorkspace>();
-            var processMonitor = server.Services.GetRequiredService<ProcessMonitor>();
-            luaWorkspace.Monitor = processMonitor;
-            
-            luaConfig.Watch(Path.Combine(workspacePath, ".luarc.json"));
-            luaWorkspace.Features = luaConfig.GetFeatures();
-            luaWorkspace.LoadWorkspace(workspacePath);
-            
-            await Task.CompletedTask;
+            var context = server.GetRequiredService<ServerContext>();
+            context.LoadWorkspace(workspacePath);
+            return Task.CompletedTask;
         });
 }).ConfigureAwait(false);
 await server.WaitForExit.ConfigureAwait(false);

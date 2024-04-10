@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -7,14 +8,14 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace LanguageServer.DocumentHighlight;
 
 // TODO
-public class DocumentHighlight(LuaWorkspace workspace) : DocumentHighlightHandlerBase
+public class DocumentHighlight(ServerContext context) : DocumentHighlightHandlerBase
 {
     protected override DocumentHighlightRegistrationOptions CreateRegistrationOptions(DocumentHighlightCapability capability,
         ClientCapabilities clientCapabilities)
     {
         return new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(workspace),
+            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
         };
     }
 

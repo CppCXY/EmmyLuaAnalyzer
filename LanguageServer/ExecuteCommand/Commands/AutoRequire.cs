@@ -21,41 +21,51 @@ public class AutoRequire : ICommandBase
             return await Unit.Task;
         }
 
-        var currentId = new LuaDocumentId(parameters[0].Value<int>());
-        var needRequireId = new LuaDocumentId(parameters[1].Value<int>());
-        var position = parameters[2].Value<int>();
-        var currentDocument = executor.Workspace.GetDocument(currentId);
-        if (currentDocument is null) return await Unit.Task;
-        var sourceBlock = currentDocument.SyntaxTree.SyntaxRoot.Block;
-        if (sourceBlock is null) return await Unit.Task;
-        LuaStatSyntax? lastRequireStat = null;
-        foreach (var stat in sourceBlock.ChildrenNode.OfType<LuaStatSyntax>())
+        var uri = string.Empty;
+        var range = new Range(0, 0, 0, 0);
+        var requiredText = string.Empty;
+        executor.Context.ReadyRead(() =>
         {
-            if (stat.Position > position)
+            var currentId = new LuaDocumentId(parameters[0].Value<int>());
+            var needRequireId = new LuaDocumentId(parameters[1].Value<int>());
+            var position = parameters[2].Value<int>();
+            var currentDocument = executor.Context.LuaWorkspace.GetDocument(currentId);
+            if (currentDocument is null) return;
+            var sourceBlock = currentDocument.SyntaxTree.SyntaxRoot.Block;
+            if (sourceBlock is null) return;
+            LuaStatSyntax? lastRequireStat = null;
+            foreach (var stat in sourceBlock.ChildrenNode.OfType<LuaStatSyntax>())
             {
-                break;
+                if (stat.Position > position)
+                {
+                    break;
+                }
+            
+                if (IsRequireStat(stat, executor.Context.LuaWorkspace.Features))
+                {
+                    lastRequireStat = stat;
+                }
             }
             
-            if (IsRequireStat(stat, executor.Workspace.Features))
+            if (lastRequireStat != null)
             {
-                lastRequireStat = stat;
+                var line = currentDocument.GetLine(lastRequireStat.Range.EndOffset) + 1;
+                range = new Range(line, 0, line, 0);
             }
-        }
 
-        var range = new Range(0, 0, 0, 0);
-        if (lastRequireStat != null)
-        {
-            var line = currentDocument.GetLine(lastRequireStat.Range.EndOffset) + 1;
-            range = new Range(line, 0, line, 0);
-        }
-
-        var module = executor.Workspace.ModuleGraph.GetModuleInfo(needRequireId);
-        var requiredText = $"local {module.Name} = require(\"{module.ModulePath}\")\n";
-        await executor.ApplyEditAsync(currentDocument.Uri, new TextEdit()
-        {
-            NewText = requiredText,
-            Range = range
+            var module = executor.Context.LuaWorkspace.ModuleGraph.GetModuleInfo(needRequireId);
+            requiredText = $"local {module.Name} = require(\"{module.ModulePath}\")\n";
+            uri = currentDocument.Uri;
         });
+
+        if (requiredText.Length != 0)
+        {
+            return await executor.ApplyEditAsync(uri, new TextEdit()
+            {
+                NewText = requiredText,
+                Range = range
+            });
+        }
 
         return await Unit.Task;
     }

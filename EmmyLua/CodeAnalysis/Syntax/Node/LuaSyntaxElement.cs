@@ -81,7 +81,23 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
     public IEnumerable<LuaSyntaxElement> DescendantsInRange(SourceRange range)
     {
         var validChildren = new List<LuaSyntaxElement>();
-        foreach (var child in ChildrenWithTokens)
+        var parentNode = this;
+        var found = false;
+        do
+        {
+            found = false;
+            foreach (var child in parentNode.ChildrenWithTokens)
+            {
+                if (child.Range.Contain(range))
+                {
+                    parentNode = child;
+                    found = true;
+                    break;
+                }
+            }
+        } while (found);
+
+        foreach (var child in parentNode.ChildrenWithTokens)
         {
             if (child.Range.Intersect(range))
             {
@@ -94,7 +110,11 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         while (stack.Count > 0)
         {
             var node = stack.Pop();
-            yield return node;
+            if (node.Range.Intersect(range))
+            {
+                yield return node;
+            }
+
             foreach (var child in node.ChildrenNode.Reverse())
             {
                 stack.Push(child);

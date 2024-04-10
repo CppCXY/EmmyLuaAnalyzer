@@ -1,4 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Workspace;
+using LanguageServer.Server;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 
@@ -6,7 +8,7 @@ namespace LanguageServer.DocumentRender;
 
 
 [Parallel, Method("emmy/annotator")]
-public class EmmyAnnotatorHandler(LuaWorkspace workspace) : IJsonRpcRequestHandler<EmmyAnnotatorRequestParams, List<EmmyAnnotatorResponse>>
+public class EmmyAnnotatorHandler(ServerContext context) : IJsonRpcRequestHandler<EmmyAnnotatorRequestParams, List<EmmyAnnotatorResponse>>
 {
     private EmmyAnnotatorBuilder Builder { get; } = new();
     
@@ -14,11 +16,16 @@ public class EmmyAnnotatorHandler(LuaWorkspace workspace) : IJsonRpcRequestHandl
     {
         var documentUri = DocumentUri.From(request.uri);
         var uri = documentUri.ToUnencodedString();
-        var semanticModel = workspace.Compilation.GetSemanticModel(uri);
-        if (semanticModel is not null)
+        var response = new List<EmmyAnnotatorResponse>();
+        context.ReadyRead(() =>
         {
-            return Task.FromResult(Builder.Build(semanticModel));
-        }
-        return Task.FromResult(new List<EmmyAnnotatorResponse>());
+            var semanticModel = context.GetSemanticModel(uri);
+            if (semanticModel is not null)
+            {
+                response = Builder.Build(semanticModel);
+            }
+        });
+
+        return Task.FromResult(response);
     }
 }
