@@ -77,8 +77,8 @@ public class LuaWorkspace
         foreach (var document in documents)
         {
             Documents.Add(document.Id, document);
-            UrlToDocument.Add(document.Uri, document.Id);
-            PathToDocument.Add(document.Path, document.Id);
+            UrlToDocument.TryAdd(document.Uri, document.Id);
+            PathToDocument.TryAdd(document.Path, document.Id);
         }
 
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
