@@ -35,7 +35,7 @@ public class CompletionHandler(LuaWorkspace workspace, LuaConfig config) : Compl
         var semanticModel = workspace.Compilation.GetSemanticModel(uri);
         if (semanticModel is not null)
         {
-            var context = new CompleteContext(semanticModel, request.Position, cancellationToken);
+            var context = new CompleteContext(semanticModel, request.Position, cancellationToken, config.DotLuaRc.Completion);
 
             var completions = Builder.Build(context);
             return Task.FromResult(CompletionList.From(completions));

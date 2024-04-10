@@ -24,7 +24,7 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                         Compilation.ControlFlowGraphs[documentId] = cfgDict;
                     }
 
-                    cfgDict.Add(block, builder.Build(block));
+                    cfgDict.TryAdd(block, builder.Build(block));
                 }
             }
         }

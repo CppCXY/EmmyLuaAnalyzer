@@ -7,16 +7,16 @@ public class LuaRc
 {
     public DiagnosticsConfig? Diagnostics { get; set; }
 
-    public RuntimeConfig? Runtime { get; set; }
+    public RuntimeConfig Runtime { get; set; } = new();
 
-    public WorkspaceConfig? Workspace { get; set; }
+    public WorkspaceConfig Workspace { get; set; } = new();
 
     public TypeConfig? Type { get; set; }
 
     [JsonProperty("doc")]
     public DocumentConfig? Document { get; set; }
-    
-    public CompletionConfig? Completion { get; set; }
+
+    public CompletionConfig Completion { get; set; } = new();
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global

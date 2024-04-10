@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -8,41 +7,29 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
 
-public class CompletionItemBuilder
+public class CompletionItemBuilder(string label, LuaType type, CompleteContext completeContext)
 {
-    private string Label { get; set; }
+    private string Label { get; set; } = label;
 
     private string? InsertText { get; set; }
 
     private CompletionItemKind Kind { get; set; } = CompletionItemKind.Variable;
 
-    private LuaType Type { get; set; }
+    private LuaType Type { get; set; } = type;
 
     private string? Data { get; set; }
-    
+
     private Command? Command { get; set; }
 
     private TextEditOrInsertReplaceEdit? TextOrReplaceEdit { get; set; }
-    
+
     private bool Colon { get; set; } = false;
 
     private bool Disable { get; set; } = false;
-    
-    private SearchContext Context => SemanticModel.Context;
-    
-    private SemanticModel SemanticModel { get; }
 
-    public static CompletionItemBuilder Create(string label, LuaType? type, SemanticModel semanticModel)
-    {
-        return new CompletionItemBuilder(label, type ?? Builtin.Any, semanticModel);
-    }
+    private SearchContext SearchContext => CompleteContext.SemanticModel.Context;
 
-    private CompletionItemBuilder(string label, LuaType type,SemanticModel semanticModel)
-    {
-        Label = label;
-        Type = type;
-        SemanticModel = semanticModel;
-    }
+    private CompleteContext CompleteContext { get; } = completeContext;
 
     public CompletionItemBuilder WithKind(CompletionItemKind kind)
     {
@@ -67,7 +54,7 @@ public class CompletionItemBuilder
         InsertText = insertText;
         return this;
     }
-    
+
     public CompletionItemBuilder WithDotCheckBracketLabel(LuaIndexExprSyntax indexExpr)
     {
         if (Label.StartsWith('['))
@@ -78,6 +65,7 @@ public class CompletionItemBuilder
                 Disable = true;
             }
         }
+
         return this;
     }
 
@@ -86,60 +74,32 @@ public class CompletionItemBuilder
         Command = command;
         return this;
     }
-    
+
     public CompletionItemBuilder WithTextEditOrReplaceEdit(TextEditOrInsertReplaceEdit textOrReplaceEdit)
     {
         TextOrReplaceEdit = textOrReplaceEdit;
         return this;
     }
 
-    public IEnumerable<CompletionItem> Build()
+    public void AddToContext()
     {
         if (Disable)
         {
-            yield break;
+            return;
         }
-        
+
         switch (Type)
         {
             case LuaMethodType methodType:
             {
                 var mainSignature = methodType.MainSignature;
-                yield return new CompletionItem
-                {
-                    Label = Label,
-                    Kind = CompletionItemKind.Method,
-                    LabelDetails = new CompletionItemLabelDetails()
-                    {
-                        Detail = RenderSignatureParams(mainSignature, methodType.ColonDefine),
-                        Description = LuaTypeRender.RenderType(mainSignature.ReturnType, Context)
-                    },
-                    InsertText = RenderInsertTextFuncParams(Label, mainSignature, methodType.ColonDefine),
-                    InsertTextFormat = InsertTextFormat.Snippet,
-                    Data = Data,
-                    Command = Command,
-                    TextEdit = TextOrReplaceEdit
-                };
+                CompleteContext.Add(GetSignatureCompletionItem(Label, mainSignature, methodType.ColonDefine));
 
                 if (methodType.Overloads is not null)
                 {
                     foreach (var signature in methodType.Overloads)
                     {
-                        yield return new CompletionItem
-                        {
-                            Label = Label,
-                            Kind = CompletionItemKind.Method,
-                            LabelDetails = new CompletionItemLabelDetails()
-                            {
-                                Detail = RenderSignatureParams(signature, methodType.ColonDefine),
-                                Description = LuaTypeRender.RenderType(signature.ReturnType, Context),
-                            },
-                            InsertText = RenderInsertTextFuncParams(Label, signature, methodType.ColonDefine),
-                            InsertTextFormat = InsertTextFormat.Snippet,
-                            Data = Data,
-                            Command = Command,
-                            TextEdit = TextOrReplaceEdit
-                        };
+                        CompleteContext.Add(GetSignatureCompletionItem(Label, signature, methodType.ColonDefine));
                     }
                 }
 
@@ -149,19 +109,19 @@ public class CompletionItemBuilder
             {
                 if (!Colon)
                 {
-                    yield return new CompletionItem()
+                    CompleteContext.Add(new CompletionItem()
                     {
                         Label = Label,
                         Kind = Kind,
                         LabelDetails = new CompletionItemLabelDetails()
                         {
-                            Description = LuaTypeRender.RenderType(Type, Context),
+                            Description = LuaTypeRender.RenderType(Type, SearchContext),
                         },
                         InsertText = InsertText,
                         Data = Data,
                         Command = Command,
                         TextEdit = TextOrReplaceEdit
-                    };
+                    });
                 }
 
                 break;
@@ -175,7 +135,7 @@ public class CompletionItemBuilder
         sb.Append(name);
         sb.Append('(');
         var parameters = signature.Parameters;
-        int paramsCnt = 1;
+        var paramsCnt = 1;
         switch ((colonDefine, Colon))
         {
             case (true, false):
@@ -185,6 +145,7 @@ public class CompletionItemBuilder
                 {
                     sb.Append(", ");
                 }
+
                 paramsCnt++;
                 break;
             }
@@ -203,6 +164,7 @@ public class CompletionItemBuilder
             {
                 sb.Append(", ");
             }
+
             paramsCnt++;
         }
 
@@ -224,6 +186,7 @@ public class CompletionItemBuilder
                 {
                     sb.Append(", ");
                 }
+
                 break;
             }
             case (false, true):
@@ -245,5 +208,33 @@ public class CompletionItemBuilder
 
         sb.Append(')');
         return sb.ToString();
+    }
+
+    private CompletionItem GetSignatureCompletionItem(string label, LuaSignature signature, bool colonDefine)
+    {
+        var completionItem = new CompletionItem
+        {
+            Label = label,
+            Kind = CompletionItemKind.Method,
+            LabelDetails = new CompletionItemLabelDetails()
+            {
+                Detail = RenderSignatureParams(signature, colonDefine),
+                Description = LuaTypeRender.RenderType(signature.ReturnType, SearchContext)
+            },
+            Data = Data,
+            Command = Command,
+            TextEdit = TextOrReplaceEdit
+        };
+
+        if (CompleteContext.CompletionConfig.CallSnippet)
+        {
+            completionItem = completionItem with
+            {
+                InsertText = RenderInsertTextFuncParams(label, signature, colonDefine),
+                InsertTextFormat = InsertTextFormat.Snippet,
+            };
+        }
+
+        return completionItem;
     }
 }

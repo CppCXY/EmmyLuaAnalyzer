@@ -47,13 +47,11 @@ public class MemberProvider : ICompleteProviderBase
             var colon = indexExpr.IsColonIndex;
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.AddRange(
-                    CompletionItemBuilder.Create(member.Name, member.DeclarationType, context.SemanticModel)
-                        .WithColon(colon)
-                        .WithData(member.Ptr.Stringify)
-                        .WithDotCheckBracketLabel(indexExpr)
-                        .Build()
-                );
+                context.CreateCompletion(member.Name, member.DeclarationType)
+                    .WithColon(colon)
+                    .WithData(member.Ptr.Stringify)
+                    .WithDotCheckBracketLabel(indexExpr)
+                    .AddToContext();
             }
         }
     }
@@ -70,11 +68,9 @@ public class MemberProvider : ICompleteProviderBase
         {
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.AddRange(
-                    CompletionItemBuilder.Create(member.Name, member.DeclarationType, context.SemanticModel)
-                        .WithData(member.Ptr.Stringify)
-                        .Build()
-                );
+                context.CreateCompletion(member.Name, member.DeclarationType)
+                    .WithData(member.Ptr.Stringify)
+                    .AddToContext();
             }
         }
     }
@@ -94,20 +90,15 @@ public class MemberProvider : ICompleteProviderBase
                 if (member.Name.StartsWith("["))
                 {
                     var label = member.Name[1..^1];
-                    context.AddRange(
-                        CompletionItemBuilder.Create(label, member.DeclarationType, context.SemanticModel)
-                            .WithData(member.Ptr.Stringify)
-                            .Build()
-                    );
+                    context.CreateCompletion(label, member.DeclarationType)
+                        .WithData(member.Ptr.Stringify)
+                        .AddToContext();
                 }
                 else
                 {
-                    context.AddRange(
-                        CompletionItemBuilder.Create($"\"{member.Name}\"", member.DeclarationType,
-                                context.SemanticModel)
-                            .WithData(member.Ptr.Stringify)
-                            .Build()
-                    );
+                    context.CreateCompletion($"\"{member.Name}\"", member.DeclarationType)
+                        .WithData(member.Ptr.Stringify)
+                        .AddToContext();
                 }
             }
         }

@@ -15,17 +15,15 @@ public class GlobalProvider : ICompleteProviderBase
             .GetDeclarationsBefore(context.TriggerToken)
             .Select(it => it.Name)
             .ToHashSet();
-        
+
         var globals = context.SemanticModel.GetGlobals();
         foreach (var globalDecl in globals)
         {
             if (!localHashSet.Contains(globalDecl.Name))
             {
-                context.AddRange(
-                    CompletionItemBuilder.Create(globalDecl.Name, globalDecl.DeclarationType, context.SemanticModel)
-                        .WithData(globalDecl.Ptr.Stringify)
-                        .Build()
-                );
+                context.CreateCompletion(globalDecl.Name, globalDecl.DeclarationType)
+                    .WithData(globalDecl.Ptr.Stringify)
+                    .AddToContext();
             }
         }
     }

@@ -15,12 +15,9 @@ public class LocalEnvProvider : ICompleteProviderBase
         var varDeclarations = context.SemanticModel.GetDeclarationsBefore(context.TriggerToken);
         foreach (var varDeclaration in varDeclarations)
         {
-            context.AddRange(
-                CompletionItemBuilder
-                    .Create(varDeclaration.Name, varDeclaration.DeclarationType, context.SemanticModel)
-                    .WithData(varDeclaration.Ptr.Stringify)
-                    .Build()
-            );
+            context.CreateCompletion(varDeclaration.Name, varDeclaration.DeclarationType)
+                .WithData(varDeclaration.Ptr.Stringify)
+                .AddToContext();
         }
     }
 }

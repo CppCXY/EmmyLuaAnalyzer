@@ -536,7 +536,6 @@ public class DeclarationBuilder : ILuaElementWalker
                         }
                     }
 
-                    AddDeclaration(declaration);
                     var unResolveDeclaration = new UnResolvedDeclaration(declaration, relatedExpr,
                         ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
                     AddUnResolved(unResolveDeclaration);
@@ -597,7 +596,6 @@ public class DeclarationBuilder : ILuaElementWalker
                         new(indexExpr),
                         null,
                         new(luaFuncStat));
-                    AddDeclaration(declaration);
                     var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
                     AddUnResolved(unResolved);
@@ -675,7 +673,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 luaClass,
                 NamedTypeKind.Class
             );
-            AddDeclaration(declaration);
+
             ProjectIndex.AddType(DocumentId, name.RepresentText, declaration, NamedTypeKind.Class);
 
             AnalyzeTypeFields(luaClass, tagClassSyntax);
@@ -709,7 +707,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 new(tagAliasSyntax),
                 luaAlias,
                 NamedTypeKind.Alias);
-            AddDeclaration(declaration);
             ProjectIndex.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
         }
     }
@@ -727,7 +724,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 new(tagEnumSyntax),
                 luaEnum,
                 NamedTypeKind.Enum);
-            AddDeclaration(declaration);
+
             ProjectIndex.AddEnum(DocumentId, name.RepresentText, baseType, declaration);
             foreach (var field in tagEnumSyntax.FieldList)
             {
@@ -755,7 +752,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     luaInterface,
                     NamedTypeKind.Interface
                 );
-            AddDeclaration(declaration);
+
 
             ProjectIndex.AddType(DocumentId, name.RepresentText, declaration, NamedTypeKind.Interface);
             AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
@@ -1071,12 +1068,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeLuaLabel(LuaLabelStatSyntax labelStatSyntax)
     {
-        if (labelStatSyntax is { Name: { } name })
-        {
-            var labelDeclaration =
-                new LabelLuaDeclaration(name.RepresentText, new(labelStatSyntax));
-            AddDeclaration(labelDeclaration);
-        }
+        // if (labelStatSyntax is { Name: { } name })
+        // {
+        //     var labelDeclaration =
+        //         new LabelLuaDeclaration(name.RepresentText, new(labelStatSyntax));
+        // }
     }
 
     private void AnalyzeSource(LuaSourceSyntax sourceSyntax)

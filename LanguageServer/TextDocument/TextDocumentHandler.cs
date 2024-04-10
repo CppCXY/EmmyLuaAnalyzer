@@ -45,7 +45,11 @@ public class TextDocumentHandler(
             return Unit.Task;
         }
         workspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
-        PushDiagnostic(request.TextDocument, workspace.Compilation.GetSemanticModel(uri)!);
+        if (workspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
+        {
+            PushDiagnostic(request.TextDocument, semanticModel);
+        }
+
         return Unit.Task;
     }
 

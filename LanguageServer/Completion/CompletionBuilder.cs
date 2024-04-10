@@ -1,4 +1,5 @@
 ﻿using LanguageServer.Completion.CompleteProvider;
+using LanguageServer.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
@@ -13,7 +14,8 @@ public class CompletionBuilder
         new KeywordsProvider(),
         new MemberProvider(),
         new ModuleProvider(),
-        new DocProvider()
+        new DocProvider(),
+        new SelfMemberProvider()
     ];
     
     public List<CompletionItem> Build(CompleteContext completeContext)

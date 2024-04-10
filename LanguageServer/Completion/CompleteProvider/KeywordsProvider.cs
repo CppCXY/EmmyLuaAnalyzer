@@ -10,6 +10,7 @@ public class KeywordsProvider : ICompleteProviderBase
         new CompletionItem() { Label = "if", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "else", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "elseif", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
+        new CompletionItem() { Label = "then", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "end", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "for", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "in", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
@@ -37,9 +38,6 @@ public class KeywordsProvider : ICompleteProviderBase
             return;
         }
 
-        foreach (var keyword in Keywords)
-        {
-            context.Add(keyword);
-        }
+        context.AddRange(Keywords);
     }
 }

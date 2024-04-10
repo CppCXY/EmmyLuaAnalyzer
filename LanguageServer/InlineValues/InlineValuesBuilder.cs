@@ -18,7 +18,7 @@ public class InlineValuesBuilder
             return result;
         }
 
-        var baseRange = token.Ancestors.OfType<LuaFuncStatSyntax>().FirstOrDefault()?.Range ??
+        var baseRange = token.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault()?.Range ??
                         range.ToSourceRange(semanticModel.Document);
         var stopOffset = semanticModel.Document.GetOffset(stopRange.End.Line, stopRange.End.Character);
         if (baseRange.StartOffset < stopOffset)
