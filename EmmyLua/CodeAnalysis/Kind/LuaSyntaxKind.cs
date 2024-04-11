@@ -66,6 +66,7 @@ public enum LuaSyntaxKind : ushort
     DocOverload,
     DocAsync,
     DocVisibility,
+    DocMeta,
     DocOther,
     DocDiagnostic,
     DocVersion,

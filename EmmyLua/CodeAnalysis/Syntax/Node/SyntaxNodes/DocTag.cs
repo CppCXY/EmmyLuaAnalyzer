@@ -178,6 +178,9 @@ public class LuaDocTagOperatorSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lu
     public LuaDocTypeSyntax? ReturnType => ChildNodeAfterToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon);
 }
 
+public class LuaDocTagMetaSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset);
+
 public class LuaDocTagModuleSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {

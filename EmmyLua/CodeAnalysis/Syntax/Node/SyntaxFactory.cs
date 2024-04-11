@@ -74,6 +74,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocAs => new LuaDocTagAsSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocNodiscard => new LuaDocTagNodiscardSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.DocMeta => new LuaDocTagMetaSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(greenNode, tree, parent, startOffset),

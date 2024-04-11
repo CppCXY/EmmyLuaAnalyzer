@@ -238,6 +238,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 IndexDocNameType(docNameType);
                 break;
             }
+            case LuaDocTagMetaSyntax:
+            {
+                Compilation.Diagnostics.AddMeta(DocumentId);
+                break;
+            }
         }
     }
 

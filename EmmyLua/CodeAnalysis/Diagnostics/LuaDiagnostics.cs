@@ -12,6 +12,8 @@ public class LuaDiagnostics
 
     public LuaCompilation Compilation { get; }
 
+    private HashSet<LuaDocumentId> IsMetaDocument { get; } = new();
+
     public LuaDiagnostics(LuaCompilation compilation)
     {
         Compilation = compilation;
@@ -31,10 +33,25 @@ public class LuaDiagnostics
 
     public void Check(LuaDocument document)
     {
+        if (IsMetaDocument.Contains(document.Id))
+        {
+            return;
+        }
+
         var context = new DiagnosticContext(document);
         foreach (var handler in Handlers)
         {
             handler.Check(context);
         }
+    }
+
+    public void AddMeta(LuaDocumentId documentId)
+    {
+        IsMetaDocument.Add(documentId);
+    }
+
+    public void RemoveCache(LuaDocumentId documentId)
+    {
+        IsMetaDocument.Remove(documentId);
     }
 }

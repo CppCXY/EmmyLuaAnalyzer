@@ -95,6 +95,10 @@ public static class TagParser
             {
                 return TagModule(p);
             }
+            case LuaTokenKind.TkTagMeta:
+            {
+                return SimpleTag(p, LuaSyntaxKind.DocMeta);
+            }
             case LuaTokenKind.TkTagOther:
             {
                 return SimpleTag(p, LuaSyntaxKind.DocOther);
@@ -474,6 +478,7 @@ public static class TagParser
 
     private static CompleteMarker TagSee(LuaDocParser p)
     {
+        p.SetState(LuaDocLexerState.Normal);
         var m = p.Marker();
         p.Bump();
         try

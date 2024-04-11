@@ -33,7 +33,7 @@ public class LuaCompilation
 
     private List<LuaAnalyzer> Analyzers { get; }
 
-    private LuaDiagnostics Diagnostics { get; }
+    public LuaDiagnostics Diagnostics { get; }
 
     public LuaCompilation(LuaWorkspace workspace)
     {
@@ -92,6 +92,7 @@ public class LuaCompilation
         DeclarationTrees.Remove(documentId);
         ProjectIndex.Remove(documentId);
         ControlFlowGraphs.Remove(documentId);
+        Diagnostics.RemoveCache(documentId);
     }
 
     public LuaSyntaxTree? GetSyntaxTree(LuaDocumentId documentId)

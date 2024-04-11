@@ -123,6 +123,7 @@ public class LuaWorkspace
             document.Id = AllocateId();
         }
 
+        document.OpenState = OpenState.Opened;
         Documents.Add(document.Id, document);
         if (!document.IsVirtual)
         {
@@ -161,6 +162,7 @@ public class LuaWorkspace
     {
         if (Documents.TryGetValue(documentId, out var document))
         {
+            document.OpenState = OpenState.Opened;
             document.ReplaceText(text);
             Compilation.RemoveSyntaxTree(documentId);
             Compilation.AddSyntaxTree(documentId, document.SyntaxTree);
@@ -186,6 +188,7 @@ public class LuaWorkspace
             var document = GetDocument(id);
             if (document is not null)
             {
+                document.OpenState = OpenState.Closed;
                 if (ModuleGraph.GetWorkspace(document).Length == 0)
                 {
                     RemoveDocument(id);

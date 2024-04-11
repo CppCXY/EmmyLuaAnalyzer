@@ -35,6 +35,8 @@ public sealed class LuaDocument
 {
     public LuaDocumentId Id { get; set; }
 
+    public OpenState OpenState { get; set; } = OpenState.Closed;
+
     public string Uri { get; }
 
     public string Path { get; }
