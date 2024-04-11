@@ -1,9 +1,6 @@
-﻿using System.Text;
-using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Tree;
 using LanguageServer.Configuration.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 

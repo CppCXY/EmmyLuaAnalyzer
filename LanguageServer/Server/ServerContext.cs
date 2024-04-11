@@ -1,7 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.Configuration;
-using LanguageServer.Monitor;
 using LanguageServer.Server.Monitor;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;

@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Server;
+﻿using LanguageServer.Server;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 

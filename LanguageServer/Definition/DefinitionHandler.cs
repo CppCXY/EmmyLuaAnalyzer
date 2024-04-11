@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace;
 using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;

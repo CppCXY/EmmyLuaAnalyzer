@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.ExecuteCommand.Commands;
+﻿using LanguageServer.ExecuteCommand.Commands;
 using LanguageServer.Server;
 using MediatR;
 using Microsoft.Extensions.Logging;

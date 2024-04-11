@@ -61,9 +61,18 @@ public class DeclarationScope(LuaDeclarationTree tree, int pos)
         {
             var nameText = name.RepresentText;
             LuaDeclaration? result = null;
-            WalkUp(nameExpr.Position, 0, declaration =>
+            var position = nameExpr.Position;
+            if (nameExpr.Ancestors.OfType<LuaStatSyntax>().FirstOrDefault() is LuaLocalStatSyntax
+                {
+                    Position: { } newPosition
+                })
             {
-                if (declaration is { Feature: DeclarationFeature.Global or DeclarationFeature.Local}
+                position = newPosition;
+            }
+
+            WalkUp(position, 0, declaration =>
+            {
+                if (declaration is { Feature: DeclarationFeature.Global or DeclarationFeature.Local }
                     && string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
                 {
                     result = declaration;

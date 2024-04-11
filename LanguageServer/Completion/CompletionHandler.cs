@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Configuration;
-using LanguageServer.Server;
+﻿using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;

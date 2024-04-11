@@ -1,5 +1,4 @@
 ﻿using LanguageServer.Completion.CompleteProvider;
-using LanguageServer.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;

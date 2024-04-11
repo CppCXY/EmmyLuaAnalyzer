@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace LanguageServer.Completion.CompleteProvider;
 
