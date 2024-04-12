@@ -30,9 +30,9 @@ public static class LocationExtension
             Tags = diagnostic.Tag switch
             {
                 EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Unnecessary =>
-                    new[] { DiagnosticTag.Unnecessary },
+                    [DiagnosticTag.Unnecessary],
                 EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Deprecated => new[] { DiagnosticTag.Deprecated },
-                _ => Array.Empty<DiagnosticTag>()
+                _ => []
             },
             Range = diagnostic.Range.ToLspRange(document),
             Severity = diagnostic.Severity switch
@@ -44,7 +44,8 @@ public static class LocationExtension
                 EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
                 _ => throw new UnreachableException()
             },
-            Source = "EmmyLua"
+            Data = diagnostic.Data,
+            Source = "EmmyLua",
         };
     }
 

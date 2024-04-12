@@ -69,17 +69,22 @@ public class LuaWorkspace
 
         foreach (var document in documents)
         {
-            document.Id = AllocateId();
+            if (!PathToDocument.TryGetValue(document.Path, out var id))
+            {
+                document.Id = AllocateId();
+                Documents.Add(document.Id, document);
+            }
+            else
+            {
+                document.Id = id;
+                Documents[document.Id] = document;
+            }
+
+            UrlToDocument[document.Uri] = document.Id;
+            PathToDocument[document.Path] = document.Id;
         }
 
         ModuleGraph.AddDocuments(workspace, documents);
-
-        foreach (var document in documents)
-        {
-            Documents.Add(document.Id, document);
-            UrlToDocument.TryAdd(document.Uri, document.Id);
-            PathToDocument.TryAdd(document.Path, document.Id);
-        }
 
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
         Monitor?.OnFinishLoadWorkspace();
@@ -93,6 +98,11 @@ public class LuaWorkspace
     public LuaDocument? GetDocument(LuaDocumentId id)
     {
         return Documents.GetValueOrDefault(id);
+    }
+
+    public LuaDocumentId? GetDocumentIdByUri(string uri)
+    {
+        return UrlToDocument.GetValueOrDefault(uri);
     }
 
     public LuaDocument? GetDocumentByUri(string uri)

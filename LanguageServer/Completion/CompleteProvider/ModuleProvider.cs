@@ -50,7 +50,7 @@ public class ModuleProvider : ICompleteProviderBase
     }
 
     private bool AllowModule(
-        ModuleGraph.RequiredModuleInfo moduleInfo, 
+        ModuleIndex moduleInfo, 
         HashSet<string> localNames,
         SemanticModel semanticModel)
     {

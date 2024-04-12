@@ -107,6 +107,7 @@ public class LuaCompilation
         {
             return null;
         }
+
         var declarationTree = DeclarationTrees.GetValueOrDefault(document.Id);
         if (declarationTree is null)
         {
@@ -123,13 +124,14 @@ public class LuaCompilation
         {
             return null;
         }
+
         var declarationTree = DeclarationTrees.GetValueOrDefault(documentId);
         if (declarationTree is null)
         {
             return null;
         }
 
-        return new SemanticModel(this,document, declarationTree);
+        return new SemanticModel(this, document, declarationTree);
     }
 
     private void Analyze()
@@ -179,16 +181,18 @@ public class LuaCompilation
     }
 
     public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
-        tree => tree.Diagnostics.Select(it => it.WithLocation(
-            tree.Document.GetLocation(it.Range)
-        ))
+        tree => tree.Diagnostics.Select(it => it with
+        {
+            Location = tree.Document.GetLocation(it.Range)
+        })
     );
 
     public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
-            ? tree.Diagnostics.Select(it => it.WithLocation(
-                tree.Document.GetLocation(it.Range)
-            ))
+            ? tree.Diagnostics.Select(it => it with
+            {
+                Location = tree.Document.GetLocation(it.Range)
+            })
             : Enumerable.Empty<Diagnostic>();
 
     public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)

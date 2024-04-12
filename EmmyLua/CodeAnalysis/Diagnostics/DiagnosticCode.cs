@@ -11,7 +11,9 @@ public enum DiagnosticCode
     MissingParameter,
     InjectFieldFail,
     UnreachableCode,
-    Unused
+    Unused,
+    UndefinedGlobal,
+    NeedImport,
 }
 
 public static class DiagnosticCodeHelper
@@ -28,6 +30,8 @@ public static class DiagnosticCodeHelper
             DiagnosticCode.InjectFieldFail => "inject-field-fail",
             DiagnosticCode.UnreachableCode => "unreachable-code",
             DiagnosticCode.Unused => "unused",
+            DiagnosticCode.UndefinedGlobal => "undefined-global",
+            DiagnosticCode.NeedImport => "need-import",
             _ => "none"
         };
     }
@@ -44,6 +48,8 @@ public static class DiagnosticCodeHelper
             "inject-field-fail" => DiagnosticCode.InjectFieldFail,
             "unreachable-code" => DiagnosticCode.UnreachableCode,
             "unused" => DiagnosticCode.Unused,
+            "undefined-global" => DiagnosticCode.UndefinedGlobal,
+            "need-import" => DiagnosticCode.NeedImport,
             _ => DiagnosticCode.None
         };
     }

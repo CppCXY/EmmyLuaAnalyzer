@@ -542,7 +542,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public void PushDiagnostic(DiagnosticSeverity severity, string message)
     {
-        var diagnostic = new Diagnostic(severity, message, Range);
+        var diagnostic = new Diagnostic(severity, DiagnosticCode.SyntaxError, message, Range);
         Tree.PushDiagnostic(diagnostic);
     }
 

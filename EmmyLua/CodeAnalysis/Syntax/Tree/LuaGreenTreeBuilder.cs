@@ -48,6 +48,7 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                             {
                                 break;
                             }
+
                             parents.Add(pEvent.Kind);
                             // 顺序不要反了
                             Parser.Events[pPosition] = pEvent with { Kind = LuaSyntaxKind.None, Parent = 0 };
@@ -85,6 +86,7 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                             break;
                         }
                     }
+
                     if (nextTokenIndex > 0)
                     {
                         var range = Parser.Events[nextTokenIndex] switch
@@ -92,13 +94,20 @@ public class LuaGreenTreeBuilder(LuaParser parser)
                             MarkEvent.EatToken(var tkRange, _) => tkRange,
                             _ => throw new UnreachableException(),
                         };
-                        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, error.Err, range));
+                        Diagnostics.Add(new Diagnostic(
+                            DiagnosticSeverity.Error,
+                            DiagnosticCode.SyntaxError,
+                            error.Err,
+                            range));
                     }
                     else
                     {
-                        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, error.Err, new SourceRange(
-                            Parser.Lexer.Document.Text.Length
-                        )));
+                        Diagnostics.Add(new Diagnostic(
+                            DiagnosticSeverity.Error,
+                            DiagnosticCode.SyntaxError,
+                            error.Err, new SourceRange(
+                                Parser.Lexer.Document.Text.Length
+                            )));
                     }
 
                     break;

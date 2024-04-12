@@ -53,9 +53,10 @@ public class SemanticModel
     {
         var tree = Compilation.GetSyntaxTree(Document.Id);
 
-        return tree?.Diagnostics.Select(it => it.WithLocation(
-                   tree.Document.GetLocation(it.Range)
-               ))
+        return tree?.Diagnostics.Select(it => it with
+               {
+                   Location = tree.Document.GetLocation(it.Range)
+               })
                ?? Enumerable.Empty<Diagnostic>();
     }
 

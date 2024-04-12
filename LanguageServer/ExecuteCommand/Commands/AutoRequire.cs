@@ -54,6 +54,7 @@ public class AutoRequire : ICommandBase
             }
 
             var module = executor.Context.LuaWorkspace.ModuleGraph.GetModuleInfo(needRequireId);
+            if (module is null) return;
             requiredText = $"local {module.Name} = require(\"{module.ModulePath}\")\n";
             uri = currentDocument.Uri;
         });

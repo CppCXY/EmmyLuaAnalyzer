@@ -11,8 +11,4 @@ public abstract class DiagnosticHandlerBase(LuaCompilation compilation)
     public virtual void Check(DiagnosticContext context)
     {
     }
-
-    public virtual void Fix(Diagnostic diagnostic)
-    {
-    }
 }

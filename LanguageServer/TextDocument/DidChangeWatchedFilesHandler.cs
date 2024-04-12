@@ -21,7 +21,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context) : IDidChangeWat
                 {
                     case FileChangeType.Created:
                     {
-                        context.LuaWorkspace.AddDocumentByUri(fileEvent.Uri.ToUnencodedString(), string.Empty);
+                        context.LuaWorkspace.UpdateDocumentByUri(fileEvent.Uri.ToUnencodedString(), string.Empty);
                         break;
                     }
                     case FileChangeType.Changed:

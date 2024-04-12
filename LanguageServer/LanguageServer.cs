@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using LanguageServer.CodeAction;
 using LanguageServer.Completion;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
@@ -69,6 +70,7 @@ var server = await From(options =>
         .WithHandler<ColorPresentationHandler>()
         .WithHandler<SemanticTokenHandler>()
         .WithHandler<CompletionHandler>()
+        .WithHandler<CodeActionHandler>()
         .WithHandler<ExecuteCommandHandler>()
         .WithHandler<SignatureHelperHandler>()
         .WithHandler<EmmyAnnotatorHandler>()

@@ -146,6 +146,7 @@ public static class SyntaxFactory
         catch (OverflowException)
         {
             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
                 $"The integer literal '{text}' is too large to be represented in type 'long'",
                 new SourceRange(startOffset, greenNode.Length)));
             return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
@@ -153,6 +154,7 @@ public static class SyntaxFactory
         catch (Exception e)
         {
             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
                 $"The integer literal '{text}' is invalid, {e.Message}",
                 new SourceRange(startOffset, greenNode.Length)));
             return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
@@ -260,7 +262,9 @@ public static class SyntaxFactory
                     if (i >= text.Length)
                     {
                         tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                            "Unexpected end of string", new SourceRange(startOffset + i - 1, 1)));
+                            DiagnosticCode.SyntaxError,
+                            "Unexpected end of string",
+                            new SourceRange(startOffset + i - 1, 1)));
                         break;
                     }
 
@@ -306,6 +310,7 @@ public static class SyntaxFactory
                             if (i + 2 >= text.Length)
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     "Unexpected end of string", new SourceRange(startOffset + i, 1)));
                                 break;
                             }
@@ -315,6 +320,7 @@ public static class SyntaxFactory
                             if (!char.IsAsciiHexDigit(hex[0]) || !char.IsAsciiHexDigit(hex[1]))
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     $"Invalid hex escape sequence '\\x{hex}'",
                                     new SourceRange(startOffset + i, 2)));
                                 break;
@@ -345,6 +351,7 @@ public static class SyntaxFactory
                             if (i + 2 >= text.Length)
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     "Unexpected end of string",
                                     new SourceRange(startOffset + i - 1, 1)));
                                 break;
@@ -354,6 +361,7 @@ public static class SyntaxFactory
                             if (text[i + j] != '{')
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     $"Missing unicode escape sequence start '{{', current '{text[i + j]}'",
                                     new SourceRange(startOffset + i + j, 1)));
                                 break;
@@ -368,6 +376,7 @@ public static class SyntaxFactory
                             if (i + j >= text.Length)
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     "Unexpected end of string",
                                     new SourceRange(startOffset + i + j - 1, 1)));
                                 break;
@@ -376,6 +385,7 @@ public static class SyntaxFactory
                             if (text[i + j] != '}')
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     $"Missing unicode escape sequence end '}}', current '{text[i + j]}'",
                                     new SourceRange(startOffset + i + j, 1)));
                                 break;
@@ -386,6 +396,7 @@ public static class SyntaxFactory
                             if (unicodeHex.Length > 8)
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     $"Invalid unicode escape sequence '{unicodeHex}'",
                                     new SourceRange(startOffset + i - j, unicodeHex.Length)));
                                 break;
@@ -396,6 +407,7 @@ public static class SyntaxFactory
                                 if (unicodeHex.Length == 0)
                                 {
                                     tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                        DiagnosticCode.SyntaxError,
                                         $"Invalid unicode escape sequence '{unicodeHex}'",
                                         new SourceRange(startOffset + i - j, unicodeHex.Length)));
                                     break;
@@ -404,6 +416,7 @@ public static class SyntaxFactory
                                 if (codePoint > 0x10FFFF)
                                 {
                                     tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                        DiagnosticCode.SyntaxError,
                                         $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
                                         new SourceRange(startOffset + i - j, unicodeHex.Length)));
                                     break;
@@ -414,6 +427,7 @@ public static class SyntaxFactory
                             catch (OverflowException)
                             {
                                 tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                    DiagnosticCode.SyntaxError,
                                     $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
                                     new SourceRange(startOffset + i - j, unicodeHex.Length)));
                             }
@@ -447,6 +461,7 @@ public static class SyntaxFactory
                         default:
                         {
                             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                                DiagnosticCode.SyntaxError,
                                 $"Invalid escape sequence '\\{text[i]}'",
                                 new SourceRange(startOffset + i, 1)));
                             break;
@@ -486,6 +501,7 @@ public static class SyntaxFactory
         if (text[i] != '[')
         {
             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
                 $"Invalid long string start, expected '[', current '{text[i]}'",
                 new SourceRange(startOffset, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
@@ -501,6 +517,7 @@ public static class SyntaxFactory
         if (i >= text.Length || text[i] != '[')
         {
             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
                 $"Invalid long string start, expected '[', current '{text[i]}'",
                 new SourceRange(startOffset, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
@@ -511,6 +528,7 @@ public static class SyntaxFactory
         if (text.Length < i + equalNum + 2)
         {
             tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
                 $"Invalid long string end, expected '{new string('=', equalNum)}]', current '{text[^1]}'",
                 new SourceRange(startOffset + text.Length - 1, 1)));
             return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);

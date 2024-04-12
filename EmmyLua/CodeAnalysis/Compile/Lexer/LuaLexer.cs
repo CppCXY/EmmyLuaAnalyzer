@@ -148,7 +148,10 @@ public class LuaLexer(LuaDocument document)
                 if (sep == 0 && Reader.CurrentChar != '[') return LuaTokenKind.TkLeftBracket;
                 if (Reader.CurrentChar != '[')
                 {
-                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "invalid long string delimiter",
+                    Diagnostics.Add(
+                        new Diagnostic(DiagnosticSeverity.Error,
+                            DiagnosticCode.SyntaxError,
+                            "invalid long string delimiter",
                         Reader.SavedRange));
                     return LuaTokenKind.TkLongString;
                 }
@@ -250,7 +253,10 @@ public class LuaLexer(LuaDocument document)
 
                 if (Reader.CurrentChar != quote)
                 {
-                    Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished string",
+                    Diagnostics.Add(new Diagnostic(
+                        DiagnosticSeverity.Error,
+                        DiagnosticCode.SyntaxError,
+                        "unfinished string",
                         new SourceRange(Reader.CurrentPosition, 1)));
                     return LuaTokenKind.TkString;
                 }
@@ -416,7 +422,10 @@ public class LuaLexer(LuaDocument document)
             return LuaTokenKind.TkLongString;
         }
 
-        Diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, "unfinished long string or comment",
+        Diagnostics.Add(new Diagnostic(
+            DiagnosticSeverity.Error,
+            DiagnosticCode.SyntaxError,
+            "unfinished long string or comment",
             new SourceRange(Reader.CurrentPosition, 1)));
 
         return LuaTokenKind.TkLongString;

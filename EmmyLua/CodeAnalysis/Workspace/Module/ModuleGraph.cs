@@ -11,6 +11,8 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     private Dictionary<LuaDocumentId, ModuleIndex> DocumentIndex { get; } = new();
 
+    public Dictionary<string, List<LuaDocumentId>> ModuleNameToDocumentId { get; } = new();
+
     private List<Regex> Pattern { get; } = new();
 
     public void UpdatePattern(List<string> pattern)
@@ -65,7 +67,26 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                 }
 
                 node.DocumentId = documentId;
-                DocumentIndex.Add(documentId, new ModuleIndex(workspace, modulePath.Replace('/', '.')));
+                var requiredModulePath = modulePath.Replace('/', '.');
+                var name = requiredModulePath;
+                var lastDotIndex = requiredModulePath.LastIndexOf('.');
+                if (lastDotIndex >= 0 && lastDotIndex < requiredModulePath.Length - 1)
+                {
+                    name = requiredModulePath[(lastDotIndex + 1)..];
+                }
+
+                var moduleIndex = new ModuleIndex(documentId, name, workspace, requiredModulePath);
+                DocumentIndex.Add(documentId, moduleIndex);
+
+                if (!ModuleNameToDocumentId.TryGetValue(name, out var documentIds))
+                {
+                    documentIds = new List<LuaDocumentId> { documentId };
+                    ModuleNameToDocumentId.Add(name, documentIds);
+                }
+                else
+                {
+                    documentIds.Add(documentId);
+                }
                 break;
             }
         }
@@ -126,6 +147,14 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
             node.DocumentId = null;
             DocumentIndex.Remove(document.Id);
+            if (ModuleNameToDocumentId.TryGetValue(moduleIndex.Name, out var documentIds))
+            {
+                documentIds.Remove(document.Id);
+                if (documentIds.Count == 0)
+                {
+                    ModuleNameToDocumentId.Remove(moduleIndex.Name);
+                }
+            }
         }
     }
 
@@ -254,42 +283,14 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         return moduleInfos;
     }
 
-    public readonly struct RequiredModuleInfo(string name, string modulePath, LuaDocumentId documentId)
+    public List<ModuleIndex> GetAllModules()
     {
-        public string Name { get; } = name;
-
-        public string ModulePath { get; } = modulePath;
-
-        public LuaDocumentId DocumentId { get; } = documentId;
+        return DocumentIndex.Values.ToList();
     }
 
-    public List<RequiredModuleInfo> GetAllModules()
+    public ModuleIndex? GetModuleInfo(LuaDocumentId documentId)
     {
-        var moduleInfos = new List<RequiredModuleInfo>();
-        foreach (var moduleIndex in DocumentIndex)
-        {
-            string name = moduleIndex.Value.ModulePath;
-            var lastDotIndex = moduleIndex.Value.ModulePath.LastIndexOf('.');
-            if (lastDotIndex >= 0 && lastDotIndex < moduleIndex.Value.ModulePath.Length - 1)
-            {
-                name = moduleIndex.Value.ModulePath.Substring(lastDotIndex + 1);
-            }
-
-            moduleInfos.Add(new RequiredModuleInfo(name, moduleIndex.Value.ModulePath, moduleIndex.Key));
-        }
-
-        return moduleInfos;
-    }
-
-    public RequiredModuleInfo GetModuleInfo(LuaDocumentId documentId)
-    {
-        if (DocumentIndex.TryGetValue(documentId, out var moduleIndex))
-        {
-            var parts = moduleIndex.ModulePath.Split('.');
-            var name = parts[^1];
-            return new RequiredModuleInfo(name, moduleIndex.ModulePath, documentId);
-        }
-
-        return new RequiredModuleInfo(string.Empty, string.Empty, documentId);
+        DocumentIndex.TryGetValue(documentId, out var moduleInfo);
+        return moduleInfo;
     }
 }

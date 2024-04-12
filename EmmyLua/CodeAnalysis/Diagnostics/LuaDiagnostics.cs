@@ -14,12 +14,15 @@ public class LuaDiagnostics
 
     private HashSet<LuaDocumentId> IsMetaDocument { get; } = new();
 
+    public DiagnosticConfig Config { get; set; } = new();
+
     public LuaDiagnostics(LuaCompilation compilation)
     {
         Compilation = compilation;
         Handlers = new List<DiagnosticHandlerBase>
         {
-            new UnusedHandler(compilation)
+            new UnusedHandler(compilation),
+            new UndefinedGlobalHandler(compilation)
         };
         HandlerMap = new Dictionary<DiagnosticCode, DiagnosticHandlerBase>();
         foreach (var handler in Handlers)
@@ -38,7 +41,7 @@ public class LuaDiagnostics
             return;
         }
 
-        var context = new DiagnosticContext(document);
+        var context = new DiagnosticContext(document, Config);
         foreach (var handler in Handlers)
         {
             handler.Check(context);
