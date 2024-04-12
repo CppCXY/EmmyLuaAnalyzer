@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
@@ -37,6 +38,28 @@ public class UndefinedGlobalHandler(LuaCompilation compilation) : DiagnosticHand
 
                 if (moduleToDocumentIds.TryGetValue(name, out var documentIds))
                 {
+                    documentIds = documentIds
+                        .Where(it =>
+                        {
+                            if (Compilation.ProjectIndex.GetExportType(it) is { } ty
+                                && !ty.Equals(Builtin.Unknown) && !ty.Equals(Builtin.Nil))
+                            {
+                                return true;
+                            }
+
+                            return false;
+                        }).ToList();
+
+                    if (documentIds.Count == 0)
+                    {
+                        context.Report(new Diagnostic(
+                            DiagnosticSeverity.Error,
+                            DiagnosticCode.UndefinedGlobal,
+                            "undefined global",
+                            nameToken.Range
+                        ));
+                        continue;
+                    }
                     if (documentIds.Count == 1)
                     {
                         var moduleIndex = Compilation.Workspace.ModuleGraph.GetModuleInfo(documentIds.First());

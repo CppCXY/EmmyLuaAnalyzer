@@ -11,6 +11,11 @@ public class AutoRequireCodeAction(DiagnosticCode code) : CodeActionBase(code)
     public override IEnumerable<OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeAction> GetCodeActions(
         string data, LuaDocumentId currentDocumentId, ServerContext context)
     {
+        if (data.Length == 0)
+        {
+            yield break;
+        }
+        
         var documentIds = data.Split(',').Select(it => new LuaDocumentId(int.Parse(it)));
         foreach (var documentId in documentIds)
         {
