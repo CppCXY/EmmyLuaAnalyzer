@@ -404,3 +404,27 @@ public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
         return base.GetHashCode();
     }
 }
+
+public class LuaGenericVarargType(string baseName) : LuaNamedType(baseName), IEquatable<LuaGenericVarargType>
+{
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaGenericVarargType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaGenericVarargType);
+    }
+
+    public bool Equals(LuaGenericVarargType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+}

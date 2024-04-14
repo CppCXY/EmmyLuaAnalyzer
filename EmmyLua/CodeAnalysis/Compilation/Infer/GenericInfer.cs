@@ -16,6 +16,29 @@ public static class GenericInfer
         InferInstantiateByType(type, exprType, genericParameter, result, context);
     }
 
+    public static void InferInstantiateByVarargTypeAndExprs(
+        LuaGenericVarargType genericVarargType,
+        IEnumerable<LuaExprSyntax> expr,
+        HashSet<string> genericParameter,
+        Dictionary<string, LuaType> result,
+        SearchContext context
+    )
+    {
+        InferInstantiateByVarargTypeAndTypes(genericVarargType, expr.Select(context.Infer), genericParameter, result,
+            context);
+    }
+
+    public static void InferInstantiateByVarargTypeAndTypes(
+        LuaGenericVarargType genericVarargType,
+        IEnumerable<LuaType> types,
+        HashSet<string> genericParameter,
+        Dictionary<string, LuaType> result,
+        SearchContext context
+    )
+    {
+        result.TryAdd(genericVarargType.Name, new LuaMultiReturnType(types.ToList()));
+    }
+
     public static void InferInstantiateByType(
         LuaType type,
         LuaType exprType,
@@ -63,7 +86,8 @@ public static class GenericInfer
         return genericParameter.Contains(name);
     }
 
-    private static void GenericInstantiateByType(LuaGenericType genericType,
+    private static void GenericInstantiateByType(
+        LuaGenericType genericType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -97,7 +121,8 @@ public static class GenericInfer
         }
     }
 
-    private static void GenericTableExprInstantiate(LuaGenericType genericType,
+    private static void GenericTableExprInstantiate(
+        LuaGenericType genericType,
         LuaTableExprSyntax tableExpr,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -131,7 +156,8 @@ public static class GenericInfer
         InferInstantiateByType(genericArgs[1], valueType, genericParameter, result, context);
     }
 
-    private static void NamedTypeInstantiateByType(LuaNamedType namedType,
+    private static void NamedTypeInstantiateByType(
+        LuaNamedType namedType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -143,7 +169,8 @@ public static class GenericInfer
         }
     }
 
-    private static void ArrayTypeInstantiateByType(LuaArrayType arrayType,
+    private static void ArrayTypeInstantiateByType(
+        LuaArrayType arrayType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -174,7 +201,8 @@ public static class GenericInfer
         }
     }
 
-    private static void MethodTypeInstantiateByType(LuaMethodType methodType,
+    private static void MethodTypeInstantiateByType(
+        LuaMethodType methodType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -202,7 +230,8 @@ public static class GenericInfer
         }
     }
 
-    private static void UnionTypeInstantiateByType(LuaUnionType unionType,
+    private static void UnionTypeInstantiateByType(
+        LuaUnionType unionType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -224,7 +253,8 @@ public static class GenericInfer
         }
     }
 
-    private static void TupleTypeInstantiateByType(LuaTupleType tupleType,
+    private static void TupleTypeInstantiateByType(
+        LuaTupleType tupleType,
         LuaType exprType,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
@@ -234,7 +264,20 @@ public static class GenericInfer
         {
             for (var i = 0; i < tupleType.TupleDeclaration.Count && i < tupleType2.TupleDeclaration.Count; i++)
             {
-                InferInstantiateByType(tupleType.TupleDeclaration[i].DeclarationType!, tupleType2.TupleDeclaration[i].DeclarationType!, genericParameter, result, context);
+                var leftElementType = tupleType.TupleDeclaration[i].DeclarationType!;
+                if (leftElementType is LuaGenericVarargType genericVarargType)
+                {
+                    var rightExprs = tupleType2.TupleDeclaration[i..]
+                        .Where(it => it.DeclarationType is not null)
+                        .Select(it => it.DeclarationType!);
+                    InferInstantiateByVarargTypeAndTypes(genericVarargType, rightExprs, genericParameter, result,
+                        context);
+                }
+                else
+                {
+                    var rightElementType = tupleType2.TupleDeclaration[i].DeclarationType!;
+                    InferInstantiateByType(leftElementType, rightElementType, genericParameter, result, context);
+                }
             }
         }
         else if (exprType is LuaTableLiteralType tableLiteralType)
@@ -242,23 +285,30 @@ public static class GenericInfer
             var tableExpr = tableLiteralType.TableExprPtr.ToNode(context);
             if (tableExpr is not null)
             {
-                var arrayCount = 0;
-                foreach (var field in tableExpr.FieldList)
+                var fileList = tableExpr.FieldList.ToList();
+                for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
                 {
-                    if (field.IsValue)
+                    var tupleElementType = tupleType.TupleDeclaration[i].DeclarationType!;
+                    if (tupleElementType is LuaGenericVarargType genericVarargType)
                     {
-                        if (arrayCount >= tupleType.TupleDeclaration.Count)
+                        var fileExprs = fileList[i..]
+                            .Where(it => it is { IsValue: true, Value: not null })
+                            .Select(it => it.Value!);
+                        InferInstantiateByVarargTypeAndExprs(genericVarargType, fileExprs, genericParameter, result,
+                            context);
+                        break;
+                    }
+                    else
+                    {
+                        var field = fileList[i];
+                        if (field is { IsValue: true, Value: { } valueExpr })
                         {
-                            break;
-                        }
-
-                        if (field.Value is not null)
-                        {
-                            InferInstantiateByExpr(tupleType.TupleDeclaration[arrayCount].DeclarationType!, field.Value, genericParameter,
+                            InferInstantiateByExpr(
+                                tupleElementType,
+                                valueExpr,
+                                genericParameter,
                                 result, context);
                         }
-
-                        arrayCount++;
                     }
                 }
             }

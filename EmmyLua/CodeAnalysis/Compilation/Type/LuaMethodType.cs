@@ -280,16 +280,25 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
         var genericParameterMap = new Dictionary<string, LuaType>();
         var paramStart = skipParam;
         var argStart = matchedParam;
+
         for (var i = 0;
              i + paramStart < Parameters.Count
-             && i + argStart < args.Count
+             && i +argStart < args.Count
              && genericParameterMap.Count < genericParameters.Count;
              i++)
         {
             var parameter = Parameters[i + paramStart];
-            var arg = args[i + argStart];
-            var parameterType = parameter.DeclarationType ?? Builtin.Any;
-            GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap, context);
+            if (parameter is { IsVararg: true, DeclarationType: LuaGenericVarargType varargType })
+            {
+                var varargs = args[(i + argStart)..];
+                GenericInfer.InferInstantiateByVarargTypeAndExprs(varargType, varargs, genericParameters, genericParameterMap, context);
+            }
+            else
+            {
+                var arg = args[i + argStart];
+                var parameterType = parameter.DeclarationType ?? Builtin.Any;
+                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap, context);
+            }
         }
 
         var newReturnType = ReturnType.Instantiate(genericParameterMap);

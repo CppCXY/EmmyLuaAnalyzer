@@ -116,6 +116,7 @@ public static class TypesParser
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt => LiteralType(p),
             LuaTokenKind.TkName => OtherType(p),
+            LuaTokenKind.TkDots => VarargType(p),
             _ => CompleteMarker.Empty
         };
     }
@@ -200,6 +201,21 @@ public static class TypesParser
         return m.Complete(p, LuaSyntaxKind.TypeName);
     }
 
+    private static CompleteMarker VarargType(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Bump();
+            p.Expect(LuaTokenKind.TkName);
+            return m.Complete(p, LuaSyntaxKind.TypeGenericVararg);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.TypeGenericVararg, e.Message);
+        }
+    }
+
     public static CompleteMarker FunType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -243,7 +259,7 @@ public static class TypesParser
         }
     }
 
-    public static CompleteMarker TypedParameter(LuaDocParser p)
+    private static CompleteMarker TypedParameter(LuaDocParser p)
     {
         var m = p.Marker();
         try
@@ -251,6 +267,7 @@ public static class TypesParser
             if (p.Current is LuaTokenKind.TkName)
             {
                 p.Bump();
+                p.Accept(LuaTokenKind.TkNullable);
             }
             else if (p.Current is LuaTokenKind.TkDots)
             {

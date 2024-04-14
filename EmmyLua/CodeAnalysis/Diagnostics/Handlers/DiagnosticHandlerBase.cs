@@ -6,8 +6,6 @@ public abstract class DiagnosticHandlerBase(LuaCompilation compilation)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public virtual List<DiagnosticCode> GetDiagnosticCodes() => new List<DiagnosticCode>();
-
     public virtual void Check(DiagnosticContext context)
     {
     }

@@ -6,9 +6,6 @@ namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
 
 public class UndefinedGlobalHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation)
 {
-    public override List<DiagnosticCode> GetDiagnosticCodes() =>
-        [DiagnosticCode.UndefinedGlobal, DiagnosticCode.NeedImport];
-
     public override void Check(DiagnosticContext context)
     {
         var semanticModel = Compilation.GetSemanticModel(context.Document.Id);

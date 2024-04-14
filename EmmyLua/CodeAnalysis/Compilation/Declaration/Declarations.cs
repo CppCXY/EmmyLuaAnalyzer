@@ -154,6 +154,8 @@ public class ParameterLuaDeclaration(
 
     public LuaSyntaxNodePtr<LuaDocTypedParamSyntax> TypedParamPtr => Ptr.Cast<LuaDocTypedParamSyntax>();
 
+    public bool IsVararg => Name == "...";
+
     public override ParameterLuaDeclaration WithType(LuaType type) =>
         new(Name, Ptr, type);
 }

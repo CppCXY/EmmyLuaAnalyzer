@@ -638,6 +638,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var overloads = docList?
             .OfType<LuaDocTagOverloadSyntax>()
+            .Where(it=>it.TypeFunc is not null)
             .Select(it => Context.Infer(it.TypeFunc))
             .Cast<LuaMethodType>()
             .Select(it => it.MainSignature).ToList();

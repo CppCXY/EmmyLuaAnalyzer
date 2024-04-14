@@ -9,8 +9,6 @@ public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(c
 {
     private DiagnosticCode Code { get; } = DiagnosticCode.Unused;
 
-    public override List<DiagnosticCode> GetDiagnosticCodes() => [Code];
-
     public override void Check(DiagnosticContext context)
     {
         var semanticModel = Compilation.GetSemanticModel(context.Document.Id);

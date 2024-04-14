@@ -429,6 +429,28 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
     public LuaSyntaxElement? GetPrevSibling(int prev = 1) =>
         Parent?.ChildrenWithTokens.ElementAtOrDefault(ChildPosition - prev);
 
+    public LuaSyntaxToken? GetPrevToken()
+    {
+        var prevSibling = GetPrevSibling();
+        if (prevSibling is LuaSyntaxToken prevToken)
+        {
+            return prevToken;
+        }
+
+        return prevSibling?.LastToken();
+    }
+
+    public LuaSyntaxToken? LastToken()
+    {
+        var lastChild = ChildrenWithTokens.LastOrDefault();
+        if (lastChild is LuaSyntaxToken token)
+        {
+            return token;
+        }
+
+        return lastChild?.LastToken();
+    }
+
     // 从自身向前迭代, 直到找到一个类型为T的节点
     public IEnumerable<T> PrevOfType<T>()
         where T : LuaSyntaxElement

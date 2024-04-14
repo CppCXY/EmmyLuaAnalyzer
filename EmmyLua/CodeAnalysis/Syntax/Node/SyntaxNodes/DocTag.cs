@@ -34,6 +34,8 @@ public class LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, L
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaSyntaxToken? Vararg => FirstChildToken(LuaTokenKind.TkDots);
 }
 
 public class LuaDocTagGenericSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

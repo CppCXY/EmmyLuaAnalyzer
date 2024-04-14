@@ -238,6 +238,10 @@ public static class TagParser
                 p.Bump();
                 TypesParser.Type(p);
             }
+            else if (p.Current is LuaTokenKind.TkDots)
+            {
+                p.Bump();
+            }
 
             return m.Complete(p, LuaSyntaxKind.GenericParameter);
         }

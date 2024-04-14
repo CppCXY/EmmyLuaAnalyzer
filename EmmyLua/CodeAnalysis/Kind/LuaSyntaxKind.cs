@@ -88,6 +88,7 @@ public enum LuaSyntaxKind : ushort
     TypeParen,
     TypeLiteral,
     TypeName,
+    TypeGenericVararg,
 
     // doc parameter
     TypedParameter,

@@ -84,3 +84,9 @@ public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lu
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
     public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
 }
+
+public class LuaDocGenericVarargTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+}

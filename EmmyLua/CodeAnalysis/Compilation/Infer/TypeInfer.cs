@@ -29,6 +29,8 @@ public static class TypeInfer
                 return InferTupleType(tupleType, context);
             case LuaDocGenericTypeSyntax genericType:
                 return InferGenericType(genericType, context);
+            case LuaDocGenericVarargTypeSyntax genericVarargType:
+                return InferGenericVarargType(genericVarargType, context);
             default:
                 throw new UnreachableException();
         }
@@ -139,6 +141,16 @@ public static class TypeInfer
         if (genericType is { Name: { } name })
         {
             return new LuaGenericType(name.RepresentText, typeArgs);
+        }
+
+        return Builtin.Unknown;
+    }
+
+    private static LuaType InferGenericVarargType(LuaDocGenericVarargTypeSyntax genericVarargType, SearchContext context)
+    {
+        if (genericVarargType is { Name: { } name })
+        {
+            return new LuaGenericVarargType(name.RepresentText);
         }
 
         return Builtin.Unknown;

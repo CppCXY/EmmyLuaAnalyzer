@@ -4,35 +4,19 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
-public class LuaDiagnostics
+public class LuaDiagnostics(LuaCompilation compilation)
 {
-    private List<DiagnosticHandlerBase> Handlers { get; }
+    private List<DiagnosticHandlerBase> Handlers { get; } = new()
+    {
+        new UnusedHandler(compilation),
+        new UndefinedGlobalHandler(compilation)
+    };
 
-    private Dictionary<DiagnosticCode, DiagnosticHandlerBase> HandlerMap { get; }
-
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
     private HashSet<LuaDocumentId> IsMetaDocument { get; } = new();
 
     public DiagnosticConfig Config { get; set; } = new();
-
-    public LuaDiagnostics(LuaCompilation compilation)
-    {
-        Compilation = compilation;
-        Handlers = new List<DiagnosticHandlerBase>
-        {
-            new UnusedHandler(compilation),
-            new UndefinedGlobalHandler(compilation)
-        };
-        HandlerMap = new Dictionary<DiagnosticCode, DiagnosticHandlerBase>();
-        foreach (var handler in Handlers)
-        {
-            foreach (var code in handler.GetDiagnosticCodes())
-            {
-                HandlerMap.TryAdd(code, handler);
-            }
-        }
-    }
 
     public void Check(LuaDocument document)
     {

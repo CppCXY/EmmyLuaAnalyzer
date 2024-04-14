@@ -6,6 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.CodeAction;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class CodeActionHandler(ServerContext context) : CodeActionHandlerBase
 {
     private CodeActionBuilder Builder { get; } = new();
