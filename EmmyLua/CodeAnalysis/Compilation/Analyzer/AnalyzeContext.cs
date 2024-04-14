@@ -18,6 +18,7 @@ public enum ResolveState
     UnResolvedIndex = 0x001,
     UnResolvedType = 0x002,
     UnResolveReturn = 0x004,
+    UnResolvedParameters = 0x008,
 }
 
 public class UnResolved(ResolveState state)
@@ -25,14 +26,14 @@ public class UnResolved(ResolveState state)
     public ResolveState ResolvedState { get; set; } = state;
 }
 
-public class UnResolvedDeclaration(LuaDeclaration luaDeclaration, LuaExprRef? exprRef, ResolveState state) : UnResolved(state)
+public class UnResolvedDeclaration(LuaDeclaration luaDeclaration, LuaExprRef? exprRef, ResolveState state)
+    : UnResolved(state)
 {
     public LuaDeclaration LuaDeclaration { get; } = luaDeclaration;
 
     public LuaExprRef? ExprRef { get; } = exprRef;
 
     public bool IsTypeDeclaration { get; set; } = false;
-
 }
 
 public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
@@ -49,11 +50,25 @@ public class UnResolvedSource(LuaDocumentId documentId, LuaBlockSyntax block, Re
     public LuaBlockSyntax Block { get; } = block;
 }
 
-public class UnResolvedForRangeParameter(List<ParameterLuaDeclaration> parameterLuaDeclarations, List<LuaExprSyntax> exprList) : UnResolved(ResolveState.UnResolvedType)
+public class UnResolvedForRangeParameter(
+    List<ParameterLuaDeclaration> parameterLuaDeclarations,
+    List<LuaExprSyntax> exprList) : UnResolved(ResolveState.UnResolvedType)
 {
     public List<ParameterLuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
 
     public List<LuaExprSyntax> ExprList { get; } = exprList;
+}
+
+public class UnResolvedClosureParameters(
+    List<ParameterLuaDeclaration> parameterLuaDeclarations,
+    LuaCallExprSyntax callExprSyntax,
+    int index) : UnResolved(ResolveState.UnResolvedParameters)
+{
+    public List<ParameterLuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
+
+    public LuaCallExprSyntax CallExprSyntax { get; } = callExprSyntax;
+
+    public int Index { get; } = index;
 }
 
 public class AnalyzeContext(List<LuaDocument> documents)

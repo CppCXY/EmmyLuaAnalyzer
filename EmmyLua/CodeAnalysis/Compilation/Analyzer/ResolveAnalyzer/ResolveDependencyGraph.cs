@@ -80,6 +80,11 @@ public class ResolveDependencyGraph(SearchContext context)
             {
                 CalcResolveReturn(unResolved);
             }
+
+            if ((unResolved.ResolvedState & ResolveState.UnResolvedParameters) != 0)
+            {
+                CalcResolveParameters(unResolved);
+            }
         }
     }
 
@@ -187,6 +192,26 @@ public class ResolveDependencyGraph(SearchContext context)
         {
             var block = unResolvedSource.Block;
             AnalyzeBlockReturns(block, unResolved);
+        }
+    }
+
+    private void CalcResolveParameters(UnResolved unResolved)
+    {
+        if (unResolved is UnResolvedClosureParameters unResolvedClosureParameters)
+        {
+            var callExprSyntax = unResolvedClosureParameters.CallExprSyntax;
+            if (callExprSyntax.PrefixExpr is { } prefixExpr)
+            {
+                var prefixType = context.Infer(prefixExpr);
+                if (prefixType.Equals(Builtin.Unknown))
+                {
+                    AddDependency(unResolved, ResolveState.UnResolvedParameters, prefixExpr);
+                }
+                else
+                {
+                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedParameters));
+                }
+            }
         }
     }
 

@@ -9,7 +9,8 @@ public class LuaDiagnostics(LuaCompilation compilation)
     private List<DiagnosticHandlerBase> Handlers { get; } = new()
     {
         new UnusedHandler(compilation),
-        new UndefinedGlobalHandler(compilation)
+        new UndefinedGlobalHandler(compilation),
+        new TypeCheckHandler(compilation)
     };
 
     public LuaCompilation Compilation { get; } = compilation;

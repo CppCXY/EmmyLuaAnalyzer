@@ -35,6 +35,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         ResolveReturn(unResolved);
                         break;
                     }
+                    case ResolveState.UnResolvedParameters:
+                    {
+                        ResolveParameters(unResolved);
+                        break;
+                    }
                 }
             }
         } while (resolveDependencyGraph.CalcDependency());
@@ -192,6 +197,35 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
 
             Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId, returnType);
+        }
+    }
+
+    private void ResolveParameters(UnResolved unResolved)
+    {
+        if (unResolved is UnResolvedClosureParameters unResolvedClosureParameters)
+        {
+            var callExpr = unResolvedClosureParameters.CallExprSyntax;
+            var prefixType = Context.Infer(callExpr.PrefixExpr);
+            var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
+            TypeHelper.Each<LuaMethodType>(prefixType, type =>
+            {
+                var signature = type.FindPerfectMatchSignature(callExpr, callArgList, Context);
+                var paramIndex = unResolvedClosureParameters.Index;
+                if (paramIndex == -1) return;
+                var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
+                if (paramDeclaration is not { DeclarationType: { } paramType }) return;
+                var closureParams = unResolvedClosureParameters.ParameterLuaDeclarations;
+                TypeHelper.Each<LuaMethodType>(paramType, methodType =>
+                {
+                    var mainParams = methodType.MainSignature.Parameters;
+                    for (var i = 0; i < closureParams.Count && i < mainParams.Count; i++)
+                    {
+                        var closureParam = closureParams[i];
+                        var mainParam = mainParams[i];
+                        closureParam.DeclarationType ??= mainParam.DeclarationType;
+                    }
+                });
+            });
         }
     }
 

@@ -66,6 +66,15 @@ public static class LocationExtension
         };
     }
 
+    public static Location ToLspLocation(this SourceRange range, LuaDocument document)
+    {
+        return new()
+        {
+            Uri = document.Uri,
+            Range = range.ToLspRange(document)
+        };
+    }
+
     public static (string, TextEdit) ToTextEdit(this LuaLocation location, string text)
     {
         return (

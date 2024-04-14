@@ -218,11 +218,6 @@ public class DeclarationBuilder : ILuaElementWalker
                 AnalyzeSource(sourceSyntax);
                 break;
             }
-            case LuaLabelStatSyntax labelStatSyntax:
-            {
-                AnalyzeLuaLabel(labelStatSyntax);
-                break;
-            }
             case LuaNameExprSyntax nameExpr:
             {
                 IndexNameExpr(nameExpr);
@@ -312,13 +307,13 @@ public class DeclarationBuilder : ILuaElementWalker
     private List<ParameterLuaDeclaration> AnalyzeParamListDeclaration(LuaParamListSyntax paramListSyntax)
     {
         var parameters = new List<ParameterLuaDeclaration>();
-        var dic = FindParamTypeDict(paramListSyntax);
+        var paramTypeDict = FindParamTypeDict(paramListSyntax);
         foreach (var param in paramListSyntax.Params)
         {
             if (param.Name is { } name)
             {
                 var declaration = new ParameterLuaDeclaration(name.RepresentText, new(param), null);
-                if (dic.TryGetValue(name.RepresentText, out var ty))
+                if (paramTypeDict.TryGetValue(name.RepresentText, out var ty))
                 {
                     declaration.DeclarationType = ty;
                 }
@@ -329,7 +324,7 @@ public class DeclarationBuilder : ILuaElementWalker
             else if (param.IsVarArgs)
             {
                 var declaration = new ParameterLuaDeclaration("...", new(param), null);
-                if (dic.TryGetValue("...", out var ty))
+                if (paramTypeDict.TryGetValue("...", out var ty))
                 {
                     declaration.DeclarationType = ty;
                 }
@@ -344,8 +339,11 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private LuaType GetRetType(IEnumerable<LuaDocTagSyntax>? docList)
     {
-        var returnTypes = docList?.OfType<LuaDocTagReturnSyntax>()
-            .SelectMany(tag => tag.TypeList).Select(Context.Infer).ToList();
+        var returnTypes = docList?
+            .OfType<LuaDocTagReturnSyntax>()
+            .SelectMany(tag => tag.TypeList)
+            .Select(Context.Infer)
+            .ToList();
         LuaType returnType = Builtin.Unknown;
         if (returnTypes is null)
         {
@@ -638,7 +636,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var overloads = docList?
             .OfType<LuaDocTagOverloadSyntax>()
-            .Where(it=>it.TypeFunc is not null)
+            .Where(it => it.TypeFunc is not null)
             .Select(it => Context.Infer(it.TypeFunc))
             .Cast<LuaMethodType>()
             .Select(it => it.MainSignature).ToList();
@@ -649,6 +647,13 @@ public class DeclarationBuilder : ILuaElementWalker
             PushScope(closureExprSyntax);
             parameters = AnalyzeParamListDeclaration(paramList);
             PopScope();
+        }
+
+        if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
+        {
+            var index = callArgList.ArgList.ToList().IndexOf(closureExprSyntax);
+            var unResolved = new UnResolvedClosureParameters(parameters, callExprSyntax, index);
+            AddUnResolved(unResolved);
         }
 
         var mainRetType = GetRetType(docList);
@@ -1070,15 +1075,6 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             AnalyzeDocBody(tableType, luaDocTableTypeSyntax.Body);
         }
-    }
-
-    private void AnalyzeLuaLabel(LuaLabelStatSyntax labelStatSyntax)
-    {
-        // if (labelStatSyntax is { Name: { } name })
-        // {
-        //     var labelDeclaration =
-        //         new LabelLuaDeclaration(name.RepresentText, new(labelStatSyntax));
-        // }
     }
 
     private void AnalyzeSource(LuaSourceSyntax sourceSyntax)

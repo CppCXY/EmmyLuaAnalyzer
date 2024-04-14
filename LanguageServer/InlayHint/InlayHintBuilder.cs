@@ -104,13 +104,31 @@ public class InlayHintBuilder
                 if (i < parameterCount)
                 {
                     var parameter = parameters[i];
-                    hints.Add(new InlayHintType()
+                    var document = semanticModel.Compilation.Workspace.GetDocument(parameter.Ptr.DocumentId);
+                    if (document is not null)
                     {
-                        Position = arg.Position.ToLspPosition(semanticModel.Document),
-                        Label = new StringOrInlayHintLabelParts($"{parameter.Name}:"),
-                        Kind = InlayHintKind.Parameter,
-                        PaddingRight = true
-                    });
+                        hints.Add(new InlayHintType()
+                        {
+                            Position = arg.Position.ToLspPosition(semanticModel.Document),
+                            Label = new StringOrInlayHintLabelParts(new []{ new InlayHintLabelPart()
+                            {
+                                Value = $"{parameter.Name}:",
+                                Location = parameter.Ptr.Range.ToLspLocation(document)
+                            }}),
+                            Kind = InlayHintKind.Parameter,
+                            PaddingRight = true
+                        });
+                    }
+                    else
+                    {
+                        hints.Add(new InlayHintType()
+                        {
+                            Position = arg.Position.ToLspPosition(semanticModel.Document),
+                            Label = new StringOrInlayHintLabelParts($"{parameter.Name}:"),
+                            Kind = InlayHintKind.Parameter,
+                            PaddingRight = true
+                        });
+                    }
                 }
                 else
                 {
