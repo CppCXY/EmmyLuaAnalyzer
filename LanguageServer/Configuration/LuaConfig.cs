@@ -39,7 +39,7 @@ public class LuaConfig
                 _lock.ExitReadLock();
             }
         }
-        set
+        private set
         {
             _lock.EnterWriteLock();
             try
