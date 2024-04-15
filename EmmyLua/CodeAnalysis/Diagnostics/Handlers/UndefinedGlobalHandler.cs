@@ -4,7 +4,9 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
 
-public class UndefinedGlobalHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation)
+public class UndefinedGlobalHandler(LuaCompilation compilation)
+    : DiagnosticHandlerBase(compilation,
+        [DiagnosticCode.UndefinedGlobal, DiagnosticCode.NeedImport])
 {
     public override void Check(DiagnosticContext context)
     {
@@ -57,6 +59,7 @@ public class UndefinedGlobalHandler(LuaCompilation compilation) : DiagnosticHand
                         ));
                         continue;
                     }
+
                     if (documentIds.Count == 1)
                     {
                         var moduleIndex = Compilation.Workspace.ModuleGraph.GetModuleInfo(documentIds.First());

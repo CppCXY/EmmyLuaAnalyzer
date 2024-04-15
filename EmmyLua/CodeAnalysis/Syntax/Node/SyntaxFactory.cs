@@ -94,6 +94,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeGenericVararg => new LuaDocGenericVarargTypeSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(greenNode, tree, parent, startOffset),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }

@@ -20,7 +20,8 @@ public class CommandExecutor(
     
     private List<ICommandBase> Commands { get; } =
     [
-        new AutoRequire()
+        new AutoRequire(),
+        new DiagnosticAction()
     ];
 
     public List<string> GetCommands()

@@ -165,9 +165,15 @@ public class LuaDocTagVersionSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lua
 public class LuaDocTagDiagnosticSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {
-    public LuaNameToken? State => FirstChild<LuaNameToken>();
+    public LuaNameToken? Action => FirstChild<LuaNameToken>();
 
-    public IEnumerable<LuaNameToken> Diagnostics => ChildNodes<LuaNameToken>().Skip(1);
+    public LuaDocDiagnosticNameListSyntax? Diagnostics => FirstChild<LuaDocDiagnosticNameListSyntax>();
+}
+
+public class LuaDocDiagnosticNameListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaNameToken> DiagnosticNames => ChildNodes<LuaNameToken>();
 }
 
 public class LuaDocTagOperatorSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

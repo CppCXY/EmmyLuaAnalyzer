@@ -49,6 +49,8 @@ public class LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lua
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
+    public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
+
     public bool IsVarArgs => VarArgs != null;
 }
 

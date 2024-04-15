@@ -238,6 +238,11 @@ public class DeclarationBuilder : ILuaElementWalker
                 Compilation.Diagnostics.AddMeta(DocumentId);
                 break;
             }
+            case LuaDocTagDiagnosticSyntax diagnosticSyntax:
+            {
+                AnalyzeDiagnostic(diagnosticSyntax);
+                break;
+            }
         }
     }
 
@@ -1098,5 +1103,58 @@ public class DeclarationBuilder : ILuaElementWalker
     private void IndexDocNameType(LuaDocNameTypeSyntax docNameType)
     {
         ProjectIndex.AddNameType(DocumentId, docNameType);
+    }
+
+    private void AnalyzeDiagnostic(LuaDocTagDiagnosticSyntax diagnosticSyntax)
+    {
+        if (diagnosticSyntax is
+            {
+                Action: { RepresentText: { } actionName },
+                Diagnostics: { DiagnosticNames: { } diagnosticNames }
+            })
+        {
+            switch (actionName)
+            {
+                case "disable-next-line":
+                {
+                    if (diagnosticSyntax.Parent is LuaCommentSyntax { Owner.Range: { } range })
+                    {
+                        foreach (var diagnosticName in diagnosticNames)
+                        {
+                            if (diagnosticName is { RepresentText: { } name })
+                            {
+                                Compilation.Diagnostics.AddDiagnosticDisableNextLine(DocumentId, range, name);
+                            }
+                        }
+                    }
+
+                    break;
+                }
+                case "disable":
+                {
+                    foreach (var diagnosticName in diagnosticNames)
+                    {
+                        if (diagnosticName is { RepresentText: { } name })
+                        {
+                            Compilation.Diagnostics.AddDiagnosticDisable(DocumentId, name);
+                        }
+                    }
+
+                    break;
+                }
+                case "enable":
+                {
+                    foreach (var diagnosticName in diagnosticNames)
+                    {
+                        if (diagnosticName is { RepresentText: { } name })
+                        {
+                            Compilation.Diagnostics.AddDiagnosticEnable(DocumentId, name);
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
     }
 }

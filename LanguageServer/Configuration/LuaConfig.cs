@@ -137,7 +137,7 @@ public class LuaConfig
     {
         var features = new LuaFeatures();
         var rc = DotLuaRc;
-        if (rc.Workspace?.IgnoreDirs is { } ignoreDirs)
+        if (rc.Workspace.IgnoreDirs is { } ignoreDirs)
         {
             features.ExcludeFolders = ignoreDirs;
         }
@@ -147,7 +147,7 @@ public class LuaConfig
             features.DontIndexMaxFileSize = preloadFileSize;
         }
 
-        if (rc.Runtime?.Version is { } version)
+        if (rc.Runtime.Version is { } version)
         {
             switch (version)
             {

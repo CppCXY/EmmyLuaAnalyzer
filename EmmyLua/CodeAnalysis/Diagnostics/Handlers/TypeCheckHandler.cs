@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
 
-public class TypeCheckHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation)
+public class TypeCheckHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation, [])
 {
     public override void Check(DiagnosticContext context)
     {

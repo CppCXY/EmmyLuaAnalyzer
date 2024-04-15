@@ -74,10 +74,15 @@ public static class TypeInfer
         var typedParameters = new List<ParameterLuaDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
-            if (typedParam is { Name: { } name })
+            if (typedParam is { Name: { } name, Nullable: {} nullable  })
             {
+                var type = context.Infer(typedParam.Type);
+                if (nullable)
+                {
+                    type = type.Union(Builtin.Nil);
+                }
                 var paramDeclaration = new ParameterLuaDeclaration(
-                    name.RepresentText, new(typedParam), context.Infer(typedParam.Type));
+                    name.RepresentText, new(typedParam), type);
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })

@@ -2,14 +2,19 @@
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
-public class DiagnosticContext(LuaDocument document, DiagnosticConfig config)
+public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnostics)
 {
+    private LuaDiagnostics LuaDiagnostics { get; } = luaDiagnostics;
+
     public LuaDocument Document { get; } = document;
 
-    public DiagnosticConfig Config { get; } = config;
+    public DiagnosticConfig Config => LuaDiagnostics.Config;
 
     public void Report(Diagnostic diagnostic)
     {
-        Document.SyntaxTree.PushDiagnostic(diagnostic);
+        if (luaDiagnostics.CanAddDiagnostic(Document.Id, diagnostic.Code, diagnostic.Range))
+        {
+            Document.SyntaxTree.PushDiagnostic(diagnostic);
+        }
     }
 }

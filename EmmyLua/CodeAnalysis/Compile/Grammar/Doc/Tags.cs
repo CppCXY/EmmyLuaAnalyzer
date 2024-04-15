@@ -559,12 +559,7 @@ public static class TagParser
             if (p.Current is LuaTokenKind.TkColon)
             {
                 p.Bump();
-                p.Expect(LuaTokenKind.TkName);
-                while (p.Current is LuaTokenKind.TkComma)
-                {
-                    p.Bump();
-                    p.Expect(LuaTokenKind.TkName);
-                }
+                DiagnosticList(p);
             }
 
             return m.Complete(p, LuaSyntaxKind.DocDiagnostic);
@@ -572,6 +567,25 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocDiagnostic, e.Message);
+        }
+    }
+
+    private static CompleteMarker DiagnosticList(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Expect(LuaTokenKind.TkName);
+            while (p.Current is LuaTokenKind.TkComma)
+            {
+                p.Bump();
+                p.Expect(LuaTokenKind.TkName);
+            }
+            return m.Complete(p, LuaSyntaxKind.DiagnosticNameList);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DiagnosticNameList, e.Message);
         }
     }
 

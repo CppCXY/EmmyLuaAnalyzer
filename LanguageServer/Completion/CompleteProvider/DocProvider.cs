@@ -13,6 +13,8 @@ public class DocProvider : ICompleteProviderBase
         "type", "overload", "generic", "async", "cast", "private", "protected", "public", "operator",
         "meta", "version", "as", "nodiscard", "diagnostic", // "package",
     ];
+    
+    private List<string> Actions { get; } = ["disable-next-line", "disable", "enable"];
 
     public void AddCompletion(CompleteContext context)
     {
@@ -32,6 +34,16 @@ public class DocProvider : ICompleteProviderBase
             case LuaNameToken { Parent: LuaDocNameTypeSyntax }:
             {
                 AddTypeNameCompletion(context);
+                break;
+            }
+            case LuaNameToken { Parent: LuaDocTagDiagnosticSyntax }:
+            {
+                AddDiagnosticActionCompletion(context);
+                break;
+            }
+            case LuaNameToken { Parent: LuaDocDiagnosticNameListSyntax }:
+            {
+                AddDiagnosticCodeCompletion(context);
                 break;
             }
         }
@@ -102,5 +114,32 @@ public class DocProvider : ICompleteProviderBase
             NamedTypeKind.Alias => CompletionItemKind.Reference,
             _ => CompletionItemKind.Text,
         };
+    }
+    
+    private void AddDiagnosticActionCompletion(CompleteContext context)
+    {
+        foreach (var action in Actions)
+        {
+            context.Add(new CompletionItem
+            {
+                Label = action,
+                Kind = CompletionItemKind.EnumMember,
+                Detail = "action",
+            });
+        }
+    }
+    
+    private void AddDiagnosticCodeCompletion(CompleteContext context)
+    {
+        var diagnosticCodes = context.SemanticModel.Compilation.Diagnostics.GetDiagnosticNames();
+        foreach (var diagnosticCode in diagnosticCodes)
+        {
+            context.Add(new CompletionItem
+            {
+                Label = diagnosticCode,
+                Kind = CompletionItemKind.EnumMember,
+                Detail = "diagnostic code",
+            });
+        }
     }
 }

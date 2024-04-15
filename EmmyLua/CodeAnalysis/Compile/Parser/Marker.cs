@@ -21,9 +21,9 @@ public interface IMarkerEventContainer
     public Marker Marker();
 }
 
-public struct Marker(int position)
+public readonly struct Marker(int position)
 {
-    public int Position { get; set; } = position;
+    public int Position { get; } = position;
 
     public CompleteMarker Complete(IMarkerEventContainer p, LuaSyntaxKind kind)
     {

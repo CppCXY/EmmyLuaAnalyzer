@@ -5,10 +5,8 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
 
-public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation)
+public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation, [DiagnosticCode.Unused])
 {
-    private DiagnosticCode Code { get; } = DiagnosticCode.Unused;
-
     public override void Check(DiagnosticContext context)
     {
         var semanticModel = Compilation.GetSemanticModel(context.Document.Id);
@@ -59,7 +57,7 @@ public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(c
         {
             context.Report(new Diagnostic(
                 DiagnosticSeverity.Hint,
-                Code,
+                DiagnosticCode.Unused,
                 "unused variable",
                 luaDeclaration.Ptr.Range,
                 DiagnosticTag.Unnecessary

@@ -94,7 +94,7 @@ public enum LuaSyntaxKind : ushort
     TypedParameter,
     GenericParameter,
     GenericDeclareList,
-
+    DiagnosticNameList,
     // start with '#' or '@'
     Description
 }

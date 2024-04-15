@@ -164,7 +164,7 @@ public class InlayHintBuilder
                             hints.Add(new InlayHintType()
                             {
                                 Position = callExpr.Range.StartOffset.ToLspPosition(semanticModel.Document),
-                                Label = new StringOrInlayHintLabelParts("await:"),
+                                Label = new StringOrInlayHintLabelParts("await "),
                                 Kind = InlayHintKind.Type,
                                 PaddingRight = true
                             });
