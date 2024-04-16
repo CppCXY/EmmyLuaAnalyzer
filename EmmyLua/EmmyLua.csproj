@@ -10,4 +10,13 @@
     <ItemGroup>
         <Content Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Configuration\" />
+    </ItemGroup>
+    
 </Project>

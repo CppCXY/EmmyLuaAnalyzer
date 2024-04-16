@@ -1,10 +1,17 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Diagnostics;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaFeatures
 {
     public LuaLanguage Language { get; set; } = new();
+
+    public DiagnosticConfig DiagnosticConfig { get; set; } = new();
+
+    public List<string> WorkspaceRoots { get; set; } = new();
+
+    public List<string> ThirdPartyRoots { get; set; } = new();
 
     public List<string> Extensions { get; set; } = [
         "*.lua", "*.lua.txt"
@@ -24,6 +31,7 @@ public class LuaFeatures
         "?.lua"
     ];
 
+    // ReSharper disable once CollectionNeverUpdated.Global
     public Dictionary<string, string> VirtualModule { get; set; } = new();
 
     public HashSet<string> RequireLikeFunction { get; set; } =

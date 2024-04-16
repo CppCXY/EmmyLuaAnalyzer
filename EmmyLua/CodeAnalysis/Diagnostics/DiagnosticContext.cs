@@ -12,7 +12,7 @@ public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnosti
 
     public void Report(Diagnostic diagnostic)
     {
-        if (luaDiagnostics.CanAddDiagnostic(Document.Id, diagnostic.Code, diagnostic.Range))
+        if (LuaDiagnostics.CanAddDiagnostic(Document.Id, diagnostic.Code, diagnostic.Range))
         {
             Document.SyntaxTree.PushDiagnostic(diagnostic);
         }

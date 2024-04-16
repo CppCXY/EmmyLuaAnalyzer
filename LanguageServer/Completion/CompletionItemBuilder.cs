@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
@@ -226,7 +227,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             TextEdit = TextOrReplaceEdit
         };
 
-        if (CompleteContext.CompletionConfig.CallSnippet)
+        if (CompleteContext.Setting.Completion?.CallSnippet != SettingCompletionCallSnippet.Disable)
         {
             completionItem = completionItem with
             {

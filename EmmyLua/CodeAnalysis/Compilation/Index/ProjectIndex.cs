@@ -57,6 +57,12 @@ public class ProjectIndex(LuaCompilation compilation)
 
     public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
+        if (name == "global")
+        {
+            AddGlobal(documentId, name, luaDeclaration);
+            return;
+        }
+
         Members.Add(documentId, name, luaDeclaration);
         ParentTypes.Add(documentId, luaDeclaration.Ptr.Stringify, name);
     }

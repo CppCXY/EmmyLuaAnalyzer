@@ -1,10 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Configuration.Json;
+using EmmyLua.Configuration;
 using LanguageServer.Server;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Path = System.IO.Path;
 
 namespace LanguageServer.Configuration;
 
@@ -21,18 +22,18 @@ public class LuaConfig
 
     private string LuaRcPath { get; set; } = string.Empty;
 
-    private LuaRc _dotLuaRc;
+    private Setting _setting;
     
     private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
     
-    public LuaRc DotLuaRc
+    public Setting Setting
     {
         get
         {
             _lock.EnterReadLock();
             try
             {
-                return _dotLuaRc;
+                return _setting;
             }
             finally
             {
@@ -44,7 +45,7 @@ public class LuaConfig
             _lock.EnterWriteLock();
             try
             {
-                _dotLuaRc = value;
+                _setting = value;
             }
             finally
             {
@@ -53,12 +54,12 @@ public class LuaConfig
         }
     }
 
-    public void UpdateConfig(Action<LuaRc> updateAction)
+    public void UpdateConfig(Action<Setting> updateAction)
     {
         _lock.EnterWriteLock();
         try
         {
-            updateAction(DotLuaRc!);
+            updateAction(Setting!);
             SaveLuaRc(LuaRcPath);
         }
         finally
@@ -73,14 +74,14 @@ public class LuaConfig
     {
         Watcher.Changed += OnChanged;
         Logger = logger;
-        _dotLuaRc = new();
+        _setting = new();
     }
 
     private void OnChanged(object sender, FileSystemEventArgs e)
     {
         if (e.ChangeType == WatcherChangeTypes.Changed)
         {
-            LoadLuaRc(LuaRcPath);
+            LoadSetting(LuaRcPath);
         }
     }
 
@@ -94,10 +95,10 @@ public class LuaConfig
             Watcher.EnableRaisingEvents = true;
         }
 
-        LoadLuaRc(path);
+        LoadSetting(path);
     }
 
-    private void LoadLuaRc(string path)
+    private void LoadSetting(string path)
     {
         try
         {
@@ -108,10 +109,10 @@ public class LuaConfig
 
             var fileText = File.ReadAllText(path);
             // ReSharper disable once IdentifierTypo
-            var luarc = JsonConvert.DeserializeObject<LuaRc>(fileText, SerializerSettings);
+            var luarc = JsonConvert.DeserializeObject<Setting>(fileText, SerializerSettings);
             if (luarc is not null)
             {
-                DotLuaRc = luarc;
+                Setting = luarc;
             }
         }
         catch (Exception exception)
@@ -124,7 +125,7 @@ public class LuaConfig
     {
         try
         {
-            var json = JsonConvert.SerializeObject(DotLuaRc, SerializerSettings);
+            var json = JsonConvert.SerializeObject(Setting, SerializerSettings);
             File.WriteAllText(path, json);
         }
         catch (Exception exception)
@@ -136,10 +137,10 @@ public class LuaConfig
     public LuaFeatures GetFeatures()
     {
         var features = new LuaFeatures();
-        var rc = DotLuaRc;
-        if (rc.Workspace.IgnoreDirs is { } ignoreDirs)
+        var rc = Setting;
+        if (rc.Workspace?.IgnoreDir is { } ignoreDir)
         {
-            features.ExcludeFolders = ignoreDirs;
+            features.ExcludeFolders = ignoreDir.ToList();
         }
 
         if (rc.Workspace?.PreloadFileSize is { } preloadFileSize)
@@ -147,31 +148,31 @@ public class LuaConfig
             features.DontIndexMaxFileSize = preloadFileSize;
         }
 
-        if (rc.Runtime.Version is { } version)
+        if (rc.Runtime?.Version is { } version)
         {
             switch (version)
             {
-                case "Lua5.1":
+                case SettingRuntimeVersion.Lua_5_1:
                 {
                     features.Language.LanguageLevel = LuaLanguageLevel.Lua51;
                     break;
                 }
-                case "Lua5.2":
+                case SettingRuntimeVersion.Lua_5_2:
                 {
                     features.Language.LanguageLevel = LuaLanguageLevel.Lua52;
                     break;
                 }
-                case "Lua5.3":
+                case SettingRuntimeVersion.Lua_5_3:
                 {
                     features.Language.LanguageLevel = LuaLanguageLevel.Lua53;
                     break;
                 }
-                case "Lua5.4":
+                case SettingRuntimeVersion.Lua_5_4:
                 {
                     features.Language.LanguageLevel = LuaLanguageLevel.Lua54;
                     break;
                 }
-                case "LuaJIT":
+                case SettingRuntimeVersion.LuaJIT:
                 {
                     features.Language.LanguageLevel = LuaLanguageLevel.LuaJIT;
                     break;

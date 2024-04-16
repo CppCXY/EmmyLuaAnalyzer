@@ -7,7 +7,7 @@ public class RequireProvider : ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {
-        if (!context.CompletionConfig.AutoRequire)
+        if (context.Setting.Completion?.AutoRequire is true)
         {
             return;
         }

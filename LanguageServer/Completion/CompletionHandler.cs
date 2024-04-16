@@ -38,7 +38,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
             if (semanticModel is not null)
             {
                 var config = context.LuaConfig;
-                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, config.DotLuaRc.Completion);
+                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, config.Setting);
                 var completions = Builder.Build(completeContext);
                 container = CompletionList.From(completions);
             }

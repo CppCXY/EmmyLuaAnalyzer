@@ -23,7 +23,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     private Dictionary<LuaDocumentId, DisableNextLine> DisableNextLines { get; } = new();
 
-    public DiagnosticConfig Config { get; set; } = new();
+    public DiagnosticConfig Config => Compilation.Workspace.Features.DiagnosticConfig;
 
     public void Check(LuaDocument document)
     {
