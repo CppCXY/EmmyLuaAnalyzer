@@ -301,6 +301,13 @@ public class SearchContext(LuaCompilation compilation, bool allowCache = true, b
         {
             return unionType.UnionTypes.SelectMany(it => FindIndexMember(it, keyType));
         }
+        else if (luaType is LuaArrayType arrayType)
+        {
+            if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
+            {
+                return [new VirtualDeclaration(string.Empty, arrayType.BaseType)];
+            }
+        }
 
         return Enumerable.Empty<LuaDeclaration>();
     }
