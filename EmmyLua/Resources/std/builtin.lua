@@ -41,11 +41,6 @@
 ---@class number
 
 ---
---- Lua can call (and manipulate) functions written in Lua and functions
---- written in C. Both are represented by the type *function*.
----@class function
-
----
 --- The type *userdata* is provided to allow arbitrary C data to be stored in 
 --- Lua variables. A userdata value represents a block of raw memory. There 
 --- are two kinds of userdata: *full userdata*, which is an object with a block
@@ -100,7 +95,8 @@
 --- Any of the above Built-in Types.
 ---@class any
 
----
 ---@class void
 
 ---@class self
+
+---@class integer : number
