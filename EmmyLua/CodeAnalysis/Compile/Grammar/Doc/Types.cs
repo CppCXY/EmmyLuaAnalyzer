@@ -99,6 +99,12 @@ public static class TypesParser
                     pcm = m.Complete(p, LuaSyntaxKind.TypeGeneric);
                     return;
                 }
+                // '?'
+                case LuaTokenKind.TkNullable:
+                {
+                    p.Bump();
+                    break;
+                }
                 default:
                 {
                     return;
