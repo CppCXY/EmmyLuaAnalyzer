@@ -1,9 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Configuration;
+using EmmyLua.Configuration;
 using LanguageServer.Server.Monitor;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+
 
 namespace LanguageServer.Server;
 
@@ -13,20 +14,20 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
 
     public LuaWorkspace LuaWorkspace { get; } = LuaWorkspace.Create();
 
-    public LuaConfig LuaConfig { get; } = new(logger);
+    public SettingManager SettingManager { get; } = new();
 
     public ILanguageServerFacade Server { get; } = server;
 
     private ProcessMonitor Monitor { get; } = new(server);
-    
+
     public void LoadWorkspace(string workspacePath)
     {
         LockSlim.EnterWriteLock();
         try
         {
             LuaWorkspace.Monitor = Monitor;
-            LuaConfig.Watch(Path.Combine(workspacePath, ".luarc.json"));
-            LuaWorkspace.Features = LuaConfig.GetFeatures();
+            SettingManager.Watch(workspacePath);
+            LuaWorkspace.Features = SettingManager.GetLuaFeatures();
             LuaWorkspace.LoadWorkspace(workspacePath);
         }
         finally
@@ -47,7 +48,7 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
             LockSlim.ExitWriteLock();
         }
     }
-    
+
     public void ReadyRead(Action action)
     {
         LockSlim.EnterReadLock();

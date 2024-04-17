@@ -1,4 +1,5 @@
-﻿using LanguageServer.Server;
+﻿using LanguageServer.Configuration;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -37,8 +38,8 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var config = context.LuaConfig;
-                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, config.Setting);
+                var config = context.SettingManager;
+                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, config.GetCompletionConfig());
                 var completions = Builder.Build(completeContext);
                 container = CompletionList.From(completions);
             }

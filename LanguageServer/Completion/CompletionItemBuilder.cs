@@ -227,7 +227,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             TextEdit = TextOrReplaceEdit
         };
 
-        if (CompleteContext.Setting.Completion?.CallSnippet != SettingCompletionCallSnippet.Disable)
+        if (CompleteContext.CompletionConfig.CallSnippet)
         {
             completionItem = completionItem with
             {

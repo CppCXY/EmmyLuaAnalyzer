@@ -21,11 +21,12 @@ public class CompleteContext
     public bool Continue { get; private set; }
 
     private CancellationToken CancellationToken { get; }
-    
-    public Setting Setting { get; }
+
+    public CompletionConfig CompletionConfig { get; }
 
     // ReSharper disable once ConvertToPrimaryConstructor
-    public CompleteContext(SemanticModel semanticModel, Position position, CancellationToken cancellationToken, Setting setting)
+    public CompleteContext(SemanticModel semanticModel, Position position, CancellationToken cancellationToken,
+        CompletionConfig completionConfig)
     {
         SemanticModel = semanticModel;
         Position = position;
@@ -33,7 +34,7 @@ public class CompleteContext
         CancellationToken = cancellationToken;
         TriggerToken =
             semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
-        Setting = setting;
+        CompletionConfig = completionConfig;
     }
 
     public void Add(CompletionItem item)
@@ -41,13 +42,13 @@ public class CompleteContext
         CancellationToken.ThrowIfCancellationRequested();
         Items.Add(item);
     }
-    
+
     public void AddRange(IEnumerable<CompletionItem> items)
     {
         CancellationToken.ThrowIfCancellationRequested();
         Items.AddRange(items);
     }
-    
+
     public void StopHere()
     {
         Continue = false;

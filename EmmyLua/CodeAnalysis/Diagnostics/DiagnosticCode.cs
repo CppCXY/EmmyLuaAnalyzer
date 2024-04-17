@@ -1,56 +1,56 @@
-﻿namespace EmmyLua.CodeAnalysis.Diagnostics;
+﻿using System.Runtime.Serialization;
+
+namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public enum DiagnosticCode
 {
-    None,
-    SyntaxError,
+    [EnumMember(Value = "none")] None,
+    [EnumMember(Value = "syntax-error")] SyntaxError,
+    [EnumMember(Value = "type-not-found")] TypeNotFound,
+    [EnumMember(Value = "missing-return")] MissingReturn,
+    [EnumMember(Value = "type-not-match")] TypeNotMatch,
 
-    TypeNotFound,
-    MissingReturn,
-    TypeNotMatch,
+    [EnumMember(Value = "missing-parameter")]
     MissingParameter,
+
+    [EnumMember(Value = "inject-field-fail")]
     InjectFieldFail,
+
+    [EnumMember(Value = "unreachable-code")]
     UnreachableCode,
-    Unused,
+    [EnumMember(Value = "unused")] Unused,
+
+    [EnumMember(Value = "undefined-global")]
     UndefinedGlobal,
-    NeedImport,
+    [EnumMember(Value = "need-import")] NeedImport,
 }
 
 public static class DiagnosticCodeHelper
 {
+    private static readonly Dictionary<DiagnosticCode, string> NameCache = new();
+    private static readonly Dictionary<string, DiagnosticCode> CodeCache = new();
+
+    static DiagnosticCodeHelper()
+    {
+        var type = typeof(DiagnosticCode);
+        foreach (DiagnosticCode code in Enum.GetValues(type))
+        {
+            var field = type.GetField(code.ToString());
+            var attr =
+                field?.GetCustomAttributes(typeof(EnumMemberAttribute), false).FirstOrDefault() as EnumMemberAttribute;
+            if (attr?.Value == null) continue;
+            NameCache[code] = attr.Value;
+            CodeCache[attr.Value] = code;
+        }
+    }
+
     public static string GetName(DiagnosticCode code)
     {
-        return code switch
-        {
-            DiagnosticCode.SyntaxError => "syntax-error",
-            DiagnosticCode.TypeNotFound => "type-not-found",
-            DiagnosticCode.MissingReturn => "missing-return",
-            DiagnosticCode.TypeNotMatch => "type-not-match",
-            DiagnosticCode.MissingParameter => "missing-parameter",
-            DiagnosticCode.InjectFieldFail => "inject-field-fail",
-            DiagnosticCode.UnreachableCode => "unreachable-code",
-            DiagnosticCode.Unused => "unused",
-            DiagnosticCode.UndefinedGlobal => "undefined-global",
-            DiagnosticCode.NeedImport => "need-import",
-            _ => "none"
-        };
+        return NameCache.TryGetValue(code, out var name) ? name : code.ToString();
     }
 
     public static DiagnosticCode GetCode(string name)
     {
-        return name switch
-        {
-            "syntax-error" => DiagnosticCode.SyntaxError,
-            "type-not-found" => DiagnosticCode.TypeNotFound,
-            "missing-return" => DiagnosticCode.MissingReturn,
-            "type-not-match" => DiagnosticCode.TypeNotMatch,
-            "missing-parameter" => DiagnosticCode.MissingParameter,
-            "inject-field-fail" => DiagnosticCode.InjectFieldFail,
-            "unreachable-code" => DiagnosticCode.UnreachableCode,
-            "unused" => DiagnosticCode.Unused,
-            "undefined-global" => DiagnosticCode.UndefinedGlobal,
-            "need-import" => DiagnosticCode.NeedImport,
-            _ => DiagnosticCode.None
-        };
+        return CodeCache.GetValueOrDefault(name, DiagnosticCode.None);
     }
 }
