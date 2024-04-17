@@ -1,8 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 using LanguageServer.Server.Monitor;
+using LanguageServer.Util;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 
@@ -20,15 +24,17 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
 
     private ProcessMonitor Monitor { get; } = new(server);
 
-    public void LoadWorkspace(string workspacePath)
+    public void StartServer(string workspacePath)
     {
         LockSlim.EnterWriteLock();
         try
         {
             LuaWorkspace.Monitor = Monitor;
             SettingManager.Watch(workspacePath);
-            LuaWorkspace.Features = SettingManager.GetLuaFeatures();
+            SettingManager.OnSettingChanged += OnConfigChanged;
+            LuaWorkspace.UpdateFeatures(SettingManager.GetLuaFeatures());
             LuaWorkspace.LoadWorkspace(workspacePath);
+            PushWorkspaceDiagnostics();
         }
         finally
         {
@@ -65,5 +71,33 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
     public SemanticModel? GetSemanticModel(string uri)
     {
         return LuaWorkspace.Compilation.GetSemanticModel(uri);
+    }
+
+    private void OnConfigChanged(SettingManager settingManager)
+    {
+        LockSlim.EnterWriteLock();
+        try
+        {
+            var features = settingManager.GetLuaFeatures();
+            LuaWorkspace.UpdateFeatures(features);
+        }
+        finally
+        {
+            LockSlim.ExitWriteLock();
+        }
+    }
+
+    private void PushWorkspaceDiagnostics()
+    {
+        foreach (var tree in LuaWorkspace.Compilation.SyntaxTrees)
+        {
+            var document = tree.Document;
+            var diagnostics = tree.Diagnostics;
+            Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+            {
+                Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                Uri = document.Uri,
+            });
+        }
     }
 }

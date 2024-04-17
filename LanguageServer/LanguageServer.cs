@@ -92,7 +92,7 @@ var server = await From(options =>
         .OnStarted((server, _) =>
         {
             var context = server.GetRequiredService<ServerContext>();
-            context.LoadWorkspace(workspacePath);
+            context.StartServer(workspacePath);
             return Task.CompletedTask;
         });
 }).ConfigureAwait(false);

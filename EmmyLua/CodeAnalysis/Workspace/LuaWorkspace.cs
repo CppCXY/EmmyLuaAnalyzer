@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
-    public LuaFeatures Features { get; set; }
+    public LuaFeatures Features { get; private set; }
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 
@@ -205,5 +205,13 @@ public class LuaWorkspace
                 }
             }
         }
+    }
+
+    public void UpdateFeatures(LuaFeatures newFeatures)
+    {
+        var oldFeatures = Features;
+        Features = newFeatures;
+        // TODO
+        ModuleGraph.UpdatePattern(newFeatures.RequirePattern);
     }
 }
