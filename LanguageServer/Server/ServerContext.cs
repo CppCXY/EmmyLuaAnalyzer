@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 using LanguageServer.Server.Monitor;
@@ -12,11 +11,13 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace LanguageServer.Server;
 
-public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade server)
+public class ServerContext(ILanguageServerFacade server)
 {
+    private string MainWorkspacePath { get; set; } = string.Empty;
+    
     private ReaderWriterLockSlim LockSlim { get; } = new();
 
-    public LuaWorkspace LuaWorkspace { get; } = LuaWorkspace.Create();
+    public LuaWorkspace LuaWorkspace { get; private set; } = LuaWorkspace.Create();
 
     public SettingManager SettingManager { get; } = new();
 
@@ -29,10 +30,11 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
         LockSlim.EnterWriteLock();
         try
         {
+            MainWorkspacePath = workspacePath;
             LuaWorkspace.Monitor = Monitor;
             SettingManager.Watch(workspacePath);
             SettingManager.OnSettingChanged += OnConfigChanged;
-            LuaWorkspace.UpdateFeatures(SettingManager.GetLuaFeatures());
+            LuaWorkspace.Features = SettingManager.GetLuaFeatures();
             LuaWorkspace.LoadWorkspace(workspacePath);
             PushWorkspaceDiagnostics();
         }
@@ -79,20 +81,40 @@ public class ServerContext(ILogger<ServerContext> logger, ILanguageServerFacade 
         try
         {
             var features = settingManager.GetLuaFeatures();
-            LuaWorkspace.UpdateFeatures(features);
+            UpdateFeatures(features);
         }
         finally
         {
             LockSlim.ExitWriteLock();
         }
     }
+    
+    private void UpdateFeatures(LuaFeatures newFeatures)
+    {
+        var oldFeatures = LuaWorkspace.Features;
+        var requirePatternChanged = newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
+        var excludeFoldersChanged = newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
+        var extensionsChanged = newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
+        if (requirePatternChanged || excludeFoldersChanged || extensionsChanged)
+        {
+            LuaWorkspace = LuaWorkspace.Create();
+            LuaWorkspace.Monitor = Monitor;
+            LuaWorkspace.Features = newFeatures;
+            LuaWorkspace.LoadWorkspace(MainWorkspacePath);
+            PushWorkspaceDiagnostics();
+        }
+        else // TODO check condition
+        {
+            LuaWorkspace.RefreshDiagnostics();
+            PushWorkspaceDiagnostics();
+        }
+    }
 
     private void PushWorkspaceDiagnostics()
     {
-        foreach (var tree in LuaWorkspace.Compilation.SyntaxTrees)
+        foreach (var document in LuaWorkspace.AllDocuments)
         {
-            var document = tree.Document;
-            var diagnostics = tree.Diagnostics;
+            var diagnostics = LuaWorkspace.Compilation.GetDiagnostic(document.Id);
             Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),

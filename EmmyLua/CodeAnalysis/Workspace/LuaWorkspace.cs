@@ -6,13 +6,15 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
-    public LuaFeatures Features { get; private set; }
+    public LuaFeatures Features { get; set; }
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 
     private Dictionary<string, LuaDocumentId> UrlToDocument { get; set; } = new();
 
     private Dictionary<string, LuaDocumentId> PathToDocument { get; set; } = new();
+
+    public IEnumerable<LuaDocument> AllDocuments => Documents.Values;
 
     private int _idCounter = 1;
 
@@ -207,11 +209,8 @@ public class LuaWorkspace
         }
     }
 
-    public void UpdateFeatures(LuaFeatures newFeatures)
+    public void RefreshDiagnostics()
     {
-        var oldFeatures = Features;
-        Features = newFeatures;
-        // TODO
-        ModuleGraph.UpdatePattern(newFeatures.RequirePattern);
+        Compilation.RefreshDiagnostics();
     }
 }

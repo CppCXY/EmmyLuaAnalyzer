@@ -78,9 +78,7 @@ var server = await From(options =>
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(
-                server => new ServerContext(
-                    server.GetRequiredService<ILogger<ServerContext>>(),
-                    server.GetRequiredService<ILanguageServerFacade>())
+                server => new ServerContext(server.GetRequiredService<ILanguageServerFacade>())
             );
             services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
         })

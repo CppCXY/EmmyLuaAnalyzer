@@ -8,7 +8,7 @@ namespace EmmyLua.Configuration;
 /// <summary>
 /// Setting of EmmyLua
 /// </summary>
-public class Setting
+public partial class Setting
 {
     [JsonProperty("completion", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Completion Completion { get; set; } = new();

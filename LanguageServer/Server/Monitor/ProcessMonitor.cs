@@ -9,7 +9,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
     enum ProcessState
     {
         None,
-        LoadWorkspace,
+        Running,
     }
     
     private ProcessState State { get; set; } = ProcessState.None;
@@ -18,7 +18,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
     
     public override void OnStartLoadWorkspace()
     {
-        State = ProcessState.LoadWorkspace;
+        State = ProcessState.Running;
         DiagnosticCount = 0;
         languageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
         {
@@ -35,7 +35,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
     
     public override void OnFinishLoadWorkspace()
     {
-        if (State == ProcessState.LoadWorkspace)
+        if (State == ProcessState.Running)
         {
             State = ProcessState.None;
             DiagnosticCount = 0;
@@ -55,7 +55,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
     
     public override void OnAnalyzing(string text)
     {
-        if (State == ProcessState.LoadWorkspace)
+        if (State == ProcessState.Running)
         {
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
@@ -67,7 +67,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
     
     public override void OnDiagnosticChecking(string path, int total)
     {
-        if (State == ProcessState.LoadWorkspace)
+        if (State == ProcessState.Running)
         {
             DiagnosticCount++;
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
@@ -78,4 +78,30 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         }
     }
     
+    public override void OnStartDiagnosticCheck()
+    {
+        if (State == ProcessState.None)
+        {
+            State = ProcessState.Running;
+            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            {
+                text = "checking diagnostics",
+                percent = 0.5
+            });
+        }
+    }
+    
+    public override void OnFinishDiagnosticCheck()
+    {
+        if (State == ProcessState.Running)
+        {
+            State = ProcessState.None;
+            DiagnosticCount = 0;
+            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            {
+                text = "Check finished!",
+                percent = 1
+            });
+        }
+    }
 }

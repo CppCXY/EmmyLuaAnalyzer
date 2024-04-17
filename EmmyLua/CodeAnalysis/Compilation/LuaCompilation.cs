@@ -178,16 +178,16 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
-        tree => tree.Diagnostics.Select(it => it with
-        {
-            Location = tree.Document.GetLocation(it.Range)
-        })
-    );
+    // public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
+    //     tree => tree.Diagnostics.Select(it => it with
+    //     {
+    //         Location = tree.Document.GetLocation(it.Range)
+    //     })
+    // );
 
     public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
-            ? tree.Diagnostics.Select(it => it with
+            ? tree.Diagnostics.Concat(Diagnostics.GetDiagnostics(documentId)).Select(it => it with
             {
                 Location = tree.Document.GetLocation(it.Range)
             })
@@ -205,5 +205,19 @@ public class LuaCompilation
         }
 
         return null;
+    }
+
+    public void RefreshDiagnostics()
+    {
+        Diagnostics.ClearAllDiagnostic();
+        Workspace.Monitor?.OnStartDiagnosticCheck();
+        var documents = Workspace.AllDocuments.ToList();
+        foreach (var document in documents)
+        {
+            Workspace.Monitor?.OnDiagnosticChecking(document.Path, documents.Count);
+            Diagnostics.Check(document);
+        }
+
+        Workspace.Monitor?.OnFinishDiagnosticCheck();
     }
 }

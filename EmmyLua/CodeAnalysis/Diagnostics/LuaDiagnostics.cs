@@ -25,6 +25,8 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public DiagnosticConfig Config => Compilation.Workspace.Features.DiagnosticConfig;
 
+    public Dictionary<LuaDocumentId, List<Diagnostic>> Diagnostics { get; } = new();
+
     public void Check(LuaDocument document)
     {
         if (IsMetaDocument.Contains(document.Id))
@@ -86,6 +88,17 @@ public class LuaDiagnostics(LuaCompilation compilation)
         }
 
         return true;
+    }
+
+    public void AddDiagnostic(LuaDocumentId documentId, Diagnostic diagnostic)
+    {
+        if (!Diagnostics.TryGetValue(documentId, out var diagnostics))
+        {
+            diagnostics = new List<Diagnostic>();
+            Diagnostics[documentId] = diagnostics;
+        }
+
+        diagnostics.Add(diagnostic);
     }
 
     public void AddMeta(LuaDocumentId documentId)
@@ -150,6 +163,22 @@ public class LuaDiagnostics(LuaCompilation compilation)
         Disables.Remove(documentId);
         Enables.Remove(documentId);
         DisableNextLines.Remove(documentId);
+        Diagnostics.Remove(documentId);
+    }
+
+    public void ClearDiagnostic(LuaDocumentId documentId)
+    {
+        Diagnostics.Remove(documentId);
+    }
+
+    public void ClearAllDiagnostic()
+    {
+        Diagnostics.Clear();
+    }
+
+    public IEnumerable<Diagnostic> GetDiagnostics(LuaDocumentId documentId)
+    {
+        return Diagnostics.GetValueOrDefault(documentId) ?? Enumerable.Empty<Diagnostic>();
     }
 
     public List<string> GetDiagnosticNames()

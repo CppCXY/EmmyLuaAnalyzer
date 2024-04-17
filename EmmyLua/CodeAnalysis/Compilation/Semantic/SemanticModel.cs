@@ -51,13 +51,7 @@ public class SemanticModel
 
     public IEnumerable<Diagnostic> GetDiagnostic()
     {
-        var tree = Compilation.GetSyntaxTree(Document.Id);
-
-        return tree?.Diagnostics.Select(it => it with
-               {
-                   Location = tree.Document.GetLocation(it.Range)
-               })
-               ?? Enumerable.Empty<Diagnostic>();
+        return Compilation.GetDiagnostic(Document.Id);
     }
 
     public IEnumerable<LuaDeclaration> GetGlobals()
