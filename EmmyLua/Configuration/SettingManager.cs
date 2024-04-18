@@ -95,12 +95,19 @@ public class SettingManager
         }
 
         var setting = Setting;
-        features.ExcludeFolders.AddRange(setting.Workspace.IgnoreDir);
+        var excludeHash = features.ExcludeFolders.ToHashSet();
+        features.ExcludeFolders.AddRange(setting.Workspace.IgnoreDir.Where(it => !excludeHash.Contains(it)));
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.Language.LanguageLevel = setting.Runtime.Version;
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
         return features;
+    }
+
+    public void Save(Setting setting)
+    {
+        var json = JsonConvert.SerializeObject(setting, SerializerSettings);
+        File.WriteAllText(SettingPath, json);
     }
 }

@@ -50,7 +50,10 @@ public class CodeActionBuilder
                         .Select(CommandOrCodeAction.From));
                 }
 
-                AddDisableActions(result, codeString, currentDocumentId.Value, diagnostic.Range);
+                if (code != DiagnosticCode.None)
+                {
+                    AddDisableActions(result, codeString, currentDocumentId.Value, diagnostic.Range);
+                }
             }
         }
 
@@ -85,14 +88,13 @@ public class CodeActionBuilder
             )
         ));
         
-        // result.Add(CommandOrCodeAction.From(
-        //     DiagnosticAction.MakeCommand(
-        //         $"Disable workspace diagnostic ({codeString})",
-        //         codeString,
-        //         "disable-workspace",
-        //         documentId,
-        //         range
-        //     )
-        // ));
+        result.Add(CommandOrCodeAction.From(
+            SetConfig.MakeCommand(
+                $"Disable workspace diagnostic ({codeString})",
+                SetConfigAction.Add,
+                "Diagnostics.Disable",
+                codeString
+            )
+        ));
     }
 }

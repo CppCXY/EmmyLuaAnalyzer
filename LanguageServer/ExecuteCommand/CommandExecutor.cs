@@ -21,7 +21,8 @@ public class CommandExecutor(
     private List<ICommandBase> Commands { get; } =
     [
         new AutoRequire(),
-        new DiagnosticAction()
+        new DiagnosticAction(),
+        new SetConfig()
     ];
 
     public List<string> GetCommands()

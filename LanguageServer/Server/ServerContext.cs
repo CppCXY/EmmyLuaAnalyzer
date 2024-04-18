@@ -92,9 +92,9 @@ public class ServerContext(ILanguageServerFacade server)
     private void UpdateFeatures(LuaFeatures newFeatures)
     {
         var oldFeatures = LuaWorkspace.Features;
-        var requirePatternChanged = newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
-        var excludeFoldersChanged = newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
-        var extensionsChanged = newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
+        var requirePatternChanged = !newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
+        var excludeFoldersChanged = !newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
+        var extensionsChanged = !newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
         if (requirePatternChanged || excludeFoldersChanged || extensionsChanged)
         {
             LuaWorkspace = LuaWorkspace.Create();
@@ -105,6 +105,7 @@ public class ServerContext(ILanguageServerFacade server)
         }
         else // TODO check condition
         {
+            LuaWorkspace.Features = newFeatures;
             LuaWorkspace.RefreshDiagnostics();
             PushWorkspaceDiagnostics();
         }
