@@ -47,6 +47,7 @@ public class SettingManager
         if (Watcher is null)
         {
             Watcher = new FileSystemWatcher();
+            Watcher.Created += OnChanged;
             Watcher.Changed += OnChanged;
             Watcher.Path = Workspace;
             Watcher.Filter = ConfigName;
@@ -99,6 +100,7 @@ public class SettingManager
         features.ExcludeFolders.AddRange(setting.Workspace.IgnoreDir.Where(it => !excludeHash.Contains(it)));
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
+        features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
         features.Language.LanguageLevel = setting.Runtime.Version;
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);

@@ -106,12 +106,11 @@ function table.sort(list, comp) end
 --- Returns the elements from the given list. This function is equivalent to
 --- return `list[i]`, `list[i+1]`, `···`, `list[j]`
 --- By default, i is 1 and j is #list.
----@generic T...
----@param list [...T]
+---@generic T1, T2, T3, T4
 ---@param i number
 ---@param j number
----@return ...T
----@overload fun(list:[...T]): ...T
+---@param list [T1, T2, T3, T4]
+---@return T1, T2, T3, T4
 function table.unpack(list, i, j) end
 
 return table

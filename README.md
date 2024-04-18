@@ -30,3 +30,5 @@ You can currently use EmmyLuaAnalyzer's language service by checking `Use EmmyLu
 Currently in beta, everyone is welcome to test and make suggestions. There is still a lot of work in progress and needs to be improved.
 
 ## LICENSE
+
+[MIT](./LICENSE)

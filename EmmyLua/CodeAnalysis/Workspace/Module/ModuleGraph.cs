@@ -25,17 +25,26 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         }
     }
 
-    public void AddDocuments(string workspace, List<LuaDocument> documents)
+    public void AddPackageRoot(string packageRoot)
     {
-        workspace = Path.GetFullPath(workspace);
-        if (!WorkspaceModule.TryGetValue(workspace, out var root))
+        packageRoot = Path.GetFullPath(packageRoot);
+        if (!WorkspaceModule.ContainsKey(packageRoot))
         {
-            root = new ModuleNode();
-            WorkspaceModule.Add(workspace, root);
+            WorkspaceModule.Add(packageRoot, new ModuleNode());
         }
+    }
 
+    public void AddDocuments(List<LuaDocument> documents)
+    {
         foreach (var document in documents)
         {
+            var workspace = GetWorkspace(document);
+            if (!WorkspaceModule.TryGetValue(workspace, out var root))
+            {
+                root = new ModuleNode();
+                WorkspaceModule.Add(workspace, root);
+            }
+
             AddDocument(root, workspace, document);
         }
     }
@@ -87,6 +96,7 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                 {
                     documentIds.Add(documentId);
                 }
+
                 break;
             }
         }
@@ -164,10 +174,9 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         var documentFullPath = Path.GetFullPath(document.Path);
         foreach (var node in WorkspaceModule)
         {
-            if (documentFullPath.StartsWith(node.Key))
+            if (node.Key.Length > workspace.Length && documentFullPath.StartsWith(node.Key))
             {
                 workspace = node.Key;
-                break;
             }
         }
 

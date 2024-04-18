@@ -6,6 +6,8 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
+    private string MainWorkspace { get; set; } = string.Empty;
+
     public LuaFeatures Features { get; set; }
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
@@ -36,7 +38,7 @@ public class LuaWorkspace
         var workspace = new LuaWorkspace(features);
         if (workspacePath.Length != 0)
         {
-            workspace.LoadWorkspace(workspacePath);
+            workspace.LoadMainWorkspace(workspacePath);
         }
 
         return workspace;
@@ -50,20 +52,41 @@ public class LuaWorkspace
         ModuleGraph.UpdatePattern(features.RequirePattern);
         if (features.InitStdLib)
         {
-            var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
-            LoadWorkspace(stdLib, true);
+            InitStdLib();
         }
     }
 
-    public void LoadWorkspace(string workspace, bool notFilter = false)
+    private void InitStdLib()
     {
+        var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
+        LoadWorkspace(stdLib);
+    }
+
+    private IEnumerable<string> CollectFiles(string directory)
+    {
+        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(directory, it.Trim('\\', '/'))).ToList();
+        return Features.Extensions.SelectMany(it =>
+                Directory.GetFiles(directory, it, SearchOption.AllDirectories))
+            .Where(it => !excludeFolders.Any(it.StartsWith));
+    }
+
+    /// this will load all third libraries and workspace files
+    public void LoadMainWorkspace(string workspace)
+    {
+        MainWorkspace = workspace;
         Monitor?.OnStartLoadWorkspace();
-        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(workspace, it.Trim('\\', '/'))).ToList();
-        var files =
-            Features.Extensions.SelectMany(it => Directory.GetFiles(workspace, it, SearchOption.AllDirectories));
-        if (!notFilter)
+        var thirdPartyRoots = Features.ThirdPartyRoots.Select(PreProcessPath);
+        var files = new List<string>();
+        foreach (var thirdPartyRoot in thirdPartyRoots)
         {
-            files = files.Where(it => !excludeFolders.Any(it.StartsWith));
+            files.AddRange(CollectFiles(thirdPartyRoot));
+            ModuleGraph.AddPackageRoot(thirdPartyRoot);
+        }
+        files.AddRange(CollectFiles(workspace));
+        ModuleGraph.AddPackageRoot(workspace);
+        foreach (var workspaceRoot in Features.WorkspaceRoots.Select(PreProcessPath))
+        {
+            ModuleGraph.AddPackageRoot(workspaceRoot);
         }
 
         var documents =
@@ -86,10 +109,44 @@ public class LuaWorkspace
             PathToDocument[document.Path] = document.Id;
         }
 
-        ModuleGraph.AddDocuments(workspace, documents);
-
+        ModuleGraph.AddDocuments(documents);
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
         Monitor?.OnFinishLoadWorkspace();
+    }
+
+    public void LoadWorkspace(string workspace)
+    {
+        workspace = PreProcessPath(workspace);
+        Monitor?.OnStartLoadWorkspace();
+        var files = CollectFiles(workspace).ToList();
+        var documents =
+            files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)).ToList();
+        ModuleGraph.AddPackageRoot(workspace);
+        foreach (var document in documents)
+        {
+            if (!PathToDocument.TryGetValue(document.Path, out var id))
+            {
+                document.Id = AllocateId();
+                Documents.Add(document.Id, document);
+            }
+            else
+            {
+                document.Id = id;
+                Documents[document.Id] = document;
+            }
+
+            UrlToDocument[document.Uri] = document.Id;
+            PathToDocument[document.Path] = document.Id;
+        }
+
+        ModuleGraph.AddDocuments(documents);
+        Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
+        Monitor?.OnFinishLoadWorkspace();
+    }
+
+    private string PreProcessPath(string path)
+    {
+        return path.Replace("${workspaceFolder}", MainWorkspace);
     }
 
     private LuaDocumentId AllocateId()

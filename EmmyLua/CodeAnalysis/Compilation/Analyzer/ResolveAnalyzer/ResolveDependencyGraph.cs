@@ -28,6 +28,20 @@ public class ResolveDependencyGraph(SearchContext context)
         }
     }
 
+    public IEnumerable<CanResolved> UnResolvedList
+    {
+        get
+        {
+            foreach (var (unResolved, dict) in Dependencies)
+            {
+                foreach (var (state, _) in dict)
+                {
+                    yield return new CanResolved(unResolved, state);
+                }
+            }
+        }
+    }
+
     public bool CalcDependency()
     {
         var changed = false;

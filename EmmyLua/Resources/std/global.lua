@@ -319,7 +319,7 @@ function setmetatable(table, metatable) end
 ---@overload fun(e:string):any
 ---@param e string
 ---@param base number
----@return any
+---@return number
 function tonumber(e, base) end
 
 ---
@@ -355,3 +355,8 @@ _VERSION = "Lua 5.3"
 ---@param msgh fun():string
 ---@return any
 function xpcall(f, msgh, arg1, ...) end
+
+---@generic T1, T2, T3, T4
+---@param t [T1, T2, T3, T4]
+---@return T1, T2, T3, T4
+function unpack(t) end

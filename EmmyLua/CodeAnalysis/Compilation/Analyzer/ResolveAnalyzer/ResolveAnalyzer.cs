@@ -44,6 +44,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
         } while (resolveDependencyGraph.CalcDependency());
 
+        foreach (var unResolve in resolveDependencyGraph.UnResolvedList)
+        {
+            var unResolved = unResolve.UnResolved;
+            var state = unResolve.State;
+            switch (state)
+            {
+                case ResolveState.UnResolvedType:
+                {
+                    FinalResolveType(unResolved);
+                    break;
+                }
+            }
+        }
+
         Context.ClearCache();
     }
 
@@ -149,6 +163,15 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 //     break;
                 // }
             }
+        }
+    }
+
+    private void FinalResolveType(UnResolved unResolved)
+    {
+        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        {
+            var declaration = unResolvedDeclaration.LuaDeclaration;
+            declaration.DeclarationType = new LuaNamedType(declaration.Ptr.Stringify);
         }
     }
 

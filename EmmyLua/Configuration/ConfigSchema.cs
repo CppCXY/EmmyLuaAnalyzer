@@ -72,6 +72,9 @@ public class Workspace
         NullValueHandling = NullValueHandling.Ignore)]
     public List<string> Library { get; set; } = new();
 
+    [JsonProperty("workspaceRoots", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> WorkspaceRoots { get; set; } = new();
+
     [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public int PreloadFileSize { get; set; } = 2048000;
 }

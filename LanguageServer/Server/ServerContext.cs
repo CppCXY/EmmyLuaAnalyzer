@@ -3,7 +3,6 @@ using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 using LanguageServer.Server.Monitor;
 using LanguageServer.Util;
-using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -35,7 +34,7 @@ public class ServerContext(ILanguageServerFacade server)
             SettingManager.Watch(workspacePath);
             SettingManager.OnSettingChanged += OnConfigChanged;
             LuaWorkspace.Features = SettingManager.GetLuaFeatures();
-            LuaWorkspace.LoadWorkspace(workspacePath);
+            LuaWorkspace.LoadMainWorkspace(workspacePath);
             PushWorkspaceDiagnostics();
         }
         finally
@@ -92,15 +91,18 @@ public class ServerContext(ILanguageServerFacade server)
     private void UpdateFeatures(LuaFeatures newFeatures)
     {
         var oldFeatures = LuaWorkspace.Features;
-        var requirePatternChanged = !newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
-        var excludeFoldersChanged = !newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
-        var extensionsChanged = !newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
-        if (requirePatternChanged || excludeFoldersChanged || extensionsChanged)
+        var workspaceNeedReload = false;
+        workspaceNeedReload |= !newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
+        workspaceNeedReload |= !newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
+        workspaceNeedReload |= !newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
+        workspaceNeedReload |= !newFeatures.WorkspaceRoots.SequenceEqual(oldFeatures.WorkspaceRoots);
+        workspaceNeedReload |= !newFeatures.ThirdPartyRoots.SequenceEqual(oldFeatures.ThirdPartyRoots);
+        if (workspaceNeedReload)
         {
             LuaWorkspace = LuaWorkspace.Create();
             LuaWorkspace.Monitor = Monitor;
             LuaWorkspace.Features = newFeatures;
-            LuaWorkspace.LoadWorkspace(MainWorkspacePath);
+            LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
             PushWorkspaceDiagnostics();
         }
         else // TODO check condition
