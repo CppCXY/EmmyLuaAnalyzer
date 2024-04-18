@@ -178,14 +178,12 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
-    // public IEnumerable<Diagnostic> GetDiagnostics() => _syntaxTrees.Values.SelectMany(
-    //     tree => tree.Diagnostics.Select(it => it with
-    //     {
-    //         Location = tree.Document.GetLocation(it.Range)
-    //     })
-    // );
+    public IEnumerable<Diagnostic> GetAllDiagnostics()
+    {
+        return Workspace.AllDocuments.SelectMany(it => GetDiagnostics(it.Id));
+    }
 
-    public IEnumerable<Diagnostic> GetDiagnostic(LuaDocumentId documentId) =>
+    public IEnumerable<Diagnostic> GetDiagnostics(LuaDocumentId documentId) =>
         _syntaxTrees.TryGetValue(documentId, out var tree)
             ? tree.Diagnostics.Concat(Diagnostics.GetDiagnostics(documentId)).Select(it => it with
             {

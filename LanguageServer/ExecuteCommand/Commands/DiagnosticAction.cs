@@ -93,7 +93,7 @@ public class DiagnosticAction : ICommandBase
         else
         {
             var indentText = string.Empty;
-            if (stat.GetPrevToken() is LuaWhitespaceToken { Kind: LuaTokenKind.TkWhitespace, RepresentText: {} indentText2 })
+            if (stat.GetPrevToken() is LuaWhitespaceToken { RepresentText: {} indentText2 })
             {
                 indentText = indentText2;
             }

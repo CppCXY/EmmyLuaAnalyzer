@@ -59,7 +59,7 @@ public class ProjectIndex(LuaCompilation compilation)
     {
         if (name == "global")
         {
-            AddGlobal(documentId, name, luaDeclaration);
+            AddGlobal(documentId, luaDeclaration.Name, luaDeclaration);
             return;
         }
 
@@ -147,6 +147,11 @@ public class ProjectIndex(LuaCompilation compilation)
 
     public IEnumerable<LuaDeclaration> GetMembers(string name)
     {
+        if (name == "global")
+        {
+            return GlobalDeclaration.GetAll();
+        }
+
         return Members.Get<LuaDeclaration>(name);
     }
 

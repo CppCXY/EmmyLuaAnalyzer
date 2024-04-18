@@ -265,7 +265,7 @@ public class KeywordsProvider : ICompleteProviderBase
                 var indentToken = lastStat.GetPrevSibling();
                 if (indentToken is LuaWhitespaceToken
                     {
-                        Kind: LuaTokenKind.TkWhitespace, RepresentText: { } indentText2
+                        RepresentText: { } indentText2
                     })
                 {
                     blockIndentText = indentText2;
@@ -275,11 +275,12 @@ public class KeywordsProvider : ICompleteProviderBase
             var endIndentText = string.Empty;
             if (endToken.GetPrevToken() is LuaWhitespaceToken
                 {
-                    Kind: LuaTokenKind.TkWhitespace, RepresentText: { } indentText
+                    RepresentText: { } indentText
                 })
             {
                 endIndentText = indentText;
             }
+
             if (blockIndentText.Length > 0 && endIndentText.Length > 0 && blockIndentText.Length > endIndentText.Length)
             {
                 blockIndentText = blockIndentText[endIndentText.Length..];

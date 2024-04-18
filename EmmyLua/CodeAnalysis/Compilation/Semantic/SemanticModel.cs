@@ -51,7 +51,7 @@ public class SemanticModel
 
     public IEnumerable<Diagnostic> GetDiagnostic()
     {
-        return Compilation.GetDiagnostic(Document.Id);
+        return Compilation.GetDiagnostics(Document.Id);
     }
 
     public IEnumerable<LuaDeclaration> GetGlobals()
