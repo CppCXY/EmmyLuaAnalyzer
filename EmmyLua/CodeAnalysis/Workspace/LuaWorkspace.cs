@@ -64,7 +64,7 @@ public class LuaWorkspace
 
     private IEnumerable<string> CollectFiles(string directory)
     {
-        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(directory, it.Trim('\\', '/'))).ToList();
+        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(directory, it.Replace('/', Path.DirectorySeparatorChar))).ToList();
         return Features.Extensions.SelectMany(it =>
                 Directory.GetFiles(directory, it, SearchOption.AllDirectories))
             .Where(it => !excludeFolders.Any(it.StartsWith));
