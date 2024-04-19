@@ -213,7 +213,7 @@ public static class TypesParser
         try
         {
             p.Bump();
-            p.Expect(LuaTokenKind.TkName);
+            p.Accept(LuaTokenKind.TkName);
             return m.Complete(p, LuaSyntaxKind.TypeGenericVararg);
         }
         catch (UnexpectedTokenException e)
