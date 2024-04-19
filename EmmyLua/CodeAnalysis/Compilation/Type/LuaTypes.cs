@@ -405,19 +405,46 @@ public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
     }
 }
 
-public class LuaGenericVarargType(string baseName) : LuaNamedType(baseName), IEquatable<LuaGenericVarargType>
+public class LuaDocTableType(LuaDocTableTypeSyntax tableType)
+    : LuaNamedType(tableType.UniqueId, TypeKind.TableLiteral), IEquatable<LuaDocTableType>
 {
+    public LuaSyntaxNodePtr<LuaDocTableTypeSyntax> DocTablePtr { get; } = new(tableType);
+
     public override bool Equals(object? obj)
     {
-        return Equals(obj as LuaGenericVarargType);
+        return Equals(obj as LuaDocTableType);
     }
 
     public override bool Equals(LuaType? other)
     {
-        return Equals(other as LuaGenericVarargType);
+        return Equals(other as LuaDocTableType);
     }
 
-    public bool Equals(LuaGenericVarargType? other)
+    public bool Equals(LuaDocTableType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && DocTablePtr.Equals(other.DocTablePtr);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+}
+
+public class LuaVariadicType(string baseName) : LuaNamedType(baseName), IEquatable<LuaVariadicType>
+{
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaVariadicType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaVariadicType);
+    }
+
+    public bool Equals(LuaVariadicType? other)
     {
         if (ReferenceEquals(this, other)) return true;
         return base.Equals(other);
@@ -428,3 +455,45 @@ public class LuaGenericVarargType(string baseName) : LuaNamedType(baseName), IEq
         return base.GetHashCode();
     }
 }
+
+public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return), IEquatable<LuaMultiReturnType>
+{
+    public List<LuaType> RetTypes { get; } = retTypes;
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaMultiReturnType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaMultiReturnType);
+    }
+
+    public bool Equals(LuaMultiReturnType? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return other is not null ? RetTypes.SequenceEqual(other.RetTypes) : base.Equals(other);
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var returnTypes = new List<LuaType>();
+        foreach (var retType in RetTypes)
+        {
+            returnTypes.Add(retType.Instantiate(genericReplace));
+        }
+
+        return new LuaMultiReturnType(returnTypes);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(base.GetHashCode(), RetTypes);
+    }
+}
+

@@ -85,6 +85,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypeLiteral => new LuaDocLiteralTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent, startOffset),
@@ -93,7 +94,6 @@ public static class SyntaxFactory
                 LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeGenericVararg => new LuaDocGenericVarargTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocAttribute => new LuaDocAttributeSyntax(greenNode, tree, parent, startOffset),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")

@@ -1076,8 +1076,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     {
-        var className = luaDocTableTypeSyntax.UniqueId;
-        var tableType = new LuaNamedType(className);
+        var tableType = new LuaDocTableType(luaDocTableTypeSyntax);
         if (luaDocTableTypeSyntax.Body is not null)
         {
             AnalyzeDocBody(tableType, luaDocTableTypeSyntax.Body);

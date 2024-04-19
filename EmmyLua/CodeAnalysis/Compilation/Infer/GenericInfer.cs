@@ -17,26 +17,26 @@ public static class GenericInfer
     }
 
     public static void InferInstantiateByVarargTypeAndExprs(
-        LuaGenericVarargType genericVarargType,
+        LuaVariadicType variadicType,
         IEnumerable<LuaExprSyntax> expr,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
         SearchContext context
     )
     {
-        InferInstantiateByVarargTypeAndTypes(genericVarargType, expr.Select(context.Infer), genericParameter, result,
+        InferInstantiateByVarargTypeAndTypes(variadicType, expr.Select(context.Infer), genericParameter, result,
             context);
     }
 
     public static void InferInstantiateByVarargTypeAndTypes(
-        LuaGenericVarargType genericVarargType,
+        LuaVariadicType variadicType,
         IEnumerable<LuaType> types,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
         SearchContext context
     )
     {
-        result.TryAdd(genericVarargType.Name, new LuaMultiReturnType(types.ToList()));
+        result.TryAdd(variadicType.Name, new LuaMultiReturnType(types.ToList()));
     }
 
     public static void InferInstantiateByType(
@@ -265,7 +265,7 @@ public static class GenericInfer
             for (var i = 0; i < tupleType.TupleDeclaration.Count && i < tupleType2.TupleDeclaration.Count; i++)
             {
                 var leftElementType = tupleType.TupleDeclaration[i].DeclarationType!;
-                if (leftElementType is LuaGenericVarargType genericVarargType)
+                if (leftElementType is LuaVariadicType genericVarargType)
                 {
                     var rightExprs = tupleType2.TupleDeclaration[i..]
                         .Where(it => it.DeclarationType is not null)
@@ -289,7 +289,7 @@ public static class GenericInfer
                 for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
                 {
                     var tupleElementType = tupleType.TupleDeclaration[i].DeclarationType!;
-                    if (tupleElementType is LuaGenericVarargType genericVarargType)
+                    if (tupleElementType is LuaVariadicType genericVarargType)
                     {
                         var fileExprs = fileList[i..]
                             .Where(it => it is { IsValue: true, Value: not null })

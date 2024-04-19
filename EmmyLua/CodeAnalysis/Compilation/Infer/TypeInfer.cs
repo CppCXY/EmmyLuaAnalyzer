@@ -29,8 +29,8 @@ public static class TypeInfer
                 return InferTupleType(tupleType, context);
             case LuaDocGenericTypeSyntax genericType:
                 return InferGenericType(genericType, context);
-            case LuaDocGenericVarargTypeSyntax genericVarargType:
-                return InferGenericVarargType(genericVarargType, context);
+            case LuaDocVariadicTypeSyntax genericVarargType:
+                return InferVariadicType(genericVarargType, context);
             default:
                 throw new UnreachableException();
         }
@@ -74,13 +74,14 @@ public static class TypeInfer
         var typedParameters = new List<ParameterLuaDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
-            if (typedParam is { Name: { } name, Nullable: {} nullable  })
+            if (typedParam is { Name: { } name, Nullable: { } nullable })
             {
                 var type = context.Infer(typedParam.Type);
                 if (nullable)
                 {
                     type = type.Union(Builtin.Nil);
                 }
+
                 var paramDeclaration = new ParameterLuaDeclaration(
                     name.RepresentText, new(typedParam), type);
                 typedParameters.Add(paramDeclaration);
@@ -151,13 +152,13 @@ public static class TypeInfer
         return Builtin.Unknown;
     }
 
-    private static LuaType InferGenericVarargType(LuaDocGenericVarargTypeSyntax genericVarargType, SearchContext context)
+    private static LuaType InferVariadicType(LuaDocVariadicTypeSyntax variadicType, SearchContext context)
     {
-        if (genericVarargType is { Name: { } name })
+        if (variadicType is { Name: { } name })
         {
-            return new LuaGenericVarargType(name.RepresentText);
+            return new LuaVariadicType(name.RepresentText);
         }
 
-        return Builtin.Unknown;
+        return new LuaVariadicType("any");
     }
 }

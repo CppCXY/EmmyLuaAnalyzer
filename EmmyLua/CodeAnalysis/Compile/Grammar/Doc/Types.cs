@@ -122,7 +122,7 @@ public static class TypesParser
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt => LiteralType(p),
             LuaTokenKind.TkName => OtherType(p),
-            LuaTokenKind.TkDots => VarargType(p),
+            LuaTokenKind.TkDots => VariadicType(p),
             _ => CompleteMarker.Empty
         };
     }
@@ -207,18 +207,19 @@ public static class TypesParser
         return m.Complete(p, LuaSyntaxKind.TypeName);
     }
 
-    private static CompleteMarker VarargType(LuaDocParser p)
+    private static CompleteMarker VariadicType(LuaDocParser p)
     {
         var m = p.Marker();
         try
         {
             p.Bump();
+            // for any
             p.Accept(LuaTokenKind.TkName);
-            return m.Complete(p, LuaSyntaxKind.TypeGenericVararg);
+            return m.Complete(p, LuaSyntaxKind.TypeVariadic);
         }
         catch (UnexpectedTokenException e)
         {
-            return m.Fail(p, LuaSyntaxKind.TypeGenericVararg, e.Message);
+            return m.Fail(p, LuaSyntaxKind.TypeVariadic, e.Message);
         }
     }
 

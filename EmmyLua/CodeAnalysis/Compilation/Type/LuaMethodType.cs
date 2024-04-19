@@ -4,47 +4,6 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return), IEquatable<LuaMultiReturnType>
-{
-    public List<LuaType> RetTypes { get; } = retTypes;
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaMultiReturnType);
-    }
-
-    public override bool Equals(LuaType? other)
-    {
-        return Equals(other as LuaMultiReturnType);
-    }
-
-    public bool Equals(LuaMultiReturnType? other)
-    {
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return other is not null ? RetTypes.SequenceEqual(other.RetTypes) : base.Equals(other);
-    }
-
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
-    {
-        var returnTypes = new List<LuaType>();
-        foreach (var retType in RetTypes)
-        {
-            returnTypes.Add(retType.Instantiate(genericReplace));
-        }
-
-        return new LuaMultiReturnType(returnTypes);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(base.GetHashCode(), RetTypes);
-    }
-}
-
 public enum SignatureMatchType
 {
     DoNotMatch,
@@ -288,7 +247,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
              i++)
         {
             var parameter = Parameters[i + paramStart];
-            if (parameter is { IsVararg: true, DeclarationType: LuaGenericVarargType varargType })
+            if (parameter is { IsVararg: true, DeclarationType: LuaVariadicType varargType })
             {
                 var varargs = args[(i + argStart)..];
                 GenericInfer.InferInstantiateByVarargTypeAndExprs(varargType, varargs, genericParameters, genericParameterMap, context);

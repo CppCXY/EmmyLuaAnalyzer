@@ -43,7 +43,8 @@ public static class LuaTypeRender
         return "unknown";
     }
 
-    private static void InnerRenderDetailType(LuaNamedType namedType, SearchContext context, StringBuilder sb, int level)
+    private static void InnerRenderDetailType(LuaNamedType namedType, SearchContext context, StringBuilder sb,
+        int level)
     {
         var detailType = namedType.GetDetailType(context);
         if (detailType is AliasDetailType { OriginType: { } originType })
@@ -222,6 +223,60 @@ public static class LuaTypeRender
                 sb.Append("table");
                 break;
             }
+            case LuaDocTableType docTableType:
+            {
+                sb.Append('{');
+                if (docTableType.DocTablePtr.ToNode(context) is { Body: { } body })
+                {
+                    var fieldList = body.FieldList.ToList();
+                    for (var i = 0; i < fieldList.Count; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sb.Append(',');
+                        }
+
+                        var field = fieldList[i];
+                        switch (field)
+                        {
+                            case { NameField: { } nameField, Type: { } type1 }:
+                            {
+                                var type = context.Infer(type1);
+                                sb.Append($"{nameField.RepresentText}:{RenderType(type, context)}");
+                                break;
+                            }
+                            case { IntegerField: { } integerField, Type: { } type2 }:
+                            {
+                                var type = context.Infer(type2);
+                                sb.Append($"[{integerField.Value}]:{RenderType(type, context)}");
+                                break;
+                            }
+                            case { StringField: { } stringField, Type: { } type3 }:
+                            {
+                                var type = context.Infer(type3);
+                                sb.Append($"[{stringField.Value}]:{RenderType(type, context)}");
+                                break;
+                            }
+                            case { TypeField: { } typeField, Type: { } type4 }:
+                            {
+                                // var keyType = context.Infer(typeField);
+                                // var valueType = context.Infer(type4);
+
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                sb.Append('}');
+                break;
+            }
+            case LuaVariadicType variadicType:
+            {
+                sb.Append("...");
+                sb.Append(variadicType.Name);
+                break;
+            }
             default:
             {
                 var detailType = namedType.GetDetailType(context);
@@ -349,7 +404,8 @@ public static class LuaTypeRender
         InnerRenderType(mainSignature.ReturnType, context, sb, 0);
     }
 
-    private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, SearchContext context, StringBuilder sb, int level)
+    private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, SearchContext context,
+        StringBuilder sb, int level)
     {
         sb.Append('(');
         for (var i = 0; i < multiReturnType.RetTypes.Count; i++)
