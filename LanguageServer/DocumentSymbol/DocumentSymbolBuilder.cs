@@ -100,8 +100,7 @@ public class DocumentSymbolBuilder
                 }
             }
         }
-
-
+        
         return symbols;
     }
 }

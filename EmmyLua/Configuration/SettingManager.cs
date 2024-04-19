@@ -31,7 +31,7 @@ public class SettingManager
 
     private void OnChanged(object sender, FileSystemEventArgs e)
     {
-        if (e.ChangeType == WatcherChangeTypes.Changed)
+        if (e.ChangeType is WatcherChangeTypes.Changed or WatcherChangeTypes.Created)
         {
             _timer?.Stop();
             _timer = new System.Timers.Timer(500); // 设置延迟时间为500毫秒
