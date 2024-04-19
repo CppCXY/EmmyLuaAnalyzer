@@ -31,9 +31,6 @@ public class LuaFeatures
         "?.lua"
     ];
 
-    // ReSharper disable once CollectionNeverUpdated.Global
-    public Dictionary<string, string> VirtualModule { get; set; } = new();
-
     public HashSet<string> RequireLikeFunction { get; set; } =
     [
         "require"

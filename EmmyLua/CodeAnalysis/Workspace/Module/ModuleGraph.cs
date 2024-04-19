@@ -3,9 +3,9 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph(LuaWorkspace luaWorkspace)
+public class ModuleGraph
 {
-    private LuaWorkspace Workspace { get; } = luaWorkspace;
+    private LuaWorkspace Workspace { get; }
 
     private Dictionary<string, ModuleNode> WorkspaceModule { get; } = new();
 
@@ -13,10 +13,20 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public Dictionary<string, List<LuaDocumentId>> ModuleNameToDocumentId { get; } = new();
 
+    public HashSet<LuaDocumentId> VirtualDocumentIds { get; } = new();
+
     private List<Regex> Pattern { get; } = new();
+
+    public ModuleGraph(LuaWorkspace luaWorkspace)
+    {
+        Workspace = luaWorkspace;
+        var virtualModule = new ModuleNode();
+        WorkspaceModule.Add(string.Empty, virtualModule);
+    }
 
     public void UpdatePattern(List<string> pattern)
     {
+        pattern.Sort((a, b) => b.Length - a.Length);
         Pattern.Clear();
         foreach (var item in pattern)
         {
@@ -63,19 +73,8 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
             {
                 var modulePath = match.Groups[1].Value;
                 var modulePaths = modulePath.Split('/');
-                var node = root;
-                foreach (var path in modulePaths)
-                {
-                    if (!node.Children.TryGetValue(path, out var child))
-                    {
-                        child = new ModuleNode();
-                        node.Children.Add(path, child);
-                    }
+                root.AddModule(modulePaths, documentId);
 
-                    node = child;
-                }
-
-                node.DocumentId = documentId;
                 var requiredModulePath = modulePath.Replace('/', '.');
                 var name = requiredModulePath;
                 var lastDotIndex = requiredModulePath.LastIndexOf('.');
@@ -105,11 +104,6 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
     public void AddDocument(LuaDocument document)
     {
         var workspace = GetWorkspace(document);
-        if (workspace.Length == 0)
-        {
-            return;
-        }
-
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
@@ -120,57 +114,38 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
 
     public void RemoveDocument(LuaDocument document)
     {
-        var workspace = string.Empty;
-        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
-        {
-            workspace = moduleIndex.Workspace;
-        }
-
-        if (workspace.Length == 0)
+        if (!DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
         {
             return;
         }
-
+        var workspace = moduleIndex.Workspace;
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
             return;
         }
 
-        RemoveDocument(root, document);
-    }
-
-    private void RemoveDocument(ModuleNode root, LuaDocument document)
-    {
-        if (DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
+        root.RemoveModule(moduleIndex.ModulePath);
+        DocumentIndex.Remove(document.Id);
+        if (ModuleNameToDocumentId.TryGetValue(moduleIndex.Name, out var documentIds))
         {
-            var modulePaths = moduleIndex.ModulePath.Split('.');
-            var node = root;
-            foreach (var path in modulePaths)
+            documentIds.Remove(document.Id);
+            if (documentIds.Count == 0)
             {
-                if (!node.Children.TryGetValue(path, out var child))
-                {
-                    return;
-                }
-
-                node = child;
-            }
-
-            node.DocumentId = null;
-            DocumentIndex.Remove(document.Id);
-            if (ModuleNameToDocumentId.TryGetValue(moduleIndex.Name, out var documentIds))
-            {
-                documentIds.Remove(document.Id);
-                if (documentIds.Count == 0)
-                {
-                    ModuleNameToDocumentId.Remove(moduleIndex.Name);
-                }
+                ModuleNameToDocumentId.Remove(moduleIndex.Name);
             }
         }
+
+        VirtualDocumentIds.Remove(document.Id);
     }
 
     public string GetWorkspace(LuaDocument document)
     {
         var workspace = string.Empty;
+        if (VirtualDocumentIds.Contains(document.Id))
+        {
+            return workspace;
+        }
+
         var documentFullPath = Path.GetFullPath(document.Path);
         foreach (var node in WorkspaceModule)
         {
@@ -183,26 +158,52 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
         return workspace;
     }
 
+    public void AddVirtualModule(LuaDocumentId documentId, string modulePath)
+    {
+        var document = Workspace.GetDocument(documentId);
+        if (document is null)
+        {
+            return;
+        }
+
+        RemoveDocument(document);
+        var name = modulePath;
+        var lastDotIndex = modulePath.LastIndexOf('.');
+        if (lastDotIndex >= 0 && lastDotIndex < modulePath.Length - 1)
+        {
+            name = modulePath[(lastDotIndex + 1)..];
+        }
+
+        var newModuleIndex = new ModuleIndex(documentId, name, "", modulePath);
+        DocumentIndex[documentId] = newModuleIndex;
+        if (!ModuleNameToDocumentId.TryGetValue(name, out var documentIds))
+        {
+            documentIds = new List<LuaDocumentId> { documentId };
+            ModuleNameToDocumentId.Add(name, documentIds);
+        }
+        else
+        {
+            documentIds.Add(documentId);
+        }
+
+        VirtualDocumentIds.Add(documentId);
+        if (!WorkspaceModule.TryGetValue(string.Empty, out var root))
+        {
+            return;
+        }
+
+        root.AddModule(modulePath.Split('.'), documentId);
+    }
+
     public LuaDocument? FindModule(string modulePath)
     {
-        var modulePaths = modulePath.Split('.');
-
         foreach (var moduleNode in WorkspaceModule)
         {
-            var node = moduleNode.Value;
-            foreach (var path in modulePaths)
-            {
-                if (!node.Children.TryGetValue(path, out var child))
-                {
-                    break;
-                }
+            var documentId = moduleNode.Value.FindModule(modulePath);
 
-                node = child;
-            }
-
-            if (node.DocumentId is { } documentId)
+            if (documentId.HasValue)
             {
-                return Workspace.GetDocument(documentId);
+                return Workspace.GetDocument(documentId.Value);
             }
         }
 
@@ -238,7 +239,7 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                         uri = document?.Uri ?? string.Empty;
                     }
 
-                    if (uri.Length == 0)
+                    if (uri.Length == 0 && moduleNode.Key.Length > 0)
                     {
                         uri = new Uri(Path.Join(moduleNode.Key, child.Key)).AbsoluteUri;
                     }
@@ -278,7 +279,7 @@ public class ModuleGraph(LuaWorkspace luaWorkspace)
                         uri = document?.Uri ?? string.Empty;
                     }
 
-                    if (uri.Length == 0)
+                    if (uri.Length == 0 && moduleNode.Key.Length > 0)
                     {
                         uri = new Uri(Path.Join(moduleNode.Key, moduleBasePath, child.Key)).AbsoluteUri;
                     }

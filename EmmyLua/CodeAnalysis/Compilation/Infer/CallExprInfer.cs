@@ -110,11 +110,6 @@ public static class CallExprInfer
         var firstArg = callExpr.ArgList?.ArgList.FirstOrDefault();
         if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { Value: { } modulePath } })
         {
-            if (context.Compilation.Workspace.Features.VirtualModule.TryGetValue(modulePath, out var realModule))
-            {
-                modulePath = realModule;
-            }
-
             var document = context.Compilation.Workspace.ModuleGraph.FindModule(modulePath);
             if (document is not null)
             {

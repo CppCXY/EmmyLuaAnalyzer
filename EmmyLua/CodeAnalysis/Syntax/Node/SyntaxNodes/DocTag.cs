@@ -194,3 +194,9 @@ public class LuaDocTagModuleSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaS
 {
     public LuaStringToken? Module => FirstChild<LuaStringToken>();
 }
+
+public class LuaDocAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaNameToken> Attributes => ChildNodes<LuaNameToken>();
+}

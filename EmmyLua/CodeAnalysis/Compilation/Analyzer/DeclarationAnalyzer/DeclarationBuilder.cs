@@ -77,9 +77,6 @@ public class DeclarationBuilder : ILuaElementWalker
         return null;
     }
 
-    // TODO: replace property
-    private static int GetPosition(LuaSyntaxElement element) => element.Position;
-
     private void AddDeclaration(LuaDeclaration luaDeclaration)
     {
         _curScope?.Add(luaDeclaration);
@@ -99,7 +96,7 @@ public class DeclarationBuilder : ILuaElementWalker
             return;
         }
 
-        var position = GetPosition(element);
+        var position = element.Position;
         switch (element)
         {
             case LuaLocalStatSyntax:
@@ -241,6 +238,11 @@ public class DeclarationBuilder : ILuaElementWalker
             case LuaDocTagDiagnosticSyntax diagnosticSyntax:
             {
                 AnalyzeDiagnostic(diagnosticSyntax);
+                break;
+            }
+            case LuaDocTagModuleSyntax moduleSyntax:
+            {
+                AnalyzeModule(moduleSyntax);
                 break;
             }
         }
@@ -1155,6 +1157,14 @@ public class DeclarationBuilder : ILuaElementWalker
                     break;
                 }
             }
+        }
+    }
+
+    private void AnalyzeModule(LuaDocTagModuleSyntax moduleSyntax)
+    {
+        if (moduleSyntax.Module is { Value: { } moduleName })
+        {
+            Compilation.Workspace.ModuleGraph.AddVirtualModule(DocumentId, moduleName);
         }
     }
 }
