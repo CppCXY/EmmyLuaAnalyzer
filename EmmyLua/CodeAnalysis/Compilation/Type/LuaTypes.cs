@@ -169,7 +169,8 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
     }
 }
 
-public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration) : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
+public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration)
+    : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
 {
     public List<TupleMemberDeclaration> TupleDeclaration { get; } = tupleDeclaration;
 
@@ -188,8 +189,8 @@ public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration) : LuaTy
         if (ReferenceEquals(this, other)) return true;
         if (other is not null)
         {
-            return TupleDeclaration.Select(it=>it.DeclarationType)
-                .SequenceEqual(other.TupleDeclaration.Select(it=>it.DeclarationType));
+            return TupleDeclaration.Select(it => it.DeclarationType)
+                .SequenceEqual(other.TupleDeclaration.Select(it => it.DeclarationType));
         }
 
         return false;
@@ -217,12 +218,14 @@ public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration) : LuaTy
             return false;
         }
 
-        return !TupleDeclaration.Where((t, i) => !t.DeclarationType!.SubTypeOf(tupleType.TupleDeclaration[i].DeclarationType, context)).Any();
+        return !TupleDeclaration.Where((t, i) =>
+            !t.DeclarationType!.SubTypeOf(tupleType.TupleDeclaration[i].DeclarationType, context)).Any();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
-        var newTupleTypes = TupleDeclaration.Select(t => t.Instantiate(genericReplace)).Cast<TupleMemberDeclaration>().ToList();
+        var newTupleTypes = TupleDeclaration.Select(t => t.Instantiate(genericReplace)).Cast<TupleMemberDeclaration>()
+            .ToList();
         return new LuaTupleType(newTupleTypes);
     }
 }
@@ -456,9 +459,38 @@ public class LuaVariadicType(string baseName) : LuaNamedType(baseName), IEquatab
     }
 }
 
-public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Return), IEquatable<LuaMultiReturnType>
+public class LuaMultiReturnType : LuaType, IEquatable<LuaMultiReturnType>
 {
-    public List<LuaType> RetTypes { get; } = retTypes;
+    private List<LuaType>? RetTypes { get; }
+
+    private LuaType? BaseType { get; }
+
+    public LuaMultiReturnType(LuaType baseType)
+        : base(TypeKind.Return)
+    {
+        BaseType = baseType;
+    }
+
+    public LuaMultiReturnType(List<LuaType> retTypes)
+        : base(TypeKind.Return)
+    {
+        RetTypes = retTypes;
+    }
+
+    public LuaType GetElementType(int id)
+    {
+        if (RetTypes?.Count > id)
+        {
+            return RetTypes[id];
+        }
+
+        return BaseType ?? Builtin.Nil;
+    }
+
+    public int GetElementCount()
+    {
+        return RetTypes?.Count ?? 0;
+    }
 
     public override bool Equals(object? obj)
     {
@@ -477,18 +509,39 @@ public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Retur
             return true;
         }
 
-        return other is not null ? RetTypes.SequenceEqual(other.RetTypes) : base.Equals(other);
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (RetTypes is not null && other.RetTypes is not null)
+        {
+            return RetTypes.SequenceEqual(other.RetTypes);
+        }
+        else if (BaseType is not null && other.BaseType is not null)
+        {
+            return BaseType.Equals(other.BaseType);
+        }
+
+        return false;
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
-        var returnTypes = new List<LuaType>();
-        foreach (var retType in RetTypes)
+        if (RetTypes is not null)
         {
-            returnTypes.Add(retType.Instantiate(genericReplace));
-        }
+            var returnTypes = new List<LuaType>();
+            foreach (var retType in RetTypes)
+            {
+                returnTypes.Add(retType.Instantiate(genericReplace));
+            }
 
-        return new LuaMultiReturnType(returnTypes);
+            return new LuaMultiReturnType(returnTypes);
+        }
+        else
+        {
+            return new LuaMultiReturnType(BaseType!.Instantiate(genericReplace));
+        }
     }
 
     public override int GetHashCode()
@@ -496,4 +549,3 @@ public class LuaMultiReturnType(List<LuaType> retTypes) : LuaType(TypeKind.Retur
         return HashCode.Combine(base.GetHashCode(), RetTypes);
     }
 }
-

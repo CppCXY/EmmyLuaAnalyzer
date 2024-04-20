@@ -44,7 +44,7 @@ public static class CallExprInfer
             }
         }
 
-        return UnwrapReturn(callExpr, context, returnType, true);
+        return UnwrapReturn(callExpr, context, returnType, 0);
     }
 
     /// <summary>
@@ -53,56 +53,106 @@ public static class CallExprInfer
     /// <param name="callExprSyntax"></param>
     /// <param name="context"></param>
     /// <param name="ret"></param>
-    /// <param name="top"></param>
+    /// <param name="level"></param>
     /// <returns></returns>
     private static LuaType UnwrapReturn(
         LuaCallExprSyntax callExprSyntax,
         SearchContext context,
         LuaType ret,
-        bool top = false)
+        int level = 0)
     {
-        if (top && ret is LuaUnionType unionType)
+        switch (ret)
         {
-            var types = unionType.UnionTypes.Select(t => UnwrapReturn(callExprSyntax, context, t)).ToList();
-            return new LuaUnionType(types);
-        }
-
-        if (ret is LuaMultiReturnType multiRetType)
-        {
-            if (callExprSyntax.Parent is LuaTableFieldSyntax field)
+            case LuaUnionType unionType:
             {
-                var table = field.ParentTable;
-                if (ReferenceEquals(table?.FieldList.LastOrDefault(), field))
-                {
-                    return multiRetType;
-                }
+                return UnwrapUnion(unionType, callExprSyntax, context, level);
             }
-            else if (callExprSyntax.Parent is LuaLocalStatSyntax localStat)
+            case LuaMultiReturnType multiRetType:
             {
-                if (ReferenceEquals(localStat.ExprList.LastOrDefault(), callExprSyntax))
-                {
-                    return multiRetType;
-                }
+                return UnwrapMultiReturn(multiRetType, callExprSyntax, context, level);
             }
-            else if (callExprSyntax.Parent is LuaAssignStatSyntax assignStat)
+            case LuaVariadicType variadicType:
             {
-                if (ReferenceEquals(assignStat.ExprList.LastOrDefault(), callExprSyntax))
-                {
-                    return multiRetType;
-                }
+                return UnwrapVariadicType(variadicType, callExprSyntax, context, level);
             }
-            else if (callExprSyntax.Parent is LuaCallExprSyntax callExpr2)
-            {
-                if (ReferenceEquals(callExpr2.ArgList?.ArgList.LastOrDefault(), callExprSyntax))
-                {
-                    return multiRetType;
-                }
-            }
-
-            ret = multiRetType.RetTypes.FirstOrDefault() ?? Builtin.Unknown;
         }
 
         return ret;
+    }
+
+    private static LuaType UnwrapUnion(LuaUnionType unionType, LuaCallExprSyntax callExprSyntax, SearchContext context,
+        int level)
+    {
+        if (level > 0)
+        {
+            return unionType;
+        }
+
+        var types = unionType.UnionTypes.Select(t => UnwrapReturn(callExprSyntax, context, t, level)).ToList();
+        return new LuaUnionType(types);
+    }
+
+    private static LuaType UnwrapMultiReturn(LuaMultiReturnType multiReturnType, LuaCallExprSyntax callExprSyntax,
+        SearchContext context, int level)
+    {
+        if (level > 0)
+        {
+            return multiReturnType;
+        }
+
+        LuaType retType = Builtin.Unknown;
+        if (!IsLastCallExpr(callExprSyntax))
+        {
+            retType = multiReturnType;
+        }
+        else
+        {
+            multiReturnType.GetElementType(0);
+        }
+
+        return UnwrapReturn(callExprSyntax, context, retType, level + 1);
+    }
+
+    private static LuaType UnwrapVariadicType(LuaVariadicType variadicType, LuaCallExprSyntax callExprSyntax,
+        SearchContext context, int level)
+    {
+        if (level > 1)
+        {
+            return variadicType;
+        }
+
+        if (!IsLastCallExpr(callExprSyntax))
+        {
+            return new LuaMultiReturnType(new LuaNamedType(variadicType.Name));
+        }
+
+        return new LuaNamedType(variadicType.Name);
+    }
+
+    private static bool IsLastCallExpr(LuaCallExprSyntax callExpr)
+    {
+        if (callExpr.Parent is LuaTableFieldSyntax field)
+        {
+            var table = field.ParentTable;
+            return ReferenceEquals(table?.FieldList.LastOrDefault(), field);
+        }
+
+        if (callExpr.Parent is LuaLocalStatSyntax localStat)
+        {
+            return ReferenceEquals(localStat.ExprList.LastOrDefault(), callExpr);
+        }
+
+        if (callExpr.Parent is LuaAssignStatSyntax assignStat)
+        {
+            return ReferenceEquals(assignStat.ExprList.LastOrDefault(), callExpr);
+        }
+
+        if (callExpr.Parent is LuaCallExprSyntax callExpr2)
+        {
+            return ReferenceEquals(callExpr2.ArgList?.ArgList.LastOrDefault(), callExpr);
+        }
+
+        return false;
     }
 
     private static LuaType InferRequire(LuaCallExprSyntax callExpr, SearchContext context)

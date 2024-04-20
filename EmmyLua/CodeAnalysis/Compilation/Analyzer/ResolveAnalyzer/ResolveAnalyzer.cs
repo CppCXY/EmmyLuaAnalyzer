@@ -134,34 +134,23 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     if (iterType is LuaMethodType methodType)
                     {
                         var returnType = methodType.MainSignature.ReturnType;
-                        var returnTypes = new List<LuaType>();
                         if (returnType is LuaMultiReturnType multiReturnType)
                         {
-                            returnTypes.AddRange(multiReturnType.RetTypes);
-                        }
-                        else
-                        {
-                            returnTypes.Add(returnType);
-                        }
-
-                        for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
-                        {
-                            var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
-                            if (parameter.DeclarationType is null)
+                            for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
                             {
-                                parameter.DeclarationType = i < returnTypes.Count ? returnTypes[i] : Builtin.Unknown;
+                                var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
+                                parameter.DeclarationType ??= multiReturnType.GetElementType(i);
                             }
+                        }
+                        else if (unResolvedForRangeParameter.ParameterLuaDeclarations.FirstOrDefault() is
+                                 { } firstDeclaration)
+                        {
+                            firstDeclaration.DeclarationType ??= returnType;
                         }
                     }
 
                     return;
                 }
-                // custom iterator
-                // default:
-                // {
-                //     // TODO: implement custom iterator
-                //     break;
-                // }
             }
         }
     }
@@ -212,11 +201,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var returnType = AnalyzeBlockReturns(block);
             if (returnType is LuaMultiReturnType multiReturnType)
             {
-                var mainReturn = multiReturnType.RetTypes.ElementAtOrDefault(0);
-                if (mainReturn is not null)
-                {
-                    returnType = mainReturn;
-                }
+                returnType = multiReturnType.GetElementType(0);
             }
 
             Compilation.ProjectIndex.AddExportType(unResolvedSource.DocumentId, returnType);
@@ -324,11 +309,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (type is LuaMultiReturnType returnType)
         {
-            var childTy = returnType.RetTypes.ElementAtOrDefault(retId);
-            if (childTy is not null)
-            {
-                type = childTy;
-            }
+            type = returnType.GetElementType(retId);
         }
 
         var declaration = unResolved.LuaDeclaration;

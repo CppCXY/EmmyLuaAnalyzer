@@ -330,14 +330,14 @@ public static class LuaTypeRender
         StringBuilder sb, int level)
     {
         sb.Append('(');
-        for (var i = 0; i < multiReturnType.RetTypes.Count; i++)
+        for (var i = 0; i < multiReturnType.GetElementCount(); i++)
         {
             if (i > 0)
             {
                 sb.Append(',');
             }
 
-            InnerRenderType(multiReturnType.RetTypes[i], context, sb, level + 1);
+            InnerRenderType(multiReturnType.GetElementType(i), context, sb, level + 1);
         }
 
         sb.Append(')');
