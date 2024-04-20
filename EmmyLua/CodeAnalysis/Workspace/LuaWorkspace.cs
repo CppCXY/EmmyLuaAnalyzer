@@ -65,10 +65,14 @@ public class LuaWorkspace
 
     private IEnumerable<string> CollectFiles(string directory)
     {
-        var excludeFolders = Features.ExcludeFolders.Select(it => Path.Combine(directory, it.Trim('\\', '/'))).ToList();
-        return Features.Extensions.SelectMany(it =>
-                Directory.GetFiles(directory, it, SearchOption.AllDirectories))
-            .Where(it => !excludeFolders.Any(it.StartsWith));
+        var excludeFolders = Features.ExcludeFolders
+            .Select(it => Path.Combine(directory, it.Trim('\\', '/')))
+            .Select(Path.GetFullPath)
+            .ToList();
+        return Features.Extensions
+            .SelectMany(it => Directory.GetFiles(directory, it, SearchOption.AllDirectories))
+            .Select(Path.GetFullPath)
+            .Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// this will load all third libraries and workspace files
@@ -83,6 +87,7 @@ public class LuaWorkspace
             files.AddRange(CollectFiles(thirdPartyRoot));
             ModuleGraph.AddPackageRoot(thirdPartyRoot);
         }
+
         files.AddRange(CollectFiles(workspace));
         ModuleGraph.AddPackageRoot(workspace);
         foreach (var workspaceRoot in Features.WorkspaceRoots.Select(PreProcessPath))
