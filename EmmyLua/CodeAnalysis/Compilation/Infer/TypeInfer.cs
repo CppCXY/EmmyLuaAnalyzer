@@ -38,8 +38,7 @@ public static class TypeInfer
 
     private static LuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
     {
-        var className = tableType.UniqueId;
-        return new LuaNamedType(className);
+        return new LuaDocTableType(tableType);
     }
 
     private static LuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)

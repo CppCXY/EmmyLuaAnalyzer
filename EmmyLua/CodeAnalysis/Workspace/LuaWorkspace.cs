@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Workspace;
 
 public class LuaWorkspace
 {
-    private string MainWorkspace { get; set; } = string.Empty;
+    public string MainWorkspace { get; set; } = string.Empty;
 
     public LuaFeatures Features { get; set; }
 
@@ -59,6 +59,7 @@ public class LuaWorkspace
     private void InitStdLib()
     {
         var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
+
         LoadWorkspace(stdLib);
     }
 

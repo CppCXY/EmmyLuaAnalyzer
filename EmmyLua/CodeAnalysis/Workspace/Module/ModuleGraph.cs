@@ -37,6 +37,11 @@ public class ModuleGraph
 
     public void AddPackageRoot(string packageRoot)
     {
+        if (!Path.IsPathRooted(packageRoot))
+        {
+            packageRoot = Path.Combine(Workspace.MainWorkspace, packageRoot);
+        }
+
         packageRoot = Path.GetFullPath(packageRoot);
         if (!WorkspaceModule.ContainsKey(packageRoot))
         {
@@ -118,6 +123,7 @@ public class ModuleGraph
         {
             return;
         }
+
         var workspace = moduleIndex.Workspace;
         if (!WorkspaceModule.TryGetValue(workspace, out var root))
         {
@@ -149,7 +155,8 @@ public class ModuleGraph
         var documentFullPath = Path.GetFullPath(document.Path);
         foreach (var node in WorkspaceModule)
         {
-            if (node.Key.Length > workspace.Length && documentFullPath.StartsWith(node.Key))
+            if (node.Key.Length > workspace.Length &&
+                documentFullPath.StartsWith(node.Key, StringComparison.OrdinalIgnoreCase))
             {
                 workspace = node.Key;
             }

@@ -147,11 +147,6 @@ public static class LuaTypeRender
     {
         switch (type)
         {
-            case LuaNamedType namedType:
-            {
-                RenderNamedType(namedType, context, sb, level);
-                break;
-            }
             case LuaArrayType arrayType:
             {
                 RenderArrayType(arrayType, context, sb, level);
@@ -189,6 +184,32 @@ public static class LuaTypeRender
                 sb.Append(integerLiteralType.Value);
                 break;
             }
+            case LuaGenericType genericType:
+            {
+                RenderGeneric(genericType, context, sb, level);
+                break;
+            }
+            case LuaTableLiteralType:
+            {
+                sb.Append("table");
+                break;
+            }
+            case LuaDocTableType docTableType:
+            {
+                RenderLuaDocTableType(docTableType, context, sb, level);
+                break;
+            }
+            case LuaVariadicType variadicType:
+            {
+                sb.Append("...");
+                sb.Append(variadicType.Name);
+                break;
+            }
+            case LuaNamedType namedType:
+            {
+                RenderNamedType(namedType, context, sb, level);
+                break;
+            }
             default:
             {
                 sb.Append("unknown");
@@ -199,117 +220,18 @@ public static class LuaTypeRender
 
     private static void RenderNamedType(LuaNamedType namedType, SearchContext context, StringBuilder sb, int level)
     {
-        switch (namedType)
+        var detailType = namedType.GetDetailType(context);
+        if (level == 0)
         {
-            case LuaGenericType genericType:
+            if (detailType is AliasDetailType { OriginType: { } originType })
             {
-                sb.Append(genericType.Name);
-                sb.Append('<');
-                for (var i = 0; i < genericType.GenericArgs.Count; i++)
-                {
-                    if (i > 0)
-                    {
-                        sb.Append(',');
-                    }
-
-                    InnerRenderType(genericType.GenericArgs[i], context, sb, level + 1);
-                }
-
-                sb.Append('>');
-                break;
-            }
-            case LuaTableLiteralType:
-            {
-                sb.Append("table");
-                break;
-            }
-            case LuaDocTableType docTableType:
-            {
-                sb.Append('{');
-                if (docTableType.DocTablePtr.ToNode(context) is { Body: { } body })
-                {
-                    var fieldList = body.FieldList.ToList();
-                    for (var i = 0; i < fieldList.Count; i++)
-                    {
-                        if (i > 0)
-                        {
-                            sb.Append(',');
-                        }
-
-                        var field = fieldList[i];
-                        switch (field)
-                        {
-                            case { NameField: { } nameField, Type: { } type1 }:
-                            {
-                                var type = context.Infer(type1);
-                                sb.Append($"{nameField.RepresentText}:{RenderType(type, context)}");
-                                break;
-                            }
-                            case { IntegerField: { } integerField, Type: { } type2 }:
-                            {
-                                var type = context.Infer(type2);
-                                sb.Append($"[{integerField.Value}]:{RenderType(type, context)}");
-                                break;
-                            }
-                            case { StringField: { } stringField, Type: { } type3 }:
-                            {
-                                var type = context.Infer(type3);
-                                sb.Append($"[{stringField.Value}]:{RenderType(type, context)}");
-                                break;
-                            }
-                            case { TypeField: { } typeField, Type: { } type4 }:
-                            {
-                                // var keyType = context.Infer(typeField);
-                                // var valueType = context.Infer(type4);
-
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                sb.Append('}');
-                break;
-            }
-            case LuaVariadicType variadicType:
-            {
-                sb.Append("...");
-                sb.Append(variadicType.Name);
-                break;
-            }
-            default:
-            {
-                var detailType = namedType.GetDetailType(context);
-                if (level == 0)
-                {
-                    if (detailType is AliasDetailType { OriginType: { } originType })
-                    {
-                        // ReSharper disable once UselessBinaryOperation
-                        InnerRenderType(originType, context, sb, level + 1);
-                        break;
-                    }
-                }
-
-                sb.Append(namedType.Name);
-                break;
+                // ReSharper disable once UselessBinaryOperation
+                InnerRenderType(originType, context, sb, level + 1);
             }
         }
-    }
 
-    // private static void RenderClassType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
-    // {
-    //     sb.Append("class ");
-    // }
-    //
-    // private static void RenderInterfaceType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
-    // {
-    //     sb.Append("class ");
-    // }
-    //
-    // private static void RenderEnumType(ClassDetailType classType, SearchContext context, StringBuilder sb, int level)
-    // {
-    //     sb.Append("class ");
-    // }
+        sb.Append(namedType.Name);
+    }
 
     private static void RenderArrayType(LuaArrayType arrayType, SearchContext context, StringBuilder sb, int level)
     {
@@ -419,5 +341,75 @@ public static class LuaTypeRender
         }
 
         sb.Append(')');
+    }
+
+    private static void RenderGeneric(LuaGenericType genericType, SearchContext context, StringBuilder sb, int level)
+    {
+        sb.Append(genericType.Name);
+        sb.Append('<');
+        for (var i = 0; i < genericType.GenericArgs.Count; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(',');
+            }
+
+            InnerRenderType(genericType.GenericArgs[i], context, sb, level + 1);
+        }
+
+        sb.Append('>');
+    }
+
+    private static void RenderLuaDocTableType( LuaDocTableType docTableType, SearchContext context, StringBuilder sb, int level)
+    {
+        sb.Append('{');
+        if (level > 1)
+        {
+            sb.Append("...}");
+            return;
+        }
+        if (docTableType.DocTablePtr.ToNode(context) is { Body: { } body })
+        {
+            var fieldList = body.FieldList.ToList();
+            for (var i = 0; i < fieldList.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(", ");
+                }
+
+                var field = fieldList[i];
+                switch (field)
+                {
+                    case { NameField: { } nameField, Type: { } type1 }:
+                    {
+                        var type = context.Infer(type1);
+                        sb.Append($"{nameField.RepresentText}:{RenderType(type, context)}");
+                        break;
+                    }
+                    case { IntegerField: { } integerField, Type: { } type2 }:
+                    {
+                        var type = context.Infer(type2);
+                        sb.Append($"[{integerField.Value}]:{RenderType(type, context)}");
+                        break;
+                    }
+                    case { StringField: { } stringField, Type: { } type3 }:
+                    {
+                        var type = context.Infer(type3);
+                        sb.Append($"[{stringField.Value}]:{RenderType(type, context)}");
+                        break;
+                    }
+                    // case { TypeField: { } typeField, Type: { } type4 }:
+                    // {
+                    //     // var keyType = context.Infer(typeField);
+                    //     // var valueType = context.Infer(type4);
+                    //
+                    //     break;
+                    // }
+                }
+            }
+        }
+
+        sb.Append('}');
     }
 }
