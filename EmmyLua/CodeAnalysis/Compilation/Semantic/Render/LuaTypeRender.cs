@@ -227,6 +227,7 @@ public static class LuaTypeRender
             {
                 // ReSharper disable once UselessBinaryOperation
                 InnerRenderType(originType, context, sb, level + 1);
+                return;
             }
         }
 
