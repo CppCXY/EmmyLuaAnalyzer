@@ -34,14 +34,14 @@ public class LuaDocGenericParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, L
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
-
-    public LuaSyntaxToken? Vararg => FirstChildToken(LuaTokenKind.TkDots);
 }
 
 public class LuaDocTagGenericSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {
     public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
+
+    public bool Variadic => FirstChildToken(LuaTokenKind.TkDots) != null;
 }
 
 public class LuaDocGenericDeclareListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

@@ -243,10 +243,6 @@ public static class TagParser
                 p.Bump();
                 TypesParser.Type(p);
             }
-            else if (p.Current is LuaTokenKind.TkDots)
-            {
-                p.Bump();
-            }
 
             return m.Complete(p, LuaSyntaxKind.GenericParameter);
         }
@@ -269,6 +265,7 @@ public static class TagParser
                 cm = GenericParam(p);
             }
 
+            p.Accept(LuaTokenKind.TkDots);
             p.Expect(LuaTokenKind.TkGt);
             return m.Complete(p, LuaSyntaxKind.GenericDeclareList);
         }
@@ -495,6 +492,7 @@ public static class TagParser
                 cm = GenericParam(p);
             }
 
+            p.Accept(LuaTokenKind.TkDots);
             DescriptionParser.Description(p);
             return m.Complete(p, LuaSyntaxKind.DocGeneric);
         }
