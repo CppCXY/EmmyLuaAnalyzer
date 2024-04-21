@@ -6,55 +6,56 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveDependencyGraph(SearchContext context)
 {
-    public readonly struct CanResolved(UnResolved unResolved, ResolveState state)
-    {
-        public UnResolved UnResolved { get; } = unResolved;
-
-        public ResolveState State { get; } = state;
-    }
-
     private Dictionary<UnResolved, Dictionary<ResolveState, List<LuaExprSyntax>>> Dependencies { get; } = new();
 
-    private Queue<CanResolved> CanResolvedQueue { get; } = new();
+    public delegate void ResolveStateHandler(UnResolved unResolved, ResolveState state);
 
-    public IEnumerable<CanResolved> CanResolvedList
-    {
-        get
-        {
-            while (CanResolvedQueue.Count != 0)
-            {
-                yield return CanResolvedQueue.Dequeue();
-            }
-        }
-    }
+    public event ResolveStateHandler? OnResolved;
 
-    public IEnumerable<CanResolved> UnResolvedList
+    public event ResolveStateHandler? OnForceTypeResolved;
+
+    public void CalcDependency()
     {
-        get
+        bool changed;
+        do
         {
+            changed = false;
+            var itemsToRemove = new List<(UnResolved, ResolveState)>();
             foreach (var (unResolved, dict) in Dependencies)
             {
-                foreach (var (state, _) in dict)
+                foreach (var (state, exprs) in dict)
                 {
-                    yield return new CanResolved(unResolved, state);
+                    var allResolved = exprs.Select(context.Infer).All(ty => !ty.Equals(Builtin.Unknown));
+                    if (allResolved)
+                    {
+                        OnResolved?.Invoke(unResolved, state);
+                        changed = true;
+                        itemsToRemove.Add((unResolved, state));
+                    }
                 }
             }
-        }
+
+            foreach (var (unResolved, state) in itemsToRemove)
+            {
+                Dependencies[unResolved].Remove(state);
+                if (Dependencies[unResolved].Count == 0)
+                {
+                    Dependencies.Remove(unResolved);
+                }
+            }
+        } while (changed);
     }
 
-    public bool CalcDependency()
+    private void ForceResolveType()
     {
-        var changed = false;
         var itemsToRemove = new List<(UnResolved, ResolveState)>();
         foreach (var (unResolved, dict) in Dependencies)
         {
-            foreach (var (state, exprs) in dict)
+            foreach (var (state, _) in dict)
             {
-                var allResolved = exprs.Select(context.Infer).All(ty => !ty.Equals(Builtin.Unknown));
-                if (allResolved)
+                if ((state & ResolveState.UnResolvedType) != 0)
                 {
-                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, state));
-                    changed = true;
+                    OnForceTypeResolved?.Invoke(unResolved, state);
                     itemsToRemove.Add((unResolved, state));
                 }
             }
@@ -68,23 +69,17 @@ public class ResolveDependencyGraph(SearchContext context)
                 Dependencies.Remove(unResolved);
             }
         }
-
-        return changed;
     }
 
-    public void Build(List<UnResolved> unResolvedList)
+    public void Resolve(List<UnResolved> unResolvedList)
     {
-        // index first
         foreach (var unResolved in unResolvedList)
         {
             if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
             {
                 CalcResolveIndex(unResolved);
             }
-        }
-        // other
-        foreach (var unResolved in unResolvedList)
-        {
+
             if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
             {
                 CalcResolveType(unResolved);
@@ -100,6 +95,21 @@ public class ResolveDependencyGraph(SearchContext context)
                 CalcResolveParameters(unResolved);
             }
         }
+
+        var forceType = false;
+        do
+        {
+            CalcDependency();
+            if (!forceType)
+            {
+                forceType = true;
+                ForceResolveType();
+            }
+            else
+            {
+                break;
+            }
+        } while (Dependencies.Count != 0);
     }
 
     private void AddDependency(UnResolved unResolved, ResolveState state, LuaExprSyntax expr)
@@ -129,7 +139,7 @@ public class ResolveDependencyGraph(SearchContext context)
                 var exprType = context.Infer(exprRef.Expr);
                 if (!exprType.Equals(Builtin.Unknown))
                 {
-                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedType));
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedType);
                 }
                 else
                 {
@@ -149,7 +159,7 @@ public class ResolveDependencyGraph(SearchContext context)
                     var iterType = context.Infer(iterExpr);
                     if (!iterType.Equals(Builtin.Unknown))
                     {
-                        CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedType));
+                        OnResolved?.Invoke(unResolved, ResolveState.UnResolvedType);
                     }
                     else
                     {
@@ -161,7 +171,7 @@ public class ResolveDependencyGraph(SearchContext context)
                 // custom iterator
                 default:
                 {
-                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedType));
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedType);
                     break;
                 }
             }
@@ -182,7 +192,7 @@ public class ResolveDependencyGraph(SearchContext context)
                 }
                 else
                 {
-                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedIndex));
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedIndex);
                 }
             }
         }
@@ -195,7 +205,7 @@ public class ResolveDependencyGraph(SearchContext context)
             var methodType = unResolvedMethod.MethodType;
             if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
             {
-                CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolveReturn));
+                OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
                 return;
             }
 
@@ -223,7 +233,7 @@ public class ResolveDependencyGraph(SearchContext context)
                 }
                 else
                 {
-                    CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolvedParameters));
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedParameters);
                 }
             }
         }
@@ -258,7 +268,7 @@ public class ResolveDependencyGraph(SearchContext context)
                             if (mainReturn.Equals(Builtin.Unknown))
                             {
                                 canResolve = false;
-                                AddDependency(unResolved, ResolveState.UnResolveReturn,rets[0]);
+                                AddDependency(unResolved, ResolveState.UnResolveReturn, rets[0]);
                             }
 
                             break;
@@ -274,6 +284,7 @@ public class ResolveDependencyGraph(SearchContext context)
                                     AddDependency(unResolved, ResolveState.UnResolveReturn, ret);
                                 }
                             }
+
                             break;
                         }
                     }
@@ -283,7 +294,7 @@ public class ResolveDependencyGraph(SearchContext context)
 
         if (canResolve)
         {
-            CanResolvedQueue.Enqueue(new CanResolved(unResolved, ResolveState.UnResolveReturn));
+            OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
         }
     }
 }

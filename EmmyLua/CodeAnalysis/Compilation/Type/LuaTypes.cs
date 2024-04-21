@@ -224,8 +224,21 @@ public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration)
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
-        var newTupleTypes = TupleDeclaration.Select(t => t.Instantiate(genericReplace)).Cast<TupleMemberDeclaration>()
+        var newTupleTypes = TupleDeclaration
+            .Select(t => t.Instantiate(genericReplace))
+            .Cast<TupleMemberDeclaration>()
             .ToList();
+        if (newTupleTypes.Count != 0 && newTupleTypes[^1].DeclarationType is LuaMultiReturnType multiReturnType)
+        {
+            var lastMember = newTupleTypes[^1];
+            newTupleTypes.RemoveAt(newTupleTypes.Count - 1);
+            for (var i = 0; i < multiReturnType.GetElementCount(); i++)
+            {
+                newTupleTypes.Add(new TupleMemberDeclaration(lastMember.Index + i, multiReturnType.GetElementType(i),
+                    lastMember.TypePtr));
+            }
+        }
+
         return new LuaTupleType(newTupleTypes);
     }
 }
@@ -435,8 +448,10 @@ public class LuaDocTableType(LuaDocTableTypeSyntax tableType)
     }
 }
 
-public class LuaVariadicType(string baseName) : LuaNamedType(baseName), IEquatable<LuaVariadicType>
+public class LuaVariadicType(LuaType baseType) : LuaType(TypeKind.Variadic), IEquatable<LuaVariadicType>
 {
+    public LuaType BaseType { get; } = baseType;
+
     public override bool Equals(object? obj)
     {
         return Equals(obj as LuaVariadicType);
@@ -450,12 +465,55 @@ public class LuaVariadicType(string baseName) : LuaNamedType(baseName), IEquatab
     public bool Equals(LuaVariadicType? other)
     {
         if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && BaseType.Equals(other.BaseType);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newBaseType = BaseType.Instantiate(genericReplace);
+        return new LuaVariadicType(newBaseType);
+    }
+}
+
+public class LuaExpandType(string baseName) : LuaNamedType(baseName), IEquatable<LuaExpandType>
+{
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaExpandType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaExpandType);
+    }
+
+    public bool Equals(LuaExpandType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
         return base.Equals(other);
     }
 
     public override int GetHashCode()
     {
         return base.GetHashCode();
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        if (genericReplace.TryGetValue(Name, out var type))
+        {
+            if (type is LuaMultiReturnType returnType)
+            {
+                return returnType;
+            }
+        }
+
+        return this;
     }
 }
 

@@ -226,12 +226,15 @@ public class EnumFieldLuaDeclaration(
 public class GenericParameterLuaDeclaration(
     string name,
     LuaSyntaxNodePtr<LuaDocGenericParamSyntax> genericParamDefPtr,
-    LuaType? baseType) : LuaDeclaration(name, genericParamDefPtr.UpCast(), baseType)
+    LuaType? baseType,
+    bool variadic = false) : LuaDeclaration(name, genericParamDefPtr.UpCast(), baseType)
 {
     public LuaSyntaxNodePtr<LuaDocGenericParamSyntax> GenericParameterDefPtr => Ptr.Cast<LuaDocGenericParamSyntax>();
 
+    public bool Variadic { get; set; } = variadic;
+
     public override GenericParameterLuaDeclaration WithType(LuaType type) =>
-        new(Name, GenericParameterDefPtr, type);
+        new(Name, GenericParameterDefPtr, type, Variadic);
 }
 
 public class IndexLuaDeclaration(

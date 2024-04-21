@@ -346,7 +346,7 @@ function type(v) end
 ---
 --- A global variable (not a function) that holds a string containing the
 --- running Lua version. The current value of this variable is "`Lua 5.3`".
-_VERSION = "Lua 5.3"
+_VERSION = "Lua 5.4"
 
 ---
 --- This function is similar to `pcall`, except that it sets a new message
@@ -356,7 +356,9 @@ _VERSION = "Lua 5.3"
 ---@return any
 function xpcall(f, msgh, arg1, ...) end
 
----@generic T1, T2, T3, T4
----@param t [T1, T2, T3, T4]
----@return T1, T2, T3, T4
-function unpack(t) end
+---@generic T...
+---@param i? number
+---@param j? number
+---@param list [T...]
+---@return T...
+function unpack(list, i, j) end

@@ -324,7 +324,7 @@ public class LuaDocLexer(LuaDocument document)
             }
             case var ch when LuaLexer.IsNameStart(ch):
             {
-                Reader.EatWhen(c => LuaLexer.IsNameContinue(c) || c == '.' || c == '-');
+                Reader.EatWhen(c => (LuaLexer.IsNameContinue(c) || c == '.' || c == '-') && !(c == '.' && Reader.NextChar == '.'));
                 return LuaTokenKind.TkName;
             }
             default:

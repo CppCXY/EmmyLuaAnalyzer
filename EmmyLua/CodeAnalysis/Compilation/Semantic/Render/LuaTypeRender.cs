@@ -202,7 +202,13 @@ public static class LuaTypeRender
             case LuaVariadicType variadicType:
             {
                 sb.Append("...");
-                sb.Append(variadicType.Name);
+                sb.Append(RenderType(variadicType.BaseType, context));
+                break;
+            }
+            case LuaExpandType expandType:
+            {
+                sb.Append(expandType.Name);
+                sb.Append("...");
                 break;
             }
             case LuaNamedType namedType:
@@ -231,7 +237,15 @@ public static class LuaTypeRender
             }
         }
 
-        sb.Append(namedType.Name);
+        var name = namedType.Name;
+        if (name.Length != 0 && char.IsDigit(name[0]))
+        {
+            sb.Append("ambiguous");
+        }
+        else
+        {
+            sb.Append(namedType.Name);
+        }
     }
 
     private static void RenderArrayType(LuaArrayType arrayType, SearchContext context, StringBuilder sb, int level)
@@ -300,6 +314,10 @@ public static class LuaTypeRender
                 }
 
                 sb.Append(genericParameters[i].Name);
+                if (genericParameters[i].Variadic)
+                {
+                    sb.Append("...");
+                }
             }
 
             sb.Append('>');

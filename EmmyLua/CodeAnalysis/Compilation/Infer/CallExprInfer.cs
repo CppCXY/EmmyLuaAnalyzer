@@ -101,7 +101,7 @@ public static class CallExprInfer
         }
 
         LuaType retType = Builtin.Unknown;
-        if (!IsLastCallExpr(callExprSyntax))
+        if (IsLastCallExpr(callExprSyntax))
         {
             retType = multiReturnType;
         }
@@ -123,10 +123,10 @@ public static class CallExprInfer
 
         if (!IsLastCallExpr(callExprSyntax))
         {
-            return new LuaMultiReturnType(new LuaNamedType(variadicType.Name));
+            return new LuaMultiReturnType(variadicType.BaseType);
         }
 
-        return new LuaNamedType(variadicType.Name);
+        return variadicType.BaseType;
     }
 
     private static bool IsLastCallExpr(LuaCallExprSyntax callExpr)

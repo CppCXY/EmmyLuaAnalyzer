@@ -247,10 +247,10 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
              i++)
         {
             var parameter = Parameters[i + paramStart];
-            if (parameter is { IsVararg: true, DeclarationType: LuaVariadicType varargType })
+            if (parameter is { IsVararg: true, DeclarationType: LuaExpandType expandType })
             {
                 var varargs = args[(i + argStart)..];
-                GenericInfer.InferInstantiateByVarargTypeAndExprs(varargType, varargs, genericParameters, genericParameterMap, context);
+                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParameters, genericParameterMap, context);
             }
             else
             {
@@ -432,7 +432,7 @@ public class LuaGenericMethodType : LuaMethodType
         }
 
         var maxMatch = SignatureMatchResult.NotMatch;
-        LuaSignature? perfectMatch = null;
+        LuaSignature perfectMatch = signatures.First();
         foreach (var signature in signatures)
         {
             var match = signature.Match(callExpr, args, context, ColonDefine);
@@ -443,6 +443,6 @@ public class LuaGenericMethodType : LuaMethodType
             }
         }
 
-        return perfectMatch!;
+        return perfectMatch;
     }
 }

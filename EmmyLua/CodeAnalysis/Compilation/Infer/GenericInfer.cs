@@ -16,27 +16,30 @@ public static class GenericInfer
         InferInstantiateByType(type, exprType, genericParameter, result, context);
     }
 
-    public static void InferInstantiateByVarargTypeAndExprs(
-        LuaVariadicType variadicType,
+    public static void InferInstantiateByExpandTypeAndExprs(
+        LuaExpandType expandType,
         IEnumerable<LuaExprSyntax> expr,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
         SearchContext context
     )
     {
-        InferInstantiateByVarargTypeAndTypes(variadicType, expr.Select(context.Infer), genericParameter, result,
+        InferInstantiateByExpandTypeAndTypes(expandType, expr.Select(context.Infer), genericParameter, result,
             context);
     }
 
-    public static void InferInstantiateByVarargTypeAndTypes(
-        LuaVariadicType variadicType,
+    public static void InferInstantiateByExpandTypeAndTypes(
+        LuaExpandType expandType,
         IEnumerable<LuaType> types,
         HashSet<string> genericParameter,
         Dictionary<string, LuaType> result,
         SearchContext context
     )
     {
-        result.TryAdd(variadicType.Name, new LuaMultiReturnType(types.ToList()));
+        if (genericParameter.Contains(expandType.Name))
+        {
+            result.TryAdd(expandType.Name, new LuaMultiReturnType(types.ToList()));
+        }
     }
 
     public static void InferInstantiateByType(
@@ -265,12 +268,12 @@ public static class GenericInfer
             for (var i = 0; i < tupleType.TupleDeclaration.Count && i < tupleType2.TupleDeclaration.Count; i++)
             {
                 var leftElementType = tupleType.TupleDeclaration[i].DeclarationType!;
-                if (leftElementType is LuaVariadicType genericVarargType)
+                if (leftElementType is LuaExpandType expandType)
                 {
                     var rightExprs = tupleType2.TupleDeclaration[i..]
                         .Where(it => it.DeclarationType is not null)
                         .Select(it => it.DeclarationType!);
-                    InferInstantiateByVarargTypeAndTypes(genericVarargType, rightExprs, genericParameter, result,
+                    InferInstantiateByExpandTypeAndTypes(expandType, rightExprs, genericParameter, result,
                         context);
                 }
                 else
@@ -289,12 +292,12 @@ public static class GenericInfer
                 for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
                 {
                     var tupleElementType = tupleType.TupleDeclaration[i].DeclarationType!;
-                    if (tupleElementType is LuaVariadicType genericVarargType)
+                    if (tupleElementType is LuaExpandType expandType)
                     {
                         var fileExprs = fileList[i..]
                             .Where(it => it is { IsValue: true, Value: not null })
                             .Select(it => it.Value!);
-                        InferInstantiateByVarargTypeAndExprs(genericVarargType, fileExprs, genericParameter, result,
+                        InferInstantiateByExpandTypeAndExprs(expandType, fileExprs, genericParameter, result,
                             context);
                         break;
                     }

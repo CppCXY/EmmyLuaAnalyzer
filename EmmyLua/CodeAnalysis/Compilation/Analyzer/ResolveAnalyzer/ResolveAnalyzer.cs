@@ -11,43 +11,35 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         var resolveDependencyGraph = new ResolveDependencyGraph(Context);
-        resolveDependencyGraph.Build(analyzeContext.UnResolves);
-        do
+        resolveDependencyGraph.OnResolved += (unResolved, state) =>
         {
-            foreach (var canResolved in resolveDependencyGraph.CanResolvedList)
+            switch (state)
             {
-                var unResolved = canResolved.UnResolved;
-                var state = canResolved.State;
-                switch (state)
+                case ResolveState.UnResolvedType:
                 {
-                    case ResolveState.UnResolvedType:
-                    {
-                        ResolveType(unResolved);
-                        break;
-                    }
-                    case ResolveState.UnResolvedIndex:
-                    {
-                        ResolveIndex(unResolved);
-                        break;
-                    }
-                    case ResolveState.UnResolveReturn:
-                    {
-                        ResolveReturn(unResolved);
-                        break;
-                    }
-                    case ResolveState.UnResolvedParameters:
-                    {
-                        ResolveParameters(unResolved);
-                        break;
-                    }
+                    ResolveType(unResolved);
+                    break;
+                }
+                case ResolveState.UnResolvedIndex:
+                {
+                    ResolveIndex(unResolved);
+                    break;
+                }
+                case ResolveState.UnResolveReturn:
+                {
+                    ResolveReturn(unResolved);
+                    break;
+                }
+                case ResolveState.UnResolvedParameters:
+                {
+                    ResolveParameters(unResolved);
+                    break;
                 }
             }
-        } while (resolveDependencyGraph.CalcDependency());
+        };
 
-        foreach (var unResolve in resolveDependencyGraph.UnResolvedList)
+        resolveDependencyGraph.OnForceTypeResolved += (unResolved, state) =>
         {
-            var unResolved = unResolve.UnResolved;
-            var state = unResolve.State;
             switch (state)
             {
                 case ResolveState.UnResolvedType:
@@ -56,52 +48,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     break;
                 }
             }
-        }
+        };
 
+        resolveDependencyGraph.Resolve(analyzeContext.UnResolves);
         Context.ClearCache();
     }
-
-    // private void ResolveStep1(List<UnResolved> unResolvedList)
-    // {
-    //     bool changed;
-    //     var resolvedCount = 0;
-    //     do
-    //     {
-    //         changed = false;
-    //         for (var i = 0; i < unResolvedList.Count - resolvedCount;)
-    //         {
-    //             var unResolved = unResolvedList[i];
-    //             if ((unResolved.ResolvedState & ResolveState.UnResolvedType) != 0)
-    //             {
-    //                 ResolveType(unResolved, ref changed);
-    //             }
-    //             else if ((unResolved.ResolvedState & ResolveState.UnResolvedIndex) != 0)
-    //             {
-    //                 ResolveIndex(unResolved, ref changed);
-    //             }
-    //             else if ((unResolved.ResolvedState & ResolveState.UnResolveReturn) != 0)
-    //             {
-    //                 ResolveReturn(unResolved, ref changed);
-    //             }
-    //
-    //             if (unResolved.ResolvedState == ResolveState.Resolved)
-    //             {
-    //                 if (i < unResolvedList.Count - resolvedCount - 1)
-    //                 {
-    //                     // Move the resolved object to the end of the list
-    //                     (unResolvedList[i], unResolvedList[unResolvedList.Count - resolvedCount - 1]) =
-    //                         (unResolvedList[unResolvedList.Count - resolvedCount - 1], unResolvedList[i]);
-    //                 }
-    //
-    //                 resolvedCount++;
-    //             }
-    //             else
-    //             {
-    //                 i++;
-    //             }
-    //         }
-    //     } while (changed);
-    // }
 
     private void ResolveType(UnResolved unResolved)
     {

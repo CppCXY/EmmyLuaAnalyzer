@@ -31,6 +31,8 @@ public static class TypeInfer
                 return InferGenericType(genericType, context);
             case LuaDocVariadicTypeSyntax genericVarargType:
                 return InferVariadicType(genericVarargType, context);
+            case LuaDocExpandTypeSyntax expandType:
+                return InferExpandType(expandType, context);
             default:
                 throw new UnreachableException();
         }
@@ -155,9 +157,19 @@ public static class TypeInfer
     {
         if (variadicType is { Name: { } name })
         {
-            return new LuaVariadicType(name.RepresentText);
+            return new LuaVariadicType(new LuaNamedType(name.RepresentText));
         }
 
-        return new LuaVariadicType("any");
+        return new LuaVariadicType(new LuaNamedType("any"));
+    }
+
+    private static LuaType InferExpandType(LuaDocExpandTypeSyntax expandType, SearchContext context)
+    {
+        if (expandType is { Name: { } name })
+        {
+            return new LuaExpandType(name.RepresentText);
+        }
+
+        return Builtin.Unknown;
     }
 }

@@ -20,10 +20,10 @@ table = {}
 --- `list[i]..sep..list[i+1] ... sep..list[j]`. The default value for
 --- `sep` is the empty string, the default for `i` is 1, and the default for
 --- `j` is #list. If `i` is greater than `j`, returns the empty string.
----@overload fun(list:table):string
----@overload fun(list:table, sep:string):string
----@overload fun(list:table, sep:string, i:number):string
----@param list table
+---@overload fun(list:string[]):string
+---@overload fun(list:string[], sep:string):string
+---@overload fun(list:string[], sep:string, i:number):string
+---@param list string[]
 ---@param sep string
 ---@param i number
 ---@param j number
@@ -62,7 +62,9 @@ function table.move(a1, f, e, t, a2) end
 --- Returns a new table with all arguments stored into keys 1, 2, etc. and
 --- with a field "`n`" with the total number of arguments. Note that the
 --- resulting table may not be a sequence, if some arguments are **nil**.
----@return table
+---@generic T...
+---@param ... T...
+---@return [T...]
 function table.pack(...) end
 
 ---
@@ -106,11 +108,11 @@ function table.sort(list, comp) end
 --- Returns the elements from the given list. This function is equivalent to
 --- return `list[i]`, `list[i+1]`, `···`, `list[j]`
 --- By default, i is 1 and j is #list.
----@generic T1, T2, T3, T4
----@param i number
----@param j number
----@param list [T1, T2, T3, T4]
----@return T1, T2, T3, T4
+---@generic T...
+---@param i? number
+---@param j? number
+---@param list [T...]
+---@return T...
 function table.unpack(list, i, j) end
 
 return table

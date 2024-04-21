@@ -105,6 +105,18 @@ public static class TypesParser
                     p.Bump();
                     break;
                 }
+                case LuaTokenKind.TkDots:
+                {
+                    if (pcm.Kind != LuaSyntaxKind.TypeName)
+                    {
+                        return;
+                    }
+
+                    var m = pcm.Reset(p);
+                    p.Bump();
+                    pcm = m.Complete(p, LuaSyntaxKind.TypeExpand);
+                    return;
+                }
                 default:
                 {
                     return;

@@ -86,6 +86,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent, startOffset),

@@ -84,10 +84,17 @@ public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lu
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
+
     public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
 }
 
 public class LuaDocVariadicTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+}
+
+public class LuaDocExpandTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();

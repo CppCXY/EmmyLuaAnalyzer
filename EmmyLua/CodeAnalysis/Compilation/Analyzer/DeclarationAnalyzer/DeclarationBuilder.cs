@@ -626,15 +626,18 @@ public class DeclarationBuilder : ILuaElementWalker
         var generic = docList?.OfType<LuaDocTagGenericSyntax>().FirstOrDefault();
         if (generic is not null)
         {
-            foreach (var param in generic.Params)
+            var genericParams = generic.Params.ToList();
+            for (var i = 0; i < genericParams.Count; i++)
             {
+                var variadic = i == genericParams.Count - 1 && generic.Variadic;
+                var param = genericParams[i];
                 if (param is { Name: { } name })
                 {
-                    var declaration =
-                        new GenericParameterLuaDeclaration(
-                            name.RepresentText,
-                            new(param),
-                            null);
+                    var declaration = new GenericParameterLuaDeclaration(
+                        name.RepresentText,
+                        new(param),
+                        Context.Infer(param.Type),
+                        variadic);
                     genericParameters.Add(declaration);
                 }
             }
@@ -664,7 +667,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         var mainRetType = GetRetType(docList);
         var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
-        LuaMethodType method = genericParameters.Count != 0
+        var method = genericParameters.Count != 0
             ? new LuaGenericMethodType(
                 genericParameters,
                 new LuaSignature(mainRetType, parameters), overloads, isColonDefine)
