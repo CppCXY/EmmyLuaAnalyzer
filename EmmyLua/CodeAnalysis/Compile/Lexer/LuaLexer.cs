@@ -360,6 +360,12 @@ public class LuaLexer(LuaDocument document)
                 Reader.Bump();
                 return LuaTokenKind.TkComma;
             }
+            // invalid lua token, just for postfix completion
+            case '@':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkAt;
+            }
             // 所有非数字可见字符包括unicode字符
             case var ch when IsNameStart(ch):
             {

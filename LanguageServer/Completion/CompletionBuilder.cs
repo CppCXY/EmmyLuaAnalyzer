@@ -14,7 +14,8 @@ public class CompletionBuilder
         new MemberProvider(),
         new ModuleProvider(),
         new DocProvider(),
-        new SelfMemberProvider()
+        new SelfMemberProvider(),
+        new PostfixProvider()
     ];
     
     public List<CompletionItem> Build(CompleteContext completeContext)

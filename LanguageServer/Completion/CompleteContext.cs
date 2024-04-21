@@ -58,4 +58,9 @@ public class CompleteContext
     {
         return new CompletionItemBuilder(label, type ?? Builtin.Any, this);
     }
+    
+    public SnippetBuilder CreateSnippet(string label)
+    {
+        return new SnippetBuilder(label, this);
+    }
 }
