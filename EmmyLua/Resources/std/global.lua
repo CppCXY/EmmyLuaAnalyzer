@@ -51,8 +51,9 @@ function assert(v, message) end
 --- the major multiplier.
 --- **"isrunning"**: returns a boolean that tells whether the collector is
 --- running (i.e., not stopped).
+---@alias collectgarbage_opt '"collect"'|'"stop"'|'"restart"'|'"count"'|'"step"'|'"setpause"'|'"incremental"'|'"generational"'|'"isrunning"'
 ---@overload fun():any
----@param opt string
+---@param opt collectgarbage_opt
 ---@param arg string
 ---@return any
 function collectgarbage(opt, arg) end
@@ -282,10 +283,11 @@ function require(modname) end
 --- `index`. a negative number indexes from the end (-1 is the last argument).
 --- Otherwise, `index` must be the string "#", and `select` returns
 --- the total number of extra arguments it received.
----@generic T
----@param index number|string
----@vararg T
----@return T
+---@generic T...
+---@param index number
+---@param ... T...
+---@return T...
+---@overload fun(index: '#', ...): int
 function select(index, ...) end
 
 ---
@@ -316,10 +318,10 @@ function setmetatable(table, metatable) end
 --- represents 10, 'B' represents 11, and so forth, with 'Z' representing 35. If
 --- the string `e` is not a valid numeral in the given base, the function
 --- returns **nil**.
----@overload fun(e:string):any
----@param e string
----@param base number
----@return number
+---@overload fun(e:string|number):number?
+---@param e string|number
+---@param base int
+---@return number?
 function tonumber(e, base) end
 
 ---

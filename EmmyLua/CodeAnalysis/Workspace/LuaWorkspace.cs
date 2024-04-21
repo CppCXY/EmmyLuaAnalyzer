@@ -12,9 +12,23 @@ public class LuaWorkspace
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 
-    private Dictionary<string, LuaDocumentId> UrlToDocument { get; set; } = new();
+    // Windows is case-insensitive, so we need to use a case-insensitive comparer
+    class CaseInsensitiveComparer : IEqualityComparer<string>
+    {
+        public bool Equals(string? x, string? y)
+        {
+            return string.Equals(x, y, StringComparison.OrdinalIgnoreCase);
+        }
 
-    private Dictionary<string, LuaDocumentId> PathToDocument { get; set; } = new();
+        public int GetHashCode(string obj)
+        {
+            return obj.ToLower().GetHashCode();
+        }
+    }
+
+    private Dictionary<string, LuaDocumentId> UrlToDocument { get; set; } = new(new CaseInsensitiveComparer());
+
+    private Dictionary<string, LuaDocumentId> PathToDocument { get; set; } = new(new CaseInsensitiveComparer());
 
     public IEnumerable<LuaDocument> AllDocuments => Documents.Values;
 

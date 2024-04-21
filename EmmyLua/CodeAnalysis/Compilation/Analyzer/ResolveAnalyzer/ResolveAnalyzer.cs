@@ -262,6 +262,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             type = returnType.GetElementType(retId);
         }
+        else if (retId != 0)
+        {
+            type = Builtin.Nil;
+        }
 
         var declaration = unResolved.LuaDeclaration;
 
