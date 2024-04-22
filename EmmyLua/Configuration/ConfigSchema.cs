@@ -24,6 +24,9 @@ public class Setting
 
     [JsonProperty("workspace", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Workspace Workspace { get; set; } = new();
+
+    [JsonProperty("resource", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public Resource Resource { get; set; } = new();
 }
 
 public class Completion
@@ -88,4 +91,10 @@ public class Workspace
 
     [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public int PreloadFileSize { get; set; } = 2048000;
+}
+
+public class Resource
+{
+    [JsonProperty("paths", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> Paths { get; set; } = [];
 }

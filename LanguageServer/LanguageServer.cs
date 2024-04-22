@@ -4,6 +4,7 @@ using LanguageServer.CodeAction;
 using LanguageServer.Completion;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
+using LanguageServer.DocumentLink;
 using LanguageServer.DocumentRender;
 using LanguageServer.DocumentSymbol;
 using LanguageServer.ExecuteCommand;
@@ -75,6 +76,7 @@ var server = await From(options =>
         .WithHandler<SignatureHelperHandler>()
         .WithHandler<EmmyAnnotatorHandler>()
         .WithHandler<InlineValuesHandler>()
+        .WithHandler<DocumentLinkHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(

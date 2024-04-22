@@ -364,3 +364,9 @@ function xpcall(f, msgh, arg1, ...) end
 ---@param list [T...]
 ---@return T...
 function unpack(list, i, j) end
+
+---@param message string
+function warn(message) end
+
+---@type string[]
+arg = {}

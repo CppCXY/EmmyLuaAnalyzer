@@ -1,6 +1,7 @@
 ﻿using EmmyLua.Configuration;
 using LanguageServer.Completion;
 using LanguageServer.InlayHint;
+using LanguageServer.Server.Resource;
 
 namespace LanguageServer.Configuration;
 
@@ -34,6 +35,20 @@ public static class SettingManagerExtension
         config.IndexHint = setting.Hint.IndexHint;
         config.LocalHint = setting.Hint.LocalHint;
         config.OverrideHint = setting.Hint.OverrideHint;
+
+        return config;
+    }
+    
+    public static ResourceConfig GetResourceConfig(this SettingManager settingManager)
+    {
+        var config = new ResourceConfig();
+        var setting = settingManager.Setting;
+        if (setting is null)
+        {
+            return config;
+        }
+
+        config.Paths = setting.Resource.Paths;
 
         return config;
     }

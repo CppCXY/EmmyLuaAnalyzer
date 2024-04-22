@@ -1,7 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
+using LanguageServer.Configuration;
 using LanguageServer.Server.Monitor;
+using LanguageServer.Server.Resource;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -24,6 +26,8 @@ public class ServerContext(ILanguageServerFacade server)
 
     private ProcessMonitor Monitor { get; } = new(server);
 
+    public ResourceManager ResourceManager { get; } = new();
+    
     public void StartServer(string workspacePath)
     {
         LockSlim.EnterWriteLock();
@@ -35,6 +39,7 @@ public class ServerContext(ILanguageServerFacade server)
             SettingManager.OnSettingChanged += OnConfigChanged;
             LuaWorkspace.Features = SettingManager.GetLuaFeatures();
             LuaWorkspace.LoadMainWorkspace(workspacePath);
+            ResourceManager.Config = SettingManager.GetResourceConfig();
             PushWorkspaceDiagnostics();
         }
         finally
@@ -81,6 +86,7 @@ public class ServerContext(ILanguageServerFacade server)
         {
             var features = settingManager.GetLuaFeatures();
             UpdateFeatures(features);
+            ResourceManager.Config = SettingManager.GetResourceConfig();
         }
         finally
         {
