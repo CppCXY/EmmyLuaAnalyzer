@@ -7,11 +7,6 @@ public class RequireProvider : ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {
-        if (!context.CompletionConfig.AutoRequire)
-        {
-            return;
-        }
-        
         var trigger = context.TriggerToken;
         if (trigger is LuaStringToken modulePathToken
             && trigger.Parent?.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }

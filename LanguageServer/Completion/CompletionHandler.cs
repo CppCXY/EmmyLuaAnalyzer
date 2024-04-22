@@ -21,7 +21,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
         {
             DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             ResolveProvider = true,
-            TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", ",", "@" },
+            TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", ",", "@", "\\", "/" },
             CompletionItem = new()
             {
                 LabelDetailsSupport = true
@@ -38,8 +38,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var config = context.SettingManager;
-                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, config.GetCompletionConfig());
+                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, context);
                 var completions = Builder.Build(completeContext);
                 container = CompletionList.From(completions);
             }

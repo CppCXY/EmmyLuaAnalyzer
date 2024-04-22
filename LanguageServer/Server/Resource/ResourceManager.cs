@@ -25,4 +25,9 @@ public class ResourceManager
             .Where(Directory.Exists)
             .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly));
     }
+    
+    public bool MayFilePath(string value)
+    {
+        return value.Contains('\\') || value.Contains('/');
+    }
 }

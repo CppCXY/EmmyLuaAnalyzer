@@ -2,6 +2,8 @@
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.Configuration;
+using LanguageServer.Configuration;
+using LanguageServer.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion;
@@ -23,10 +25,12 @@ public class CompleteContext
     private CancellationToken CancellationToken { get; }
 
     public CompletionConfig CompletionConfig { get; }
+    
+    public ServerContext ServerContext { get; }
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public CompleteContext(SemanticModel semanticModel, Position position, CancellationToken cancellationToken,
-        CompletionConfig completionConfig)
+        ServerContext context)
     {
         SemanticModel = semanticModel;
         Position = position;
@@ -34,7 +38,8 @@ public class CompleteContext
         CancellationToken = cancellationToken;
         TriggerToken =
             semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
-        CompletionConfig = completionConfig;
+        CompletionConfig = context.SettingManager.GetCompletionConfig();
+        ServerContext = context;
     }
 
     public void Add(CompletionItem item)

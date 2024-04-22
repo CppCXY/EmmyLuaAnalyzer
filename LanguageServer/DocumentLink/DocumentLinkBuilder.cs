@@ -16,7 +16,7 @@ public class DocumentLinkBuilder
         foreach (var stringToken in stringTokens)
         {
             var path = stringToken.Value;
-            if (MayFilePath(path))
+            if (resourceManager.MayFilePath(path))
             {
                 var targetPath = resourceManager.ResolvePath(path);
                 if (targetPath is not null)
@@ -32,10 +32,5 @@ public class DocumentLinkBuilder
         }
 
         return links;
-    }
-    
-    private bool MayFilePath(string value)
-    {
-        return value.Contains('\\') || value.Contains('/');
     }
 }

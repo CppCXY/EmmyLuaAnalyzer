@@ -17,6 +17,11 @@ public class ModuleProvider : ICompleteProviderBase
 
     public void AddCompletion(CompleteContext context)
     {
+        if (!context.CompletionConfig.AutoRequire)
+        {
+            return;
+        }
+        
         if (context.TriggerToken?.Parent is not LuaNameExprSyntax nameExpr)
         {
             return;
