@@ -5,6 +5,8 @@ namespace LanguageServer.Completion.CompleteProvider;
 
 public class ResourcePathProvider : ICompleteProviderBase
 {
+    private char[] PathSeparators { get; } = ['\\', '/'];
+
     public void AddCompletion(CompleteContext context)
     {
         var trigger = context.TriggerToken;
@@ -13,24 +15,24 @@ public class ResourcePathProvider : ICompleteProviderBase
             var partialFilePath = stringToken.Value;
             if (context.ServerContext.ResourceManager.MayFilePath(partialFilePath))
             {
-                var parts = partialFilePath.Split('/', '\\');
-                if (parts.Length > 1)
+                var lastIndex = partialFilePath.LastIndexOfAny(PathSeparators);
+                var dir = lastIndex == -1 ? string.Empty : partialFilePath[..(lastIndex + 1)];
+                var files = context.ServerContext.ResourceManager.GetFileSystemEntries(dir);
+                foreach (var file in files)
                 {
-                    // TODO: Implement this
-                    // var dir0 = Path.GetDirectoryName(partialFilePath);
-                    // var dir = string.Join('/', parts[..^1]);
-                    // var files = context.ServerContext.ResourceManager.GetFiles(dir);
-                    // foreach (var file in files)
-                    // {
-                    //     var fileName = Path.GetFileName(file);
-                    //     context.Add(new CompletionItem()
-                    //     {
-                    //         Label = fileName,
-                    //         // Detail = new Uri(file).AbsoluteUri,
-                    //         // Kind = CompletionItemKind.File
-                    //     });
-                    // }
+                    var fileName = Path.GetFileName(file).Trim(PathSeparators);
+                    var filterText = dir + fileName;
+                    var kind = File.Exists(file) ? CompletionItemKind.File : CompletionItemKind.Folder;
+                    context.Add(new CompletionItem()
+                    {
+                        Label = fileName,
+                        Detail = new Uri(file).AbsoluteUri,
+                        Kind = kind,
+                        FilterText = filterText,
+                        InsertText = filterText
+                    });
                 }
+
 
                 context.StopHere();
             }

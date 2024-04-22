@@ -43,7 +43,7 @@ public class CompletionDocumentResolver
 
     private CompletionItem ModuleResolve(CompletionItem completionItem)
     {
-        if (completionItem.Data is not null)
+        if (completionItem.Data is not null && completionItem.Data.Type == JTokenType.String)
         {
             var id = new LuaDocumentId((int)completionItem.Data);
             var sb = new StringBuilder();
