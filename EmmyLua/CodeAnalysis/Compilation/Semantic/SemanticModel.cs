@@ -27,7 +27,7 @@ public class SemanticModel
     {
         Compilation = compilation;
         Document = document;
-        Context = new(compilation, false);
+        Context = new(compilation, new SearchContextFeatures());
         RenderBuilder = new(Context);
         References = new(Context);
         DeclarationTree = declarationTree;

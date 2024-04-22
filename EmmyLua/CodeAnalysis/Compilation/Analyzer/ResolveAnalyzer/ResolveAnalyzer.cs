@@ -6,7 +6,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Resolve")
 {
-    private SearchContext Context { get; } = new(compilation, true, false);
+    private SearchContext Context { get; } = new(compilation, new SearchContextFeatures()
+    {
+        Cache = true,
+        CacheUnknown = false
+    });
 
     public override void Analyze(AnalyzeContext analyzeContext)
     {

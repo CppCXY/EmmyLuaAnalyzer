@@ -53,6 +53,17 @@ public class Diagnostics
 
 public class Hint
 {
+    [JsonProperty("paramHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool ParamHint { get; set; } = true;
+
+    [JsonProperty("indexHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool IndexHint { get; set; } = true;
+
+    [JsonProperty("localHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool LocalHint { get; set; } = false;
+
+    [JsonProperty("overrideHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool OverrideHint { get; set; } = true;
 }
 
 public class Runtime

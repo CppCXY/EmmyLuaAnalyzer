@@ -1,4 +1,5 @@
-﻿using LanguageServer.Server;
+﻿using LanguageServer.Configuration;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -32,7 +33,8 @@ public class InlayHintHandler(ServerContext context) : InlayHintsHandlerBase
             if (semanticModel is not null)
             {
                 var range = request.Range.ToSourceRange(semanticModel.Document);
-                var hints = Builder.Build(semanticModel, range, cancellationToken);
+                var config = context.SettingManager.GetInlayHintConfig();
+                var hints = Builder.Build(semanticModel, range, config, cancellationToken);
                 inlayHintContainer = InlayHintContainer.From(hints);
             }
         });

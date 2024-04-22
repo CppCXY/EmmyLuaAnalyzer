@@ -20,7 +20,7 @@ public class CompletionDocumentResolver
     public CompletionDocumentResolver(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        Context = new SearchContext(workspace.Compilation);
+        Context = new SearchContext(workspace.Compilation, new SearchContextFeatures());
         RenderBuilder = new LuaRenderBuilder(Context);
     }
 
