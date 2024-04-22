@@ -111,7 +111,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            declaration.DeclarationType = new LuaNamedType(declaration.Ptr.Stringify);
+            declaration.DeclarationType ??= new LuaNamedType(declaration.Ptr.Stringify);
         }
     }
 
