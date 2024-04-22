@@ -9,7 +9,8 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     private SearchContext Context { get; } = new(compilation, new SearchContextFeatures()
     {
         Cache = true,
-        CacheUnknown = false
+        CacheUnknown = false,
+        CacheBaseMember = false
     });
 
     public override void Analyze(AnalyzeContext analyzeContext)
