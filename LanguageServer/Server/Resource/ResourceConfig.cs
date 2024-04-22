@@ -2,5 +2,5 @@
 
 public class ResourceConfig
 {
-    public List<string> Paths { get; set; }
+    public List<string> Paths { get; set; } = new();
 }
