@@ -94,7 +94,7 @@ public class LuaWorkspace
     {
         MainWorkspace = workspace;
         Monitor?.OnStartLoadWorkspace();
-        var thirdPartyRoots = Features.ThirdPartyRoots.Select(PreProcessPath);
+        var thirdPartyRoots = Features.ThirdPartyRoots;
         var files = new List<string>();
         foreach (var thirdPartyRoot in thirdPartyRoots)
         {
@@ -104,7 +104,7 @@ public class LuaWorkspace
 
         files.AddRange(CollectFiles(workspace));
         ModuleGraph.AddPackageRoot(workspace);
-        foreach (var workspaceRoot in Features.WorkspaceRoots.Select(PreProcessPath))
+        foreach (var workspaceRoot in Features.WorkspaceRoots)
         {
             ModuleGraph.AddPackageRoot(workspaceRoot);
         }
@@ -136,7 +136,6 @@ public class LuaWorkspace
 
     public void LoadWorkspace(string workspace)
     {
-        workspace = PreProcessPath(workspace);
         Monitor?.OnStartLoadWorkspace();
         var files = CollectFiles(workspace).ToList();
         var documents =
@@ -162,11 +161,6 @@ public class LuaWorkspace
         ModuleGraph.AddDocuments(documents);
         Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
         Monitor?.OnFinishLoadWorkspace();
-    }
-
-    private string PreProcessPath(string path)
-    {
-        return path.Replace("${workspaceFolder}", MainWorkspace);
     }
 
     private LuaDocumentId AllocateId()

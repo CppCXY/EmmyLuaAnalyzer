@@ -72,6 +72,7 @@ public class SettingManager
             if (setting is not null)
             {
                 Setting = setting;
+                ProcessSetting(Setting);
             }
 
             if (!_firstLoad)
@@ -85,6 +86,35 @@ public class SettingManager
         {
             // ignore
         }
+    }
+
+    private void ProcessSetting(Setting setting)
+    {
+        setting.Workspace.WorkspaceRoots = setting.Workspace.WorkspaceRoots.Select(PreProcessPath).ToList();
+        setting.Workspace.Library = setting.Workspace.Library.Select(PreProcessPath).ToList();
+        setting.Resource.Paths = setting.Resource.Paths.Select(PreProcessPath).ToList();
+        if (setting.Resource.Paths.Count == 0)
+        {
+            setting.Resource.Paths.Add(Workspace);
+        }
+    }
+
+    private string PreProcessPath(string path)
+    {
+        if (path.StartsWith('~'))
+        {
+            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path[1..]);
+        }
+        else if (path.StartsWith("./"))
+        {
+            path = Path.Combine(Workspace, path[2..]);
+        }
+        else if (path.StartsWith("/"))
+        {
+            path = Path.Combine(Workspace, path.TrimStart('/'));
+        }
+
+        return path.Replace("${workspaceFolder}", Workspace);
     }
 
     public LuaFeatures GetLuaFeatures()
