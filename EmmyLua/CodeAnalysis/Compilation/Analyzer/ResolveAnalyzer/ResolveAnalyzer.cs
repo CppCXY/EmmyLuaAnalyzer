@@ -15,7 +15,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        var resolveDependencyGraph = new ResolveDependencyGraph(Context);
+        var resolveDependencyGraph = new ResolveDependencyGraph(Context, analyzeContext);
         resolveDependencyGraph.OnResolved += (unResolved, state) =>
         {
             switch (state)
@@ -32,7 +32,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 }
                 case ResolveState.UnResolveReturn:
                 {
-                    ResolveReturn(unResolved);
+                    ResolveReturn(unResolved, analyzeContext);
                     break;
                 }
                 case ResolveState.UnResolvedParameters:
@@ -137,7 +137,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         }
     }
 
-    private void ResolveReturn(UnResolved unResolved)
+    private void ResolveReturn(UnResolved unResolved, AnalyzeContext analyzeContext)
     {
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
@@ -148,13 +148,13 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
 
             var block = unResolvedMethod.Block;
-            var returnType = AnalyzeBlockReturns(block);
+            var returnType = AnalyzeBlockReturns(block, analyzeContext);
             methodType.MainSignature.ReturnType = returnType;
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
             var block = unResolvedSource.Block;
-            var returnType = AnalyzeBlockReturns(block);
+            var returnType = AnalyzeBlockReturns(block, analyzeContext);
             if (returnType is LuaMultiReturnType multiReturnType)
             {
                 returnType = multiReturnType.GetElementType(0);
@@ -193,10 +193,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         }
     }
 
-    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock)
+    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, AnalyzeContext analyzeContext)
     {
         LuaType returnType = Builtin.Unknown;
-        var cfg = Context.Compilation.GetControlFlowGraph(mainBlock);
+        var cfg = analyzeContext.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
             return returnType;

@@ -46,23 +46,23 @@ public static class LuaModuleRender
             return result;
         }
 
-        var cfg = context.Compilation.GetControlFlowGraph(mainBlock);
-        if (cfg is null)
-        {
-            return result;
-        }
-
-        foreach (var prevNode in cfg.GetPredecessors(cfg.ExitNode))
-        {
-            if (prevNode.Statements.LastOrDefault().ToNode(context) is LuaReturnStatSyntax returnStmt)
-            {
-                var exportElement = returnStmt.ExprList.FirstOrDefault();
-                if (exportElement is not null)
-                {
-                    result.Add(exportElement);
-                }
-            }
-        }
+        // var cfg = context.Compilation.GetControlFlowGraph(mainBlock);
+        // if (cfg is null)
+        // {
+        //     return result;
+        // }
+        //
+        // foreach (var prevNode in cfg.GetPredecessors(cfg.ExitNode))
+        // {
+        //     if (prevNode.Statements.LastOrDefault().ToNode(context) is LuaReturnStatSyntax returnStmt)
+        //     {
+        //         var exportElement = returnStmt.ExprList.FirstOrDefault();
+        //         if (exportElement is not null)
+        //         {
+        //             result.Add(exportElement);
+        //         }
+        //     }
+        // }
 
         return result;
     }

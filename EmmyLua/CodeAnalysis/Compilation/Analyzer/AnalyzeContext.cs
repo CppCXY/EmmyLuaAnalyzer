@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -76,4 +77,20 @@ public class AnalyzeContext(List<LuaDocument> documents)
     public List<LuaDocument> LuaDocuments { get; } = documents;
 
     public List<UnResolved> UnResolves { get; } = new();
+
+    public Dictionary<LuaDocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
+
+    public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
+    {
+        var documentId = block.Tree.Document.Id;
+        if (ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
+        {
+            if (cfgDict.TryGetValue(block, out var cfg))
+            {
+                return cfg;
+            }
+        }
+
+        return null;
+    }
 }

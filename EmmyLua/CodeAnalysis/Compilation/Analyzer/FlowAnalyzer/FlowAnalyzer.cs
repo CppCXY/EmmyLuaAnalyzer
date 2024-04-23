@@ -18,10 +18,10 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
             {
                 if (block.Parent is LuaSourceSyntax or LuaClosureExprSyntax)
                 {
-                    if (!Compilation.ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
+                    if (!analyzeContext.ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
                     {
                         cfgDict = new Dictionary<LuaBlockSyntax, ControlFlowGraph>();
-                        Compilation.ControlFlowGraphs[documentId] = cfgDict;
+                        analyzeContext.ControlFlowGraphs[documentId] = cfgDict;
                     }
 
                     cfgDict.TryAdd(block, builder.Build(block));

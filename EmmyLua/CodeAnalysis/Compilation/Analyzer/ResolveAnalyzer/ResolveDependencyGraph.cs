@@ -4,7 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
-public class ResolveDependencyGraph(SearchContext context)
+public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyzeContext)
 {
     private Dictionary<UnResolved, Dictionary<ResolveState, List<LuaExprSyntax>>> Dependencies { get; } = new();
 
@@ -241,7 +241,7 @@ public class ResolveDependencyGraph(SearchContext context)
 
     private void AnalyzeBlockReturns(LuaBlockSyntax mainBlock, UnResolved unResolved)
     {
-        var cfg = context.Compilation.GetControlFlowGraph(mainBlock);
+        var cfg = analyzeContext.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
             return;

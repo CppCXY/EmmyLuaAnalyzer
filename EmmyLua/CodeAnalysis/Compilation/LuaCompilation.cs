@@ -28,8 +28,6 @@ public class LuaCompilation
 
     internal Dictionary<LuaDocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
 
-    internal Dictionary<LuaDocumentId, Dictionary<LuaBlockSyntax, ControlFlowGraph>> ControlFlowGraphs { get; } = new();
-
     private List<LuaAnalyzer> Analyzers { get; }
 
     public LuaDiagnostics Diagnostics { get; }
@@ -89,7 +87,6 @@ public class LuaCompilation
 
         DeclarationTrees.Remove(documentId);
         ProjectIndex.Remove(documentId);
-        ControlFlowGraphs.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }
 
@@ -190,20 +187,6 @@ public class LuaCompilation
                 Location = tree.Document.GetLocation(it.Range)
             })
             : Enumerable.Empty<Diagnostic>();
-
-    public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
-    {
-        var documentId = block.Tree.Document.Id;
-        if (ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
-        {
-            if (cfgDict.TryGetValue(block, out var cfg))
-            {
-                return cfg;
-            }
-        }
-
-        return null;
-    }
 
     public void RefreshDiagnostics()
     {
