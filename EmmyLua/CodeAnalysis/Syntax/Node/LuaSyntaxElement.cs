@@ -14,7 +14,7 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node;
 public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : IEquatable<LuaSyntaxElement>
 {
-    public GreenNode Green { get; } = green;
+    protected int RawKind { get; } = green.RawKind;
 
     public LuaSyntaxElement? Parent { get; } = parent;
 
@@ -568,13 +568,13 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         Tree.PushDiagnostic(diagnostic);
     }
 
-    public string UniqueId => $"{DocumentId}_{Range.StartOffset}_{Range.Length}_{Green.RawKind}";
+    public string UniqueId => $"{DocumentId}_{Range.StartOffset}_{Range.Length}_{RawKind}";
 
     public int Position => Range.StartOffset;
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(DocumentId, Range, Green.RawKind);
+        return HashCode.Combine(DocumentId, Range, RawKind);
     }
 
     public bool Equals(LuaSyntaxElement? other)
@@ -591,7 +591,7 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
         return DocumentId == other.DocumentId
                && Range.Equals(other.Range)
-               && Green.RawKind == other.Green.RawKind;
+               && RawKind == other.RawKind;
     }
 
     public override bool Equals(object? obj)

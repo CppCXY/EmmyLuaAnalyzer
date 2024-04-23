@@ -130,7 +130,7 @@ public class LuaWorkspace
         }
 
         ModuleGraph.AddDocuments(documents);
-        Compilation.AddSyntaxTrees(documents.Select(it => (it.Id, it.SyntaxTree)));
+        Compilation.AddSyntaxTrees(documents.AsParallel().Select(it => (it.Id, it.SyntaxTree)));
         Monitor?.OnFinishLoadWorkspace();
     }
 
