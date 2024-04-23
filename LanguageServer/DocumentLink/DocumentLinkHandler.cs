@@ -16,7 +16,7 @@ public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBas
         return new DocumentLinkRegistrationOptions
         {
             DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
-            ResolveProvider = true
+            ResolveProvider = false
         };
     }
 

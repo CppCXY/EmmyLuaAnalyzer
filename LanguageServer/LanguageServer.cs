@@ -17,6 +17,7 @@ using LanguageServer.SemanticToken;
 using LanguageServer.Server;
 using LanguageServer.SignatureHelper;
 using LanguageServer.TextDocument;
+using LanguageServer.TypeHierarchy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -77,6 +78,7 @@ var server = await From(options =>
         .WithHandler<EmmyAnnotatorHandler>()
         .WithHandler<InlineValuesHandler>()
         .WithHandler<DocumentLinkHandler>()
+        .WithHandler<TypeHierarchyHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(
