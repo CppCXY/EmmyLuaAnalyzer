@@ -504,12 +504,18 @@ public static class TagParser
 
     private static CompleteMarker TagSee(LuaDocParser p)
     {
-        p.SetState(LuaDocLexerState.Normal);
+        p.SetState(LuaDocLexerState.See);
         var m = p.Marker();
         p.Bump();
         try
         {
-            p.Expect(LuaTokenKind.TkDocDetail);
+            p.Expect(LuaTokenKind.TkName);
+            while (p.Current is LuaTokenKind.TkLen)
+            {
+                p.Bump();
+                p.Expect(LuaTokenKind.TkName);
+            }
+
             return m.Complete(p, LuaSyntaxKind.DocSee);
         }
         catch (UnexpectedTokenException e)

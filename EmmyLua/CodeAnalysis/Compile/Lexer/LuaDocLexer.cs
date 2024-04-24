@@ -12,7 +12,8 @@ public enum LuaDocLexerState
     Normal,
     FieldStart,
     Description,
-    Trivia
+    Trivia,
+    See,
 }
 
 public class LuaDocLexer(LuaDocument document)
@@ -100,6 +101,7 @@ public class LuaDocLexer(LuaDocument document)
             LuaDocLexerState.Description => LexDescription(),
             LuaDocLexerState.Trivia => LexTrivia(),
             LuaDocLexerState.FieldStart => LexFieldStart(),
+            LuaDocLexerState.See => LexSee(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -393,6 +395,22 @@ public class LuaDocLexer(LuaDocument document)
             {
                 Reader.EatWhen(LuaLexer.IsNameContinue);
                 return ToVisibilityOrName(Reader.CurrentSavedText);
+            }
+            default:
+            {
+                return LexNormal();
+            }
+        }
+    }
+
+    private LuaTokenKind LexSee()
+    {
+        switch (Reader.CurrentChar)
+        {
+            case '#':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkLen;
             }
             default:
             {

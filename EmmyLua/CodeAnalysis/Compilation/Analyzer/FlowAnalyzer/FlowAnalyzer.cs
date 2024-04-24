@@ -9,7 +9,6 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
     {
         foreach (var document in analyzeContext.LuaDocuments)
         {
-            var documentId = document.Id;
             var syntaxTree = document.SyntaxTree;
 
             var builder = new CfgBuilder();
@@ -18,13 +17,7 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
             {
                 if (block.Parent is LuaSourceSyntax or LuaClosureExprSyntax)
                 {
-                    if (!analyzeContext.ControlFlowGraphs.TryGetValue(documentId, out var cfgDict))
-                    {
-                        cfgDict = new Dictionary<LuaBlockSyntax, ControlFlowGraph>();
-                        analyzeContext.ControlFlowGraphs[documentId] = cfgDict;
-                    }
-
-                    cfgDict.TryAdd(block, builder.Build(block));
+                    analyzeContext.ControlFlowGraphs[block.UniqueId] = builder.Build(block);
                 }
             }
         }
