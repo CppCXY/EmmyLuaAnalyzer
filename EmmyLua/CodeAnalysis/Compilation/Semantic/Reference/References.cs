@@ -58,7 +58,7 @@ public class References(SearchContext context)
     {
         var references = new List<LuaReference>();
         var globalName = declaration.Name;
-        var nameExprs = context.Compilation.ProjectIndex.GetNameExprs(globalName);
+        var nameExprs = context.Compilation.DbManager.GetNameExprs(globalName);
 
         foreach (var nameExpr in nameExprs)
         {
@@ -75,7 +75,7 @@ public class References(SearchContext context)
     private IEnumerable<LuaReference> FieldReferences(LuaDeclaration declaration, string fieldName)
     {
         var references = new List<LuaReference>();
-        var indexExprs = context.Compilation.ProjectIndex.GetIndexExprs(fieldName);
+        var indexExprs = context.Compilation.DbManager.GetIndexExprs(fieldName);
         foreach (var indexExpr in indexExprs)
         {
             var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.DocumentId);
@@ -135,7 +135,7 @@ public class References(SearchContext context)
                 references.Add(new LuaReference(fieldElement.Location, fieldElement));
             }
 
-            var parentType = context.Compilation.ProjectIndex.GetParentType(fieldDef);
+            var parentType = context.Compilation.DbManager.GetParentType(fieldDef);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -173,7 +173,7 @@ public class References(SearchContext context)
                 references.Add(new LuaReference(keyElement.Location, keyElement));
             }
 
-            var parentType = context.Compilation.ProjectIndex.GetParentType(fieldDef);
+            var parentType = context.Compilation.DbManager.GetParentType(fieldDef);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -203,7 +203,7 @@ public class References(SearchContext context)
             && typeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new LuaReference(typeName.Location, typeName));
-            var nameTypes = context.Compilation.ProjectIndex.GetNameTypes(name);
+            var nameTypes = context.Compilation.DbManager.GetNameTypes(name);
             foreach (var nameType in nameTypes)
             {
                 var declarationTree = context.Compilation.GetDeclarationTree(nameType.DocumentId);

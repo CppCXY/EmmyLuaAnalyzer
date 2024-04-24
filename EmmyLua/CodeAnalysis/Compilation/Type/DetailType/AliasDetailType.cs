@@ -22,6 +22,6 @@ public class AliasDetailType(string name, SearchContext context) : BasicDetailTy
     protected override void DoLazyInit()
     {
         base.DoLazyInit();
-        _originType = Index.GetTypeFromId(Name).FirstOrDefault();
+        _originType = Index.GetAliasOriginType(Name).FirstOrDefault();
     }
 }

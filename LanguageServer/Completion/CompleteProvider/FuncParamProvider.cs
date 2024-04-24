@@ -102,7 +102,7 @@ public class FuncParamProvider : ICompleteProviderBase
     private void AddEnumParamCompletion(EnumDetailType enumDetailType, CompleteContext context)
     {
         var enumName = enumDetailType.Name;
-        var members = context.SemanticModel.Compilation.ProjectIndex
+        var members = context.SemanticModel.Compilation.DbManager
             .GetMembers(enumName);
         
         foreach (var field in members)

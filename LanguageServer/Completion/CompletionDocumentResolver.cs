@@ -71,16 +71,7 @@ public class CompletionDocumentResolver
         {
             if (completionItem.Data.Type == JTokenType.String && (string?)completionItem.Data is {} strPtr)
             {
-                var parts = strPtr.Split('_');
-                if (parts.Length != 4)
-                {
-                    return completionItem;
-                }
-
-                var documentId = new LuaDocumentId(int.Parse(parts[0]));
-                var range = new SourceRange(int.Parse(parts[1]), int.Parse(parts[2]));
-                var kind = (LuaSyntaxKind)int.Parse(parts[3]);
-                var ptr = new LuaSyntaxNodePtr<LuaSyntaxNode>(documentId, range, kind);
+                var ptr = LuaElementPtr<LuaSyntaxNode>.From(strPtr);
                 var node = ptr.ToNode(Context);
                 if (node is null)
                 {

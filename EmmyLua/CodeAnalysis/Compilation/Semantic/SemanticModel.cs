@@ -49,14 +49,19 @@ public class SemanticModel
         return References.FindReferences(element);
     }
 
-    public IEnumerable<Diagnostic> GetDiagnostic()
+    public IEnumerable<Diagnostic> GetDiagnostics()
     {
         return Compilation.GetDiagnostics(Document.Id);
     }
 
+    public IEnumerable<Diagnostic> PopDiagnostics()
+    {
+        return Compilation.PopDiagnostics(Document.Id);
+    }
+
     public IEnumerable<LuaDeclaration> GetGlobals()
     {
-        return Compilation.ProjectIndex.GetGlobals();
+        return Compilation.DbManager.GetGlobals();
     }
 
     public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
@@ -66,6 +71,6 @@ public class SemanticModel
 
     public LuaType? GetExportType(LuaDocumentId documentId)
     {
-        return Compilation.ProjectIndex.GetExportType(documentId);
+        return Compilation.DbManager.GetExportType(documentId);
     }
 }

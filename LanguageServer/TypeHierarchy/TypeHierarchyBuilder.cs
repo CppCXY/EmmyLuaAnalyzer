@@ -13,14 +13,14 @@ public class TypeHierarchyBuilder
     {
         if (node is LuaDocTagClassSyntax { Name: { RepresentText: { } name } nameToken })
         {
-            var supers = semanticModel.Compilation.ProjectIndex.GetSupers(name);
+            var supers = semanticModel.Compilation.DbManager.GetSupers(name);
 
             var items = new List<TypeHierarchyItem>();
             foreach (var super in supers)
             {
                 if (super is LuaNamedType namedType)
                 {
-                    var typeDefine = semanticModel.Compilation.ProjectIndex.GetTypeLuaDeclaration(namedType.Name);
+                    var typeDefine = semanticModel.Compilation.DbManager.GetTypeLuaDeclaration(namedType.Name);
                     if (typeDefine is not null)
                     {
                         var typeDocument =
@@ -30,7 +30,7 @@ public class TypeHierarchyBuilder
                             Name = namedType.Name,
                             Kind = SymbolKind.Class,
                             Uri = typeDocument!.Uri,
-                            Range = typeDefine.TypeDefinePtr.Range.ToLspRange(typeDocument)
+                            Range = typeDefine.TypeDefinePtr.ToNode(typeDocument)!.Range.ToLspRange(typeDocument)
                         });
                     }
                 }

@@ -62,7 +62,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 
     public BasicDetailType GetDetailType(SearchContext context)
     {
-        return context.Compilation.ProjectIndex.GetDetailNamedType(Name, context);
+        return context.Compilation.DbManager.GetDetailNamedType(Name, context);
     }
 
     public override bool Equals(object? obj)
@@ -112,7 +112,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
             return false;
         }
 
-        var supers = context.Compilation.ProjectIndex.GetSupers(Name);
+        var supers = context.Compilation.DbManager.GetSupers(Name);
         return supers.Any(super => super.SubTypeOf(namedType, context));
     }
 
@@ -395,9 +395,9 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
 }
 
 public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
-    : LuaNamedType(tableExpr.UniqueId, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
+    : LuaNamedType(tableExpr.UniqueString, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
 {
-    public LuaSyntaxNodePtr<LuaTableExprSyntax> TableExprPtr { get; } = new(tableExpr);
+    public LuaElementPtr<LuaTableExprSyntax> TableExprPtr { get; } = new(tableExpr);
 
     public override bool Equals(object? obj)
     {
@@ -422,9 +422,9 @@ public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
 }
 
 public class LuaDocTableType(LuaDocTableTypeSyntax tableType)
-    : LuaNamedType(tableType.UniqueId, TypeKind.TableLiteral), IEquatable<LuaDocTableType>
+    : LuaNamedType(tableType.UniqueString, TypeKind.TableLiteral), IEquatable<LuaDocTableType>
 {
-    public LuaSyntaxNodePtr<LuaDocTableTypeSyntax> DocTablePtr { get; } = new(tableType);
+    public LuaElementPtr<LuaDocTableTypeSyntax> DocTablePtr { get; } = new(tableType);
 
     public override bool Equals(object? obj)
     {

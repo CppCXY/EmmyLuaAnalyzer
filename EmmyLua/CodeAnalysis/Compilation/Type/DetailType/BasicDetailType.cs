@@ -21,7 +21,7 @@ public class BasicDetailType(string name, NamedTypeKind kind, SearchContext cont
 
     protected bool LazyInit { get; set; }
 
-    protected ProjectIndex Index => Context.Compilation.ProjectIndex;
+    protected DbManager Index => Context.Compilation.DbManager;
 
     protected virtual void DoLazyInit()
     {

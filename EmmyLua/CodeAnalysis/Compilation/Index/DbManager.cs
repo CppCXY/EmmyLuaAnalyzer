@@ -8,13 +8,13 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class ProjectIndex(LuaCompilation compilation)
+public class DbManager(LuaCompilation compilation)
 {
     private LuaCompilation Compilation { get; } = compilation;
 
     private IndexStorage<string, LuaDeclaration> Members { get; } = new();
 
-    private IndexStorage<string, string> ParentTypes { get; } = new();
+    private IndexStorage<long, string> ParentTypes { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
 
@@ -22,7 +22,9 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, NamedTypeLuaDeclaration> NamedType { get; } = new();
 
-    private IndexStorage<string, LuaType> Id2Type { get; } = new();
+    private IndexStorage<long, LuaType> Id2Type { get; } = new();
+
+    private IndexStorage<string, LuaType> AliasType { get; } = new();
 
     private IndexStorage<string, GenericParameterLuaDeclaration> GenericParam { get; } = new();
 
@@ -32,11 +34,11 @@ public class ProjectIndex(LuaCompilation compilation)
 
     private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
 
-    private IndexStorage<string, LuaSyntaxNodePtr<LuaNameExprSyntax>> NameExprs { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaNameExprSyntax>> NameExprs { get; } = new();
 
-    private IndexStorage<string, LuaSyntaxNodePtr<LuaIndexExprSyntax>> IndexExprs { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaIndexExprSyntax>> IndexExprs { get; } = new();
 
-    private IndexStorage<string, LuaSyntaxNodePtr<LuaDocNameTypeSyntax>> NameTypes { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameTypes { get; } = new();
 
     public void Remove(LuaDocumentId documentId)
     {
@@ -53,6 +55,7 @@ public class ProjectIndex(LuaCompilation compilation)
         NameExprs.Remove(documentId);
         IndexExprs.Remove(documentId);
         NameTypes.Remove(documentId);
+        AliasType.Remove(documentId);
     }
 
     public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -64,7 +67,7 @@ public class ProjectIndex(LuaCompilation compilation)
         }
 
         Members.Add(documentId, name, luaDeclaration);
-        ParentTypes.Add(documentId, luaDeclaration.Ptr.Stringify, name);
+        ParentTypes.Add(documentId, luaDeclaration.Ptr.UniqueId, name);
     }
 
     public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -88,12 +91,12 @@ public class ProjectIndex(LuaCompilation compilation)
         NamedTypeLuaDeclaration luaDeclaration)
     {
         AddType(documentId, name, luaDeclaration, NamedTypeKind.Alias);
-        Id2Type.Add(documentId, name, baseType);
+        AliasType.Add(documentId, name, baseType);
     }
 
-    public void AddRelatedType(LuaDocumentId documentId, string name, LuaType relatedType)
+    public void AddIdRelatedType(LuaDocumentId documentId, long id, LuaType relatedType)
     {
-        Id2Type.Add(documentId, name, relatedType);
+        Id2Type.Add(documentId, id, relatedType);
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
@@ -104,11 +107,6 @@ public class ProjectIndex(LuaCompilation compilation)
         {
             Supers.Add(documentId, name, baseType);
         }
-    }
-
-    public void AddMethod(LuaDocumentId documentId, string id, LuaMethodType methodType)
-    {
-        Id2Type.Add(documentId, id, methodType);
     }
 
     public void AddGenericParam(LuaDocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
@@ -175,9 +173,14 @@ public class ProjectIndex(LuaCompilation compilation)
         return NamedType.Get<NamedTypeLuaDeclaration>(name);
     }
 
-    public IEnumerable<LuaType> GetTypeFromId(string name)
+    public IEnumerable<LuaType> GetTypeFromId(long id)
     {
-        return Id2Type.Get<LuaType>(name);
+        return Id2Type.Get<LuaType>(id);
+    }
+
+    public IEnumerable<LuaType> GetAliasOriginType(string name)
+    {
+        return AliasType.Get<LuaType>(name);
     }
 
     public NamedTypeLuaDeclaration? GetTypeLuaDeclaration(string name)
@@ -262,8 +265,8 @@ public class ProjectIndex(LuaCompilation compilation)
 
     public LuaNamedType? GetParentType(LuaSyntaxNode node)
     {
-        var ptr = new LuaSyntaxNodePtr<LuaSyntaxNode>(node);
-        var parentType = ParentTypes.GetLastOne(ptr.Stringify);
+        var ptr = new LuaElementPtr<LuaSyntaxNode>(node);
+        var parentType = ParentTypes.GetLastOne(ptr.UniqueId);
         if (parentType is not null)
         {
             return new LuaNamedType(parentType);

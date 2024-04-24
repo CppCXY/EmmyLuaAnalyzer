@@ -221,20 +221,16 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
     private void CalcResolveParameters(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedClosureParameters unResolvedClosureParameters)
+        if (unResolved is UnResolvedClosureParameters { CallExprSyntax.PrefixExpr: { } prefixExpr })
         {
-            var callExprSyntax = unResolvedClosureParameters.CallExprSyntax;
-            if (callExprSyntax.PrefixExpr is { } prefixExpr)
+            var prefixType = context.Infer(prefixExpr);
+            if (prefixType.Equals(Builtin.Unknown))
             {
-                var prefixType = context.Infer(prefixExpr);
-                if (prefixType.Equals(Builtin.Unknown))
-                {
-                    AddDependency(unResolved, ResolveState.UnResolvedParameters, prefixExpr);
-                }
-                else
-                {
-                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedParameters);
-                }
+                AddDependency(unResolved, ResolveState.UnResolvedParameters, prefixExpr);
+            }
+            else
+            {
+                OnResolved?.Invoke(unResolved, ResolveState.UnResolvedParameters);
             }
         }
     }

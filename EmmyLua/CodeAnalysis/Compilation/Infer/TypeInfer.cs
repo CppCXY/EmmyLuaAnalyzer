@@ -84,13 +84,13 @@ public static class TypeInfer
                 }
 
                 var paramDeclaration = new ParameterLuaDeclaration(
-                    name.RepresentText, new(typedParam), type);
+                    name.RepresentText, typedParam.Position, new(typedParam), type);
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
                 var paramDeclaration = new ParameterLuaDeclaration(
-                    "...", new(typedParam), context.Infer(typedParam.Type));
+                    "...", typedParam.Position, new(typedParam), context.Infer(typedParam.Type));
                 typedParameters.Add(paramDeclaration);
             }
         }

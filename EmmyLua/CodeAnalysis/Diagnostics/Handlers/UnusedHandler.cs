@@ -55,13 +55,16 @@ public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(c
 
         foreach (var luaDeclaration in declarationSet)
         {
-            context.Report(new Diagnostic(
-                DiagnosticSeverity.Hint,
-                DiagnosticCode.Unused,
-                "unused variable",
-                luaDeclaration.Ptr.Range,
-                DiagnosticTag.Unnecessary
-            ));
+            if (luaDeclaration.Ptr.ToNode(context.Document) is { } node)
+            {
+                context.Report(new Diagnostic(
+                        DiagnosticSeverity.Hint,
+                        DiagnosticCode.Unused,
+                        "unused variable",
+                        node.Range,
+                    DiagnosticTag.Unnecessary
+                ));
+            }
         }
     }
 }

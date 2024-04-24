@@ -1,14 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -22,7 +20,7 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    public ProjectIndex ProjectIndex { get; }
+    public DbManager DbManager { get; }
 
     private HashSet<LuaDocumentId> DirtyDocuments { get; } = [];
 
@@ -35,7 +33,7 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        ProjectIndex = new ProjectIndex(this);
+        DbManager = new DbManager(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
@@ -86,7 +84,7 @@ public class LuaCompilation
         }
 
         DeclarationTrees.Remove(documentId);
-        ProjectIndex.Remove(documentId);
+        DbManager.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }
 
@@ -187,6 +185,17 @@ public class LuaCompilation
                 Location = tree.Document.GetLocation(it.Range)
             })
             : Enumerable.Empty<Diagnostic>();
+
+    public IEnumerable<Diagnostic> PopDiagnostics(LuaDocumentId documentId)
+    {
+        var diagnostics = GetDiagnostics(documentId).ToList();
+        Diagnostics.ClearDiagnostic(documentId);
+        if (_syntaxTrees.TryGetValue(documentId, out var tree))
+        {
+            tree.Diagnostics.Clear();
+        }
+        return diagnostics;
+    }
 
     public void RefreshDiagnostics()
     {

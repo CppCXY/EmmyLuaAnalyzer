@@ -123,7 +123,7 @@ public class ServerContext(ILanguageServerFacade server)
     {
         foreach (var document in LuaWorkspace.AllDocuments)
         {
-            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id);
+            var diagnostics = LuaWorkspace.Compilation.PopDiagnostics(document.Id);
             Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),

@@ -145,7 +145,7 @@ public class InlayHintBuilder
                                 new InlayHintLabelPart()
                                 {
                                     Value = $"{parameter.Name}:",
-                                    Location = parameter.Ptr.Range.ToLspLocation(document)
+                                    Location = parameter.Ptr.ToNode(document)!.Range.ToLspLocation(document)
                                 }
                             }),
                             Kind = InlayHintKind.Parameter,
@@ -318,7 +318,7 @@ public class InlayHintBuilder
                 var location = new Location();
                 if (parentDocument is not null)
                 {
-                    location = ptr.Range.ToLspLocation(parentDocument);
+                    location = ptr.ToNode(parentDocument)!.Range.ToLspLocation(parentDocument);
                     if (ptr.ToNode(semanticModel.Context) is LuaIndexExprSyntax { KeyElement: { } keyElement })
                     {
                         location = keyElement.Range.ToLspLocation(parentDocument);

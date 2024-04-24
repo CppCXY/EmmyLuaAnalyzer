@@ -40,7 +40,7 @@ public class UndefinedGlobalHandler(LuaCompilation compilation)
                     documentIds = documentIds
                         .Where(it =>
                         {
-                            if (Compilation.ProjectIndex.GetExportType(it) is { } ty
+                            if (Compilation.DbManager.GetExportType(it) is { } ty
                                 && !ty.Equals(Builtin.Unknown) && !ty.Equals(Builtin.Nil))
                             {
                                 return true;

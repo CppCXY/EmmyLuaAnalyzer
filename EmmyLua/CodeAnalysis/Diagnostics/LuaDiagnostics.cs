@@ -25,7 +25,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public DiagnosticConfig Config => Compilation.Workspace.Features.DiagnosticConfig;
 
-    public Dictionary<LuaDocumentId, List<Diagnostic>> Diagnostics { get; } = new();
+    private Dictionary<LuaDocumentId, List<Diagnostic>> Diagnostics { get; } = new();
 
     public void Check(LuaDocument document)
     {

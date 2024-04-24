@@ -95,15 +95,15 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         if (name is "_G" or "_ENV" or "global")
         {
-            return Compilation.ProjectIndex.GetGlobals();
+            return Compilation.DbManager.GetGlobals();
         }
 
-        return Compilation.ProjectIndex.GetMembers(name);
+        return Compilation.DbManager.GetMembers(name);
     }
 
     private void CollectSupers(string name, HashSet<LuaType> hashSet, List<LuaNamedType> result)
     {
-        var supers = Compilation.ProjectIndex.GetSupers(name).ToList();
+        var supers = Compilation.DbManager.GetSupers(name).ToList();
         var namedTypes = new List<LuaNamedType>();
         foreach (var super in supers)
         {
@@ -208,7 +208,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
 
         var members = GetMembers(genericType.Name);
-        var genericParams = Compilation.ProjectIndex.GetGenericParams(genericType.Name).ToList();
+        var genericParams = Compilation.DbManager.GetGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 
         var genericMap = new Dictionary<string, LuaType>();
@@ -412,10 +412,10 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
                 }
             }
 
-            var originOperators = Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
+            var originOperators = Compilation.DbManager.TypeOperatorStorage.GetTypeOperators(left.Name)
                 .Where(it => it.Kind == kind).ToList();
 
-            var genericParams = Compilation.ProjectIndex.GetGenericParams(genericType.Name).ToList();
+            var genericParams = Compilation.DbManager.GetGenericParams(genericType.Name).ToList();
             var genericArgs = genericType.GenericArgs;
 
             var genericMap = new Dictionary<string, LuaType>();
@@ -439,7 +439,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             return instanceOperators;
         }
 
-        return Compilation.ProjectIndex.TypeOperatorStorage.GetTypeOperators(left.Name)
+        return Compilation.DbManager.TypeOperatorStorage.GetTypeOperators(left.Name)
             .Where(it => it.Kind == kind);
     }
 
