@@ -40,6 +40,7 @@ public class LuaSyntaxTree
         var syntaxTree = new LuaSyntaxTree(document, diagnostics);
         var redTreeBuilder = new LuaRedTreeBuilder();
         syntaxTree.SyntaxRoot = redTreeBuilder.Build(root, syntaxTree);
+        syntaxTree.BinderData = BinderAnalysis.Analysis(syntaxTree.SyntaxRoot);
         return syntaxTree;
     }
 
