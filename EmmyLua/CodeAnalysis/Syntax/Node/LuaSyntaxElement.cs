@@ -16,7 +16,17 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 {
     protected int RawKind { get; } = green.RawKind;
 
-    public LuaSyntaxElement? Parent { get; } = parent;
+    private int ParentIndex { get; set; } = parent?.ElementId ?? -1;
+
+    private int PreviousSiblingIndex { get; set; } = -1;
+
+    private int NextSiblingIndex { get; set; } = -1;
+
+    private int ChildStartIndex { get; set; } = -1;
+
+    private int ChildFinishIndex { get; set; } = -1;
+
+    public LuaSyntaxElement? Parent => Tree.GetElement(ParentIndex);
 
     public LuaSyntaxTree Tree { get; } = tree;
 
@@ -24,17 +34,48 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
 
     public SourceRange Range { get; } = new(startOffset, green.Length);
 
-    public int ChildPosition { get; internal set; } = 0;
+    public int ElementId { get; internal set; }
 
-    public ImmutableArray<LuaSyntaxElement>? ChildrenElements { get; internal set; }
+    // public int ChildPosition { get; internal set; } = 0;
 
-    public IEnumerable<LuaSyntaxNode> ChildrenNode =>
-        ChildrenElements?.OfType<LuaSyntaxNode>() ?? Enumerable.Empty<LuaSyntaxNode>();
+    public IEnumerable<LuaSyntaxElement> ChildrenElements
+    {
+        get
+        {
+            if (ChildStartIndex == -1)
+            {
+                yield break;
+            }
 
-    public IEnumerable<LuaSyntaxElement> ChildrenWithTokens => ChildrenElements ?? Enumerable.Empty<LuaSyntaxElement>();
+            var index = ChildStartIndex;
+            while (index != -1)
+            {
+                var element = Tree.GetElement(index)!;
+                yield return element;
+                index = element.NextSiblingIndex;
+            }
+        }
+    }
 
-    private ImmutableArray<LuaSyntaxElement> ChildrenWithTokenArray =>
-        ChildrenElements ?? throw new UnreachableException();
+    public IEnumerable<LuaSyntaxNode> ChildrenNode => ChildrenElements.OfType<LuaSyntaxNode>();
+
+    public IEnumerable<LuaSyntaxElement> ChildrenWithTokens => ChildrenElements;
+
+    public void AddChild(LuaSyntaxElement child)
+    {
+        if (ChildStartIndex == -1)
+        {
+            ChildStartIndex = child.ElementId;
+        }
+
+        var sibling = ChildFinishIndex;
+        ChildFinishIndex = child.ElementId;
+        if (sibling != -1)
+        {
+            Tree.GetElement(sibling)!.NextSiblingIndex = child.ElementId;
+            child.PreviousSiblingIndex = sibling;
+        }
+    }
 
     // 遍历所有后代, 包括自己
     public IEnumerable<LuaSyntaxElement> DescendantsAndSelf
@@ -423,11 +464,45 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
         return sb.ToString();
     }
 
-    public LuaSyntaxElement? GetNextSibling(int next = 1) =>
-        Parent?.ChildrenWithTokens.ElementAtOrDefault(ChildPosition + next);
+    public LuaSyntaxElement? GetNextSibling(int next = 1)
+    {
+        var index = NextSiblingIndex;
+        while (index != -1 && next > 0)
+        {
+            var element = Tree.GetElement(index)!;
+            index = element.NextSiblingIndex;
+            next--;
+        }
 
-    public LuaSyntaxElement? GetPrevSibling(int prev = 1) =>
-        Parent?.ChildrenWithTokens.ElementAtOrDefault(ChildPosition - prev);
+        if (next == 0)
+        {
+            return Tree.GetElement(index);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public LuaSyntaxElement? GetPrevSibling(int prev = 1)
+    {
+        var index = PreviousSiblingIndex;
+        while (index != -1 && prev > 0)
+        {
+            var element = Tree.GetElement(index)!;
+            index = element.PreviousSiblingIndex;
+            prev--;
+        }
+
+        if (prev == 0)
+        {
+            return Tree.GetElement(index);
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     public LuaSyntaxToken? GetPrevToken()
     {
@@ -452,37 +527,48 @@ public abstract class LuaSyntaxElement(GreenNode green, LuaSyntaxTree tree, LuaS
     }
 
     // 从自身向前迭代, 直到找到一个类型为T的节点
-    public IEnumerable<T> PrevOfType<T>()
-        where T : LuaSyntaxElement
-    {
-        if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
-        {
-            var selfPosition = ChildPosition;
-            for (var i = selfPosition - 1; i >= 0; i--)
-            {
-                var nodeOrToken = childrenWithTokenArray[i];
-                if (nodeOrToken is T node)
-                {
-                    yield return node;
-                }
-            }
-        }
-    }
+    // public IEnumerable<T> PrevOfType<T>()
+    //     where T : LuaSyntaxElement
+    // {
+    //     if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
+    //     {
+    //         var selfPosition = ChildPosition;
+    //         for (var i = selfPosition - 1; i >= 0; i--)
+    //         {
+    //             var nodeOrToken = childrenWithTokenArray[i];
+    //             if (nodeOrToken is T node)
+    //             {
+    //                 yield return node;
+    //             }
+    //         }
+    //     }
+    // }
 
     public IEnumerable<T> NextOfType<T>()
         where T : LuaSyntaxElement
     {
-        if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
+        // if (Parent?.ChildrenWithTokenArray is { } childrenWithTokenArray)
+        // {
+        //     var selfPosition = ChildPosition;
+        //     for (var i = selfPosition + 1; i < childrenWithTokenArray.Length; i++)
+        //     {
+        //         var nodeOrToken = childrenWithTokenArray[i];
+        //         if (nodeOrToken is T node)
+        //         {
+        //             yield return node;
+        //         }
+        //     }
+        // }
+        var index = NextSiblingIndex;
+        while (index != -1)
         {
-            var selfPosition = ChildPosition;
-            for (var i = selfPosition + 1; i < childrenWithTokenArray.Length; i++)
+            var element = Tree.GetElement(index)!;
+            if (element is T node)
             {
-                var nodeOrToken = childrenWithTokenArray[i];
-                if (nodeOrToken is T node)
-                {
-                    yield return node;
-                }
+                yield return node;
             }
+
+            index = element.NextSiblingIndex;
         }
     }
 

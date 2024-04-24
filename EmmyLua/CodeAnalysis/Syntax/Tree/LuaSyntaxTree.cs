@@ -3,12 +3,16 @@ using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Binder;
+using EmmyLua.CodeAnalysis.Syntax.Green;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
 public class LuaSyntaxTree
 {
+    private List<LuaSyntaxElement> Elements { get; } = new();
+
     public LuaDocument Document { get; }
 
     public List<Diagnostic> Diagnostics { get; }
@@ -43,6 +47,23 @@ public class LuaSyntaxTree
     {
         Document = document;
         Diagnostics = diagnostics;
+    }
+
+    public LuaSyntaxElement CreateElement(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    {
+        var element = SyntaxFactory.CreateSyntax(greenNode, tree, parent, startOffset);
+        element.ElementId = Elements.Count;
+        Elements.Add(element);
+        return element;
+    }
+
+    public LuaSyntaxElement? GetElement(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return null;
+        }
+        return Elements[elementId];
     }
 
     public void PushDiagnostic(Diagnostic diagnostic)
