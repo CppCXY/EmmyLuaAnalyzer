@@ -16,11 +16,9 @@ public class LuaRedTreeBuilder
         {
             var (node, greenNode) = queue.Dequeue();
             var startOffset = node.Range.StartOffset;
-            // var childrenElement = new List<LuaSyntaxElement>();
             foreach (var childGreen in greenNode.Children)
             {
                 var childNode = tree.CreateElement(childGreen, tree, node, startOffset);
-                // childNode.ChildPosition = childrenElement.Count;
                 node.AddChild(childNode);
                 startOffset += childGreen.Length;
                 if (childGreen.IsNode)
@@ -28,8 +26,6 @@ public class LuaRedTreeBuilder
                     queue.Enqueue((childNode, childGreen));
                 }
             }
-
-            // node.ChildrenElements = childrenElement.ToImmutableArray();
         }
 
         return root!;
