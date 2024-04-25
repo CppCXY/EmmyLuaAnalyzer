@@ -2,29 +2,33 @@
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
+// @formatter:off
 public enum DiagnosticCode
 {
-    [EnumMember(Value = "none")] None,
-    [EnumMember(Value = "syntax-error")] SyntaxError,
-    [EnumMember(Value = "type-not-found")] TypeNotFound,
-    [EnumMember(Value = "missing-return")] MissingReturn,
-    [EnumMember(Value = "type-not-match")] TypeNotMatch,
-
+    [EnumMember(Value = "none")]
+    None,
+    [EnumMember(Value = "syntax-error")]
+    SyntaxError,
+    [EnumMember(Value = "type-not-found")]
+    TypeNotFound,
+    [EnumMember(Value = "missing-return")]
+    MissingReturn,
+    [EnumMember(Value = "type-not-match")]
+    TypeNotMatch,
     [EnumMember(Value = "missing-parameter")]
     MissingParameter,
-
     [EnumMember(Value = "inject-field-fail")]
     InjectFieldFail,
-
     [EnumMember(Value = "unreachable-code")]
     UnreachableCode,
-    [EnumMember(Value = "unused")] Unused,
-
+    [EnumMember(Value = "unused")]
+    Unused,
     [EnumMember(Value = "undefined-global")]
     UndefinedGlobal,
-    [EnumMember(Value = "need-import")] NeedImport,
+    [EnumMember(Value = "need-import")]
+    NeedImport,
 }
-
+// @formatter:on
 public static class DiagnosticCodeHelper
 {
     private static readonly Dictionary<DiagnosticCode, string> NameCache = new();

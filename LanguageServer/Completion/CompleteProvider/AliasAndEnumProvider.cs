@@ -6,7 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion.CompleteProvider;
 
-public class FuncParamProvider : ICompleteProviderBase
+public class AliasAndEnumProvider : ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {

@@ -8,7 +8,7 @@ public class CompletionBuilder
     private List<ICompleteProviderBase> Providers { get; } = [
         new RequireProvider(),
         new ResourcePathProvider(),
-        new FuncParamProvider(),
+        new AliasAndEnumProvider(),
         new LocalEnvProvider(),
         new GlobalProvider(),
         new KeywordsProvider(),
