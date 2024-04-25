@@ -41,6 +41,7 @@ public static class TypesParser
             cm = m.Complete(p, LuaSyntaxKind.TypeUnion);
         }
 
+        DescriptionParser.InlineDescription(p);
         return cm;
     }
 
