@@ -1,11 +1,13 @@
 ﻿using LanguageServer.Server;
 using LanguageServer.Util;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.TypeHierarchy;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerBase
 {
     private TypeHierarchyBuilder Builder { get; } = new();
@@ -30,7 +32,10 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
             {
                 var node = semanticModel.Document.SyntaxTree.SyntaxRoot.NodeAt(request.Position.Line,
                     request.Position.Character);
-                result = Builder.BuildPrepare(semanticModel, node);
+                if (node is not null)
+                {
+                    result = Builder.BuildPrepare(semanticModel, node);
+                }
             }
         });
 
@@ -40,13 +45,30 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
     public override Task<Container<TypeHierarchyItem>?> Handle(TypeHierarchySupertypesParams request,
         CancellationToken cancellationToken)
     {
-        var result = new Container<TypeHierarchyItem>(request.Item);
-        return Task.FromResult(result)!;
+        Container<TypeHierarchyItem>? result = null;
+        context.ReadyRead(() =>
+        {
+            if (request.Item.Data?.Type == JTokenType.String && request.Item.Data?.Value<string>() is { } name)
+            {
+                result = Builder.BuildSupers(context.LuaWorkspace.Compilation, name);
+            }
+        });
+
+        return Task.FromResult(result);
     }
 
     public override Task<Container<TypeHierarchyItem>?> Handle(TypeHierarchySubtypesParams request,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult<Container<TypeHierarchyItem>?>(null);
+        Container<TypeHierarchyItem>? result = null;
+        context.ReadyRead(() =>
+        {
+            if (request.Item.Data?.Type == JTokenType.String && request.Item.Data?.Value<string>() is { } name)
+            {
+                result = Builder.BuildSubTypes(context.LuaWorkspace.Compilation, name);
+            }
+        });
+
+        return Task.FromResult(result);
     }
 }

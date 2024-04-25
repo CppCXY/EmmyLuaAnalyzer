@@ -20,6 +20,8 @@ public class DbManager(LuaCompilation compilation)
 
     private IndexStorage<string, LuaType> Supers { get; } = new();
 
+    private IndexStorage<string, string> SubTypes { get; } = new();
+
     private IndexStorage<string, NamedTypeLuaDeclaration> NamedType { get; } = new();
 
     private IndexStorage<long, LuaType> Id2Type { get; } = new();
@@ -48,6 +50,7 @@ public class DbManager(LuaCompilation compilation)
         ParentTypes.Remove(documentId);
         GlobalDeclaration.Remove(documentId);
         Supers.Remove(documentId);
+        SubTypes.Remove(documentId);
         NamedType.Remove(documentId);
         Id2Type.Remove(documentId);
         GenericParam.Remove(documentId);
@@ -80,6 +83,10 @@ public class DbManager(LuaCompilation compilation)
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
     {
         Supers.Add(documentId, name, type);
+        if (type is LuaNamedType namedType)
+        {
+            SubTypes.Add(documentId, namedType.Name, name);
+        }
     }
 
     public void AddType(LuaDocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration,
@@ -174,6 +181,11 @@ public class DbManager(LuaCompilation compilation)
     public IEnumerable<LuaType> GetSupers(string name)
     {
         return Supers.Get<LuaType>(name);
+    }
+
+    public IEnumerable<string> GetSubTypes(string name)
+    {
+        return SubTypes.Get<string>(name);
     }
 
     public IEnumerable<NamedTypeLuaDeclaration> GetNamedType(string name)
