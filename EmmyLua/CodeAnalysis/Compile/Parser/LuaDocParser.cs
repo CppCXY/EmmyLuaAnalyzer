@@ -129,6 +129,16 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 
                 break;
             }
+            case LuaDocLexerState.See:
+            {
+                while (_current.Kind is LuaTokenKind.TkWhitespace)
+                {
+                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
+                    _current = LexToken();
+                }
+
+                break;
+            }
         }
     }
 
