@@ -72,7 +72,6 @@ public static class LuaDeclarationRender
                         _ => ""
                     };
 
-
                     sb.Append(
                         $"```lua\n(field) {visibilityText}{docField.Name} : {LuaTypeRender.RenderType(docField.DeclarationType, context)}\n```");
                     LuaCommentRender.RenderDocFieldComment(docField, context, sb);
@@ -86,29 +85,7 @@ public static class LuaDeclarationRender
                 if (tableFieldDeclaration.TableFieldPtr.ToNode(context) is
                     { IsValue: false, Value: LuaLiteralExprSyntax expr })
                 {
-                    switch (expr.Literal)
-                    {
-                        case LuaStringToken stringLiteral:
-                        {
-                            constExpr = $" = '{stringLiteral.Value}'";
-                            break;
-                        }
-                        case LuaIntegerToken integerLiteral:
-                        {
-                            constExpr = $" = {integerLiteral.Value}";
-                            break;
-                        }
-                        case LuaFloatToken floatToken:
-                        {
-                            constExpr = $" = {floatToken.Value}";
-                            break;
-                        }
-                        case LuaComplexToken complexToken:
-                        {
-                            constExpr = $" = {complexToken}";
-                            break;
-                        }
-                    }
+                    constExpr = RenderLiteral(expr);
                 }
 
                 sb.Append(
@@ -154,9 +131,16 @@ public static class LuaDeclarationRender
             }
             case IndexLuaDeclaration indexLuaDeclaration:
             {
+                var literalText = string.Empty;
+                var valueExpr = indexLuaDeclaration.ValueExprPtr.ToNode(context);
+                if (valueExpr is LuaLiteralExprSyntax literalExpr)
+                {
+                    literalText = RenderLiteral(literalExpr);
+                }
+
                 var indexExpr = indexLuaDeclaration.IndexExprPtr.ToNode(context);
                 sb.Append(
-                    $"```lua\n(field) {indexExpr?.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}\n```");
+                    $"```lua\n(field) {indexExpr?.Name} : {LuaTypeRender.RenderType(indexLuaDeclaration.DeclarationType, context)}{literalText}\n```");
                 LuaCommentRender.RenderDeclarationStatComment(indexLuaDeclaration, context, sb);
                 break;
             }
@@ -198,7 +182,7 @@ public static class LuaDeclarationRender
         }
     }
 
-    public static void RenderLocalDeclaration(LocalLuaDeclaration local, SearchContext context, StringBuilder sb)
+    private static void RenderLocalDeclaration(LocalLuaDeclaration local, SearchContext context, StringBuilder sb)
     {
         var localName = local.LocalNamePtr.ToNode(context);
 
@@ -226,7 +210,7 @@ public static class LuaDeclarationRender
         }
     }
 
-    public static void RenderGlobalDeclaration(GlobalLuaDeclaration global, SearchContext context, StringBuilder sb)
+    private static void RenderGlobalDeclaration(GlobalLuaDeclaration global, SearchContext context, StringBuilder sb)
     {
         if (global.IsTypeDefine)
         {
@@ -240,5 +224,52 @@ public static class LuaDeclarationRender
                 $"```lua\nglobal {global.Name} : {LuaTypeRender.RenderType(global.DeclarationType, context)}\n```");
             LuaCommentRender.RenderDeclarationStatComment(global, context, sb);
         }
+    }
+
+    private static string RenderLiteral(LuaLiteralExprSyntax expr)
+    {
+        switch (expr.Literal)
+        {
+            case LuaStringToken stringLiteral:
+            {
+                return $" = '{stringLiteral.Value}'";
+            }
+            case LuaIntegerToken integerLiteral:
+            {
+                return $" = {integerLiteral.Value}";
+            }
+            case LuaFloatToken floatToken:
+            {
+                return $" = {floatToken.Value}";
+            }
+            case LuaComplexToken complexToken:
+            {
+                return $" = {complexToken}";
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static void RenderMethodDeclaration(MethodLuaDeclaration method, SearchContext context, StringBuilder sb)
+    {
+        var luaFunc = method.FuncStatPtr.ToNode(context);
+        var isLocal = luaFunc?.IsLocal ?? false;
+        if (isLocal)
+        {
+            sb.Append(
+                $"```lua\nlocal function {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
+        }
+        else
+        {
+            sb.Append(
+                $"```lua\nfunction {method.Name}{LuaTypeRender.RenderFunc(method.DeclarationType, context)}\n```");
+            if (method.IndexExprPtr.ToNode(context) is { } indexExpr)
+            {
+                RenderInClass(indexExpr, context, sb);
+            }
+        }
+
+        LuaCommentRender.RenderDeclarationStatComment(method, context, sb);
     }
 }

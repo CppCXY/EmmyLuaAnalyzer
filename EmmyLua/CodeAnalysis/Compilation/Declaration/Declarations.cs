@@ -252,12 +252,15 @@ public class IndexLuaDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaIndexExprSyntax> indexExprPtr,
+    LuaElementPtr<LuaExprSyntax> valueExprPtr,
     LuaType? declarationType) : LuaDeclaration(name, position, indexExprPtr.UpCast(), declarationType)
 {
     public LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr => Ptr.Cast<LuaIndexExprSyntax>();
 
+    public LuaElementPtr<LuaExprSyntax> ValueExprPtr => valueExprPtr;
+
     public override IndexLuaDeclaration WithType(LuaType type) =>
-        new(Name, Position, IndexExprPtr, type);
+        new(Name, Position, IndexExprPtr, ValueExprPtr, type);
 }
 
 // public class LabelLuaDeclaration(

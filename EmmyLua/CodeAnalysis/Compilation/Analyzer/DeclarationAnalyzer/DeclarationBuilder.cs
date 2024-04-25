@@ -551,8 +551,15 @@ public class DeclarationBuilder : ILuaElementWalker
                         break;
                     }
 
-                    var declaration =
-                        new IndexLuaDeclaration(indexExpr.Name, indexExpr.Position, new(indexExpr), luaType);
+                    var valueExprPtr = relatedExpr?.RetId == 0
+                        ? new(relatedExpr.Expr)
+                        : LuaElementPtr<LuaExprSyntax>.Empty;
+                    var declaration = new IndexLuaDeclaration(
+                        indexExpr.Name,
+                        indexExpr.Position,
+                        new(indexExpr),
+                        valueExprPtr,
+                        luaType);
                     if (i == 0)
                     {
                         var declarationType = FindFirstLocalOrAssignType(luaAssignStat);

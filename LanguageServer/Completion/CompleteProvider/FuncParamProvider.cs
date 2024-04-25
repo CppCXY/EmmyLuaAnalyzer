@@ -76,6 +76,10 @@ public class FuncParamProvider : ICompleteProviderBase
                             AddEnumParamCompletion(enumDetailType, context);
                         }
                     }
+                    else if (paramType is LuaUnionType unionType)
+                    {
+                       AddUnionTypeCompletion(unionType, context);
+                    }
                 }
             }
         });
@@ -85,17 +89,7 @@ public class FuncParamProvider : ICompleteProviderBase
     {
         if (aliasDetailType.OriginType is LuaUnionType unionType)
         {
-            foreach (var type in unionType.UnionTypes)
-            {
-                if (type is LuaStringLiteralType stringLiteralType)
-                {
-                    context.Add(new CompletionItem
-                    {
-                        Label = stringLiteralType.Content,
-                        Kind = CompletionItemKind.EnumMember,
-                    });
-                }
-            }
+            AddUnionTypeCompletion(unionType, context);
         }
     }
 
@@ -112,6 +106,29 @@ public class FuncParamProvider : ICompleteProviderBase
                 Label = $"{enumName}.{field.Name}",
                 Kind = CompletionItemKind.EnumMember,
             });
+        }
+    }
+    
+    private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
+    {
+        foreach (var type in unionType.UnionTypes)
+        {
+            if (type is LuaStringLiteralType stringLiteralType)
+            {
+                context.Add(new CompletionItem
+                {
+                    Label = stringLiteralType.Content,
+                    Kind = CompletionItemKind.EnumMember,
+                });
+            }
+            else if (type is LuaIntegerLiteralType intLiteralType)
+            {
+                context.Add(new CompletionItem
+                {
+                    Label = intLiteralType.Value.ToString(),
+                    Kind = CompletionItemKind.EnumMember,
+                });
+            }
         }
     }
 }
