@@ -30,6 +30,8 @@ public class DbManager(LuaCompilation compilation)
 
     private Dictionary<LuaDocumentId, LuaType> ExportTypes { get; } = new();
 
+    private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ExportExprs { get; } = new();
+
     public TypeOperatorStorage TypeOperatorStorage { get; } = new();
 
     private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
@@ -114,9 +116,10 @@ public class DbManager(LuaCompilation compilation)
         GenericParam.Add(documentId, name, luaDeclaration);
     }
 
-    public void AddExportType(LuaDocumentId documentId, LuaType type)
+    public void AddModuleExport(LuaDocumentId documentId, LuaType type, List<LuaExprSyntax> exprs)
     {
         ExportTypes[documentId] = type;
+        ExportExprs[documentId] = exprs.Select(it => it.ToPtr<LuaExprSyntax>()).ToList();
     }
 
     public void AddNameExpr(LuaDocumentId documentId, LuaNameExprSyntax nameExpr)
@@ -151,6 +154,11 @@ public class DbManager(LuaCompilation compilation)
         }
 
         return Members.Get<LuaDeclaration>(name);
+    }
+
+    public IEnumerable<LuaDeclaration> GetAllMembers()
+    {
+        return Members.GetAll();
     }
 
     public IEnumerable<LuaDeclaration> GetGlobal(string name)
@@ -188,9 +196,14 @@ public class DbManager(LuaCompilation compilation)
         return NamedType.GetOne(name);
     }
 
-    public LuaType? GetExportType(LuaDocumentId documentId)
+    public LuaType? GetModuleExportType(LuaDocumentId documentId)
     {
         return ExportTypes.GetValueOrDefault(documentId);
+    }
+
+    public IEnumerable<LuaElementPtr<LuaExprSyntax>> GetModuleExportExprs(LuaDocumentId documentId)
+    {
+        return ExportExprs.GetValueOrDefault(documentId) ?? Enumerable.Empty<LuaElementPtr<LuaExprSyntax>>();
     }
 
     public IEnumerable<GenericParameterLuaDeclaration> GetGenericParams(string name)

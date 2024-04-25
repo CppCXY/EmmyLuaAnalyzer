@@ -71,6 +71,6 @@ public class SemanticModel
 
     public LuaType? GetExportType(LuaDocumentId documentId)
     {
-        return Compilation.DbManager.GetExportType(documentId);
+        return Compilation.DbManager.GetModuleExportType(documentId);
     }
 }

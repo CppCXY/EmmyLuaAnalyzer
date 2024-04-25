@@ -148,19 +148,19 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
 
             var block = unResolvedMethod.Block;
-            var returnType = AnalyzeBlockReturns(block, analyzeContext);
+            var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
             methodType.MainSignature.ReturnType = returnType;
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
             var block = unResolvedSource.Block;
-            var returnType = AnalyzeBlockReturns(block, analyzeContext);
+            var returnType = AnalyzeBlockReturns(block, out var relatedExpr, analyzeContext);
             if (returnType is LuaMultiReturnType multiReturnType)
             {
                 returnType = multiReturnType.GetElementType(0);
             }
 
-            Compilation.DbManager.AddExportType(unResolvedSource.DocumentId, returnType);
+            Compilation.DbManager.AddModuleExport(unResolvedSource.DocumentId, returnType, relatedExpr);
         }
     }
 
@@ -193,9 +193,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         }
     }
 
-    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, AnalyzeContext analyzeContext)
+    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, out List<LuaExprSyntax> relatedExpr,AnalyzeContext analyzeContext)
     {
         LuaType returnType = Builtin.Unknown;
+        relatedExpr = new List<LuaExprSyntax>();
         var cfg = analyzeContext.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
@@ -217,7 +218,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             returnType = returnType.Union(Builtin.Nil);
                             break;
                         }
-                        case 1:
+                        case >= 1:
                         {
                             var mainReturn = Context.Infer(rets[0]);
                             if (mainReturn.Equals(Builtin.Unknown))
@@ -225,24 +226,8 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 return returnType;
                             }
 
+                            relatedExpr.Add(rets[0]);
                             returnType = returnType.Union(mainReturn);
-                            break;
-                        }
-                        case > 1:
-                        {
-                            var retTypes = new List<LuaType>();
-                            foreach (var ret in rets)
-                            {
-                                var retType = Context.Infer(ret);
-                                if (retType.Equals(Builtin.Unknown))
-                                {
-                                    return returnType;
-                                }
-
-                                retTypes.Add(retType);
-                            }
-
-                            returnType = returnType.Union(new LuaMultiReturnType(retTypes));
                             break;
                         }
                     }

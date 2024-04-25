@@ -258,27 +258,13 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
                         {
                             break;
                         }
-                        case 1:
+                        case >= 1:
                         {
                             var mainReturn = context.Infer(rets[0]);
                             if (mainReturn.Equals(Builtin.Unknown))
                             {
                                 canResolve = false;
                                 AddDependency(unResolved, ResolveState.UnResolveReturn, rets[0]);
-                            }
-
-                            break;
-                        }
-                        case > 1:
-                        {
-                            foreach (var ret in rets)
-                            {
-                                var retType = context.Infer(ret);
-                                if (retType.Equals(Builtin.Unknown))
-                                {
-                                    canResolve = false;
-                                    AddDependency(unResolved, ResolveState.UnResolveReturn, ret);
-                                }
                             }
 
                             break;

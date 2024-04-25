@@ -18,6 +18,7 @@ using LanguageServer.Server;
 using LanguageServer.SignatureHelper;
 using LanguageServer.TextDocument;
 using LanguageServer.TypeHierarchy;
+using LanguageServer.WorkspaceSymbol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -79,6 +80,7 @@ var server = await From(options =>
         .WithHandler<InlineValuesHandler>()
         .WithHandler<DocumentLinkHandler>()
         .WithHandler<TypeHierarchyHandler>()
+        .WithHandler<WorkspaceSymbolHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(
