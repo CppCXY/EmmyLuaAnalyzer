@@ -30,7 +30,7 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
             var semanticModel = context.GetSemanticModel(request.TextDocument.Uri.ToUnencodedString());
             if (semanticModel is not null)
             {
-                var node = semanticModel.Document.SyntaxTree.SyntaxRoot.NodeAt(request.Position.Line,
+                var node = semanticModel.Document.SyntaxTree.SyntaxRoot.NameNodeAt(request.Position.Line,
                     request.Position.Character);
                 if (node is not null)
                 {

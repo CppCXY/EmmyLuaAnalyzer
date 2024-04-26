@@ -46,7 +46,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                     }
                 }
 
-                var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
                 var declarationTree = semanticModel.DeclarationTree;
                 if (node is not null)
                 {
