@@ -51,9 +51,9 @@ public readonly struct LuaElementPtr<TNode>(long uniqueId)
         return new LuaElementPtr<TBaseNode>(UniqueId);
     }
 
-    public LuaElementPtr<LuaSyntaxNode> UpCast()
+    public LuaElementPtr<LuaSyntaxElement> UpCast()
     {
-        return new LuaElementPtr<LuaSyntaxNode>(UniqueId);
+        return new LuaElementPtr<LuaSyntaxElement>(UniqueId);
     }
 
     // same as unique id

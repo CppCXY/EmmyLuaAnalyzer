@@ -412,7 +412,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
                 }
             }
 
-            var originOperators = Compilation.DbManager.TypeOperatorStorage.GetTypeOperators(left.Name)
+            var originOperators = Compilation.DbManager.GetTypeOperators(left.Name)
                 .Where(it => it.Kind == kind).ToList();
 
             var genericParams = Compilation.DbManager.GetGenericParams(genericType.Name).ToList();
@@ -439,7 +439,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             return instanceOperators;
         }
 
-        return Compilation.DbManager.TypeOperatorStorage.GetTypeOperators(left.Name)
+        return Compilation.DbManager.GetTypeOperators(left.Name)
             .Where(it => it.Kind == kind);
     }
 

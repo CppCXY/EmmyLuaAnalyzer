@@ -72,7 +72,7 @@ public class DeclarationScope(LuaDeclarationTree tree, int pos)
 
             WalkUp(position, 0, declaration =>
             {
-                if (declaration is { Feature: DeclarationFeature.Global or DeclarationFeature.Local }
+                if (declaration is { ScopeFeature: DeclarationScopeFeature.Global or DeclarationScopeFeature.Local }
                     && string.Equals(declaration.Name, nameText, StringComparison.CurrentCulture))
                 {
                     result = declaration;

@@ -43,10 +43,10 @@ public static class LuaCommentRender
         RenderCommentDescription(comments, sb);
     }
 
-    public static void RenderParamComment(ParameterLuaDeclaration parameterLuaDeclaration, SearchContext context,
+    public static void RenderParamComment(ParamDeclaration paramDeclaration, SearchContext context,
         StringBuilder sb)
     {
-        var declarationElement = parameterLuaDeclaration.Ptr.ToNode(context);
+        var declarationElement = paramDeclaration.Ptr.ToNode(context);
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
         if (comments is null)
@@ -57,7 +57,7 @@ public static class LuaCommentRender
         var tagParams = comments.SelectMany(it => it.DocList).OfType<LuaDocTagParamSyntax>();
         foreach (var tagParam in tagParams)
         {
-            if (tagParam.Name?.RepresentText == parameterLuaDeclaration.Name && tagParam.Description != null)
+            if (tagParam.Name?.RepresentText == paramDeclaration.Name && tagParam.Description != null)
             {
                 RenderSeparator(sb);
                 sb.Append(tagParam.Description.CommentText);
@@ -65,7 +65,7 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderDocFieldComment(DocFieldLuaDeclaration fieldDeclaration, SearchContext context,
+    public static void RenderDocFieldComment(DocFieldDeclaration fieldDeclaration, SearchContext context,
         StringBuilder sb)
     {
         var docField = fieldDeclaration.FieldDefPtr.ToNode(context);
@@ -76,7 +76,7 @@ public static class LuaCommentRender
         }
     }
 
-    public static void RenderTableFieldComment(TableFieldLuaDeclaration tableFieldDeclaration, SearchContext context,
+    public static void RenderTableFieldComment(TableFieldDeclaration tableFieldDeclaration, SearchContext context,
         StringBuilder sb)
     {
         var tableFieldSyntax = tableFieldDeclaration.TableFieldPtr.ToNode(context);

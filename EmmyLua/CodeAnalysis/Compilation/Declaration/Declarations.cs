@@ -69,32 +69,53 @@ public abstract class DeclarationNodeContainer(int position)
     public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
 }
 
-public enum DeclarationFeature
+public enum DeclarationScopeFeature
 {
     None,
     Local,
     Global,
 }
 
+[Flags]
+public enum DeclarationFeature
+{
+    None = 0,
+    Deprecated = 0x01,
+    Public = 0x02,
+    Protected = 0x04,
+    Private = 0x08,
+}
+
 public class LuaDeclaration(
     string name,
     int position,
-    LuaElementPtr<LuaSyntaxNode> ptr,
+    LuaElementPtr<LuaSyntaxElement> ptr,
     LuaType? declarationType,
+    DeclarationScopeFeature scopeFeature = DeclarationScopeFeature.None,
     DeclarationFeature feature = DeclarationFeature.None
 )
     : DeclarationNode(position)
 {
     public string Name { get; } = name;
 
-    public LuaElementPtr<LuaSyntaxNode> Ptr { get; } = ptr;
+    public LuaElementPtr<LuaSyntaxElement> Ptr { get; } = ptr;
 
     public LuaType? DeclarationType = declarationType;
 
-    public DeclarationFeature Feature { get; internal init; } = feature;
+    public DeclarationScopeFeature ScopeFeature { get; internal init; } = scopeFeature;
+
+    public DeclarationFeature Feature { get; internal set; } = feature;
+
+    public bool IsDeprecated => Feature.HasFlag(DeclarationFeature.Deprecated);
+
+    public bool IsPublic => Feature.HasFlag(DeclarationFeature.Public);
+
+    public bool IsProtected => Feature.HasFlag(DeclarationFeature.Protected);
+
+    public bool IsPrivate => Feature.HasFlag(DeclarationFeature.Private);
 
     public virtual LuaDeclaration WithType(LuaType type) =>
-        new(Name, Position, Ptr, type, Feature);
+        new(Name, Position, Ptr, type, ScopeFeature, Feature);
 
     public virtual LuaDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
     {
@@ -112,48 +133,50 @@ public class LuaDeclaration(
     }
 }
 
-public class LocalLuaDeclaration(
+public class LocalDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaLocalNameSyntax> localNamePtr,
     LuaType? declarationType
-) : LuaDeclaration(name, position, localNamePtr.UpCast(), declarationType, DeclarationFeature.Local)
+) : LuaDeclaration(name, position, localNamePtr.UpCast(), declarationType, DeclarationScopeFeature.Local)
 {
     public LuaElementPtr<LuaLocalNameSyntax> LocalNamePtr => Ptr.Cast<LuaLocalNameSyntax>();
 
     public bool IsTypeDefine { get; internal set; }
 
-    public override LocalLuaDeclaration WithType(LuaType type) =>
+    public override LocalDeclaration WithType(LuaType type) =>
         new(Name, Position, LocalNamePtr, type)
         {
             IsTypeDefine = IsTypeDefine
         };
 }
 
-public class GlobalLuaDeclaration(
+public class GlobalDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaNameExprSyntax> varNamePtr,
-    LuaType? declarationType
-) : LuaDeclaration(name, position, varNamePtr.UpCast(), declarationType, DeclarationFeature.Global)
+    LuaType? declarationType,
+    DeclarationFeature feature = DeclarationFeature.None
+) : LuaDeclaration(name, position, varNamePtr.UpCast(), declarationType, DeclarationScopeFeature.Global, feature)
 {
     public LuaElementPtr<LuaNameExprSyntax> VarNamePtr => Ptr.Cast<LuaNameExprSyntax>();
 
     public bool IsTypeDefine { get; internal set; }
 
-    public override GlobalLuaDeclaration WithType(LuaType type) =>
+    public override GlobalDeclaration WithType(LuaType type) =>
         new(Name, Position, VarNamePtr, type)
         {
-            IsTypeDefine = IsTypeDefine
+            IsTypeDefine = IsTypeDefine,
+            Feature = Feature
         };
 }
 
-public class ParameterLuaDeclaration(
+public class ParamDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaSyntaxNode> paramPtr,
     LuaType? declarationType)
-    : LuaDeclaration(name, position, paramPtr.UpCast(), declarationType, DeclarationFeature.Local)
+    : LuaDeclaration(name, position, paramPtr.UpCast(), declarationType, DeclarationScopeFeature.Local)
 {
     public LuaElementPtr<LuaParamDefSyntax> ParamDefPtr => Ptr.Cast<LuaParamDefSyntax>();
 
@@ -161,27 +184,28 @@ public class ParameterLuaDeclaration(
 
     public bool IsVararg => Name == "...";
 
-    public override ParameterLuaDeclaration WithType(LuaType type) =>
-        new(Name, Position, Ptr, type);
+    public override ParamDeclaration WithType(LuaType type) =>
+        new(Name, Position, Ptr.Cast<LuaSyntaxNode>(), type);
 }
 
-public class MethodLuaDeclaration(
+public class MethodDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaSyntaxNode> namePtr,
     LuaMethodType? method,
-    LuaElementPtr<LuaFuncStatSyntax> funcStatPtr
-) : LuaDeclaration(name, position, namePtr, method)
+    LuaElementPtr<LuaFuncStatSyntax> funcStatPtr,
+    DeclarationFeature feature = DeclarationFeature.None
+) : LuaDeclaration(name, position, namePtr.UpCast(), method, feature: feature)
 {
     public LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr => Ptr.Cast<LuaIndexExprSyntax>();
 
     public LuaElementPtr<LuaFuncStatSyntax> FuncStatPtr => funcStatPtr;
 
-    public override MethodLuaDeclaration WithType(LuaType type) =>
-        new(Name, Position, Ptr, type as LuaMethodType, FuncStatPtr);
+    public override MethodDeclaration WithType(LuaType type) =>
+        new(Name, Position, Ptr.Cast<LuaSyntaxNode>(), type as LuaMethodType, FuncStatPtr, Feature);
 }
 
-public class NamedTypeLuaDeclaration(
+public class NamedTypeDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaDocTagNamedTypeSyntax> typeDefinePtr,
@@ -193,23 +217,25 @@ public class NamedTypeLuaDeclaration(
 
     public LuaElementPtr<LuaDocTagNamedTypeSyntax> TypeDefinePtr => Ptr.Cast<LuaDocTagNamedTypeSyntax>();
 
-    public override NamedTypeLuaDeclaration WithType(LuaType type) =>
+    public override NamedTypeDeclaration WithType(LuaType type) =>
         new(Name, Position, TypeDefinePtr, type, Kind);
 }
 
-public class DocFieldLuaDeclaration(
+public class DocFieldDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaDocFieldSyntax> fieldDefPtr,
-    LuaType? declarationType) : LuaDeclaration(name, position, fieldDefPtr.UpCast(), declarationType)
+    LuaType? declarationType,
+    DeclarationFeature feature = DeclarationFeature.None
+    ) : LuaDeclaration(name, position, fieldDefPtr.UpCast(), declarationType, feature: feature)
 {
     public LuaElementPtr<LuaDocFieldSyntax> FieldDefPtr => Ptr.Cast<LuaDocFieldSyntax>();
 
-    public override DocFieldLuaDeclaration WithType(LuaType type) =>
-        new DocFieldLuaDeclaration(Name, Position, FieldDefPtr, type);
+    public override DocFieldDeclaration WithType(LuaType type) =>
+        new DocFieldDeclaration(Name, Position, FieldDefPtr, type, Feature);
 }
 
-public class TableFieldLuaDeclaration(
+public class TableFieldDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaTableFieldSyntax> tableFieldPtr,
@@ -217,11 +243,11 @@ public class TableFieldLuaDeclaration(
 {
     public LuaElementPtr<LuaTableFieldSyntax> TableFieldPtr => Ptr.Cast<LuaTableFieldSyntax>();
 
-    public override TableFieldLuaDeclaration WithType(LuaType type) =>
+    public override TableFieldDeclaration WithType(LuaType type) =>
         new(Name, Position, TableFieldPtr, type);
 }
 
-public class EnumFieldLuaDeclaration(
+public class EnumFieldDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaDocTagEnumFieldSyntax> enumFieldDefPtr,
@@ -229,11 +255,11 @@ public class EnumFieldLuaDeclaration(
 {
     public LuaElementPtr<LuaDocTagEnumFieldSyntax> EnumFieldDefPtr => Ptr.Cast<LuaDocTagEnumFieldSyntax>();
 
-    public override EnumFieldLuaDeclaration WithType(LuaType type) =>
+    public override EnumFieldDeclaration WithType(LuaType type) =>
         new(Name, Position, EnumFieldDefPtr, type);
 }
 
-public class GenericParameterLuaDeclaration(
+public class GenericParamDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaDocGenericParamSyntax> genericParamDefPtr,
@@ -244,11 +270,11 @@ public class GenericParameterLuaDeclaration(
 
     public bool Variadic { get; set; } = variadic;
 
-    public override GenericParameterLuaDeclaration WithType(LuaType type) =>
+    public override GenericParamDeclaration WithType(LuaType type) =>
         new(Name, Position, GenericParameterDefPtr, type, Variadic);
 }
 
-public class IndexLuaDeclaration(
+public class IndexDeclaration(
     string name,
     int position,
     LuaElementPtr<LuaIndexExprSyntax> indexExprPtr,
@@ -259,20 +285,9 @@ public class IndexLuaDeclaration(
 
     public LuaElementPtr<LuaExprSyntax> ValueExprPtr => valueExprPtr;
 
-    public override IndexLuaDeclaration WithType(LuaType type) =>
+    public override IndexDeclaration WithType(LuaType type) =>
         new(Name, Position, IndexExprPtr, ValueExprPtr, type);
 }
-
-// public class LabelLuaDeclaration(
-//     string name,
-//     int position,
-//     LuaElementPtr<LuaLabelStatSyntax> labelStatPtr) : LuaDeclaration(name, position, labelStatPtr.UpCast(), null)
-// {
-//     public LuaElementPtr<LuaLabelStatSyntax> LabelStatPtr => Ptr.Cast<LuaLabelStatSyntax>();
-//
-//     public override LabelLuaDeclaration WithType(LuaType type) =>
-//         new LabelLuaDeclaration(Name, Position, LabelStatPtr);
-// }
 
 public class TypeIndexDeclaration(
     LuaType keyType,
@@ -313,7 +328,7 @@ public class TupleMemberDeclaration(int i, LuaType? luaType, LuaElementPtr<LuaDo
 public class VirtualDeclaration(
     string name,
     LuaType? declarationType
-) : LuaDeclaration(name, 0, LuaElementPtr<LuaSyntaxNode>.Empty, declarationType)
+) : LuaDeclaration(name, 0, LuaElementPtr<LuaSyntaxElement>.Empty, declarationType)
 {
     public override VirtualDeclaration WithType(LuaType type) =>
         new(Name, type);

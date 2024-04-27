@@ -24,7 +24,7 @@ public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(c
         var localOrParamDeclarations = new HashSet<LuaDeclaration>();
         foreach (var luaDeclaration in declarations)
         {
-            if (luaDeclaration is LocalLuaDeclaration or ParameterLuaDeclaration)
+            if (luaDeclaration is LocalDeclaration or ParamDeclaration)
             {
                 localOrParamDeclarations.Add(luaDeclaration);
             }

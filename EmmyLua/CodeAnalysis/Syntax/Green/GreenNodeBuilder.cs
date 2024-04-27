@@ -79,7 +79,6 @@ public class GreenNodeBuilder
             nodeChildren.Add(Children[i]);
         }
 
-
         Children.RemoveRange(childStart, childEnd - childStart + 1);
         var green = new GreenNode(parentInfo.Kind, length, nodeChildren.ToImmutableArray());
         if (childEnd + 1 < childCount)

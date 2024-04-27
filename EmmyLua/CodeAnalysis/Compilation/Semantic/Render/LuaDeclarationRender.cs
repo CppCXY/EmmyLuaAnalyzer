@@ -13,17 +13,17 @@ public static class LuaDeclarationRender
     {
         switch (declaration)
         {
-            case LocalLuaDeclaration local:
+            case LocalDeclaration local:
             {
                 RenderLocalDeclaration(local, context, sb);
                 break;
             }
-            case GlobalLuaDeclaration global:
+            case GlobalDeclaration global:
             {
                 RenderGlobalDeclaration(global, context, sb);
                 break;
             }
-            case MethodLuaDeclaration method:
+            case MethodDeclaration method:
             {
                 var luaFunc = method.FuncStatPtr.ToNode(context);
                 var isLocal = luaFunc?.IsLocal ?? false;
@@ -45,7 +45,7 @@ public static class LuaDeclarationRender
                 LuaCommentRender.RenderDeclarationStatComment(declaration, context, sb);
                 break;
             }
-            case ParameterLuaDeclaration parameter:
+            case ParamDeclaration parameter:
             {
                 if (parameter.DeclarationType is { } declarationType)
                 {
@@ -60,7 +60,7 @@ public static class LuaDeclarationRender
                 LuaCommentRender.RenderParamComment(parameter, context, sb);
                 break;
             }
-            case DocFieldLuaDeclaration docField:
+            case DocFieldDeclaration docField:
             {
                 if (docField.FieldDefPtr.ToNode(context) is { } fieldDef)
                 {
@@ -79,7 +79,7 @@ public static class LuaDeclarationRender
 
                 break;
             }
-            case TableFieldLuaDeclaration tableFieldDeclaration:
+            case TableFieldDeclaration tableFieldDeclaration:
             {
                 var constExpr = string.Empty;
                 if (tableFieldDeclaration.TableFieldPtr.ToNode(context) is
@@ -93,7 +93,7 @@ public static class LuaDeclarationRender
                 LuaCommentRender.RenderTableFieldComment(tableFieldDeclaration, context, sb);
                 break;
             }
-            case NamedTypeLuaDeclaration namedTypeLuaDeclaration:
+            case NamedTypeDeclaration namedTypeLuaDeclaration:
             {
                 var declarationType = namedTypeLuaDeclaration.DeclarationType;
                 var typeDescription = "class";
@@ -129,7 +129,7 @@ public static class LuaDeclarationRender
 
                 break;
             }
-            case IndexLuaDeclaration indexLuaDeclaration:
+            case IndexDeclaration indexLuaDeclaration:
             {
                 var literalText = string.Empty;
                 var valueExpr = indexLuaDeclaration.ValueExprPtr.ToNode(context);
@@ -182,7 +182,7 @@ public static class LuaDeclarationRender
         }
     }
 
-    private static void RenderLocalDeclaration(LocalLuaDeclaration local, SearchContext context, StringBuilder sb)
+    private static void RenderLocalDeclaration(LocalDeclaration local, SearchContext context, StringBuilder sb)
     {
         var localName = local.LocalNamePtr.ToNode(context);
 
@@ -210,7 +210,7 @@ public static class LuaDeclarationRender
         }
     }
 
-    private static void RenderGlobalDeclaration(GlobalLuaDeclaration global, SearchContext context, StringBuilder sb)
+    private static void RenderGlobalDeclaration(GlobalDeclaration global, SearchContext context, StringBuilder sb)
     {
         if (global.IsTypeDefine)
         {
@@ -251,7 +251,7 @@ public static class LuaDeclarationRender
         return string.Empty;
     }
 
-    private static void RenderMethodDeclaration(MethodLuaDeclaration method, SearchContext context, StringBuilder sb)
+    private static void RenderMethodDeclaration(MethodDeclaration method, SearchContext context, StringBuilder sb)
     {
         var luaFunc = method.FuncStatPtr.ToNode(context);
         var isLocal = luaFunc?.IsLocal ?? false;

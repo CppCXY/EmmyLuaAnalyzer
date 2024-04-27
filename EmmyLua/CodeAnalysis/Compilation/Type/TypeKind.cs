@@ -16,5 +16,4 @@ public enum TypeKind
     IntegerLiteral,
     TableLiteral,
     Variadic,
-    Expand
 }

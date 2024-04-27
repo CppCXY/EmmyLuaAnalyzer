@@ -126,14 +126,14 @@ public class SettingManager
         }
 
         var setting = Setting;
-        var excludeHash = features.ExcludeFolders.ToHashSet();
-        features.ExcludeFolders.AddRange(setting.Workspace.IgnoreDir.Where(it => !excludeHash.Contains(it)));
+        features.ExcludeFolders.UnionWith(setting.Workspace.IgnoreDir);
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
         features.Language.LanguageLevel = setting.Runtime.Version;
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
+        features.RequireLikeFunction.UnionWith(setting.Runtime.RequireLikeFunction);
         return features;
     }
 

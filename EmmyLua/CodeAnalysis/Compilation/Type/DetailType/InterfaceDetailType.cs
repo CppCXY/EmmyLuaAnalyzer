@@ -8,9 +8,9 @@ public class InterfaceDetailType(
 {
     private List<LuaType>? _supers;
 
-    private List<GenericParameterLuaDeclaration>? _generics;
+    private List<GenericParamDeclaration>? _generics;
 
-    private NamedTypeLuaDeclaration? _declaration;
+    private NamedTypeDeclaration? _declaration;
 
 
     public List<LuaType> Supers
@@ -26,7 +26,7 @@ public class InterfaceDetailType(
         }
     }
 
-    public List<GenericParameterLuaDeclaration> Generics
+    public List<GenericParamDeclaration> Generics
     {
         get
         {
@@ -39,7 +39,7 @@ public class InterfaceDetailType(
         }
     }
 
-    public NamedTypeLuaDeclaration? Declaration
+    public NamedTypeDeclaration? Declaration
     {
         get
         {

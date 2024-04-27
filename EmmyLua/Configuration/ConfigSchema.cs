@@ -34,6 +34,9 @@ public class Completion
     [JsonProperty("autoRequire", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool AutoRequire { get; set; } = true;
 
+    [JsonProperty("autoRequireFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public string AutoRequireFunction { get; set; } = "require";
+
     [JsonProperty("callSnippet", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool CallSnippet { get; set; } = false;
 
@@ -74,6 +77,9 @@ public class Runtime
     [JsonProperty("version", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     [JsonConverter(typeof(StringEnumConverter))]
     public LuaLanguageLevel Version { get; set; } = LuaLanguageLevel.Lua54;
+
+    [JsonProperty("requireLikeFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> RequireLikeFunction { get; set; } = [];
 }
 
 public class Workspace

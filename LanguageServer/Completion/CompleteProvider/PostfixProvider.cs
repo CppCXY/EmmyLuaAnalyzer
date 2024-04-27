@@ -14,7 +14,7 @@ public class PostfixProvider : ICompleteProviderBase
         {
             var leftPos = trigger.Position - 1;
             var paramToken = context.SemanticModel.Document.SyntaxTree.SyntaxRoot.TokenAt(leftPos);
-            if (paramToken?.Parent is LuaSyntaxNode node)
+            if (paramToken?.Parent is { } node)
             {
                 AddPostfixCompletion(context, node);
             }

@@ -72,7 +72,7 @@ public static class TypeInfer
 
     public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var typedParameters = new List<ParameterLuaDeclaration>();
+        var typedParameters = new List<ParamDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name, Nullable: { } nullable })
@@ -83,13 +83,13 @@ public static class TypeInfer
                     type = type.Union(Builtin.Nil);
                 }
 
-                var paramDeclaration = new ParameterLuaDeclaration(
+                var paramDeclaration = new ParamDeclaration(
                     name.RepresentText, typedParam.Position, new(typedParam), type);
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var paramDeclaration = new ParameterLuaDeclaration(
+                var paramDeclaration = new ParamDeclaration(
                     "...", typedParam.Position, new(typedParam), context.Infer(typedParam.Type));
                 typedParameters.Add(paramDeclaration);
             }

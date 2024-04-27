@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using EmmyLua.CodeAnalysis.Syntax.Green;
+﻿using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 

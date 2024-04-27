@@ -12,55 +12,52 @@ public class DbManager(LuaCompilation compilation)
 {
     private LuaCompilation Compilation { get; } = compilation;
 
-    private IndexStorage<string, LuaDeclaration> Members { get; } = new();
+    private IndexStorage<string, LuaDeclaration> MembersStorage { get; } = new();
 
-    private IndexStorage<long, string> ParentTypes { get; } = new();
+    private IndexStorage<long, string> ParentTypesStorage { get; } = new();
 
-    private IndexStorage<string, LuaDeclaration> GlobalDeclaration { get; } = new();
+    private IndexStorage<string, LuaDeclaration> GlobalsStorage { get; } = new();
 
-    private IndexStorage<string, LuaType> Supers { get; } = new();
+    private IndexStorage<string, LuaType> SupersStorage { get; } = new();
 
-    private IndexStorage<string, string> SubTypes { get; } = new();
+    private IndexStorage<string, string> SubTypesStorage { get; } = new();
 
-    private IndexStorage<string, NamedTypeLuaDeclaration> NamedType { get; } = new();
+    private IndexStorage<string, NamedTypeDeclaration> NamedTypeStorage { get; } = new();
 
-    private IndexStorage<long, LuaType> Id2Type { get; } = new();
+    private IndexStorage<long, LuaType> Id2TypeStorage { get; } = new();
 
-    private IndexStorage<string, LuaType> AliasType { get; } = new();
+    private IndexStorage<string, LuaType> AliasTypesStorage { get; } = new();
 
-    private IndexStorage<string, GenericParameterLuaDeclaration> GenericParam { get; } = new();
+    private IndexStorage<string, GenericParamDeclaration> GenericParamStorage { get; } = new();
 
-    private Dictionary<LuaDocumentId, LuaType> ExportTypes { get; } = new();
+    private Dictionary<LuaDocumentId, LuaType> ExportTypesDict { get; } = new();
 
-    private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ExportExprs { get; } = new();
+    private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ExportExprsDict { get; } = new();
 
-    public TypeOperatorStorage TypeOperatorStorage { get; } = new();
+    private TypeOperatorStorage TypeOperatorStorage { get; } = new();
 
-    private IndexStorage<string, NamedTypeKind> NamedTypeKinds { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaNameExprSyntax>> NameExprsStorage { get; } = new();
 
-    private IndexStorage<string, LuaElementPtr<LuaNameExprSyntax>> NameExprs { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaIndexExprSyntax>> IndexExprsStorage { get; } = new();
 
-    private IndexStorage<string, LuaElementPtr<LuaIndexExprSyntax>> IndexExprs { get; } = new();
-
-    private IndexStorage<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameTypes { get; } = new();
+    private IndexStorage<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameTypesStorage { get; } = new();
 
     public void Remove(LuaDocumentId documentId)
     {
-        Members.Remove(documentId);
-        ParentTypes.Remove(documentId);
-        GlobalDeclaration.Remove(documentId);
-        Supers.Remove(documentId);
-        SubTypes.Remove(documentId);
-        NamedType.Remove(documentId);
-        Id2Type.Remove(documentId);
-        GenericParam.Remove(documentId);
-        ExportTypes.Remove(documentId);
+        MembersStorage.Remove(documentId);
+        ParentTypesStorage.Remove(documentId);
+        GlobalsStorage.Remove(documentId);
+        SupersStorage.Remove(documentId);
+        SubTypesStorage.Remove(documentId);
+        NamedTypeStorage.Remove(documentId);
+        Id2TypeStorage.Remove(documentId);
+        GenericParamStorage.Remove(documentId);
+        ExportTypesDict.Remove(documentId);
         TypeOperatorStorage.Remove(documentId);
-        NamedTypeKinds.Remove(documentId);
-        NameExprs.Remove(documentId);
-        IndexExprs.Remove(documentId);
-        NameTypes.Remove(documentId);
-        AliasType.Remove(documentId);
+        NameExprsStorage.Remove(documentId);
+        IndexExprsStorage.Remove(documentId);
+        NameTypesStorage.Remove(documentId);
+        AliasTypesStorage.Remove(documentId);
     }
 
     public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -71,69 +68,67 @@ public class DbManager(LuaCompilation compilation)
             return;
         }
 
-        Members.Add(documentId, name, luaDeclaration);
-        ParentTypes.Add(documentId, luaDeclaration.Ptr.UniqueId, name);
+        MembersStorage.Add(documentId, name, luaDeclaration);
+        ParentTypesStorage.Add(documentId, luaDeclaration.Ptr.UniqueId, name);
     }
 
     public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
-        GlobalDeclaration.Add(documentId, name, luaDeclaration);
+        GlobalsStorage.Add(documentId, name, luaDeclaration);
     }
 
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
     {
-        Supers.Add(documentId, name, type);
+        SupersStorage.Add(documentId, name, type);
         if (type is LuaNamedType namedType)
         {
-            SubTypes.Add(documentId, namedType.Name, name);
+            SubTypesStorage.Add(documentId, namedType.Name, name);
         }
     }
 
-    public void AddType(LuaDocumentId documentId, string name, NamedTypeLuaDeclaration luaDeclaration,
-        NamedTypeKind kind)
+    public void AddType(LuaDocumentId documentId, string name, NamedTypeDeclaration declaration)
     {
-        NamedType.Add(documentId, name, luaDeclaration);
-        NamedTypeKinds.Add(documentId, name, kind);
+        NamedTypeStorage.Add(documentId, name, declaration);
     }
 
     public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType,
-        NamedTypeLuaDeclaration luaDeclaration)
+        NamedTypeDeclaration declaration)
     {
-        AddType(documentId, name, luaDeclaration, NamedTypeKind.Alias);
-        AliasType.Add(documentId, name, baseType);
+        AddType(documentId, name, declaration);
+        AliasTypesStorage.Add(documentId, name, baseType);
     }
 
     public void AddIdRelatedType(LuaDocumentId documentId, long id, LuaType relatedType)
     {
-        Id2Type.Add(documentId, id, relatedType);
+        Id2TypeStorage.Add(documentId, id, relatedType);
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
-        NamedTypeLuaDeclaration luaDeclaration)
+        NamedTypeDeclaration declaration)
     {
-        AddType(documentId, name, luaDeclaration, NamedTypeKind.Enum);
+        AddType(documentId, name, declaration);
         if (baseType != null)
         {
-            Supers.Add(documentId, name, baseType);
+            SupersStorage.Add(documentId, name, baseType);
         }
     }
 
-    public void AddGenericParam(LuaDocumentId documentId, string name, GenericParameterLuaDeclaration luaDeclaration)
+    public void AddGenericParam(LuaDocumentId documentId, string name, GenericParamDeclaration luaDeclaration)
     {
-        GenericParam.Add(documentId, name, luaDeclaration);
+        GenericParamStorage.Add(documentId, name, luaDeclaration);
     }
 
     public void AddModuleExport(LuaDocumentId documentId, LuaType type, List<LuaExprSyntax> exprs)
     {
-        ExportTypes[documentId] = type;
-        ExportExprs[documentId] = exprs.Select(it => it.ToPtr<LuaExprSyntax>()).ToList();
+        ExportTypesDict[documentId] = type;
+        ExportExprsDict[documentId] = exprs.Select(it => it.ToPtr<LuaExprSyntax>()).ToList();
     }
 
     public void AddNameExpr(LuaDocumentId documentId, LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { RepresentText: { } name })
         {
-            NameExprs.Add(documentId, name, new(nameExpr));
+            NameExprsStorage.Add(documentId, name, new(nameExpr));
         }
     }
 
@@ -141,7 +136,7 @@ public class DbManager(LuaCompilation compilation)
     {
         if (indexExpr is { Name: { } name })
         {
-            IndexExprs.Add(documentId, name, new(indexExpr));
+            IndexExprsStorage.Add(documentId, name, new(indexExpr));
         }
     }
 
@@ -149,83 +144,88 @@ public class DbManager(LuaCompilation compilation)
     {
         if (nameType is { Name.RepresentText: { } name })
         {
-            NameTypes.Add(documentId, name, new(nameType));
+            NameTypesStorage.Add(documentId, name, new(nameType));
         }
+    }
+
+    public void AddTypeOperator(LuaDocumentId documentId, TypeOperator typeOperator)
+    {
+        TypeOperatorStorage.AddTypeOperator(documentId, typeOperator);
     }
 
     public IEnumerable<LuaDeclaration> GetMembers(string name)
     {
         if (name == "global")
         {
-            return GlobalDeclaration.GetAll();
+            return GlobalsStorage.GetAll();
         }
 
-        return Members.Get<LuaDeclaration>(name);
+        return MembersStorage.Get<LuaDeclaration>(name);
     }
 
     public IEnumerable<LuaDeclaration> GetAllMembers()
     {
-        return Members.GetAll();
+        return MembersStorage.GetAll();
     }
 
     public IEnumerable<LuaDeclaration> GetGlobal(string name)
     {
-        return GlobalDeclaration.Get<LuaDeclaration>(name);
+        return GlobalsStorage.Get<LuaDeclaration>(name);
     }
 
     public IEnumerable<LuaDeclaration> GetGlobals()
     {
-        return GlobalDeclaration.GetAll();
+        return GlobalsStorage.GetAll();
     }
 
     public IEnumerable<LuaType> GetSupers(string name)
     {
-        return Supers.Get<LuaType>(name);
+        return SupersStorage.Get<LuaType>(name);
     }
 
     public IEnumerable<string> GetSubTypes(string name)
     {
-        return SubTypes.Get<string>(name);
+        return SubTypesStorage.Get<string>(name);
     }
 
-    public IEnumerable<NamedTypeLuaDeclaration> GetNamedType(string name)
+    public IEnumerable<NamedTypeDeclaration> GetNamedType(string name)
     {
-        return NamedType.Get<NamedTypeLuaDeclaration>(name);
+        return NamedTypeStorage.Get<NamedTypeDeclaration>(name);
     }
 
     public IEnumerable<LuaType> GetTypeFromId(long id)
     {
-        return Id2Type.Get<LuaType>(id);
+        return Id2TypeStorage.Get<LuaType>(id);
     }
 
     public IEnumerable<LuaType> GetAliasOriginType(string name)
     {
-        return AliasType.Get<LuaType>(name);
+        return AliasTypesStorage.Get<LuaType>(name);
     }
 
-    public NamedTypeLuaDeclaration? GetTypeLuaDeclaration(string name)
+    public NamedTypeDeclaration? GetTypeLuaDeclaration(string name)
     {
-        return NamedType.GetOne(name);
+        return NamedTypeStorage.GetOne(name);
     }
 
     public LuaType? GetModuleExportType(LuaDocumentId documentId)
     {
-        return ExportTypes.GetValueOrDefault(documentId);
+        return ExportTypesDict.GetValueOrDefault(documentId);
     }
 
     public IEnumerable<LuaElementPtr<LuaExprSyntax>> GetModuleExportExprs(LuaDocumentId documentId)
     {
-        return ExportExprs.GetValueOrDefault(documentId) ?? Enumerable.Empty<LuaElementPtr<LuaExprSyntax>>();
+        return ExportExprsDict.GetValueOrDefault(documentId) ?? Enumerable.Empty<LuaElementPtr<LuaExprSyntax>>();
     }
 
-    public IEnumerable<GenericParameterLuaDeclaration> GetGenericParams(string name)
+    public IEnumerable<GenericParamDeclaration> GetGenericParams(string name)
     {
-        return GenericParam.Get<GenericParameterLuaDeclaration>(name);
+        return GenericParamStorage.Get<GenericParamDeclaration>(name);
     }
 
     public BasicDetailType GetDetailNamedType(string name, SearchContext context)
     {
-        var kind = NamedTypeKinds.GetOne(name);
+        var kind = NamedTypeStorage.GetOne(name)?.Kind;
         switch (kind)
         {
             case NamedTypeKind.Alias:
@@ -251,7 +251,7 @@ public class DbManager(LuaCompilation compilation)
 
     public IEnumerable<LuaNameExprSyntax> GetNameExprs(string name)
     {
-        foreach (var nameExprPtr in NameExprs.Get(name))
+        foreach (var nameExprPtr in NameExprsStorage.Get(name))
         {
             if (nameExprPtr.ToNode(Compilation.Workspace) is { } node)
             {
@@ -263,7 +263,7 @@ public class DbManager(LuaCompilation compilation)
 
     public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name)
     {
-        foreach (var indexExprPtr in IndexExprs.Get(name))
+        foreach (var indexExprPtr in IndexExprsStorage.Get(name))
         {
             if (indexExprPtr.ToNode(Compilation.Workspace) is { } node)
             {
@@ -274,7 +274,7 @@ public class DbManager(LuaCompilation compilation)
 
     public IEnumerable<LuaDocNameTypeSyntax> GetNameTypes(string name)
     {
-        foreach (var nameTypePtr in NameTypes.Get(name))
+        foreach (var nameTypePtr in NameTypesStorage.Get(name))
         {
             if (nameTypePtr.ToNode(Compilation.Workspace) is { } node)
             {
@@ -285,13 +285,13 @@ public class DbManager(LuaCompilation compilation)
 
     public bool IsDefinedType(string name)
     {
-        return NamedTypeKinds.ContainsKey(name);
+        return NamedTypeStorage.ContainsKey(name);
     }
 
     public LuaNamedType? GetParentType(LuaSyntaxNode node)
     {
         var ptr = new LuaElementPtr<LuaSyntaxNode>(node);
-        var parentType = ParentTypes.GetLastOne(ptr.UniqueId);
+        var parentType = ParentTypesStorage.GetLastOne(ptr.UniqueId);
         if (parentType is not null)
         {
             return new LuaNamedType(parentType);
@@ -300,8 +300,13 @@ public class DbManager(LuaCompilation compilation)
         return null;
     }
 
-    public IEnumerable<NamedTypeLuaDeclaration> GetNamedTypes()
+    public IEnumerable<NamedTypeDeclaration> GetNamedTypes()
     {
-        return NamedType.GetAll();
+        return NamedTypeStorage.GetAll();
+    }
+
+    public IEnumerable<TypeOperator> GetTypeOperators(string typeName)
+    {
+        return TypeOperatorStorage.GetTypeOperators(typeName);
     }
 }

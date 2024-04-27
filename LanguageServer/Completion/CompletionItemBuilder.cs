@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -28,6 +29,8 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
 
     private bool Disable { get; set; } = false;
 
+    private bool IsDeprecated { get; set; } = false;
+
     private SearchContext SearchContext => CompleteContext.SemanticModel.Context;
 
     private CompleteContext CompleteContext { get; } = completeContext;
@@ -41,6 +44,16 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
     public CompletionItemBuilder WithData(string data)
     {
         Data = data;
+        return this;
+    }
+
+    public CompletionItemBuilder WithCheckDeprecated(LuaDeclaration declaration)
+    {
+        if (declaration.IsDeprecated)
+        {
+            IsDeprecated = true;
+        }
+
         return this;
     }
 
@@ -110,7 +123,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             {
                 if (!Colon)
                 {
-                    CompleteContext.Add(new CompletionItem()
+                    var completionItem = new CompletionItem()
                     {
                         Label = Label,
                         Kind = Kind,
@@ -122,7 +135,16 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         Data = Data,
                         Command = Command,
                         TextEdit = TextOrReplaceEdit
-                    });
+                    };
+                    if (IsDeprecated)
+                    {
+                        completionItem = completionItem with
+                        {
+                            Tags = new Container<CompletionItemTag>(CompletionItemTag.Deprecated)
+                        };
+                    }
+
+                    CompleteContext.Add(completionItem);
                 }
 
                 break;
@@ -233,6 +255,14 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             {
                 InsertText = RenderInsertTextFuncParams(label, signature, colonDefine),
                 InsertTextFormat = InsertTextFormat.Snippet,
+            };
+        }
+
+        if (IsDeprecated)
+        {
+            completionItem = completionItem with
+            {
+                Tags = new Container<CompletionItemTag>(CompletionItemTag.Deprecated)
             };
         }
 

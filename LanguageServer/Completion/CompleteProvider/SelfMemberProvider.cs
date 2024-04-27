@@ -24,12 +24,14 @@ public class SelfMemberProvider : ICompleteProviderBase
                 {
                     context.CreateCompletion($"self:{member.Name}", member.DeclarationType)
                         .WithData(member.Ptr.Stringify)
+                        .WithCheckDeprecated(member)
                         .AddToContext();
                 }
                 else
                 {
                     context.CreateCompletion($"self.{member.Name}", member.DeclarationType)
                         .WithData(member.Ptr.Stringify)
+                        .WithCheckDeprecated(member)
                         .AddToContext();
                 }
             }

@@ -64,11 +64,11 @@ public struct SignatureMatchResult
     }
 }
 
-public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> parameters) : IEquatable<LuaSignature>
+public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters) : IEquatable<LuaSignature>
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<ParameterLuaDeclaration> Parameters { get; } = parameters;
+    public List<ParamDeclaration> Parameters { get; } = parameters;
 
     // 返回值表示匹配程度, 匹配程度只是表征对lua来讲有多少个参数匹配了, 但是并不表示类型完全匹配
     // lua没有重载决议, 所以只要参数数量接近就可以了
@@ -230,7 +230,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
             return this;
         }
 
-        var newParameters = new List<ParameterLuaDeclaration>();
+        var newParameters = new List<ParamDeclaration>();
         if (skipParam > 0)
         {
             newParameters.AddRange(Parameters.Take(skipParam));
@@ -263,7 +263,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
         var newReturnType = ReturnType.Instantiate(genericParameterMap);
         foreach (var parameter in Parameters)
         {
-            if (parameter.Instantiate(genericParameterMap) is ParameterLuaDeclaration declaration)
+            if (parameter.Instantiate(genericParameterMap) is ParamDeclaration declaration)
             {
                 newParameters.Add(declaration);
             }
@@ -302,7 +302,7 @@ public class LuaSignature(LuaType returnType, List<ParameterLuaDeclaration> para
         var newReturnType = ReturnType.Instantiate(genericReplace);
         var newParameters = Parameters
             .Select(parameter => parameter.Instantiate(genericReplace))
-            .Cast<ParameterLuaDeclaration>()
+            .Cast<ParamDeclaration>()
             .ToList();
         return new LuaSignature(newReturnType, newParameters);
     }
@@ -317,7 +317,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<ParameterLuaDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<ParamDeclaration> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }
@@ -387,12 +387,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<GenericParameterLuaDeclaration> GenericParameterDeclarations { get; }
+    public List<GenericParamDeclaration> GenericParameterDeclarations { get; }
 
     public HashSet<string> GenericParameterNames { get; }
 
     public LuaGenericMethodType(
-        List<GenericParameterLuaDeclaration> genericParameterDeclarations,
+        List<GenericParamDeclaration> genericParameterDeclarations,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)

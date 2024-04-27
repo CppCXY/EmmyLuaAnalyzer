@@ -17,7 +17,7 @@ public class LuaFeatures
         "*.lua", "*.lua.txt"
     ];
 
-    public List<string> ExcludeFolders { get; set; } =
+    public HashSet<string> ExcludeFolders { get; set; } =
     [
         ".git",
         ".svn",

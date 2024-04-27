@@ -87,9 +87,9 @@ public class TypeHierarchyBuilder
         return items;
     }
 
-    private static SymbolKind ToSymbolKind(NamedTypeLuaDeclaration namedTypeLuaDeclaration)
+    private static SymbolKind ToSymbolKind(NamedTypeDeclaration namedTypeDeclaration)
     {
-        return namedTypeLuaDeclaration.Kind switch
+        return namedTypeDeclaration.Kind switch
         {
             NamedTypeKind.Class => SymbolKind.Class,
             NamedTypeKind.Interface => SymbolKind.Interface,

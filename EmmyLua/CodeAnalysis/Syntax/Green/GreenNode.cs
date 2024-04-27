@@ -6,51 +6,45 @@ namespace EmmyLua.CodeAnalysis.Syntax.Green;
 /// <summary>
 /// 红绿树中的绿树节点
 /// </summary>
-public class GreenNode
+public readonly struct GreenNode
 {
+    [Flags]
     private enum NodeFlags
     {
-        Node,
-        Token
+        Node = 0x1,
+        Token = 0x2
     }
 
     public int Length { get; }
 
-    private readonly ushort _kind;
+    private readonly int _kind;
 
-    private ImmutableArray<GreenNode>? _children;
+    private readonly ImmutableArray<GreenNode>? _children;
+
+    private NodeFlags Flag => (NodeFlags)(_kind >> 16);
+
+    public ushort RawKind => (ushort)_kind;
 
     public IEnumerable<GreenNode> Children => IsNode ? _children! : Enumerable.Empty<GreenNode>();
 
-    private readonly NodeFlags _flag;
+    public LuaSyntaxKind SyntaxKind => Flag == NodeFlags.Node ? (LuaSyntaxKind)RawKind : LuaSyntaxKind.None;
 
-    public LuaSyntaxKind SyntaxKind => _flag is NodeFlags.Node ? (LuaSyntaxKind)_kind : LuaSyntaxKind.None;
+    public LuaTokenKind TokenKind => Flag == NodeFlags.Token ? (LuaTokenKind)RawKind : LuaTokenKind.None;
 
-    public LuaTokenKind TokenKind => _flag is NodeFlags.Token ? (LuaTokenKind)_kind : LuaTokenKind.None;
+    public bool IsNode => Flag == NodeFlags.Node;
 
-    public bool IsNode => _flag is NodeFlags.Node;
-
-    public bool IsToken => _flag is NodeFlags.Token;
-
-    public int RawKind => _kind;
+    public bool IsToken => Flag == NodeFlags.Token;
 
     public GreenNode(LuaSyntaxKind kind, int length, ImmutableArray<GreenNode>? children)
     {
-        _flag = NodeFlags.Node;
-        _kind = (ushort)kind;
         Length = length;
+        _kind = (ushort)kind | (int)NodeFlags.Node << 16;
         _children = children;
     }
 
-    public GreenNode(LuaTokenKind kind,  int length)
+    public GreenNode(LuaTokenKind kind, int length)
     {
-        _flag = NodeFlags.Token;
-        _kind = (ushort)kind;
+        _kind = (ushort)kind | (int)NodeFlags.Token << 16;
         Length = length;
-    }
-
-    public GreenNode With(int length)
-    {
-        return _flag is NodeFlags.Node ? new GreenNode(SyntaxKind, length, _children) : new GreenNode(TokenKind, length);
     }
 }
