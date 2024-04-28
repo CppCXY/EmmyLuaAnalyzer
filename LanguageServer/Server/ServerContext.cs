@@ -18,7 +18,7 @@ public class ServerContext(ILanguageServerFacade server)
     
     private ReaderWriterLockSlim LockSlim { get; } = new();
 
-    public LuaWorkspace LuaWorkspace { get; private set; } = LuaWorkspace.Create();
+    public LuaWorkspace LuaWorkspace { get; private set; } = LuaWorkspace.CleanCreate();
 
     public SettingManager SettingManager { get; } = new();
 
@@ -38,6 +38,7 @@ public class ServerContext(ILanguageServerFacade server)
             SettingManager.Watch(workspacePath);
             SettingManager.OnSettingChanged += OnConfigChanged;
             LuaWorkspace.Features = SettingManager.GetLuaFeatures();
+            LuaWorkspace.InitStdLib();
             LuaWorkspace.LoadMainWorkspace(workspacePath);
             ResourceManager.Config = SettingManager.GetResourceConfig();
             PushWorkspaceDiagnostics();
@@ -105,7 +106,7 @@ public class ServerContext(ILanguageServerFacade server)
         workspaceNeedReload |= !newFeatures.ThirdPartyRoots.SequenceEqual(oldFeatures.ThirdPartyRoots);
         if (workspaceNeedReload)
         {
-            LuaWorkspace = LuaWorkspace.Create();
+            LuaWorkspace = LuaWorkspace.CleanCreate();
             LuaWorkspace.Monitor = Monitor;
             LuaWorkspace.Features = newFeatures;
             LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
