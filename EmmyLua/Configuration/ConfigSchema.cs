@@ -1,5 +1,6 @@
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -33,6 +34,11 @@ public class Completion
 {
     [JsonProperty("autoRequire", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool AutoRequire { get; set; } = true;
+
+    [JsonProperty("autoRequireNamingConvention", Required = Required.Default,
+        NullValueHandling = NullValueHandling.Ignore)]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public FilenameConvention AutoRequireFilenameConvention { get; set; } = FilenameConvention.SnakeCase;
 
     [JsonProperty("callSnippet", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool CallSnippet { get; set; } = false;
@@ -98,3 +104,4 @@ public class Resource
     [JsonProperty("paths", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> Paths { get; set; } = [];
 }
+

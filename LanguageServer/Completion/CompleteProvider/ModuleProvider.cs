@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 using LanguageServer.ExecuteCommand.Commands;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -36,9 +37,10 @@ public class ModuleProvider : ICompleteProviderBase
             {
                 var documentId = module.DocumentId;
                 var retTy = semanticModel.GetExportType(documentId);
+                var insetText = FilenameConverter.ConvertToIdentifier(module.Name, context.CompletionConfig.AutoRequireFilenameConvention);
                 context.Add(new CompletionItem
                 {
-                    Label = module.Name,
+                    Label = insetText,
                     Kind = CompletionItemKind.Module,
                     LabelDetails = new CompletionItemLabelDetails()
                     {

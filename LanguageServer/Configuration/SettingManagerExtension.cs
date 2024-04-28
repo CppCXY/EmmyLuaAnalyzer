@@ -18,6 +18,7 @@ public static class SettingManagerExtension
 
         config.AutoRequire = setting.Completion.AutoRequire;
         config.CallSnippet = setting.Completion.CallSnippet;
+        config.AutoRequireFilenameConvention = setting.Completion.AutoRequireFilenameConvention;
 
         return config;
     }
