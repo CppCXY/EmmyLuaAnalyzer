@@ -24,7 +24,7 @@ public class HoverHandler(
     public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?> Handle(HoverParams request,
         CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover? hover = null;
         context.ReadyRead(() =>
         {

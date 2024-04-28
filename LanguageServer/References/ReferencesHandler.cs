@@ -20,7 +20,7 @@ public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
 
     public override Task<LocationContainer?> Handle(ReferenceParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         LocationContainer? locationContainer = null;
         context.ReadyRead(() =>
         {

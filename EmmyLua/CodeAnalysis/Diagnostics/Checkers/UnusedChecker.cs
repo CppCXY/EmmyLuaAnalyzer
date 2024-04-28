@@ -3,9 +3,9 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
+namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
-public class UnusedHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation, [DiagnosticCode.Unused])
+public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(compilation, [DiagnosticCode.Unused])
 {
     public override void Check(DiagnosticContext context)
     {

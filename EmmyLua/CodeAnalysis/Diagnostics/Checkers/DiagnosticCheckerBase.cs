@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 
-namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
+namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
-public abstract class DiagnosticHandlerBase(LuaCompilation compilation, List<DiagnosticCode> codes)
+public abstract class DiagnosticCheckerBase(LuaCompilation compilation, List<DiagnosticCode> codes)
 {
     public LuaCompilation Compilation { get; } = compilation;
 
