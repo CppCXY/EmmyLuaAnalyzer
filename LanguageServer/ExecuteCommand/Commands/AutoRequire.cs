@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using EmmyLua.CodeAnalysis.Workspace;
 using MediatR;
 using Newtonsoft.Json.Linq;
@@ -40,13 +41,13 @@ public class AutoRequire : ICommandBase
                 {
                     break;
                 }
-            
+
                 if (IsRequireStat(stat, executor.Context.LuaWorkspace.Features))
                 {
                     lastRequireStat = stat;
                 }
             }
-            
+
             if (lastRequireStat != null)
             {
                 var line = currentDocument.GetLine(lastRequireStat.Range.EndOffset) + 1;
@@ -55,10 +56,13 @@ public class AutoRequire : ICommandBase
 
             var module = executor.Context.LuaWorkspace.ModuleGraph.GetModuleInfo(needRequireId);
             if (module is null) return;
+            var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireFilenameConvention
+                    ?? FilenameConvention.SnakeCase;
+            var id = FilenameConverter.ConvertToIdentifier(module.Name, convention);
             var requireFunction = executor.Context.SettingManager
                 .Setting?.Completion.AutoRequireFunction
                 ?? "require";
-            requiredText = $"local {module.Name} = {requireFunction}(\"{module.ModulePath}\")\n";
+            requiredText = $"local {id} = {requireFunction}(\"{module.ModulePath}\")\n";
             uri = currentDocument.Uri;
         });
 

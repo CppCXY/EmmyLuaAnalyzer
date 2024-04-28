@@ -22,7 +22,7 @@ public class InlineValuesHandler(ServerContext context): InlineValuesHandlerBase
 
     public override Task<Container<InlineValueBase>?> Handle(InlineValueParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         Container<InlineValueBase>? container = null;
         context.ReadyRead(() =>
         {

@@ -25,12 +25,13 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
         CancellationToken cancellationToken)
     {
         Container<TypeHierarchyItem>? result = null;
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         context.ReadyRead(() =>
         {
-            var semanticModel = context.GetSemanticModel(request.TextDocument.Uri.ToUnencodedString());
+            var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var node = semanticModel.Document.SyntaxTree.SyntaxRoot.NodeAt(request.Position.Line,
+                var node = semanticModel.Document.SyntaxTree.SyntaxRoot.NameNodeAt(request.Position.Line,
                     request.Position.Character);
                 if (node is not null)
                 {

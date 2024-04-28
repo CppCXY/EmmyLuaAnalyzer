@@ -22,7 +22,7 @@ public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBas
 
     public override Task<DocumentLinkContainer?> Handle(DocumentLinkParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         DocumentLinkContainer? container = null;
         context.ReadyRead(() =>
         {

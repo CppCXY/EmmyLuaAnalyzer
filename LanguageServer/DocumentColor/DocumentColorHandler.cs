@@ -22,7 +22,7 @@ public class DocumentColorHandler(ServerContext context) : DocumentColorHandlerB
 
     public override Task<Container<ColorInformation>?> Handle(DocumentColorParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         Container<ColorInformation>? container = null;
         context.ReadyRead(() =>
         {

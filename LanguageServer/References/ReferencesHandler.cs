@@ -20,7 +20,7 @@ public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
 
     public override Task<LocationContainer?> Handle(ReferenceParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         LocationContainer? locationContainer = null;
         context.ReadyRead(() =>
         {
@@ -29,7 +29,7 @@ public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
             {
                 var document = semanticModel.Document;
                 var pos = request.Position;
-                var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
                 if (node is not null)
                 {
                     var references = semanticModel.FindReferences(node);

@@ -1,16 +1,16 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
-using EmmyLua.CodeAnalysis.Diagnostics.Handlers;
+using EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public class LuaDiagnostics(LuaCompilation compilation)
 {
-    private List<DiagnosticHandlerBase> Handlers { get; } = new()
+    private List<DiagnosticCheckerBase> Handlers { get; } = new()
     {
-        new UnusedHandler(compilation),
-        new UndefinedGlobalHandler(compilation),
-        new TypeCheckHandler(compilation)
+        new UnusedChecker(compilation),
+        new UndefinedGlobalChecker(compilation),
+        new TypeChecker(compilation)
     };
 
     public LuaCompilation Compilation { get; } = compilation;
@@ -44,9 +44,9 @@ public class LuaDiagnostics(LuaCompilation compilation)
         }
     }
 
-    public bool CanCheck(LuaDocumentId documentId, DiagnosticHandlerBase handlerBase)
+    public bool CanCheck(LuaDocumentId documentId, DiagnosticCheckerBase checkerBase)
     {
-        var codes = handlerBase.Codes;
+        var codes = checkerBase.Codes;
         return codes.Count != 0 && codes.Any(code => CanCheckCode(documentId, code));
     }
 

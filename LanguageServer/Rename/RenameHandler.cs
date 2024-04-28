@@ -23,7 +23,7 @@ public class RenameHandler(ServerContext context) : RenameHandlerBase
 
     public override Task<WorkspaceEdit?> Handle(RenameParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         WorkspaceEdit? workspaceEdit = null;
         context.ReadyRead(() =>
         {

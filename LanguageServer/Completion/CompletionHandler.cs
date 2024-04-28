@@ -31,7 +31,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
 
     public override Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         CompletionList container = new();
         context.ReadyRead(() =>
         {

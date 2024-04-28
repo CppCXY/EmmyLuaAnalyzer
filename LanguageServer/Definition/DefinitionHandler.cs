@@ -21,7 +21,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
 
     public override Task<LocationOrLocationLinks?> Handle(DefinitionParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         LocationOrLocationLinks? locationLinks = null;
         context.ReadyRead(() =>
         {
@@ -46,7 +46,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                     }
                 }
 
-                var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
                 var declarationTree = semanticModel.DeclarationTree;
                 if (node is not null)
                 {

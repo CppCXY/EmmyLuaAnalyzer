@@ -24,7 +24,7 @@ public class DocumentSymbolHandler(ServerContext context) : DocumentSymbolHandle
     public override Task<SymbolInformationOrDocumentSymbolContainer?> Handle(DocumentSymbolParams request,
         CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         SymbolInformationOrDocumentSymbolContainer? container = null;
         context.ReadyRead(() =>
         {

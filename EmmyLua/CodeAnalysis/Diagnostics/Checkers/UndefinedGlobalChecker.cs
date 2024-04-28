@@ -2,10 +2,10 @@
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
+namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
-public class UndefinedGlobalHandler(LuaCompilation compilation)
-    : DiagnosticHandlerBase(compilation,
+public class UndefinedGlobalChecker(LuaCompilation compilation)
+    : DiagnosticCheckerBase(compilation,
         [DiagnosticCode.UndefinedGlobal, DiagnosticCode.NeedImport])
 {
     public override void Check(DiagnosticContext context)

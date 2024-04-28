@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 
-namespace EmmyLua.CodeAnalysis.Diagnostics.Handlers;
+namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
-public class TypeCheckHandler(LuaCompilation compilation) : DiagnosticHandlerBase(compilation, [])
+public class TypeChecker(LuaCompilation compilation) : DiagnosticCheckerBase(compilation, [])
 {
     public override void Check(DiagnosticContext context)
     {

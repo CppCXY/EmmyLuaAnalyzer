@@ -35,7 +35,7 @@ public class TextDocumentHandler(
 
     public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         context.ReadyWrite(() =>
         {
             context.LuaWorkspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
@@ -52,11 +52,14 @@ public class TextDocumentHandler(
     public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
     {
         var changes = request.ContentChanges.ToList();
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         context.ReadyWrite(() =>
         {
             context.LuaWorkspace.UpdateDocumentByUri(uri, changes[0].Text);
-            PushDiagnostic(request.TextDocument, context.LuaWorkspace.Compilation.GetSemanticModel(uri)!);
+            if (context.LuaWorkspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
+            {
+                PushDiagnostic(request.TextDocument, semanticModel);
+            }
         });
 
         return Unit.Task;
@@ -69,9 +72,10 @@ public class TextDocumentHandler(
 
     public override Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
     {
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         context.ReadyWrite(() =>
         {
-            context.LuaWorkspace.CloseDocument(request.TextDocument.Uri.ToUnencodedString());
+            context.LuaWorkspace.CloseDocument(uri);
         });
         
         return Unit.Task;

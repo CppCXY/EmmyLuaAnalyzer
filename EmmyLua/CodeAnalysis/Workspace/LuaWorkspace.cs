@@ -58,6 +58,15 @@ public class LuaWorkspace
         return workspace;
     }
 
+    public static LuaWorkspace CleanCreate()
+    {
+        var features = new LuaFeatures()
+        {
+            InitStdLib = false
+        };
+        return new LuaWorkspace(features);
+    }
+
     public LuaWorkspace(LuaFeatures features)
     {
         Features = features;
@@ -70,10 +79,9 @@ public class LuaWorkspace
         }
     }
 
-    private void InitStdLib()
+    public void InitStdLib()
     {
         var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
-
         LoadWorkspace(stdLib);
     }
 

@@ -11,7 +11,7 @@ class ColorPresentationHandler(ServerContext context) : ColorPresentationHandler
     
     public override Task<Container<ColorPresentation>> Handle(ColorPresentationParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         Container<ColorPresentation> container = new Container<ColorPresentation>();
         context.ReadyRead(() =>
         {

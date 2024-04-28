@@ -26,7 +26,7 @@ public class CodeActionHandler(ServerContext context) : CodeActionHandlerBase
         CancellationToken cancellationToken)
     {
         var result = new List<CommandOrCodeAction>();
-        var uri = request.TextDocument.Uri.ToUnencodedString();
+        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
         var diagnostics = request.Context.Diagnostics;
         context.ReadyRead(() =>
         {

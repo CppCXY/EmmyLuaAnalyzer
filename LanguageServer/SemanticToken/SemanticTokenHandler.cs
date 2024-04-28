@@ -26,9 +26,9 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
     protected override Task Tokenize(SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier,
         CancellationToken cancellationToken)
     {
+        var uri = identifier.TextDocument.Uri.ToUri().AbsoluteUri;
         context.ReadyRead(() =>
         {
-            var uri = identifier.TextDocument.Uri.ToUnencodedString();
             var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
             if (semanticModel is not null)
             {

@@ -50,7 +50,8 @@ public class LuaSyntaxTree
         Diagnostics = diagnostics;
     }
 
-    public LuaSyntaxElement CreateElement(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    public LuaSyntaxElement CreateElement(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         var element = SyntaxFactory.CreateSyntax(greenNode, tree, parent, startOffset);
         element.ElementId = Elements.Count;
@@ -60,10 +61,11 @@ public class LuaSyntaxTree
 
     public LuaSyntaxElement? GetElement(int elementId)
     {
-        if (elementId == -1)
+        if (elementId == -1 || elementId >= Elements.Count)
         {
             return null;
         }
+
         return Elements[elementId];
     }
 
