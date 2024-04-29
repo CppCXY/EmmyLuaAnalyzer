@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -18,7 +19,7 @@ public class VisibilityChecker(LuaCompilation compilation)
         }
 
         var declarationTree = semanticModel.DeclarationTree;
-        var document = semanticModel.Document;
+        var searchContext = semanticModel.Context;
         var indexExprs = context.Document.SyntaxTree
             .SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>();
         foreach (var indexExpr in indexExprs)
@@ -37,7 +38,8 @@ public class VisibilityChecker(LuaCompilation compilation)
                 continue;
             }
 
-            if (declaration is { IsPublic: true } && indexExpr is { KeyElement: { } keyElement })
+            if (declaration?.Visibility is DeclarationVisibility.Private or DeclarationVisibility.Protected &&
+                indexExpr is { KeyElement: { } keyElement, Parent: not LuaStatSyntax })
             {
                 context.Report(new Diagnostic(
                     DiagnosticSeverity.Error,
