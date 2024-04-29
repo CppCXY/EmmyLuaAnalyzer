@@ -26,7 +26,7 @@ public class VisibilityChecker(LuaCompilation compilation)
         {
             var declaration = declarationTree.FindDeclaration(indexExpr, semanticModel.Context);
             var prefixExpr = indexExpr.PrefixExpr;
-            if (prefixExpr is LuaNameExprSyntax { Name.RepresentText: "self" } && declaration is { IsPublic: false })
+            if (prefixExpr is LuaNameExprSyntax { Name.RepresentText: "self" } && declaration is { IsPrivate: true })
             {
                 // TODO check super's protected and private
                 continue;
