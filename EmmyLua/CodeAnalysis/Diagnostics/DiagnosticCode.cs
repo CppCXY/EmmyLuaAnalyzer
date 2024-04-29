@@ -27,6 +27,10 @@ public enum DiagnosticCode
     UndefinedGlobal,
     [EnumMember(Value = "need-import")]
     NeedImport,
+    [EnumMember(Value = "deprecated")]
+    Deprecated,
+    [EnumMember(Value = "access-private-member")]
+    AccessPrivateMember
 }
 // @formatter:on
 public static class DiagnosticCodeHelper

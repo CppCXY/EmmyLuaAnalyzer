@@ -1020,12 +1020,12 @@ public class DeclarationBuilder : ILuaElementWalker
                     new(field),
                     type)
                 {
-                    Feature = visibility switch
+                    Visibility = visibility switch
                     {
-                        VisibilityKind.Public => DeclarationFeature.Public,
-                        VisibilityKind.Protected => DeclarationFeature.Protected,
-                        VisibilityKind.Private => DeclarationFeature.Private,
-                        _ => DeclarationFeature.None
+                        VisibilityKind.Public => DeclarationVisibility.Public,
+                        VisibilityKind.Protected => DeclarationVisibility.Protected,
+                        VisibilityKind.Private => DeclarationVisibility.Private,
+                        _ => DeclarationVisibility.Public
                     }
                 };
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
@@ -1040,12 +1040,12 @@ public class DeclarationBuilder : ILuaElementWalker
                     new(field),
                     type)
                 {
-                    Feature = visibility switch
+                    Visibility = visibility switch
                     {
-                        VisibilityKind.Public => DeclarationFeature.Public,
-                        VisibilityKind.Protected => DeclarationFeature.Protected,
-                        VisibilityKind.Private => DeclarationFeature.Private,
-                        _ => DeclarationFeature.None
+                        VisibilityKind.Public => DeclarationVisibility.Public,
+                        VisibilityKind.Protected => DeclarationVisibility.Protected,
+                        VisibilityKind.Private => DeclarationVisibility.Private,
+                        _ => DeclarationVisibility.Public
                     }
                 };
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
@@ -1060,12 +1060,12 @@ public class DeclarationBuilder : ILuaElementWalker
                     new(field),
                     type)
                 {
-                    Feature = visibility switch
+                    Visibility = visibility switch
                     {
-                        VisibilityKind.Public => DeclarationFeature.Public,
-                        VisibilityKind.Protected => DeclarationFeature.Protected,
-                        VisibilityKind.Private => DeclarationFeature.Private,
-                        _ => DeclarationFeature.None
+                        VisibilityKind.Public => DeclarationVisibility.Public,
+                        VisibilityKind.Protected => DeclarationVisibility.Protected,
+                        VisibilityKind.Private => DeclarationVisibility.Private,
+                        _ => DeclarationVisibility.Public
                     }
                 };
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
@@ -1253,12 +1253,12 @@ public class DeclarationBuilder : ILuaElementWalker
                     }
                     case LuaDocTagVisibilitySyntax visibilitySyntax:
                     {
-                        declaration.Feature |= visibilitySyntax.Visibility switch
+                        declaration.Visibility = visibilitySyntax.Visibility switch
                         {
-                            VisibilityKind.Public => DeclarationFeature.Public,
-                            VisibilityKind.Protected => DeclarationFeature.Protected,
-                            VisibilityKind.Private => DeclarationFeature.Private,
-                            _ => DeclarationFeature.None
+                            VisibilityKind.Public => DeclarationVisibility.Public,
+                            VisibilityKind.Protected => DeclarationVisibility.Protected,
+                            VisibilityKind.Private => DeclarationVisibility.Private,
+                            _ => DeclarationVisibility.Public
                         };
                         break;
                     }

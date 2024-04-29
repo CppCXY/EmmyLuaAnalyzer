@@ -80,10 +80,14 @@ public enum DeclarationScopeFeature
 public enum DeclarationFeature
 {
     None = 0,
-    Deprecated = 0x01,
-    Public = 0x02,
-    Protected = 0x04,
-    Private = 0x08,
+    Deprecated = 0x01
+}
+
+public enum DeclarationVisibility
+{
+    Public,
+    Protected,
+    Private,
 }
 
 public class LuaDeclaration(
@@ -92,7 +96,8 @@ public class LuaDeclaration(
     LuaElementPtr<LuaSyntaxElement> ptr,
     LuaType? declarationType,
     DeclarationScopeFeature scopeFeature = DeclarationScopeFeature.None,
-    DeclarationFeature feature = DeclarationFeature.None
+    DeclarationFeature feature = DeclarationFeature.None,
+    DeclarationVisibility visibility = DeclarationVisibility.Public
 )
     : DeclarationNode(position)
 {
@@ -108,11 +113,13 @@ public class LuaDeclaration(
 
     public bool IsDeprecated => Feature.HasFlag(DeclarationFeature.Deprecated);
 
-    public bool IsPublic => Feature.HasFlag(DeclarationFeature.Public);
+    public DeclarationVisibility Visibility { get; internal set; } = visibility;
 
-    public bool IsProtected => Feature.HasFlag(DeclarationFeature.Protected);
+    public bool IsPublic => Visibility == DeclarationVisibility.Public;
 
-    public bool IsPrivate => Feature.HasFlag(DeclarationFeature.Private);
+    public bool IsProtected => Visibility == DeclarationVisibility.Protected;
+
+    public bool IsPrivate => Visibility == DeclarationVisibility.Private;
 
     public virtual LuaDeclaration WithType(LuaType type) =>
         new(Name, Position, Ptr, type, ScopeFeature, Feature);

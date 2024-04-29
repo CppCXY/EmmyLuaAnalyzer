@@ -51,6 +51,30 @@ public class LuaFuncStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
     public LuaIndexExprSyntax? IndexExpr => FirstChild<LuaIndexExprSyntax>();
 
     public LuaClosureExprSyntax? ClosureExpr => FirstChild<LuaClosureExprSyntax>();
+
+    public LuaSyntaxElement? NameElement
+    {
+        get
+        {
+            foreach (var element in ChildrenElements)
+            {
+                if (element is LuaLocalNameSyntax { Name: { } name1 })
+                {
+                    return name1;
+                }
+                else if (element is LuaNameExprSyntax { Name: { } name2 })
+                {
+                    return name2;
+                }
+                else if (element is LuaIndexExprSyntax { KeyElement: { } keyElement })
+                {
+                    return keyElement;
+                }
+            }
+
+            return null;
+        }
+    }
 }
 
 public class LuaLabelStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

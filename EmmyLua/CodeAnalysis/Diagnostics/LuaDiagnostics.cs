@@ -6,11 +6,13 @@ namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public class LuaDiagnostics(LuaCompilation compilation)
 {
-    private List<DiagnosticCheckerBase> Handlers { get; } = new()
+    private List<DiagnosticCheckerBase> Checkers { get; } = new()
     {
         new UnusedChecker(compilation),
         new UndefinedGlobalChecker(compilation),
-        new TypeChecker(compilation)
+        new TypeChecker(compilation),
+        new DeprecatedChecker(compilation),
+        new VisibilityChecker(compilation),
     };
 
     public LuaCompilation Compilation { get; } = compilation;
@@ -35,11 +37,11 @@ public class LuaDiagnostics(LuaCompilation compilation)
         }
 
         var context = new DiagnosticContext(document, this);
-        foreach (var handler in Handlers)
+        foreach (var checker in Checkers)
         {
-            if (CanCheck(document.Id, handler))
+            if (CanCheck(document.Id, checker))
             {
-                handler.Check(context);
+                checker.Check(context);
             }
         }
     }
@@ -183,6 +185,6 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public List<string> GetDiagnosticNames()
     {
-        return Handlers.SelectMany(handler => handler.Codes.Select(DiagnosticCodeHelper.GetName)).ToList();
+        return Checkers.SelectMany(handler => handler.Codes.Select(DiagnosticCodeHelper.GetName)).ToList();
     }
 }
