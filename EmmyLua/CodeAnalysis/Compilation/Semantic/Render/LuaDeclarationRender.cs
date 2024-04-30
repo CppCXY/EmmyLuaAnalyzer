@@ -43,6 +43,14 @@ public static class LuaDeclarationRender
                 }
 
                 LuaCommentRender.RenderDeclarationStatComment(declaration, context, sb);
+                // Render function parameters after the function comment
+                if (method.DeclarationType is LuaMethodType methodType)
+                {
+                    foreach (var parameter in methodType.MainSignature.Parameters)
+                    {
+                        LuaCommentRender.RenderParamComment(parameter, context, sb);
+                    }
+                }
                 break;
             }
             case ParamDeclaration parameter:

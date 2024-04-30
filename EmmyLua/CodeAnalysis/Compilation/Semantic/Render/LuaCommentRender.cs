@@ -60,7 +60,7 @@ public static class LuaCommentRender
             if (tagParam.Name?.RepresentText == paramDeclaration.Name && tagParam.Description != null)
             {
                 RenderSeparator(sb);
-                sb.Append(tagParam.Description.CommentText);
+                sb.Append($"@param `{tagParam.Name.Text}` {tagParam.Description.CommentText}");
             }
         }
     }
