@@ -20,7 +20,7 @@ public class LuaRenderBuilder(SearchContext context)
                 or LuaParamDefSyntax or LuaLocalNameSyntax
                 or LuaCallExprSyntax or LuaTableFieldSyntax
                 or LuaDocNameTypeSyntax or LuaDocGenericTypeSyntax
-                or LuaDocTagNamedTypeSyntax:
+                or LuaDocTagNamedTypeSyntax or LuaDocFieldSyntax:
             {
                 RenderElement(element, renderContext);
                 break;

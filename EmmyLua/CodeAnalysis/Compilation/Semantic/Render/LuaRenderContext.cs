@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
@@ -13,6 +14,10 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
     private StringBuilder _sb = new StringBuilder();
 
     private HashSet<LuaNamedType> _typeLinks = [];
+
+    private HashSet<LuaNamedType> _aliasExpand = [];
+
+    private bool _allowExpandAlias = false;
 
     public void Append(string text)
     {
@@ -53,7 +58,23 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         _sb.Append("\n```\n");
     }
 
+    public void EnableAliasRender()
+    {
+        _allowExpandAlias = true;
+    }
+
     public string GetText()
+    {
+        if (_allowExpandAlias)
+        {
+            RenderAliasExpand();
+        }
+
+        RenderLink();
+        return _sb.ToString();
+    }
+
+    private void RenderLink()
     {
         if (Feature.ShowTypeLink && _typeLinks.Count != 0)
         {
@@ -73,12 +94,27 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
                     {
                         Append('|');
                     }
+
                     Append($"[{type.Name}]({node.Location.ToUriLocation(1)})");
                 }
             }
         }
+    }
 
-        return _sb.ToString();
+    private void RenderAliasExpand()
+    {
+        if (_aliasExpand.Count != 0)
+        {
+            foreach (var type in _aliasExpand)
+            {
+                var name = type.Name;
+                var originType = SearchContext.Compilation.DbManager.GetAliasOriginType(name).FirstOrDefault();
+                if (originType is LuaAggregateType aggregateType)
+                {
+                    LuaTypeRenderer.RenderAliasMember(name, aggregateType, this);
+                }
+            }
+        }
     }
 
     public void AddTypeLink(LuaType type)
@@ -86,6 +122,15 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         if (Feature.ShowTypeLink && type is LuaNamedType namedType)
         {
             _typeLinks.Add(namedType);
+        }
+
+        if (_allowExpandAlias && type is LuaNamedType namedType2)
+        {
+            var detailType = namedType2.GetDetailType(SearchContext);
+            if (detailType.IsAlias)
+            {
+                _aliasExpand.Add(namedType2);
+            }
         }
     }
 }

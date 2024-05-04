@@ -187,6 +187,7 @@ internal static class LuaDeclarationRenderer
     private static void RenderMethodDeclaration(LuaDeclaration declaration, MethodInfo methodInfo,
         LuaRenderContext renderContext)
     {
+        renderContext.EnableAliasRender();
         if (declaration.IsLocal)
         {
             renderContext.WrapperLua(() =>

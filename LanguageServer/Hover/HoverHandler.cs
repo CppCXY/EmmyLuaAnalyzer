@@ -14,7 +14,7 @@ public class HoverHandler(
 ) : HoverHandlerBase
 {
     private LuaRenderFeature RenderFeature { get; } = new(
-        true,
+        false,
         true,
         false,
         100

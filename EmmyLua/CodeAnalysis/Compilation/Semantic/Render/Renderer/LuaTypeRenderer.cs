@@ -41,6 +41,42 @@ internal static class LuaTypeRenderer
         renderContext.Append("unknown");
     }
 
+    public static void RenderAliasMember(string aliasName, LuaAggregateType aggregateType,
+        LuaRenderContext renderContext)
+    {
+        renderContext.AddSeparator();
+        renderContext.WrapperLua(() =>
+        {
+            renderContext.Append($"{aliasName}:\n");
+            foreach (var typeDeclaration in aggregateType.Declarations)
+            {
+                renderContext.Append("| ");
+                InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
+                if (typeDeclaration.Info is AggregateMemberInfo {TypePtr: { } typePtr} &&
+                    typePtr.ToNode(renderContext.SearchContext) is {Description: { } description})
+                {
+                    renderContext.Append(" --");
+                    foreach (var token in description.ChildrenWithTokens)
+                    {
+                        if (token is LuaSyntaxToken {Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text})
+                        {
+                            if (text.StartsWith('@') || text.StartsWith('#'))
+                            {
+                                renderContext.Append(text[1..]);
+                            }
+                            else
+                            {
+                                renderContext.Append(text);
+                            }
+                        }
+                    }
+                }
+
+                renderContext.AppendLine();
+            }
+        });
+    }
+
     private static void InnerRenderDetailType(LuaNamedType namedType, LuaRenderContext renderContext)
     {
         var detailType = namedType.GetDetailType(renderContext.SearchContext);
@@ -49,37 +85,7 @@ internal static class LuaTypeRenderer
             if (originType is LuaAggregateType aggregateType)
             {
                 renderContext.WrapperLuaAppend($"(alias) {namedType.Name}");
-                renderContext.AddSeparator();
-                renderContext.WrapperLua(() =>
-                {
-                    renderContext.Append($"{namedType.Name}:\n");
-                    foreach (var typeDeclaration in aggregateType.Declarations)
-                    {
-                        renderContext.Append("| ");
-                        InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
-                        if (typeDeclaration.Info is AggregateMemberInfo {TypePtr: { } typePtr} &&
-                            typePtr.ToNode(renderContext.SearchContext) is {Description: { } description})
-                        {
-                            renderContext.Append(" --");
-                            foreach (var token in description.ChildrenWithTokens)
-                            {
-                                if (token is LuaSyntaxToken {Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text})
-                                {
-                                    if (text.StartsWith('@') || text.StartsWith('#'))
-                                    {
-                                        renderContext.Append(text[1..]);
-                                    }
-                                    else
-                                    {
-                                        renderContext.Append(text);
-                                    }
-                                }
-                            }
-                        }
-
-                        renderContext.AppendLine();
-                    }
-                });
+                RenderAliasMember(namedType.Name, aggregateType, renderContext);
             }
             else
             {
