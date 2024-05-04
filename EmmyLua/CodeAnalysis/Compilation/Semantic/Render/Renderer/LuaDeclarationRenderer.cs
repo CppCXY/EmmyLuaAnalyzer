@@ -209,12 +209,29 @@ internal static class LuaDeclarationRenderer
             }
         }
 
+        // var paramList = methodInfo.Method?.MainSignature.Parameters;
+        // if (paramList is not null)
+        // {
+        //     renderContext.AddSeparator();
+        //     renderContext.WrapperLanguage("plaintext", () =>
+        //     {
+        //         renderContext.Append("`Params`:\n");
+        //         foreach (var param in paramList)
+        //         {
+        //             renderContext.Append($"    {param.Name} -");
+        //             // TODO
+        //             // LuaCommentRenderer.RenderParamComment();
+        //         }
+        //     });
+        // }
+
         LuaCommentRenderer.RenderDeclarationStatComment(declaration, renderContext);
     }
 
     private static void RenderParamDeclaration(LuaDeclaration declaration, ParamInfo paramInfo,
         LuaRenderContext renderContext)
     {
+        renderContext.EnableAliasRender();
         if (paramInfo.DeclarationType is { } declarationType)
         {
             renderContext.WrapperLua(() =>

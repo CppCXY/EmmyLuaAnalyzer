@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -28,6 +27,11 @@ public class LuaRenderBuilder(SearchContext context)
             case LuaLiteralExprSyntax literalExpr:
             {
                 RenderLiteralExpr(literalExpr, renderContext);
+                break;
+            }
+            case LuaDocTagParamSyntax paramSyntax:
+            {
+                RenderTagParam(paramSyntax, renderContext);
                 break;
             }
         }
@@ -110,6 +114,31 @@ public class LuaRenderBuilder(SearchContext context)
             {
                 renderContext.Append("nil");
                 break;
+            }
+        }
+    }
+
+    private void RenderTagParam(LuaDocTagParamSyntax paramSyntax, LuaRenderContext renderContext)
+    {
+        renderContext.EnableAliasRender();
+        var searchContext = renderContext.SearchContext;
+        var name = paramSyntax.Name?.RepresentText;
+        if (name is not null)
+        {
+            renderContext.WrapperLua(() =>
+            {
+                renderContext.Append($"(parameter) {name} : ");
+                if (paramSyntax.Type is { } type)
+                {
+                    var luaType = searchContext.Infer(type);
+                    LuaTypeRenderer.RenderType(luaType, renderContext);
+                }
+            });
+
+            if (paramSyntax.Description is { } description)
+            {
+                renderContext.AddSeparator();
+                renderContext.Append(description.CommentText);
             }
         }
     }

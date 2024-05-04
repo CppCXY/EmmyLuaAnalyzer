@@ -65,6 +65,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
                 var scope = FindScope(element);
                 return scope?.FindDeclaration(element);
             }
+
         }
 
         return null;

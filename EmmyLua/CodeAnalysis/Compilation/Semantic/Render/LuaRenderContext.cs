@@ -51,6 +51,15 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         _sb.Append("\n```\n");
     }
 
+    public void WrapperLanguage(string language, Action action)
+    {
+        _sb.Append("```");
+        _sb.Append(language);
+        _sb.Append("\n");
+        action();
+        _sb.Append("\n```\n");
+    }
+
     public void WrapperLuaAppend(string text)
     {
         _sb.Append("```lua\n");
