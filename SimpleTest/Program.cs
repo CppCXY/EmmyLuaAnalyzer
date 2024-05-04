@@ -7,7 +7,10 @@ using EmmyLua.CodeAnalysis.Workspace;
 // var workspace = LuaWorkspace.Create();
 var document = LuaDocument.FromText(
     """
-    ---@generic T...
+    ---@alias AAA
+    ---| "fuckme" #我知道了
+    ---| "yes" #原来是这样
+    ---| "nonono" #好吧好吧
     """, new LuaLanguage());
 // workspace.AddDocument(document);
     

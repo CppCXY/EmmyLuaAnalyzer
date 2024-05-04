@@ -1,6 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
+using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 
@@ -44,115 +46,151 @@ internal static class LuaTypeRenderer
         var detailType = namedType.GetDetailType(renderContext.SearchContext);
         if (detailType is AliasDetailType {OriginType: { } originType})
         {
-            renderContext.Append($"alias {namedType.Name}");
-            renderContext.AddSeparator();
             if (originType is LuaAggregateType aggregateType)
             {
-                renderContext.AppendLine();
-                foreach (var typeDeclaration in aggregateType.Declarations)
+                renderContext.WrapperLuaAppend($"(alias) {namedType.Name}");
+                renderContext.AddSeparator();
+                renderContext.WrapperLua(() =>
                 {
-                    renderContext.Append("| ");
-                    InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
-                    if (typeDeclaration.Info is AggregateMemberInfo {TypePtr: { } typePtr} &&
-                        typePtr.ToNode(renderContext.SearchContext) is {Description: { } description})
+                    renderContext.Append($"{namedType.Name}:\n");
+                    foreach (var typeDeclaration in aggregateType.Declarations)
                     {
-                        renderContext.Append($" {description.RepresentText}");
-                    }
+                        renderContext.Append("| ");
+                        InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
+                        if (typeDeclaration.Info is AggregateMemberInfo {TypePtr: { } typePtr} &&
+                            typePtr.ToNode(renderContext.SearchContext) is {Description: { } description})
+                        {
+                            renderContext.Append(" --");
+                            foreach (var token in description.ChildrenWithTokens)
+                            {
+                                if (token is LuaSyntaxToken {Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text})
+                                {
+                                    if (text.StartsWith('@') || text.StartsWith('#'))
+                                    {
+                                        renderContext.Append(text[1..]);
+                                    }
+                                    else
+                                    {
+                                        renderContext.Append(text);
+                                    }
+                                }
+                            }
+                        }
 
-                    renderContext.AppendLine();
-                }
+                        renderContext.AppendLine();
+                    }
+                });
             }
             else
             {
-                renderContext.Append(" = ");
-                InnerRenderType(originType, renderContext, 1);
+                renderContext.WrapperLua(() =>
+                {
+                    renderContext.Append($"(alias) {namedType.Name} = ");
+                    InnerRenderType(originType, renderContext, 1);
+                });
             }
         }
         else if (detailType is ClassDetailType classType)
         {
-            renderContext.Append($"class {classType.Name}");
-            var generics = classType.Generics;
-            if (generics.Count > 0)
+            renderContext.WrapperLua(() =>
             {
-                renderContext.Append('<');
-                for (var i = 0; i < generics.Count; i++)
+                renderContext.Append($"class {classType.Name}");
+                var generics = classType.Generics;
+                if (generics.Count > 0)
                 {
-                    if (i > 0)
+                    renderContext.Append('<');
+                    for (var i = 0; i < generics.Count; i++)
                     {
-                        renderContext.Append(',');
+                        if (i > 0)
+                        {
+                            renderContext.Append(',');
+                        }
+
+                        var generic = generics[i];
+                        renderContext.Append(generic.Name);
+                        if (generic.Info.DeclarationType is { } baseType)
+                        {
+                            renderContext.Append(':');
+                            InnerRenderType(baseType, renderContext, 1);
+                        }
                     }
 
-                    var generic = generics[i];
-                    renderContext.Append(generic.Name);
-                    if (generic.Info.DeclarationType is { } baseType)
-                    {
-                        renderContext.Append(':');
-                        InnerRenderType(baseType, renderContext, 1);
-                    }
+                    renderContext.Append('>');
                 }
 
-                renderContext.Append('>');
-            }
-
-            var supers = classType.Supers;
-            if (supers.Count > 0)
-            {
-                renderContext.Append(" extends ");
-                for (var i = 0; i < supers.Count; i++)
+                var supers = classType.Supers;
+                if (supers.Count > 0)
                 {
-                    if (i > 0)
+                    renderContext.Append(" extends ");
+                    for (var i = 0; i < supers.Count; i++)
                     {
-                        renderContext.Append(',');
-                    }
+                        if (i > 0)
+                        {
+                            renderContext.Append(',');
+                        }
 
-                    InnerRenderType(supers[i], renderContext, 1);
+                        InnerRenderType(supers[i], renderContext, 1);
+                    }
                 }
-            }
+            });
         }
         else if (detailType is InterfaceDetailType interfaceType)
         {
-            renderContext.Append($"interface {interfaceType.Name}");
-            var generics = interfaceType.Generics;
-            if (generics.Count > 0)
+            renderContext.WrapperLua(() =>
             {
-                renderContext.Append('<');
-                for (var i = 0; i < generics.Count; i++)
+                renderContext.Append($"interface {interfaceType.Name}");
+                var generics = interfaceType.Generics;
+                if (generics.Count > 0)
                 {
-                    if (i > 0)
+                    renderContext.Append('<');
+                    for (var i = 0; i < generics.Count; i++)
                     {
-                        renderContext.Append(',');
+                        if (i > 0)
+                        {
+                            renderContext.Append(',');
+                        }
+
+                        var generic = generics[i];
+                        renderContext.Append(generic.Name);
+                        if (generic.Info.DeclarationType is { } baseType)
+                        {
+                            renderContext.Append(':');
+                            InnerRenderType(baseType, renderContext, 1);
+                        }
                     }
 
-                    var generic = generics[i];
-                    renderContext.Append(generic.Name);
-                    if (generic.Info.DeclarationType is { } baseType)
-                    {
-                        renderContext.Append(':');
-                        InnerRenderType(baseType, renderContext, 1);
-                    }
+                    renderContext.Append('>');
                 }
 
-                renderContext.Append('>');
-            }
-
-            var supers = interfaceType.Supers;
-            if (supers.Count > 0)
-            {
-                renderContext.Append(" extends ");
-                for (var i = 0; i < supers.Count; i++)
+                var supers = interfaceType.Supers;
+                if (supers.Count > 0)
                 {
-                    if (i > 0)
+                    renderContext.Append(" extends ");
+                    for (var i = 0; i < supers.Count; i++)
                     {
-                        renderContext.Append(',');
-                    }
+                        if (i > 0)
+                        {
+                            renderContext.Append(',');
+                        }
 
-                    InnerRenderType(supers[i], renderContext, 1);
+                        InnerRenderType(supers[i], renderContext, 1);
+                    }
                 }
-            }
+            });
         }
         else if (detailType is EnumDetailType enumType)
         {
-            renderContext.Append($"enum {enumType.Name}");
+            renderContext.WrapperLua(() =>
+            {
+                renderContext.Append($"enum {enumType.Name}");
+                var supers = enumType.BaseType;
+                if (supers is not null)
+                {
+                    renderContext.Append(" : ");
+                    InnerRenderType(supers, renderContext, 1);
+                }
+            });
+            // todo fields
         }
         else
         {
@@ -249,7 +287,6 @@ internal static class LuaTypeRenderer
 
     private static void RenderNamedType(LuaNamedType namedType, LuaRenderContext renderContext, int level)
     {
-
         var detailType = namedType.GetDetailType(renderContext.SearchContext);
         if (level == 0 && renderContext.Feature.ExpandAlias)
         {
@@ -374,7 +411,8 @@ internal static class LuaTypeRenderer
         InnerRenderType(mainSignature.ReturnType, renderContext, 0);
     }
 
-    private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, LuaRenderContext renderContext, int level)
+    private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, LuaRenderContext renderContext,
+        int level)
     {
         renderContext.Append('(');
         for (var i = 0; i < multiReturnType.GetElementCount(); i++)
@@ -480,6 +518,7 @@ internal static class LuaTypeRenderer
             {
                 renderContext.Append('|');
             }
+
             InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
         }
     }

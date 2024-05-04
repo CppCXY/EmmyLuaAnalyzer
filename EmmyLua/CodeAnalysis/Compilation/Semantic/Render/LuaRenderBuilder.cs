@@ -19,7 +19,8 @@ public class LuaRenderBuilder(SearchContext context)
             case LuaNameExprSyntax or LuaIndexExprSyntax
                 or LuaParamDefSyntax or LuaLocalNameSyntax
                 or LuaCallExprSyntax or LuaTableFieldSyntax
-                or LuaDocNameTypeSyntax or LuaDocGenericTypeSyntax:
+                or LuaDocNameTypeSyntax or LuaDocGenericTypeSyntax
+                or LuaDocTagNamedTypeSyntax:
             {
                 RenderElement(element, renderContext);
                 break;

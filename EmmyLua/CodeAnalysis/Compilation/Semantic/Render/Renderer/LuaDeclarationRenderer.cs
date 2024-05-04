@@ -116,8 +116,9 @@ internal static class LuaDeclarationRenderer
             renderContext.WrapperLua(() =>
             {
                 renderContext.Append($"local {declaration.Name}{attrib} : ");
-                LuaTypeRenderer.RenderDefinedType(localInfo.DeclarationType, renderContext);
+                LuaTypeRenderer.RenderType(localInfo.DeclarationType, renderContext);
             });
+            LuaTypeRenderer.RenderDefinedType(localInfo.DeclarationType, renderContext);
             LuaCommentRenderer.RenderDeclarationStatComment(declaration, renderContext);
         }
         else
@@ -139,9 +140,9 @@ internal static class LuaDeclarationRenderer
             renderContext.WrapperLua(() =>
             {
                 renderContext.Append($"global {declaration.Name}: ");
-                LuaTypeRenderer.RenderDefinedType(globalInfo.DeclarationType, renderContext);
+                LuaTypeRenderer.RenderType(globalInfo.DeclarationType, renderContext);
             });
-
+            LuaTypeRenderer.RenderDefinedType(globalInfo.DeclarationType, renderContext);
             LuaCommentRenderer.RenderDeclarationStatComment(declaration, renderContext);
         }
         else
@@ -275,31 +276,7 @@ internal static class LuaDeclarationRenderer
     private static void RenderNamedTypeDeclaration(LuaDeclaration declaration, NamedTypeInfo namedTypeInfo,
         LuaRenderContext renderContext)
     {
-        renderContext.WrapperLua(() =>
-        {
-            var declarationType = namedTypeInfo.DeclarationType;
-            var typeDescription = "class";
-            if (declarationType is LuaNamedType namedType)
-            {
-                var detailType = namedType.GetDetailType(renderContext.SearchContext);
-                if (detailType.IsAlias)
-                {
-                    typeDescription = "alias";
-                }
-                else if (detailType.IsEnum)
-                {
-                    typeDescription = "enum";
-                }
-                else if (detailType.IsInterface)
-                {
-                    typeDescription = "interface";
-                }
-            }
-
-            renderContext.Append($"{typeDescription} {declaration.Name}");
-            LuaTypeRenderer.RenderType(namedTypeInfo.DeclarationType, renderContext);
-        });
-
+        LuaTypeRenderer.RenderDefinedType(namedTypeInfo.DeclarationType, renderContext);
         LuaCommentRenderer.RenderTypeComment(namedTypeInfo, renderContext);
     }
 

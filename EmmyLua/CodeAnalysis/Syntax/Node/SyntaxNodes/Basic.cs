@@ -103,7 +103,14 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
             {
                 if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail , RepresentText: {} text})
                 {
-                    sb.Append(text);
+                    if (text.StartsWith('@') || text.StartsWith('#'))
+                    {
+                        sb.Append(text[1..]);
+                    }
+                    else
+                    {
+                        sb.Append(text);
+                    }
                 }
                 else if(token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocContinue, Range.Length: {} length })
                 {

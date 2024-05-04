@@ -22,7 +22,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         {
             AddFuncParamCompletion(callArgs, context);
         }
-        else if (trigger is LuaNameToken { Parent: LuaCallArgListSyntax callArgs2 })
+        else if (trigger is LuaNameToken {Parent: LuaCallArgListSyntax callArgs2})
         {
             AddFuncParamCompletion(callArgs2, context);
         }
@@ -76,9 +76,9 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                             AddEnumParamCompletion(enumDetailType, context);
                         }
                     }
-                    else if (paramType is LuaUnionType unionType)
+                    else if (paramType is LuaAggregateType aggregateType)
                     {
-                       AddUnionTypeCompletion(unionType, context);
+                        AddAggregateTypeCompletion(aggregateType, context);
                     }
                 }
             }
@@ -87,9 +87,9 @@ public class AliasAndEnumProvider : ICompleteProviderBase
 
     private void AddAliasParamCompletion(AliasDetailType aliasDetailType, CompleteContext context)
     {
-        if (aliasDetailType.OriginType is LuaUnionType unionType)
+        if (aliasDetailType.OriginType is LuaAggregateType aggregateType)
         {
-            AddUnionTypeCompletion(unionType, context);
+            AddAggregateTypeCompletion(aggregateType, context);
         }
     }
 
@@ -98,7 +98,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         var enumName = enumDetailType.Name;
         var members = context.SemanticModel.Compilation.DbManager
             .GetMembers(enumName);
-        
+
         foreach (var field in members)
         {
             context.Add(new CompletionItem
@@ -108,26 +108,43 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             });
         }
     }
-    
-    private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
+
+    private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
     {
-        foreach (var type in unionType.UnionTypes)
+        foreach (var declaration in aggregateType.Declarations)
         {
-            if (type is LuaStringLiteralType stringLiteralType)
+            if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
             {
-                context.Add(new CompletionItem
+                var detail = string.Empty;
+                if (literalType.Description is {Details: {} details  })
                 {
-                    Label = stringLiteralType.Content,
-                    Kind = CompletionItemKind.EnumMember,
-                });
-            }
-            else if (type is LuaIntegerLiteralType intLiteralType)
-            {
-                context.Add(new CompletionItem
+                    detail = string.Join("\n", details.Select(d => d.RepresentText.Trim('#', '@')));
+                }
+                if (literalType is {IsString: true, String: {} stringLiteral })
                 {
-                    Label = intLiteralType.Value.ToString(),
-                    Kind = CompletionItemKind.EnumMember,
-                });
+                    var label = stringLiteral.RepresentText;
+                    // compact emmylua old alias
+                    if (declaration.Info.DeclarationType is LuaStringLiteralType stringLiteralType
+                        && (stringLiteralType.Content.StartsWith('\'') || stringLiteralType.Content.StartsWith('"')))
+                    {
+                        label = stringLiteralType.Content;
+                    }
+                    context.Add(new CompletionItem
+                    {
+                        Label = label,
+                        Kind = CompletionItemKind.EnumMember,
+                        Detail = detail
+                    });
+                }
+                else if (declaration.Info.DeclarationType is LuaIntegerLiteralType intLiteralType)
+                {
+                    context.Add(new CompletionItem
+                    {
+                        Label = intLiteralType.Value.ToString(),
+                        Kind = CompletionItemKind.EnumMember,
+                        Detail = detail
+                    });
+                }
             }
         }
     }

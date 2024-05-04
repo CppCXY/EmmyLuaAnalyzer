@@ -15,8 +15,13 @@ public static class TypesParser
         }
     }
 
-    public static CompleteMarker Type(LuaDocParser p, bool unionType = true)
+    public static CompleteMarker Type(LuaDocParser p, bool allowUnion = true)
     {
+        if (allowUnion && p.Current is LuaTokenKind.TkDocOr)
+        {
+            return AliasType(p);
+        }
+
         var cm = PrimaryType(p);
         if (!cm.IsComplete)
         {
@@ -26,7 +31,7 @@ public static class TypesParser
         // suffix
         SuffixType(p, ref cm);
         // ReSharper disable once InvertIf
-        if (unionType && p.Current is LuaTokenKind.TkDocOr)
+        if (allowUnion && p.Current is LuaTokenKind.TkDocOr)
         {
             var m = cm.Precede(p);
             p.Bump();
@@ -41,7 +46,14 @@ public static class TypesParser
             cm = m.Complete(p, LuaSyntaxKind.TypeUnion);
         }
 
-        DescriptionParser.InlineDescription(p);
+        if (!allowUnion && p.Current is LuaTokenKind.TkDocDetail)
+        {
+            var oldKind = cm.Kind;
+            var m = cm.Reset(p);
+            DescriptionParser.InlineDescription(p);
+            cm = m.Complete(p, oldKind);
+        }
+
         return cm;
     }
 
@@ -53,7 +65,7 @@ public static class TypesParser
         {
             p.Accept(LuaTokenKind.TkDocOr);
             var cm2 = Type(p, false);
-            if (cm2.Kind == LuaSyntaxKind.LiteralExpr)
+            if (cm2.Kind == LuaSyntaxKind.TypeLiteral)
             {
                 kind = LuaSyntaxKind.TypeAggregate;
             }

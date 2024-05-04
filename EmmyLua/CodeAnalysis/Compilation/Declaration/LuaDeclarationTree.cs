@@ -56,7 +56,11 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             {
                 return FindDocFieldDeclaration(docField, context);
             }
-            case LuaNameExprSyntax or LuaParamDefSyntax or LuaLocalNameSyntax or LuaIndexExprSyntax:
+            case LuaDocTagNamedTypeSyntax docTagNamedType:
+            {
+                return FindTypeDeclaration(docTagNamedType.Name?.RepresentText, context);
+            }
+            case LuaParamDefSyntax or LuaLocalNameSyntax:
             {
                 var scope = FindScope(element);
                 return scope?.FindDeclaration(element);
