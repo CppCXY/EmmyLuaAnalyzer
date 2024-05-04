@@ -24,7 +24,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
         var localOrParamDeclarations = new HashSet<LuaDeclaration>();
         foreach (var luaDeclaration in declarations)
         {
-            if (luaDeclaration is LocalDeclaration or ParamDeclaration)
+            if (luaDeclaration.Info is LocalInfo or ParamInfo)
             {
                 localOrParamDeclarations.Add(luaDeclaration);
             }
@@ -55,7 +55,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
 
         foreach (var luaDeclaration in declarationSet)
         {
-            if (luaDeclaration.Ptr.ToNode(context.Document) is { } node)
+            if (luaDeclaration.Info.Ptr.ToNode(context.Document) is { } node)
             {
                 context.Report(new Diagnostic(
                         DiagnosticSeverity.Hint,

@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.Configuration;
@@ -129,7 +130,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         Kind = Kind,
                         LabelDetails = new CompletionItemLabelDetails()
                         {
-                            Description = LuaTypeRender.RenderType(Type, SearchContext),
+                            Description = CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature),
                         },
                         InsertText = InsertText,
                         Data = Data,
@@ -242,7 +243,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             LabelDetails = new CompletionItemLabelDetails()
             {
                 Detail = RenderSignatureParams(signature, colonDefine),
-                Description = LuaTypeRender.RenderType(signature.ReturnType, SearchContext)
+                Description = CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature)
             },
             Data = Data,
             Command = Command,

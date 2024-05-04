@@ -99,3 +99,9 @@ public class LuaDocExpandTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lua
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
+
+public class LuaDocAggregateTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+{
+    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
+}

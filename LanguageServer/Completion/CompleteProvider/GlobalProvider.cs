@@ -21,8 +21,8 @@ public class GlobalProvider : ICompleteProviderBase
         {
             if (!localHashSet.Contains(globalDecl.Name))
             {
-                context.CreateCompletion(globalDecl.Name, globalDecl.DeclarationType)
-                    .WithData(globalDecl.Ptr.Stringify)
+                context.CreateCompletion(globalDecl.Name, globalDecl.Info.DeclarationType)
+                    .WithData(globalDecl.Info.Ptr.Stringify)
                     .WithCheckDeprecated(globalDecl)
                     .AddToContext();
             }

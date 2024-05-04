@@ -14,8 +14,8 @@ public class LocalEnvProvider : ICompleteProviderBase
         var varDeclarations = context.SemanticModel.GetDeclarationsBefore(context.TriggerToken);
         foreach (var varDeclaration in varDeclarations)
         {
-            context.CreateCompletion(varDeclaration.Name, varDeclaration.DeclarationType)
-                .WithData(varDeclaration.Ptr.Stringify)
+            context.CreateCompletion(varDeclaration.Name, varDeclaration.Info.DeclarationType)
+                .WithData(varDeclaration.Info.Ptr.Stringify)
                 .WithCheckDeprecated(varDeclaration)
                 .AddToContext();
         }

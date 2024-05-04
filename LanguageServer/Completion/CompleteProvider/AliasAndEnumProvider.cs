@@ -63,7 +63,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                 if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
                 {
                     var param = methodType.MainSignature.Parameters[activeParam];
-                    var paramType = param.DeclarationType;
+                    var paramType = param.Info.DeclarationType;
                     if (paramType is LuaNamedType namedType)
                     {
                         var detailType = namedType.GetDetailType(context.SemanticModel.Context);

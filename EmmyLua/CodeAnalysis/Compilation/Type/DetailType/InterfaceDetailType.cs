@@ -4,14 +4,14 @@ using EmmyLua.CodeAnalysis.Compilation.Infer;
 namespace EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 
 public class InterfaceDetailType(
-    string name, SearchContext context) : BasicDetailType(name, NamedTypeKind.Interface, context)
+    string name,
+    SearchContext context) : BasicDetailType(name, NamedTypeKind.Interface, context)
 {
     private List<LuaType>? _supers;
 
-    private List<GenericParamDeclaration>? _generics;
+    private List<LuaDeclaration>? _generics;
 
-    private NamedTypeDeclaration? _declaration;
-
+    private LuaDeclaration? _declaration;
 
     public List<LuaType> Supers
     {
@@ -26,7 +26,7 @@ public class InterfaceDetailType(
         }
     }
 
-    public List<GenericParamDeclaration> Generics
+    public List<LuaDeclaration> Generics
     {
         get
         {
@@ -39,7 +39,7 @@ public class InterfaceDetailType(
         }
     }
 
-    public NamedTypeDeclaration? Declaration
+    public LuaDeclaration? Declaration
     {
         get
         {

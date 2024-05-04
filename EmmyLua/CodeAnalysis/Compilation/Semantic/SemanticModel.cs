@@ -17,7 +17,7 @@ public class SemanticModel
 
     public SearchContext Context { get; }
 
-    private LuaRenderBuilder RenderBuilder { get; }
+    public LuaRenderBuilder RenderBuilder { get; }
 
     private References References { get; }
 
@@ -34,14 +34,14 @@ public class SemanticModel
     }
 
     // 渲染符号的文档和类型
-    public string RenderSymbol(LuaSyntaxElement? symbol)
+    public string RenderSymbol(LuaSyntaxElement? symbol, LuaRenderFeature feature)
     {
         if (symbol is null)
         {
             return string.Empty;
         }
 
-        return RenderBuilder.Render(symbol);
+        return RenderBuilder.Render(symbol, feature);
     }
 
     public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)

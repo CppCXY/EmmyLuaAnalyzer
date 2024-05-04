@@ -81,6 +81,7 @@ public enum LuaSyntaxKind : ushort
     // doc Type
     TypeArray,
     TypeUnion,
+    TypeAggregate,
     TypeFun,
     TypeGeneric,
     TypeTuple,

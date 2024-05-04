@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -95,12 +96,15 @@ public class DocProvider : ICompleteProviderBase
         var namedTypes = context.SemanticModel.Compilation.DbManager.GetNamedTypes();
         foreach (var typeDeclaration in namedTypes)
         {
-            context.Add(new CompletionItem
+            if (typeDeclaration.Info is NamedTypeInfo namedTypeInfo)
             {
-                Label = typeDeclaration.Name,
-                Kind = ConvertTypedName(typeDeclaration.Kind),
-                Data = typeDeclaration.Ptr.Stringify
-            });
+                context.Add(new CompletionItem
+                {
+                    Label = typeDeclaration.Name,
+                    Kind = ConvertTypedName(namedTypeInfo.Kind),
+                    Data = namedTypeInfo.Ptr.Stringify
+                });
+            }
         }
     }
 

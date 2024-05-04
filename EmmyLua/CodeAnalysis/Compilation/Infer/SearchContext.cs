@@ -129,7 +129,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     public IEnumerable<LuaDeclaration> GetBaseMembers(string name)
     {
-        if (Features is { Cache: true, CacheBaseMember: true } && BaseMemberCaches.TryGetValue(name, out var members))
+        if (Features is {Cache: true, CacheBaseMember: true} && BaseMemberCaches.TryGetValue(name, out var members))
         {
             return members;
         }
@@ -146,7 +146,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             }
         }
 
-        if (Features is { Cache: true, CacheBaseMember: true })
+        if (Features is {Cache: true, CacheBaseMember: true})
         {
             BaseMemberCaches[name] = members;
         }
@@ -173,10 +173,10 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         if (luaType is LuaNamedType namedType)
         {
             var detailType = namedType.GetDetailType(this);
-            if (detailType.IsAlias && detailType is AliasDetailType { OriginType: { } originType, Name: { } name })
+            if (detailType.IsAlias && detailType is AliasDetailType {OriginType: { } originType, Name: { } name})
             {
                 // TODO 防止错误递归 ---@alias a a
-                if (originType is LuaNamedType { Name: { } originName } && originName == name)
+                if (originType is LuaNamedType {Name: { } originName} && originName == name)
                 {
                     return Enumerable.Empty<LuaDeclaration>();
                 }
@@ -235,7 +235,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         if (luaType is LuaNamedType namedType)
         {
-            if (namedType is { Name: "table" })
+            if (namedType is {Name: "table"})
             {
                 return FindTableMember(namedType, memberName);
             }
@@ -276,12 +276,12 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
                 && memberName.StartsWith("["))
             {
-                return [new VirtualDeclaration(memberName, secondType)];
+                return [new LuaDeclaration(memberName, 0, new VirtualInfo(secondType))];
             }
 
             if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
             {
-                return [new VirtualDeclaration(memberName, secondType)];
+                return [new LuaDeclaration(memberName, 0, new VirtualInfo(secondType))];
             }
         }
 
@@ -303,7 +303,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
             if (keyType.SubTypeOf(firstType, this))
             {
-                return [new VirtualDeclaration("", secondType)];
+                return [new LuaDeclaration(string.Empty, 0, new VirtualInfo(secondType))];
             }
         }
 
@@ -314,7 +314,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         if (luaType is LuaNamedType namedType)
         {
-            if (namedType is { Name: "table" })
+            if (namedType is {Name: "table"})
             {
                 return FindTableMember(namedType, keyType);
             }
@@ -333,7 +333,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         {
             if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
             {
-                return [new VirtualDeclaration(string.Empty, arrayType.BaseType)];
+                return [new LuaDeclaration(string.Empty, 0, new VirtualInfo(arrayType.BaseType))];
             }
         }
 
@@ -343,11 +343,11 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
     {
         var declarations = new List<LuaDeclaration>();
-        if (indexExpr is { Name: { } name })
+        if (indexExpr is {Name: { } name})
         {
             declarations.AddRange(FindMember(luaType, name));
         }
-        else if (indexExpr is { IndexKeyExpr: { } keyExpr })
+        else if (indexExpr is {IndexKeyExpr: { } keyExpr})
         {
             var keyExprType = Infer(keyExpr);
             declarations.AddRange(FindIndexMember(luaType, keyExprType));
@@ -391,7 +391,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         if (luaType is LuaNamedType namedType)
         {
             var members = GetBaseMembers(namedType.Name);
-            return members.Where(it=>it.Name == member);
+            return members.Where(it => it.Name == member);
         }
 
         return Enumerable.Empty<LuaDeclaration>();

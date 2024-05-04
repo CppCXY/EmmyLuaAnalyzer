@@ -33,17 +33,17 @@ public class TypeHierarchyBuilder
             if (super is LuaNamedType superNamedType)
             {
                 var typeDefine = compilation.DbManager.GetTypeLuaDeclaration(superNamedType.Name);
-                if (typeDefine is not null)
+                if (typeDefine is {Info: NamedTypeInfo info})
                 {
-                    var typeDocument = compilation.Workspace.GetDocument(typeDefine.TypeDefinePtr.DocumentId);
+                    var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
                     if (typeDocument is not null
-                        && typeDefine.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
+                        && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
                     {
                         var range = sourceRange.ToLspRange(typeDocument);
                         items.Add(new TypeHierarchyItem
                         {
                             Name = $"super {superNamedType.Name}",
-                            Kind = ToSymbolKind(typeDefine),
+                            Kind = ToSymbolKind(info),
                             Uri = typeDocument!.Uri,
                             Range = range,
                             SelectionRange = range,
@@ -64,17 +64,17 @@ public class TypeHierarchyBuilder
         foreach (var subTypeName in subTypes)
         {
             var typeDefine = compilation.DbManager.GetTypeLuaDeclaration(subTypeName);
-            if (typeDefine is not null)
+            if (typeDefine is { Info: NamedTypeInfo info})
             {
-                var typeDocument = compilation.Workspace.GetDocument(typeDefine.TypeDefinePtr.DocumentId);
+                var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
                 if (typeDocument is not null
-                    && typeDefine.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
+                    && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
                 {
                     var range = sourceRange.ToLspRange(typeDocument);
                     items.Add(new TypeHierarchyItem
                     {
                         Name = $"subtype {subTypeName}",
-                        Kind = ToSymbolKind(typeDefine),
+                        Kind = ToSymbolKind(info),
                         Uri = typeDocument!.Uri,
                         Range = range,
                         SelectionRange = range,
@@ -87,9 +87,9 @@ public class TypeHierarchyBuilder
         return items;
     }
 
-    private static SymbolKind ToSymbolKind(NamedTypeDeclaration namedTypeDeclaration)
+    private static SymbolKind ToSymbolKind(NamedTypeInfo info)
     {
-        return namedTypeDeclaration.Kind switch
+        return info.Kind switch
         {
             NamedTypeKind.Class => SymbolKind.Class,
             NamedTypeKind.Interface => SymbolKind.Interface,

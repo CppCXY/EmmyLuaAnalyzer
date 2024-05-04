@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Util.FilenameConverter;
@@ -36,7 +37,7 @@ public class ModuleProvider : ICompleteProviderBase
             if (AllowModule(module, localNames, context.SemanticModel))
             {
                 var documentId = module.DocumentId;
-                var retTy = semanticModel.GetExportType(documentId);
+                var retTy = semanticModel.GetExportType(documentId) ?? Builtin.Unknown;
                 var insetText = FilenameConverter.ConvertToIdentifier(module.Name, context.CompletionConfig.AutoRequireFilenameConvention);
                 context.Add(new CompletionItem
                 {
@@ -45,7 +46,7 @@ public class ModuleProvider : ICompleteProviderBase
                     LabelDetails = new CompletionItemLabelDetails()
                     {
                         Detail = $" (in {module.ModulePath})",
-                        Description = LuaTypeRender.RenderType(retTy, semanticModel.Context)
+                        Description = context.SemanticModel.RenderBuilder.RenderType(retTy, context.RenderFeature)
                     },
                     Data = module.DocumentId.Id.ToString(),
                     Command = AutoRequire.MakeCommand(

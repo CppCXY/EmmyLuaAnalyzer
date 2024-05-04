@@ -32,7 +32,7 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
 
     public override int GetHashCode()
     {
-        return (int)Kind;
+        return (int) Kind;
     }
 
     public virtual bool SubTypeOf(LuaType? other, SearchContext context)
@@ -169,10 +169,75 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
     }
 }
 
-public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration)
+public class LuaAggregateType(IEnumerable<LuaDeclaration> declarations)
+    : LuaType(TypeKind.Aggregate), IEquatable<LuaAggregateType>
+{
+    public List<LuaDeclaration> Declarations { get; } = declarations.ToList();
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaAggregateType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaAggregateType);
+    }
+
+    public bool Equals(LuaAggregateType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && Declarations
+            .Select(it => it.Info.DeclarationType)
+            .SequenceEqual(other.Declarations.Select(it => it.Info.DeclarationType));
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(base.GetHashCode(), Declarations);
+    }
+
+    public override bool SubTypeOf(LuaType? other, SearchContext context)
+    {
+        if (Equals(other))
+        {
+            return true;
+        }
+
+        if (other is not LuaAggregateType aggregateType)
+        {
+            return false;
+        }
+
+        var count = Math.Min(Declarations.Count, aggregateType.Declarations.Count);
+        for (var i = 0; i < count; ++i)
+        {
+            if (Declarations[i].Info.DeclarationType is null)
+            {
+                return false;
+            }
+
+            if (!Declarations[i].Info.DeclarationType!.SubTypeOf(aggregateType.Declarations[i].Info.DeclarationType,
+                context))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newAggregateTypes = Declarations.Select(t => t.Instantiate(genericReplace));
+        return new LuaAggregateType(newAggregateTypes);
+    }
+}
+
+public class LuaTupleType(List<LuaDeclaration> tupleDeclaration)
     : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
 {
-    public List<TupleMemberDeclaration> TupleDeclaration { get; } = tupleDeclaration;
+    public List<LuaDeclaration> TupleDeclaration { get; } = tupleDeclaration;
 
     public override bool Equals(object? obj)
     {
@@ -189,8 +254,8 @@ public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration)
         if (ReferenceEquals(this, other)) return true;
         if (other is not null)
         {
-            return TupleDeclaration.Select(it => it.DeclarationType)
-                .SequenceEqual(other.TupleDeclaration.Select(it => it.DeclarationType));
+            return TupleDeclaration.Select(it => it.Info.DeclarationType)
+                .SequenceEqual(other.TupleDeclaration.Select(it => it.Info.DeclarationType));
         }
 
         return false;
@@ -219,23 +284,29 @@ public class LuaTupleType(List<TupleMemberDeclaration> tupleDeclaration)
         }
 
         return !TupleDeclaration.Where((t, i) =>
-            !t.DeclarationType!.SubTypeOf(tupleType.TupleDeclaration[i].DeclarationType, context)).Any();
+            !t.Info.DeclarationType!.SubTypeOf(tupleType.TupleDeclaration[i].Info.DeclarationType, context)).Any();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
         var newTupleTypes = TupleDeclaration
             .Select(t => t.Instantiate(genericReplace))
-            .Cast<TupleMemberDeclaration>()
             .ToList();
-        if (newTupleTypes.Count != 0 && newTupleTypes[^1].DeclarationType is LuaMultiReturnType multiReturnType)
+        if (newTupleTypes.Count != 0 && newTupleTypes[^1].Info.DeclarationType is LuaMultiReturnType multiReturnType)
         {
             var lastMember = newTupleTypes[^1];
             newTupleTypes.RemoveAt(newTupleTypes.Count - 1);
-            for (var i = 0; i < multiReturnType.GetElementCount(); i++)
+            if (lastMember.Info is TupleMemberInfo info)
             {
-                newTupleTypes.Add(new TupleMemberDeclaration(lastMember.Index + i, multiReturnType.GetElementType(i),
-                    lastMember.TypePtr));
+                for (var i = 0; i < multiReturnType.GetElementCount(); i++)
+                {
+                    newTupleTypes.Add(lastMember.WithInfo(
+                        info with
+                        {
+                            Index = info.Index + i,
+                            DeclarationType = multiReturnType.GetElementType(i),
+                        }));
+                }
             }
         }
 

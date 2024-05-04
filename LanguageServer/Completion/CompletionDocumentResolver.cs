@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -14,6 +15,13 @@ public class CompletionDocumentResolver
 {
     private LuaWorkspace Workspace { get; }
     private SearchContext Context { get; }
+
+    private LuaRenderFeature RenderFeature { get; } = new(
+        true,
+        false,
+        false,
+        100
+    );
 
     private LuaRenderBuilder RenderBuilder { get; }
 
@@ -45,18 +53,17 @@ public class CompletionDocumentResolver
     {
         if (completionItem.Data is not null && completionItem.Data.Type == JTokenType.String)
         {
-            var id = new LuaDocumentId((int)completionItem.Data);
-            var sb = new StringBuilder();
+            var id = new LuaDocumentId((int) completionItem.Data);
             var document = Workspace.GetDocument(id);
             if (document is not null)
             {
-                LuaModuleRender.RenderModule(document, Context, sb);
+                ;
                 completionItem = completionItem with
                 {
                     Documentation = new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = sb.ToString()
+                        Value = RenderBuilder.RenderModule(document, RenderFeature)
                     }
                 };
             }
@@ -69,7 +76,7 @@ public class CompletionDocumentResolver
     {
         if (completionItem.Data is not null)
         {
-            if (completionItem.Data.Type == JTokenType.String && (string?)completionItem.Data is {} strPtr)
+            if (completionItem.Data.Type == JTokenType.String && (string?) completionItem.Data is { } strPtr)
             {
                 var ptr = LuaElementPtr<LuaSyntaxNode>.From(strPtr);
                 var node = ptr.ToNode(Context);
@@ -83,7 +90,7 @@ public class CompletionDocumentResolver
                     Documentation = new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = RenderBuilder.Render(node)
+                        Value = RenderBuilder.Render(node, RenderFeature)
                     }
                 };
             }

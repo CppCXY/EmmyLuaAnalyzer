@@ -124,7 +124,7 @@ public static class ExpressionInfer
     {
         var declaration = DeclarationInfer.GetSymbolTree(indexExpr, context)?.FindDeclaration(indexExpr, context);
 
-        if (declaration is { DeclarationType: { } ty2 })
+        if (declaration is { Info.DeclarationType: { } ty2 })
         {
             return ty2;
         }
@@ -155,7 +155,7 @@ public static class ExpressionInfer
         var symbolTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
         var nameDecl = symbolTree?.FindDeclaration(nameExpr, context);
 
-        if (nameDecl?.DeclarationType is { } ty)
+        if (nameDecl?.Info.DeclarationType is { } ty)
         {
             return ty;
         }

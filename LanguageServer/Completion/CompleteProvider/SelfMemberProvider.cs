@@ -20,17 +20,17 @@ public class SelfMemberProvider : ICompleteProviderBase
             var members = context.SemanticModel.Context.GetMembers(selfType);
             foreach (var member in members)
             {
-                if (member.DeclarationType is LuaMethodType { ColonDefine: true })
+                if (member.Info.DeclarationType is LuaMethodType { ColonDefine: true })
                 {
-                    context.CreateCompletion($"self:{member.Name}", member.DeclarationType)
-                        .WithData(member.Ptr.Stringify)
+                    context.CreateCompletion($"self:{member.Name}", member.Info.DeclarationType)
+                        .WithData(member.Info.Ptr.Stringify)
                         .WithCheckDeprecated(member)
                         .AddToContext();
                 }
                 else
                 {
-                    context.CreateCompletion($"self.{member.Name}", member.DeclarationType)
-                        .WithData(member.Ptr.Stringify)
+                    context.CreateCompletion($"self.{member.Name}", member.Info.DeclarationType)
+                        .WithData(member.Info.Ptr.Stringify)
                         .WithCheckDeprecated(member)
                         .AddToContext();
                 }

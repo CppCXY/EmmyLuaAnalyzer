@@ -47,21 +47,33 @@ public static class TypesParser
 
     public static CompleteMarker AliasType(LuaDocParser p)
     {
-        if (p.Current is not LuaTokenKind.TkDocOr)
-        {
-            return Type(p);
-        }
         var m = p.Marker();
-        p.Bump();
-
-        var cm2 = Type(p, false);
-        while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
+        var kind = LuaSyntaxKind.TypeUnion;
+        try
         {
-            p.Bump();
-            cm2 = Type(p, false);
-        }
+            p.Accept(LuaTokenKind.TkDocOr);
+            var cm2 = Type(p, false);
+            if (cm2.Kind == LuaSyntaxKind.LiteralExpr)
+            {
+                kind = LuaSyntaxKind.TypeAggregate;
+            }
 
-        return m.Complete(p, LuaSyntaxKind.TypeUnion);
+            while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
+            {
+                p.Bump();
+                cm2 = Type(p, false);
+                if (cm2.Kind == LuaSyntaxKind.LiteralExpr)
+                {
+                    kind = LuaSyntaxKind.TypeAggregate;
+                }
+            }
+
+            return m.Complete(p, kind);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, kind, e.Message);
+        }
     }
 
     private static void SuffixType(LuaDocParser p, ref CompleteMarker pcm)
@@ -93,6 +105,7 @@ public static class TypesParser
                     {
                         return;
                     }
+
                     var m = pcm.Reset(p);
                     p.Bump();
                     TypeList(p);

@@ -47,9 +47,9 @@ public class MemberProvider : ICompleteProviderBase
             var colon = indexExpr.IsColonIndex;
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.CreateCompletion(member.Name, member.DeclarationType)
+                context.CreateCompletion(member.Name, member.Info.DeclarationType)
                     .WithColon(colon)
-                    .WithData(member.Ptr.Stringify)
+                    .WithData(member.Info.Ptr.Stringify)
                     .WithDotCheckBracketLabel(indexExpr)
                     .WithCheckDeprecated(member)
                     .AddToContext();
@@ -69,8 +69,8 @@ public class MemberProvider : ICompleteProviderBase
         {
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.CreateCompletion(member.Name, member.DeclarationType)
-                    .WithData(member.Ptr.Stringify)
+                context.CreateCompletion(member.Name, member.Info.DeclarationType)
+                    .WithData(member.Info.Ptr.Stringify)
                     .WithCheckDeprecated(member)
                     .AddToContext();
             }
@@ -92,15 +92,15 @@ public class MemberProvider : ICompleteProviderBase
                 if (member.Name.StartsWith("["))
                 {
                     var label = member.Name[1..^1];
-                    context.CreateCompletion(label, member.DeclarationType)
-                        .WithData(member.Ptr.Stringify)
+                    context.CreateCompletion(label, member.Info.DeclarationType)
+                        .WithData(member.Info.Ptr.Stringify)
                         .WithCheckDeprecated(member)
                         .AddToContext();
                 }
                 else
                 {
-                    context.CreateCompletion($"\"{member.Name}\"", member.DeclarationType)
-                        .WithData(member.Ptr.Stringify)
+                    context.CreateCompletion($"\"{member.Name}\"", member.Info.DeclarationType)
+                        .WithData(member.Info.Ptr.Stringify)
                         .WithCheckDeprecated(member)
                         .AddToContext();
                 }

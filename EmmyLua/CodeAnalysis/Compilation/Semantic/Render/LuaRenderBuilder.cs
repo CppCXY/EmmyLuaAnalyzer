@@ -1,6 +1,9 @@
 ﻿using System.Globalization;
 using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -8,186 +11,105 @@ namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
 public class LuaRenderBuilder(SearchContext context)
 {
-    public string Render(LuaSyntaxElement element)
+    public string Render(LuaSyntaxElement element, LuaRenderFeature feature)
     {
-        return element switch
+        var renderContext = new LuaRenderContext(context, feature);
+        switch (element)
         {
-            LuaNameExprSyntax nameExpr => RenderNameExpr(nameExpr),
-            LuaIndexExprSyntax indexExpr => RenderIndexExpr(indexExpr),
-            LuaParamDefSyntax paramDef => RenderParamDef(paramDef),
-            LuaLocalNameSyntax localName => RenderLocalName(localName),
-            LuaLiteralExprSyntax literalExpr => RenderLiteralExpr(literalExpr),
-            LuaCallExprSyntax callExpr => RenderCallExpr(callExpr),
-            LuaTableFieldSyntax tableField => RenderTableField(tableField),
-            LuaDocNameTypeSyntax docNameType => RenderDocNameType(docNameType),
-            LuaDocGenericTypeSyntax docGenericType => RenderDocGenericType(docGenericType),
-            _ => string.Empty
-        };
-    }
-
-    private string RenderNameExpr(LuaNameExprSyntax nameExpr)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(nameExpr, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
+            case LuaNameExprSyntax or LuaIndexExprSyntax
+                or LuaParamDefSyntax or LuaLocalNameSyntax
+                or LuaCallExprSyntax or LuaTableFieldSyntax
+                or LuaDocNameTypeSyntax or LuaDocGenericTypeSyntax:
+            {
+                RenderElement(element, renderContext);
+                break;
+            }
+            case LuaLiteralExprSyntax literalExpr:
+            {
+                RenderLiteralExpr(literalExpr, renderContext);
+                break;
+            }
         }
 
-        return sb.ToString();
+        return renderContext.GetText();
     }
 
-    private string RenderIndexExpr(LuaIndexExprSyntax indexExpr)
+    public string RenderType(LuaType type, LuaRenderFeature feature)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(indexExpr, context);
-        var sb = new StringBuilder();
+        var renderContext = new LuaRenderContext(context, feature);
+        LuaTypeRenderer.RenderType(type, renderContext);
+        return renderContext.GetText();
+    }
+
+    public string RenderModule(LuaDocument document, LuaRenderFeature feature)
+    {
+        var renderContext = new LuaRenderContext(context, feature);
+        LuaModuleRenderer.RenderModule(document, renderContext);
+        return renderContext.GetText();
+    }
+
+    private void RenderElement(LuaSyntaxElement element, LuaRenderContext renderContext)
+    {
+        var declarationTree = renderContext.SearchContext.Compilation.GetDeclarationTree(element.DocumentId);
+        var declaration = declarationTree?.FindDeclaration(element, renderContext.SearchContext);
         if (declaration is not null)
         {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
+            LuaDeclarationRenderer.RenderDeclaration(declaration, renderContext);
         }
-
-        return sb.ToString();
     }
 
-    private string RenderParamDef(LuaParamDefSyntax paramDef)
+    private void RenderLiteralExpr(LuaLiteralExprSyntax literalExpr, LuaRenderContext renderContext)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(paramDef.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(paramDef, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
-    }
-
-    private string RenderLocalName(LuaLocalNameSyntax localName)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(localName.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(localName, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
-    }
-
-    private string RenderLiteralExpr(LuaLiteralExprSyntax literalExpr)
-    {
+        var feature = renderContext.Feature;
+        var searchContext = renderContext.SearchContext;
         switch (literalExpr.Literal)
         {
             case LuaStringToken stringLiteral:
             {
-                var enumerator = StringInfo.GetTextElementEnumerator(stringLiteral.Value);
-                var preview = new StringBuilder();
-                var count = 0;
-                while (enumerator.MoveNext() && count < 100)
+                var preview = stringLiteral.Value;
+                if (stringLiteral.Value.Length > feature.MaxStringPreviewLength)
                 {
-                    preview.Append(enumerator.GetTextElement());
-                    count++;
-                }
-
-                if (count == 100)
-                {
-                    preview.Append("...");
+                    preview = stringLiteral.Value[..feature.MaxStringPreviewLength] + "...";
                 }
 
                 var display = $"\"{preview}\"";
-                if (literalExpr.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
-                    && context.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
+                if (literalExpr.Parent?.Parent is LuaCallExprSyntax {Name: { } funcName}
+                    && searchContext.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
                 {
-                    var sb = new StringBuilder();
-                    sb.Append($"```lua\nmodule {display}\n```");
-                    var moduleDocument = context.Compilation.Workspace.ModuleGraph.FindModule(stringLiteral.Value);
+                    renderContext.WrapperLuaAppend($"module {display}");
+                    var moduleDocument = searchContext.Compilation.Workspace.ModuleGraph.FindModule(stringLiteral.Value);
                     if (moduleDocument is not null)
                     {
-                        LuaModuleRender.RenderModule(moduleDocument, context, sb);
+                        LuaModuleRenderer.RenderModule(moduleDocument, renderContext);
                     }
-
-                    display = sb.ToString();
                 }
                 else
                 {
-                    display = $"```lua\n{display}\n```";
+                    renderContext.WrapperLuaAppend(display);
                 }
 
-                return display;
+                break;
             }
             case LuaIntegerToken integerLiteral:
             {
-                return integerLiteral.Value.ToString();
+                renderContext.Append(integerLiteral.Value.ToString());
+                break;
             }
             case LuaFloatToken floatToken:
             {
-                return floatToken.ToString();
+                renderContext.Append(floatToken.Value.ToString(CultureInfo.CurrentCulture));
+                break;
             }
             case LuaComplexToken complexToken:
             {
-                return complexToken.ToString();
+                renderContext.Append(complexToken.Value);
+                break;
             }
             case LuaNilToken nilToken:
             {
-                return "nil";
+                renderContext.Append("nil");
+                break;
             }
         }
-
-        return string.Empty;
-    }
-
-    private string RenderCallExpr(LuaCallExprSyntax callExpr)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(callExpr.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(callExpr, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
-    }
-
-    private string RenderTableField(LuaTableFieldSyntax tableField)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(tableField.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(tableField, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
-    }
-
-    private string RenderDocNameType(LuaDocNameTypeSyntax docNameType)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(docNameType.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(docNameType, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
-    }
-
-    private string RenderDocGenericType(LuaDocGenericTypeSyntax docGenericType)
-    {
-        var declarationTree = context.Compilation.GetDeclarationTree(docGenericType.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(docGenericType, context);
-        var sb = new StringBuilder();
-        if (declaration is not null)
-        {
-            LuaDeclarationRender.RenderDeclaration(declaration, context, sb);
-        }
-
-        return sb.ToString();
     }
 }

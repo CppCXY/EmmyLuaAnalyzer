@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -11,6 +12,13 @@ namespace LanguageServer.SignatureHelper;
 
 public class SignatureHelperBuilder
 {
+    private LuaRenderFeature RenderFeature { get; } = new(
+        true,
+        true,
+        false,
+        100
+    );
+
     public SignatureHelp? Build(SemanticModel semanticModel, LuaSyntaxToken triggerToken, SignatureHelpParams request)
     {
         LuaCallExprSyntax callExpr = null!;
@@ -54,7 +62,7 @@ public class SignatureHelperBuilder
             .Count(comma => comma.Position <= triggerToken.Position);
 
         var activeSignature = 0;
-        var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
+        var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax {IsColonIndex: true};
 
         TypeHelper.Each(parentType, type =>
         {
@@ -137,8 +145,8 @@ public class SignatureHelperBuilder
 
             foreach (var parameter in parameters)
             {
-                var relatedNode = parameter.Ptr.ToNode(semanticModel.Context);
-                if (relatedNode is LuaSyntaxElement syntaxElement)
+                var syntaxElement = parameter.Info.Ptr.ToNode(semanticModel.Context);
+                if (syntaxElement is not null)
                 {
                     parameterInfos.Add(new ParameterInformation()
                     {
@@ -146,7 +154,7 @@ public class SignatureHelperBuilder
                         Documentation = new StringOrMarkupContent(new MarkupContent()
                         {
                             Kind = MarkupKind.Markdown,
-                            Value = semanticModel.RenderSymbol(syntaxElement)
+                            Value = semanticModel.RenderSymbol(syntaxElement, RenderFeature)
                         })
                     });
                 }
@@ -160,7 +168,7 @@ public class SignatureHelperBuilder
             }
 
             var returnType = signature.ReturnType;
-            if (parameters.LastOrDefault() is { Name: "..." })
+            if (parameters.LastOrDefault() is {Name: "..."})
             {
                 if (activeParameter >= parameterInfos.Count)
                 {
@@ -181,7 +189,7 @@ public class SignatureHelperBuilder
             }
 
             sb.Append(") -> ");
-            sb.Append(LuaTypeRender.RenderType(returnType, semanticModel.Context));
+            sb.Append(semanticModel.RenderBuilder.RenderType(returnType, RenderFeature with {ShowTypeLink = false}));
 
             signatureInfos.Add(new SignatureInformation()
             {

@@ -22,13 +22,13 @@ public class DbManager(LuaCompilation compilation)
 
     private IndexStorage<string, string> SubTypesStorage { get; } = new();
 
-    private IndexStorage<string, NamedTypeDeclaration> NamedTypeStorage { get; } = new();
+    private IndexStorage<string, LuaDeclaration> NamedTypeStorage { get; } = new();
 
     private IndexStorage<long, LuaType> Id2TypeStorage { get; } = new();
 
     private IndexStorage<string, LuaType> AliasTypesStorage { get; } = new();
 
-    private IndexStorage<string, GenericParamDeclaration> GenericParamStorage { get; } = new();
+    private IndexStorage<string, LuaDeclaration> GenericParamStorage { get; } = new();
 
     private Dictionary<LuaDocumentId, LuaType> ExportTypesDict { get; } = new();
 
@@ -69,7 +69,7 @@ public class DbManager(LuaCompilation compilation)
         }
 
         MembersStorage.Add(documentId, name, luaDeclaration);
-        ParentTypesStorage.Add(documentId, luaDeclaration.Ptr.UniqueId, name);
+        ParentTypesStorage.Add(documentId, luaDeclaration.Info.Ptr.UniqueId, name);
     }
 
     public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -86,13 +86,13 @@ public class DbManager(LuaCompilation compilation)
         }
     }
 
-    public void AddType(LuaDocumentId documentId, string name, NamedTypeDeclaration declaration)
+    public void AddType(LuaDocumentId documentId, string name, LuaDeclaration declaration)
     {
         NamedTypeStorage.Add(documentId, name, declaration);
     }
 
     public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType,
-        NamedTypeDeclaration declaration)
+        LuaDeclaration declaration)
     {
         AddType(documentId, name, declaration);
         AliasTypesStorage.Add(documentId, name, baseType);
@@ -104,7 +104,7 @@ public class DbManager(LuaCompilation compilation)
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
-        NamedTypeDeclaration declaration)
+        LuaDeclaration declaration)
     {
         AddType(documentId, name, declaration);
         if (baseType != null)
@@ -113,7 +113,7 @@ public class DbManager(LuaCompilation compilation)
         }
     }
 
-    public void AddGenericParam(LuaDocumentId documentId, string name, GenericParamDeclaration luaDeclaration)
+    public void AddGenericParam(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         GenericParamStorage.Add(documentId, name, luaDeclaration);
     }
@@ -188,9 +188,9 @@ public class DbManager(LuaCompilation compilation)
         return SubTypesStorage.Get<string>(name);
     }
 
-    public IEnumerable<NamedTypeDeclaration> GetNamedType(string name)
+    public IEnumerable<LuaDeclaration> GetNamedType(string name)
     {
-        return NamedTypeStorage.Get<NamedTypeDeclaration>(name);
+        return NamedTypeStorage.Get<LuaDeclaration>(name);
     }
 
     public IEnumerable<LuaType> GetTypeFromId(long id)
@@ -203,7 +203,7 @@ public class DbManager(LuaCompilation compilation)
         return AliasTypesStorage.Get<LuaType>(name);
     }
 
-    public NamedTypeDeclaration? GetTypeLuaDeclaration(string name)
+    public LuaDeclaration? GetTypeLuaDeclaration(string name)
     {
         return NamedTypeStorage.GetOne(name);
     }
@@ -218,14 +218,14 @@ public class DbManager(LuaCompilation compilation)
         return ExportExprsDict.GetValueOrDefault(documentId) ?? Enumerable.Empty<LuaElementPtr<LuaExprSyntax>>();
     }
 
-    public IEnumerable<GenericParamDeclaration> GetGenericParams(string name)
+    public IEnumerable<LuaDeclaration> GetGenericParams(string name)
     {
-        return GenericParamStorage.Get<GenericParamDeclaration>(name);
+        return GenericParamStorage.Get<LuaDeclaration>(name);
     }
 
     public BasicDetailType GetDetailNamedType(string name, SearchContext context)
     {
-        var kind = NamedTypeStorage.GetOne(name)?.Kind;
+        var kind = (NamedTypeStorage.GetOne(name)?.Info as NamedTypeInfo)?.Kind;
         switch (kind)
         {
             case NamedTypeKind.Alias:
@@ -259,7 +259,6 @@ public class DbManager(LuaCompilation compilation)
             }
         }
     }
-
 
     public IEnumerable<LuaIndexExprSyntax> GetIndexExprs(string name)
     {
@@ -300,7 +299,7 @@ public class DbManager(LuaCompilation compilation)
         return null;
     }
 
-    public IEnumerable<NamedTypeDeclaration> GetNamedTypes()
+    public IEnumerable<LuaDeclaration> GetNamedTypes()
     {
         return NamedTypeStorage.GetAll();
     }

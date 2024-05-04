@@ -9,9 +9,9 @@ public class ClassDetailType(
 {
     private List<LuaType>? _supers;
 
-    private List<GenericParamDeclaration>? _generics;
+    private List<LuaDeclaration>? _generics;
 
-    private NamedTypeDeclaration? _declaration;
+    private LuaDeclaration? _declaration;
 
     public List<LuaType> Supers
     {
@@ -26,7 +26,7 @@ public class ClassDetailType(
         }
     }
 
-    public List<GenericParamDeclaration> Generics
+    public List<LuaDeclaration> Generics
     {
         get
         {
@@ -39,7 +39,7 @@ public class ClassDetailType(
         }
     }
 
-    public NamedTypeDeclaration? Declaration
+    public LuaDeclaration? Declaration
     {
         get
         {

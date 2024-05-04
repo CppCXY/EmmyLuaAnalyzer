@@ -1,4 +1,5 @@
-﻿using LanguageServer.Server;
+﻿using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using LanguageServer.Server;
 using LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -12,6 +13,13 @@ public class HoverHandler(
     ServerContext context
 ) : HoverHandlerBase
 {
+    private LuaRenderFeature RenderFeature { get; } = new(
+        true,
+        true,
+        false,
+        100
+    );
+    
     protected override HoverRegistrationOptions CreateRegistrationOptions(HoverCapability capability,
         ClientCapabilities clientCapabilities)
     {
@@ -39,12 +47,12 @@ public class HoverHandler(
                     Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = semanticModel.RenderSymbol(node)
+                        Value = semanticModel.RenderSymbol(node, RenderFeature)
                     })
                 };
             }
         });
 
-        return Task.FromResult<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?>(hover);
+        return Task.FromResult(hover);
     }
 }

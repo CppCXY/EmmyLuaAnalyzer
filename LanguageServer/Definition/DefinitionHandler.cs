@@ -51,7 +51,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                 if (node is not null)
                 {
                     var declaration = declarationTree.FindDeclaration(node, semanticModel.Context);
-                    if (declaration?.Ptr.ToNode(semanticModel.Context) is { Location: { } location })
+                    if (declaration?.Info.Ptr.ToNode(semanticModel.Context) is { Location: { } location })
                     {
                         locationLinks = LocationOrLocationLinks.From(
                             location.ToLspLocation()

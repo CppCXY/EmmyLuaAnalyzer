@@ -16,28 +16,31 @@ public class References(SearchContext context)
         }
 
         var declaration = declarationTree.FindDeclaration(element, context);
-        return declaration switch
+        return declaration?.Info switch
         {
-            LocalDeclaration localDeclaration => LocalReferences(localDeclaration, declarationTree),
-            GlobalDeclaration globalDeclaration => GlobalReferences(globalDeclaration),
-            MethodDeclaration methodDeclaration => MethodReferences(methodDeclaration),
-            DocFieldDeclaration fieldDeclaration => DocFieldReferences(fieldDeclaration),
-            TableFieldDeclaration tableFieldDeclaration => TableFieldReferences(tableFieldDeclaration),
-            NamedTypeDeclaration namedTypeDeclaration => NamedTypeReferences(namedTypeDeclaration),
-            ParamDeclaration parameterDeclaration => ParameterReferences(parameterDeclaration),
-            IndexDeclaration indexDeclaration => IndexExprReferences(indexDeclaration),
+            LocalInfo localInfo => LocalReferences(declaration, localInfo, declarationTree),
+            GlobalInfo => GlobalReferences(declaration),
+            MethodInfo methodInfo => MethodReferences(declaration, methodInfo),
+            DocFieldInfo docFieldInfo => DocFieldReferences(declaration, docFieldInfo),
+            EnumFieldInfo enumFieldInfo => EnumFieldReferences(declaration, enumFieldInfo),
+            TableFieldInfo tableFieldInfo => TableFieldReferences(declaration, tableFieldInfo),
+            TupleMemberInfo tupleMemberInfo => TupleMemberReferences(declaration, tupleMemberInfo),
+            NamedTypeInfo namedTypeInfo => NamedTypeReferences(declaration, namedTypeInfo),
+            ParamInfo paramInfo => ParameterReferences(declaration, paramInfo),
+            IndexInfo indexInfo => IndexExprReferences(declaration, indexInfo),
             _ => Enumerable.Empty<LuaReference>()
         };
     }
 
-    private IEnumerable<LuaReference> LocalReferences(LuaDeclaration declaration, LuaDeclarationTree declarationTree)
+    private IEnumerable<LuaReference> LocalReferences(LuaDeclaration declaration, DeclarationInfo info,
+        LuaDeclarationTree declarationTree)
     {
         var references = new List<LuaReference>();
-        var declarationNode = declaration.Ptr.ToNode(context);
-        var parentBlock = declarationNode?.Ancestors.OfType<LuaBlockSyntax>().FirstOrDefault();
-        if (parentBlock is not null)
+        var localNameSyntax = info.Ptr.ToNode(context);
+        var parentBlock = localNameSyntax?.Ancestors.OfType<LuaBlockSyntax>().FirstOrDefault();
+        if (parentBlock is not null && localNameSyntax is not null)
         {
-            references.Add(new LuaReference(declarationNode!.Location, declarationNode));
+            references.Add(new LuaReference(localNameSyntax.Location, localNameSyntax));
             foreach (var node in parentBlock.Descendants
                          .Where(it => it.Position > declaration.Position))
             {
@@ -88,28 +91,28 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<LuaReference> MethodReferences(MethodDeclaration declaration)
+    private IEnumerable<LuaReference> MethodReferences(LuaDeclaration declaration, MethodInfo methodInfo)
     {
-        switch (declaration.ScopeFeature)
+        switch (declaration)
         {
-            case DeclarationScopeFeature.Local:
+            case {IsLocal: true}:
             {
-                var id = declaration.Ptr.DocumentId;
+                var id = declaration.Info.Ptr.DocumentId;
                 var declarationTree = context.Compilation.GetDeclarationTree(id);
                 if (declarationTree is not null)
                 {
-                    return LocalReferences(declaration, declarationTree);
+                    return LocalReferences(declaration, methodInfo, declarationTree);
                 }
 
                 break;
             }
-            case DeclarationScopeFeature.Global:
+            case {IsGlobal: true}:
             {
                 return GlobalReferences(declaration);
             }
             default:
             {
-                if (declaration.IndexExprPtr.ToNode(context) is { Name: { } name })
+                if (methodInfo.IndexPtr.ToNode(context) is {Name: { } name})
                 {
                     return FieldReferences(declaration, name);
                 }
@@ -121,14 +124,11 @@ public class References(SearchContext context)
         return Enumerable.Empty<LuaReference>();
     }
 
-    private IEnumerable<LuaReference> DocFieldReferences(DocFieldDeclaration fieldDeclaration)
+    private IEnumerable<LuaReference> DocFieldReferences(LuaDeclaration fieldDeclaration, DocFieldInfo info)
     {
+        var name = fieldDeclaration.Name;
         var references = new List<LuaReference>();
-        if (fieldDeclaration is
-            {
-                Name: { } name, FieldDefPtr: { } fieldDefPtr
-            }
-            && fieldDefPtr.ToNode(context) is { } fieldDef)
+        if (info.FieldDefPtr.ToNode(context) is { } fieldDef)
         {
             if (fieldDef.FieldElement is { } fieldElement)
             {
@@ -141,11 +141,11 @@ public class References(SearchContext context)
                 var members = context.FindMember(parentType, name);
                 foreach (var member in members)
                 {
-                    if (member is TableFieldDeclaration
+                    if (member is
                         {
-                            Name: { } name2, TableFieldPtr: { } tableFieldPtr
+                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
                         }
-                        && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
+                        && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
                        )
                     {
                         references.Add(new LuaReference(keyElement.Location, keyElement));
@@ -160,13 +160,45 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<LuaReference> TableFieldReferences(TableFieldDeclaration declaration)
+    private IEnumerable<LuaReference> EnumFieldReferences(LuaDeclaration declaration, EnumFieldInfo info)
     {
+        var name = declaration.Name;
         var references = new List<LuaReference>();
-        if (declaration is
+        if (info.EnumFieldDefPtr.ToNode(context) is { } enumFieldDef)
+        {
+            if (enumFieldDef.Name is { } enumFieldName)
             {
-                Name: { } name, TableFieldPtr: { } tableFieldPtr
-            } && tableFieldPtr.ToNode(context) is { } fieldDef)
+                references.Add(new LuaReference(enumFieldName.Location, enumFieldName));
+            }
+
+            var parentType = context.Compilation.DbManager.GetParentType(enumFieldDef);
+            if (parentType is not null)
+            {
+                var members = context.FindMember(parentType, name);
+                foreach (var member in members)
+                {
+                    if (member is
+                        {
+                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
+                        } && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
+                       )
+                    {
+                        references.Add(new LuaReference(keyElement.Location, keyElement));
+                    }
+                }
+            }
+
+            references.AddRange(FieldReferences(declaration, name));
+        }
+
+        return references;
+    }
+
+    private IEnumerable<LuaReference> TableFieldReferences(LuaDeclaration declaration, TableFieldInfo info)
+    {
+        var name = declaration.Name;
+        var references = new List<LuaReference>();
+        if (info.TableFieldPtr.ToNode(context) is { } fieldDef)
         {
             if (fieldDef.KeyElement is { } keyElement)
             {
@@ -179,10 +211,10 @@ public class References(SearchContext context)
                 var members = context.FindMember(parentType, name);
                 foreach (var member in members)
                 {
-                    if (member is DocFieldDeclaration
+                    if (member is
                         {
-                            Name: { } name2, FieldDefPtr: { } fieldDefPtr
-                        } && fieldDefPtr.ToNode(context) is { FieldElement: { } fieldElement }
+                            Name: { } name2, Info: DocFieldInfo {FieldDefPtr: { } fieldDefPtr}
+                        } && fieldDefPtr.ToNode(context) is {FieldElement: { } fieldElement}
                        )
                     {
                         references.Add(new LuaReference(fieldElement.Location, fieldElement));
@@ -196,11 +228,42 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<LuaReference> NamedTypeReferences(NamedTypeDeclaration declaration)
+    private IEnumerable<LuaReference> TupleMemberReferences(LuaDeclaration declaration, TupleMemberInfo info)
     {
+        var name = declaration.Name;
         var references = new List<LuaReference>();
-        if (declaration is { Name: { } name, TypeDefinePtr: { } typeDefinePtr }
-            && typeDefinePtr.ToNode(context) is { Name: { } typeName })
+        if (info.TypePtr.ToNode(context) is { } tupleMember)
+        {
+            references.Add(new LuaReference(tupleMember.Location, tupleMember));
+
+            var parentType = context.Compilation.DbManager.GetParentType(tupleMember);
+            if (parentType is not null)
+            {
+                var members = context.FindMember(parentType, name);
+                foreach (var member in members)
+                {
+                    if (member is
+                        {
+                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
+                        } && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
+                       )
+                    {
+                        references.Add(new LuaReference(keyElement.Location, keyElement));
+                    }
+                }
+            }
+
+            references.AddRange(FieldReferences(declaration, name));
+        }
+
+        return references;
+    }
+
+    private IEnumerable<LuaReference> NamedTypeReferences(LuaDeclaration declaration, NamedTypeInfo info)
+    {
+        var name = declaration.Name;
+        var references = new List<LuaReference>();
+        if (info.TypeDefinePtr.ToNode(context) is {Name: { } typeName})
         {
             references.Add(new LuaReference(typeName.Location, typeName));
             var nameTypes = context.Compilation.DbManager.GetNameTypes(name);
@@ -217,29 +280,27 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<LuaReference> ParameterReferences(ParamDeclaration declaration)
+    private IEnumerable<LuaReference> ParameterReferences(LuaDeclaration declaration, ParamInfo info)
     {
         var references = new List<LuaReference>();
-        if (declaration is { ParamDefPtr: { } paramDefPtr, TypedParamPtr: { } typedParamPtr })
-        {
-            if (paramDefPtr.ToNode(context) is { } paramDef)
-            {
-                if (DocParameterReferences(paramDef) is { } luaReference)
-                {
-                    references.Add(luaReference);
-                }
 
-                var documentId = paramDefPtr.DocumentId;
-                var declarationTree = context.Compilation.GetDeclarationTree(documentId);
-                if (declarationTree is not null)
-                {
-                    references.AddRange(LocalReferences(declaration, declarationTree));
-                }
-            }
-            else if (typedParamPtr.ToNode(context) is { Name: { } typedParamName })
+        if (info.ParamDefPtr.ToNode(context) is { } paramDef)
+        {
+            if (DocParameterReferences(paramDef) is { } luaReference)
             {
-                references.Add(new LuaReference(typedParamName.Location, typedParamName));
+                references.Add(luaReference);
             }
+
+            var documentId = paramDef.DocumentId;
+            var declarationTree = context.Compilation.GetDeclarationTree(documentId);
+            if (declarationTree is not null)
+            {
+                references.AddRange(LocalReferences(declaration, info, declarationTree));
+            }
+        }
+        else if (info.TypedParamPtr.ToNode(context) is {Name: { } typedParamName})
+        {
+            references.Add(new LuaReference(typedParamName.Location, typedParamName));
         }
 
         return references;
@@ -258,7 +319,7 @@ public class References(SearchContext context)
         {
             foreach (var tagParamSyntax in comment.DocList.OfType<LuaDocTagParamSyntax>())
             {
-                if (tagParamSyntax.Name is { RepresentText: { } name } && name == paramDefName)
+                if (tagParamSyntax.Name is {RepresentText: { } name} && name == paramDefName)
                 {
                     return new LuaReference(tagParamSyntax.Name.Location, tagParamSyntax.Name);
                 }
@@ -268,11 +329,10 @@ public class References(SearchContext context)
         return null;
     }
 
-    private IEnumerable<LuaReference> IndexExprReferences(IndexDeclaration declaration)
+    private IEnumerable<LuaReference> IndexExprReferences(LuaDeclaration declaration, IndexInfo info)
     {
         var references = new List<LuaReference>();
-        if (declaration is { IndexExprPtr: { } indexExprPtr }
-            && indexExprPtr.ToNode(context) is { Name: { } name })
+        if (info.IndexExprPtr.ToNode(context) is {Name: { } name})
         {
             references.AddRange(FieldReferences(declaration, name));
         }

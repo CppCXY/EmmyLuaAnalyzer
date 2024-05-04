@@ -23,4 +23,15 @@ public class LuaLocation(LuaDocument document, SourceRange range, int baseLine =
         var endCol = document.GetCol(Range.EndOffset);
         return $"{FilePath} [{startLine}:{startCol} - {endLine}:{endCol}]";
     }
+
+    public string ToUriLocation(int baseLine = 0)
+    {
+        var document = Document;
+        var startLine = document.GetLine(Range.StartOffset) + baseLine;
+        var startCol = document.GetCol(Range.StartOffset);
+
+        var endLine = document.GetLine(Range.EndOffset) + baseLine;
+        var endCol = document.GetCol(Range.EndOffset);
+        return $"{Document.Uri}#{startLine}:{startCol}-{endLine}:{endCol}";
+    }
 }

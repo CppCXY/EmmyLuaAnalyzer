@@ -53,20 +53,20 @@ public class UnResolvedSource(LuaDocumentId documentId, LuaBlockSyntax block, Re
 }
 
 public class UnResolvedForRangeParameter(
-    List<ParamDeclaration> parameterLuaDeclarations,
+    List<LuaDeclaration> parameterLuaDeclarations,
     List<LuaExprSyntax> exprList) : UnResolved(ResolveState.UnResolvedType)
 {
-    public List<ParamDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
+    public List<LuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
 
     public List<LuaExprSyntax> ExprList { get; } = exprList;
 }
 
 public class UnResolvedClosureParameters(
-    List<ParamDeclaration> parameterLuaDeclarations,
+    List<LuaDeclaration> parameterLuaDeclarations,
     LuaCallExprSyntax callExprSyntax,
     int index) : UnResolved(ResolveState.UnResolvedParameters)
 {
-    public List<ParamDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
+    public List<LuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
 
     public LuaCallExprSyntax CallExprSyntax { get; } = callExprSyntax;
 

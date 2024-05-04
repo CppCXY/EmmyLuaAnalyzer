@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.Configuration;
@@ -27,6 +28,13 @@ public class CompleteContext
     public CompletionConfig CompletionConfig { get; }
     
     public ServerContext ServerContext { get; }
+    
+    public LuaRenderFeature RenderFeature { get; } = new(
+        true,
+        false,
+        false,
+        100
+    );
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public CompleteContext(SemanticModel semanticModel, Position position, CancellationToken cancellationToken,

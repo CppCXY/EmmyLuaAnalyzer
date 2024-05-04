@@ -8,6 +8,7 @@ public enum TypeKind
     Nil,
     Tuple,
     Union,
+    Aggregate,
     Array,
     Generic,
     Return,

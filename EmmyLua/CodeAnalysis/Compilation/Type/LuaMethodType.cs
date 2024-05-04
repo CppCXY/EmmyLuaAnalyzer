@@ -64,11 +64,11 @@ public struct SignatureMatchResult
     }
 }
 
-public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters) : IEquatable<LuaSignature>
+public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) : IEquatable<LuaSignature>
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<ParamDeclaration> Parameters { get; } = parameters;
+    public List<LuaDeclaration> Parameters { get; } = parameters;
 
     // 返回值表示匹配程度, 匹配程度只是表征对lua来讲有多少个参数匹配了, 但是并不表示类型完全匹配
     // lua没有重载决议, 所以只要参数数量接近就可以了
@@ -91,7 +91,7 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
             case (false, true):
             {
                 LuaType selfType = Builtin.Any;
-                if (callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
+                if (callExpr.PrefixExpr is LuaIndexExprSyntax {PrefixExpr: { } prefixExpr})
                 {
                     selfType = context.Infer(prefixExpr);
                 }
@@ -131,7 +131,7 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
             return matchResult;
         }
 
-        var firstType = Parameters[skipParam].DeclarationType ?? Builtin.Any;
+        var firstType = Parameters[skipParam].Info.DeclarationType ?? Builtin.Any;
         if (firstType is LuaStringLiteralType stringLiteralType && args[0] is LuaLiteralExprSyntax
             {
                 Literal: LuaStringToken stringToken
@@ -192,7 +192,7 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
             case (false, true):
             {
                 LuaType selfType = Builtin.Any;
-                if (callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
+                if (callExpr.PrefixExpr is LuaIndexExprSyntax {PrefixExpr: { } prefixExpr})
                 {
                     selfType = context.Infer(prefixExpr);
                 }
@@ -230,7 +230,7 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
             return this;
         }
 
-        var newParameters = new List<ParamDeclaration>();
+        var newParameters = new List<LuaDeclaration>();
         if (skipParam > 0)
         {
             newParameters.AddRange(Parameters.Take(skipParam));
@@ -242,31 +242,30 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
 
         for (var i = 0;
              i + paramStart < Parameters.Count
-             && i +argStart < args.Count
+             && i + argStart < args.Count
              && genericParameterMap.Count < genericParameters.Count;
              i++)
         {
             var parameter = Parameters[i + paramStart];
-            if (parameter is { IsVararg: true, DeclarationType: LuaExpandType expandType })
+            if (parameter.Info is ParamInfo {IsVararg: true, DeclarationType: LuaExpandType expandType})
             {
                 var varargs = args[(i + argStart)..];
-                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParameters, genericParameterMap, context);
+                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParameters,
+                    genericParameterMap, context);
             }
             else
             {
                 var arg = args[i + argStart];
-                var parameterType = parameter.DeclarationType ?? Builtin.Any;
-                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap, context);
+                var parameterType = parameter.Info.DeclarationType ?? Builtin.Any;
+                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap,
+                    context);
             }
         }
 
         var newReturnType = ReturnType.Instantiate(genericParameterMap);
         foreach (var parameter in Parameters)
         {
-            if (parameter.Instantiate(genericParameterMap) is ParamDeclaration declaration)
-            {
-                newParameters.Add(declaration);
-            }
+            newParameters.Add(parameter.Instantiate(genericParameterMap));
         }
 
         return new LuaSignature(newReturnType, newParameters);
@@ -302,7 +301,6 @@ public class LuaSignature(LuaType returnType, List<ParamDeclaration> parameters)
         var newReturnType = ReturnType.Instantiate(genericReplace);
         var newParameters = Parameters
             .Select(parameter => parameter.Instantiate(genericReplace))
-            .Cast<ParamDeclaration>()
             .ToList();
         return new LuaSignature(newReturnType, newParameters);
     }
@@ -317,7 +315,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<ParamDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<LuaDeclaration> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }
@@ -387,12 +385,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<GenericParamDeclaration> GenericParameterDeclarations { get; }
+    public List<LuaDeclaration> GenericParameterDeclarations { get; }
 
     public HashSet<string> GenericParameterNames { get; }
 
     public LuaGenericMethodType(
-        List<GenericParamDeclaration> genericParameterDeclarations,
+        List<LuaDeclaration> genericParameterDeclarations,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)
@@ -407,7 +405,7 @@ public class LuaGenericMethodType : LuaMethodType
         SearchContext context)
     {
         var signatures = new List<LuaSignature>
-            { MainSignature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context) };
+            {MainSignature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context)};
 
         if (Overloads is not null)
         {

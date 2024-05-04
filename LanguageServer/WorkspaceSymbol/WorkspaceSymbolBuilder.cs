@@ -20,13 +20,13 @@ public class WorkspaceSymbolBuilder
                 if (global.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                      cancellationToken.ThrowIfCancellationRequested();
-                     var document = luaWorkspace.GetDocument(global.Ptr.DocumentId);
-                     if (document is not null && global.Ptr.ToNode(document) is { } node)
+                     var document = luaWorkspace.GetDocument(global.Info.Ptr.DocumentId);
+                     if (document is not null && global.Info.Ptr.ToNode(document) is { } node)
                      {
                          result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
                          {
                              Name = global.Name,
-                             Kind = ToSymbolKind(global.DeclarationType),
+                             Kind = ToSymbolKind(global.Info.DeclarationType),
                              Location = node.Range.ToLspLocation(document)
                          });
                      }
@@ -38,13 +38,13 @@ public class WorkspaceSymbolBuilder
                 if (member.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var document = luaWorkspace.GetDocument(member.Ptr.DocumentId);
-                    if (document is not null && member.Ptr.ToNode(document) is { } node)
+                    var document = luaWorkspace.GetDocument(member.Info.Ptr.DocumentId);
+                    if (document is not null && member.Info.Ptr.ToNode(document) is { } node)
                     {
                         result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
                         {
                             Name = member.Name,
-                            Kind = ToSymbolKind(member.DeclarationType),
+                            Kind = ToSymbolKind(member.Info.DeclarationType),
                             Location = node.Range.ToLspLocation(document)
                         });
                     }

@@ -95,13 +95,29 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
                             {
                                 var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
-                                parameter.DeclarationType ??= multiReturnType.GetElementType(i);
+                                if (parameter.Info.DeclarationType is null)
+                                {
+                                    parameter.Info = parameter.Info with
+                                    {
+                                        DeclarationType = multiReturnType.GetElementType(i)
+                                    };
+                                }
+
+                                ;
                             }
                         }
                         else if (unResolvedForRangeParameter.ParameterLuaDeclarations.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
-                            firstDeclaration.DeclarationType ??= returnType;
+                            if (firstDeclaration.Info.DeclarationType is null)
+                            {
+                                firstDeclaration.Info = firstDeclaration.Info with
+                                {
+                                    DeclarationType = returnType
+                                };
+                            }
+
+                            ;
                         }
                     }
 
@@ -116,7 +132,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            declaration.DeclarationType ??= new LuaNamedType(declaration.Ptr.Stringify);
+            if (declaration.Info.DeclarationType is null)
+            {
+                declaration.Info = declaration.Info with {DeclarationType = new LuaNamedType(declaration.Info.Ptr.Stringify)};
+            }
         }
     }
 
@@ -125,7 +144,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax {PrefixExpr: { } prefixExpr} indexExpr)
             {
                 var documentId = indexExpr.DocumentId;
                 var ty = Context.Infer(prefixExpr);
@@ -177,7 +196,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var paramIndex = unResolvedClosureParameters.Index;
                 if (paramIndex == -1) return;
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
-                if (paramDeclaration is not { DeclarationType: { } paramType }) return;
+                if (paramDeclaration is not {Info.DeclarationType: { } paramType}) return;
                 var closureParams = unResolvedClosureParameters.ParameterLuaDeclarations;
                 TypeHelper.Each<LuaMethodType>(paramType, methodType =>
                 {
@@ -186,14 +205,18 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     {
                         var closureParam = closureParams[i];
                         var mainParam = mainParams[i];
-                        closureParam.DeclarationType ??= mainParam.DeclarationType;
+                        if (closureParam.Info.DeclarationType is null)
+                        {
+                            closureParam.Info = closureParam.Info with {DeclarationType = mainParam.Info.DeclarationType};
+                        }
                     }
                 });
             });
         }
     }
 
-    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, out List<LuaExprSyntax> relatedExpr,AnalyzeContext analyzeContext)
+    private LuaType AnalyzeBlockReturns(LuaBlockSyntax mainBlock, out List<LuaExprSyntax> relatedExpr,
+        AnalyzeContext analyzeContext)
     {
         LuaType returnType = Builtin.Unknown;
         relatedExpr = new List<LuaExprSyntax>();
@@ -259,20 +282,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         var declaration = unResolved.LuaDeclaration;
 
-        if (declaration.DeclarationType is null)
+        if (declaration.Info.DeclarationType is null)
         {
-            declaration.DeclarationType = type;
+            declaration.Info = declaration.Info with {DeclarationType = type};
         }
         else if (unResolved.IsTypeDeclaration && TypeHelper.IsExtensionType(type))
         {
-            var declarationType = unResolved.LuaDeclaration.DeclarationType;
+            var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
             if (declarationType is LuaNamedType namedType)
             {
                 if (type is LuaTableLiteralType tableType)
                 {
                     var typeName = namedType.Name;
                     var members = Compilation.DbManager.GetMembers(tableType.Name);
-                    var documentId = declaration.Ptr.DocumentId;
+                    var documentId = declaration.Info.Ptr.DocumentId;
 
                     foreach (var member in members)
                     {
@@ -283,7 +306,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 }
                 else
                 {
-                    var documentId = declaration.Ptr.DocumentId;
+                    var documentId = declaration.Info.Ptr.DocumentId;
                     Compilation.DbManager.AddSuper(documentId, namedType.Name, type);
                 }
             }

@@ -14,7 +14,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
     public event ResolveStateHandler? OnForceTypeResolved;
 
-    public void CalcDependency()
+    private void CalcDependency()
     {
         bool changed;
         do
@@ -183,7 +183,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            if (declaration.Info.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
                 var ty = context.Infer(prefixExpr);
                 if (ty.Equals(Builtin.Unknown))

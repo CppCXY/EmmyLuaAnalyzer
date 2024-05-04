@@ -219,9 +219,9 @@ public static class GenericInfer
             {
                 var parameter = mainSignature.Parameters[i];
                 var parameter2 = mainSignature2.Parameters[i];
-                if (parameter is { DeclarationType: { } type })
+                if (parameter is { Info.DeclarationType: { } type })
                 {
-                    var paramType = parameter2.DeclarationType ?? Builtin.Any;
+                    var paramType = parameter2.Info.DeclarationType ?? Builtin.Any;
                     InferInstantiateByType(type, paramType, genericParameter, result, context);
                 }
             }
@@ -267,18 +267,18 @@ public static class GenericInfer
         {
             for (var i = 0; i < tupleType.TupleDeclaration.Count && i < tupleType2.TupleDeclaration.Count; i++)
             {
-                var leftElementType = tupleType.TupleDeclaration[i].DeclarationType!;
+                var leftElementType = tupleType.TupleDeclaration[i].Info.DeclarationType!;
                 if (leftElementType is LuaExpandType expandType)
                 {
                     var rightExprs = tupleType2.TupleDeclaration[i..]
-                        .Where(it => it.DeclarationType is not null)
-                        .Select(it => it.DeclarationType!);
+                        .Where(it => it.Info.DeclarationType is not null)
+                        .Select(it => it.Info.DeclarationType!);
                     InferInstantiateByExpandTypeAndTypes(expandType, rightExprs, genericParameter, result,
                         context);
                 }
                 else
                 {
-                    var rightElementType = tupleType2.TupleDeclaration[i].DeclarationType!;
+                    var rightElementType = tupleType2.TupleDeclaration[i].Info.DeclarationType!;
                     InferInstantiateByType(leftElementType, rightElementType, genericParameter, result, context);
                 }
             }
@@ -291,7 +291,7 @@ public static class GenericInfer
                 var fileList = tableExpr.FieldList.ToList();
                 for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
                 {
-                    var tupleElementType = tupleType.TupleDeclaration[i].DeclarationType!;
+                    var tupleElementType = tupleType.TupleDeclaration[i].Info.DeclarationType!;
                     if (tupleElementType is LuaExpandType expandType)
                     {
                         var fileExprs = fileList[i..]
