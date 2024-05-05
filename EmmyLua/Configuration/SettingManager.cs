@@ -140,6 +140,12 @@ public class SettingManager
 
     public void Save(Setting setting)
     {
+        if (setting.Schema is null)
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "schema.json");
+            setting.Schema = (new Uri(path)).AbsoluteUri;
+        }
+
         var json = JsonConvert.SerializeObject(setting, SerializerSettings);
         File.WriteAllText(SettingPath, json);
     }

@@ -12,7 +12,7 @@ namespace EmmyLua.Configuration;
 public class Setting
 {
     [JsonProperty("$schema", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public string Schema { get; set; } = "https://github.com/CppCXY/EmmyLuaAnalyzer/tree/master/EmmyLua/Resources/schema.json";
+    public string? Schema { get; set; } = null;
 
     [JsonProperty("completion", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Completion Completion { get; set; } = new();
