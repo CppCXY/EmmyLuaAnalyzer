@@ -97,4 +97,68 @@ internal static class LuaCommentRenderer
             renderContext.Append(commentText);
         }
     }
+
+    public static void RenderFunctionDocComment(MethodInfo methodInfo, LuaRenderContext renderContext)
+    {
+        var funcStat = methodInfo.Ptr.ToNode(renderContext.SearchContext)?
+            .AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault();
+        if (funcStat is { Comments: { } comments })
+        {
+            var tagParams = comments
+                .SelectMany(it => it.DocList)
+                .OfType<LuaDocTagParamSyntax>()
+                .ToList();
+            if (tagParams.Count == 0)
+            {
+                return;
+            }
+
+            renderContext.AddSeparator();
+            renderContext.WrapperLanguage("plaintext", () =>
+            {
+                renderContext.Append("params: ");
+                var indent = string.Empty;
+                foreach (var tagParam in tagParams)
+                {
+                    var nameLength = 0;
+                    if (tagParam.Name is { RepresentText: {} name })
+                    {
+                        renderContext.Append($"{indent}{name}");
+                        nameLength = name.Length;
+                    }
+                    else if (tagParam.VarArgs is not null)
+                    {
+                        renderContext.Append($"{indent}...");
+                        nameLength = 3;
+                    }
+
+                    if (indent.Length == 0)
+                    {
+                        indent = new string(' ', 8); // 8 spaces
+                    }
+
+                    if (tagParam.Description is { Details: {} details })
+                    {
+                        var detailIndent = " - ";
+                        var detailList = details.ToList();
+                        for (var index = 0; index < detailList.Count; index++)
+                        {
+                            var detail = detailList[index];
+                            renderContext.Append($"{detailIndent}{detail.RepresentText}");
+                            if (index < detailList.Count - 1)
+                            {
+                                renderContext.AppendLine();
+                            }
+
+                            if (index == 0 && detailList.Count > 1)
+                            {
+                                detailIndent = new string(' ', 8 + nameLength + 3); // 8 spaces + nameLength + 3 spaces
+                            }
+                        }
+                    }
+                    renderContext.AppendLine();
+                }
+            });
+        }
+    }
 }
