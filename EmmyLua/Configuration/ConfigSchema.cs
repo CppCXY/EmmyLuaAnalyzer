@@ -11,6 +11,9 @@ namespace EmmyLua.Configuration;
 /// </summary>
 public class Setting
 {
+    [JsonProperty("$schema", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public string Schema { get; set; } = "https://github.com/CppCXY/EmmyLuaAnalyzer/tree/master/EmmyLua/Resources/schema.json";
+
     [JsonProperty("completion", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Completion Completion { get; set; } = new();
 
@@ -102,7 +105,7 @@ public class Workspace
     public List<string> WorkspaceRoots { get; set; } = new();
 
     [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public int PreloadFileSize { get; set; } = 2048000;
+    public int PreloadFileSize { get; set; } = 1048576; // 1Mb
 }
 
 public class Resource

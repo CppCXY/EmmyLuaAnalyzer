@@ -10,7 +10,6 @@ public static class BinderAnalysis
     {
         Dictionary<LuaCommentSyntax, LuaSyntaxElement> commentOwners = new();
         Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments = new();
-        // Dictionary<LuaSyntaxElement, List<LuaSyntaxToken>> docDescriptions = new();
 
         foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
         {
@@ -45,24 +44,6 @@ public static class BinderAnalysis
                     }
                 }
             }
-            // else if (nodeOrToken is LuaSyntaxToken
-            //          {
-            //              Kind: LuaTokenKind.TkDocDetail
-            //          } token)
-            // {
-            //     var element = GetInlineDocNode(token);
-            //     // ReSharper disable once InvertIf
-            //     if (element != null)
-            //     {
-            //         if (!docDescriptions.TryGetValue(element, out var tokenList))
-            //         {
-            //             tokenList = new List<LuaSyntaxToken>();
-            //             docDescriptions.Add(element, tokenList);
-            //         }
-            //
-            //         tokenList.Add(token);
-            //     }
-            // }
         }
 
         return new BinderData(commentOwners, comments);
@@ -127,32 +108,4 @@ public static class BinderAnalysis
             }
         }
     }
-    //
-    // private static LuaSyntaxElement? GetInlineDocNode(LuaSyntaxToken descriptionToken)
-    // {
-    //     for (var i = 1;; i++)
-    //     {
-    //         var prevSibling = descriptionToken.GetPrevSibling(i);
-    //         switch (prevSibling)
-    //         {
-    //             case LuaSyntaxToken
-    //             {
-    //                 Kind: LuaTokenKind.TkWhitespace or LuaTokenKind.TkDocContinue,
-    //             }:
-    //             {
-    //                 continue;
-    //             }
-    //             case null
-    //                 or LuaSyntaxToken
-    //                 {
-    //                     Kind: LuaTokenKind.TkEndOfLine or LuaTokenKind.TkNormalStart
-    //                 }:
-    //             {
-    //                 return null;
-    //             }
-    //             default:
-    //                 return prevSibling;
-    //         }
-    //     }
-    // }
 }

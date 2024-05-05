@@ -16,9 +16,4 @@ public class BinderData(
     {
         return comments.TryGetValue(nodeOrToken, out var value) ? value : Enumerable.Empty<LuaCommentSyntax>();
     }
-
-    // public LuaDescriptionSyntax GetDescriptions(LuaSyntaxElement nodeOrToken)
-    // {
-    //     return GetComments(nodeOrToken).SelectMany(it => it.Descriptions);
-    // }
 }

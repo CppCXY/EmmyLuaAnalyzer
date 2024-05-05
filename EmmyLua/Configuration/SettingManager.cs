@@ -114,7 +114,8 @@ public class SettingManager
             path = Path.Combine(Workspace, path.TrimStart('/'));
         }
 
-        return path.Replace("${workspaceFolder}", Workspace);
+        path = path.Replace("${workspaceFolder}", Workspace);
+        return Path.GetFullPath(path);
     }
 
     public LuaFeatures GetLuaFeatures()

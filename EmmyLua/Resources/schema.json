@@ -1,0 +1,233 @@
+{
+  "definitions": {
+    "Completion": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "autoRequire": {
+          "type": "boolean"
+        },
+        "autoRequireFunction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "autoRequireNamingConvention": {
+          "type": "string",
+          "enum": [
+            "none",
+            "camelCase",
+            "pascalCase",
+            "snakeCase"
+          ]
+        },
+        "callSnippet": {
+          "type": "boolean"
+        },
+        "postfix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Diagnostics": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "disable": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "none",
+              "syntax-error",
+              "type-not-found",
+              "missing-return",
+              "type-not-match",
+              "missing-parameter",
+              "inject-field-fail",
+              "unreachable-code",
+              "unused",
+              "undefined-global",
+              "need-import",
+              "deprecated",
+              "access-private-member"
+            ]
+          }
+        },
+        "enable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "globals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "Hint": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "paramHint": {
+          "type": "boolean"
+        },
+        "indexHint": {
+          "type": "boolean"
+        },
+        "localHint": {
+          "type": "boolean"
+        },
+        "overrideHint": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Resource": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "paths": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "Runtime": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "enum": [
+            "Lua5.1",
+            "LuaJIT",
+            "Lua5.2",
+            "Lua5.3",
+            "Lua5.4"
+          ]
+        },
+        "requireLikeFunction": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "Workspace": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "ignoreDir": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "library": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "workspaceRoots": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "preloadFileSize": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completion": {
+      "$ref": "#/definitions/Completion"
+    },
+    "diagnostics": {
+      "$ref": "#/definitions/Diagnostics"
+    },
+    "hint": {
+      "$ref": "#/definitions/Hint"
+    },
+    "runtime": {
+      "$ref": "#/definitions/Runtime"
+    },
+    "workspace": {
+      "$ref": "#/definitions/Workspace"
+    },
+    "resource": {
+      "$ref": "#/definitions/Resource"
+    }
+  }
+}
