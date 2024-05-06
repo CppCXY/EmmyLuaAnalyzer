@@ -19,14 +19,14 @@ public class VisibilityChecker(LuaCompilation compilation)
         }
 
         var declarationTree = semanticModel.DeclarationTree;
-        var searchContext = semanticModel.Context;
+        // var searchContext = semanticModel.Context;
         var indexExprs = context.Document.SyntaxTree
             .SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>();
         foreach (var indexExpr in indexExprs)
         {
             var declaration = declarationTree.FindDeclaration(indexExpr, semanticModel.Context);
             var prefixExpr = indexExpr.PrefixExpr;
-            if (prefixExpr is LuaNameExprSyntax { Name.RepresentText: "self" } && declaration is { IsPrivate: true })
+            if (prefixExpr is LuaNameExprSyntax { Name.Text: "self" } && declaration is { IsPrivate: true })
             {
                 // TODO check super's protected and private
                 continue;

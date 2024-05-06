@@ -6,9 +6,9 @@ public class TypeChecker(LuaCompilation compilation) : DiagnosticCheckerBase(com
 {
     public override void Check(DiagnosticContext context)
     {
-        foreach (var node in context.Document.SyntaxTree.SyntaxRoot.Descendants)
-        {
-            // TODO
-        }
+        // foreach (var node in context.Document.SyntaxTree.SyntaxRoot.Descendants)
+        // {
+        //     // TODO
+        // }
     }
 }

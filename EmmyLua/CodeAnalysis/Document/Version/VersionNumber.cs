@@ -28,7 +28,18 @@ public readonly record struct VersionNumber(ushort Major, ushort Minor, ushort P
 
     public override string ToString()
     {
-        return $"{Major}.{Minor}.{Patch}.{Build}";
+        if (Patch == 0 && Build == 0)
+        {
+            return $"{Major}.{Minor}";
+        }
+        else if (Build == 0)
+        {
+            return $"{Major}.{Minor}.{Patch}";
+        }
+        else
+        {
+            return $"{Major}.{Minor}.{Patch}.{Build}";
+        }
     }
 
     public static bool operator <(VersionNumber left, VersionNumber right)

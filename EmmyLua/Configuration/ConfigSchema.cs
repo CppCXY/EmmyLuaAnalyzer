@@ -86,13 +86,13 @@ public class Runtime
 {
     [JsonProperty("version", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     [JsonConverter(typeof(StringEnumConverter))]
-    public LuaVersion Version { get; set; } = LuaVersion.Lua54;
+    public LuaVersion Version { get; set; } = LuaVersion.LuaLatest;
 
     [JsonProperty("requireLikeFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> RequireLikeFunction { get; set; } = [];
 
-    [JsonProperty("framework", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public List<string> Framework { get; set; } = [];
+    [JsonProperty("frameworkVersions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> FrameworkVersions { get; set; } = [];
 }
 
 public enum LuaVersion

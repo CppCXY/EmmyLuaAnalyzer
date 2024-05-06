@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
 using Newtonsoft.Json;
 
@@ -145,6 +146,14 @@ public class SettingManager
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
         features.RequireLikeFunction.UnionWith(setting.Runtime.RequireLikeFunction);
+        foreach (var framework in setting.Runtime.FrameworkVersions)
+        {
+            if (FrameworkVersion.TryParse(framework, out var version))
+            {
+                features.FrameworkVersions.Add(version);
+            }
+        }
+
         return features;
     }
 
