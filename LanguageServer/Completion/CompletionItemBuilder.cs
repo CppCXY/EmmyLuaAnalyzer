@@ -48,11 +48,27 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         return this;
     }
 
-    public CompletionItemBuilder WithCheckDeprecated(LuaDeclaration declaration)
+    public CompletionItemBuilder WithCheckDeclaration(LuaDeclaration declaration)
     {
         if (declaration.IsDeprecated)
         {
             IsDeprecated = true;
+        }
+
+        if (declaration.RequiredVersions is not null)
+        {
+            var feature = completeContext.ServerContext.LuaWorkspace.Features;
+            var languageLevel = feature.Language.LanguageLevel;
+            if (!declaration.ValidateLuaVersion(languageLevel))
+            {
+                Disable = true;
+            }
+
+            var frameworkVersion = feature.FrameworkVersions;
+            if (!Disable && !declaration.ValidateFrameworkVersions(frameworkVersion))
+            {
+                Disable = true;
+            }
         }
 
         return this;
@@ -130,7 +146,9 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         Kind = Kind,
                         LabelDetails = new CompletionItemLabelDetails()
                         {
-                            Description = CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature),
+                            Description =
+                                CompleteContext.SemanticModel.RenderBuilder.RenderType(Type,
+                                    CompleteContext.RenderFeature),
                         },
                         InsertText = InsertText,
                         Data = Data,
@@ -243,7 +261,8 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             LabelDetails = new CompletionItemLabelDetails()
             {
                 Detail = RenderSignatureParams(signature, colonDefine),
-                Description = CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature)
+                Description =
+                    CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature)
             },
             Data = Data,
             Command = Command,

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -119,6 +120,8 @@ public class LuaDeclaration(
 
     public bool IsPrivate => Visibility == DeclarationVisibility.Private;
 
+    public List<RequiredVersion>? RequiredVersions { get; set; }
+
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
         new(Name, Position, otherInfo, Feature, Visibility);
 
@@ -130,6 +133,52 @@ public class LuaDeclaration(
         }
 
         return this;
+    }
+
+    public bool ValidateLuaVersion(VersionNumber version)
+    {
+        var canValid = false;
+        if (RequiredVersions is { } requiredVersions)
+        {
+            foreach (var requiredVersion in requiredVersions.Where(requiredVersion => requiredVersion.Name.Length == 0))
+            {
+                canValid = true;
+                if (requiredVersion.IsMatch(version))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return !canValid;
+    }
+
+    public bool ValidateFrameworkVersion(FrameworkVersion version)
+    {
+        var canValid = false;
+        if (RequiredVersions is { } requiredVersions)
+        {
+            foreach (var requiredVersion in requiredVersions.Where(requiredVersion => requiredVersion.Name.Length != 0))
+            {
+                canValid = true;
+                if (requiredVersion.IsMatch(version))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return !canValid;
+    }
+
+    public bool ValidateFrameworkVersions(List<FrameworkVersion> versions)
+    {
+        if (versions.Count == 0)
+        {
+            return true;
+        }
+
+        return versions.Any(ValidateFrameworkVersion);
     }
 
     public override string ToString()

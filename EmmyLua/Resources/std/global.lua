@@ -145,6 +145,18 @@ function ipairs(t) end
 ---@param env any
 function load(chunk, chunkname, mode, env) end
 
+---@version 5.1
+---
+---Loads a chunk from the given string.
+---
+---
+---@param text       string
+---@param chunkname? string
+---@return function?
+---@return string?   error_message
+---@nodiscard
+function loadstring(text, chunkname) end
+
 ---
 --- Similar to `load`, but gets the chunk from file `filename` or from the
 --- standard input, if no file name is given.
@@ -153,6 +165,20 @@ function load(chunk, chunkname, mode, env) end
 ---@param mode string
 ---@param env any
 function loadfile(filename, mode, env) end
+
+---@version 5.1
+---@param proxy boolean|table|userdata
+---@return userdata
+function newproxy(proxy) end
+
+---@version 5.1
+---
+---Creates a module.
+---
+---
+---@param name string
+---@param ...  any
+function module(name, ...) end
 
 ---
 --- Allows a program to traverse all fields of a table. Its first argument is
@@ -358,6 +384,7 @@ _VERSION = "Lua 5.4"
 ---@return any
 function xpcall(f, msgh, arg1, ...) end
 
+---@version 5.1, JIT
 ---@generic T...
 ---@param i? number
 ---@param j? number
@@ -365,6 +392,7 @@ function xpcall(f, msgh, arg1, ...) end
 ---@return T...
 function unpack(list, i, j) end
 
+---@version >= 5.4
 ---@param message string
 function warn(message) end
 

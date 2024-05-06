@@ -16,7 +16,7 @@ public class LocalEnvProvider : ICompleteProviderBase
         {
             context.CreateCompletion(varDeclaration.Name, varDeclaration.Info.DeclarationType)
                 .WithData(varDeclaration.Info.Ptr.Stringify)
-                .WithCheckDeprecated(varDeclaration)
+                .WithCheckDeclaration(varDeclaration)
                 .AddToContext();
         }
     }

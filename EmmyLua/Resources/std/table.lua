@@ -67,6 +67,15 @@ function table.move(a1, f, e, t, a2) end
 ---@return [T...]
 function table.pack(...) end
 
+---@version 5.1
+---
+---Returns the largest positive numerical index of the given table, or zero if the table has no positive numerical indices.
+---
+---@param table table
+---@return integer
+---@nodiscard
+function table.maxn(table) end
+
 ---
 --- Removes from `list` the element at position `pos`, returning the value of
 --- the removed element. When `pos` is an integer between 1 and `#list`, it
@@ -104,7 +113,7 @@ function table.remove(list, pos) end
 ---@return number
 function table.sort(list, comp) end
 
----
+---@version >=5.2, JIT
 --- Returns the elements from the given list. This function is equivalent to
 --- return `list[i]`, `list[i+1]`, `···`, `list[j]`
 --- By default, i is 1 and j is #list.
@@ -114,5 +123,51 @@ function table.sort(list, comp) end
 ---@param list [T...]
 ---@return T...
 function table.unpack(list, i, j) end
+
+---@version >=5.2, JIT
+---
+---Returns a new table with all arguments stored into keys `1`, `2`, etc. and with a field `"n"` with the total number of arguments.
+---
+---
+---@return table
+---@nodiscard
+function table.pack(...) end
+
+---@version 5.1, JIT
+---
+---Executes the given f over all elements of table. For each element, f is called with the index and respective value as arguments. If f returns a non-nil value, then the loop is broken, and this value is returned as the final value of foreach.
+---
+---
+---@generic T
+---@param list any
+---@param callback fun(key: string, value: any):T|nil
+---@return T|nil
+---@deprecated
+function table.foreach(list, callback) end
+
+---@version 5.1, JIT
+---
+---Executes the given f over the numerical indices of table. For each index, f is called with the index and respective value as arguments. Indices are visited in sequential order, from 1 to n, where n is the size of the table. If f returns a non-nil value, then the loop is broken and this value is returned as the result of foreachi.
+---
+---
+---@generic T
+---@param list any
+---@param callback fun(key: string, value: any):T|nil
+---@return T|nil
+---@deprecated
+function table.foreachi(list, callback) end
+
+---@version 5.1, JIT
+---
+---Returns the number of elements in the table. This function is equivalent to `#list`.
+---
+---[View documents](command:extension.lua.doc?["en-us/54/manual.html/pdf-table.getn"])
+---
+---@generic T
+---@param list T[]
+---@return integer
+---@nodiscard
+---@deprecated
+function table.getn(list) end
 
 return table

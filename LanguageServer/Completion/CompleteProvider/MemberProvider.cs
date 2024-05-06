@@ -51,7 +51,7 @@ public class MemberProvider : ICompleteProviderBase
                     .WithColon(colon)
                     .WithData(member.Info.Ptr.Stringify)
                     .WithDotCheckBracketLabel(indexExpr)
-                    .WithCheckDeprecated(member)
+                    .WithCheckDeclaration(member)
                     .AddToContext();
             }
         }
@@ -71,7 +71,7 @@ public class MemberProvider : ICompleteProviderBase
             {
                 context.CreateCompletion(member.Name, member.Info.DeclarationType)
                     .WithData(member.Info.Ptr.Stringify)
-                    .WithCheckDeprecated(member)
+                    .WithCheckDeclaration(member)
                     .AddToContext();
             }
         }
@@ -94,14 +94,14 @@ public class MemberProvider : ICompleteProviderBase
                     var label = member.Name[1..^1];
                     context.CreateCompletion(label, member.Info.DeclarationType)
                         .WithData(member.Info.Ptr.Stringify)
-                        .WithCheckDeprecated(member)
+                        .WithCheckDeclaration(member)
                         .AddToContext();
                 }
                 else
                 {
                     context.CreateCompletion($"\"{member.Name}\"", member.Info.DeclarationType)
                         .WithData(member.Info.Ptr.Stringify)
-                        .WithCheckDeprecated(member)
+                        .WithCheckDeclaration(member)
                         .AddToContext();
                 }
             }

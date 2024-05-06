@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Util.FilenameConverter;
@@ -85,10 +86,30 @@ public class Runtime
 {
     [JsonProperty("version", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     [JsonConverter(typeof(StringEnumConverter))]
-    public LuaLanguageLevel Version { get; set; } = LuaLanguageLevel.Lua54;
+    public LuaVersion Version { get; set; } = LuaVersion.Lua54;
 
     [JsonProperty("requireLikeFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> RequireLikeFunction { get; set; } = [];
+
+    [JsonProperty("framework", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> Framework { get; set; } = [];
+}
+
+public enum LuaVersion
+{
+    [EnumMember(Value = "Lua5.1")]
+    Lua51,
+    [EnumMember(Value = "LuaJIT")]
+    // ReSharper disable once InconsistentNaming
+    LuaJIT,
+    [EnumMember(Value = "Lua5.2")]
+    Lua52,
+    [EnumMember(Value = "Lua5.3")]
+    Lua53,
+    [EnumMember(Value = "Lua5.4")]
+    Lua54,
+    [EnumMember(Value = "LuaLatest")]
+    LuaLatest
 }
 
 public class Workspace

@@ -1,25 +1,26 @@
-﻿using System.Runtime.Serialization;
+﻿using EmmyLua.CodeAnalysis.Document.Version;
 
 namespace EmmyLua.CodeAnalysis.Document;
 
-public enum LuaLanguageLevel : short
+public static class LuaLanguageLevel
 {
-    [EnumMember(Value = "Lua5.1")]
-    Lua51 = 510,
-    [EnumMember(Value = "LuaJIT")]
+    public static VersionNumber Lua51 { get; } = new(5, 1, 0, 0);
+
     // ReSharper disable once InconsistentNaming
-    LuaJIT = 515,
-    [EnumMember(Value = "Lua5.2")]
-    Lua52 = 520,
-    [EnumMember(Value = "Lua5.3")]
-    Lua53 = 530,
-    [EnumMember(Value = "Lua5.4")]
-    Lua54 = 540,
+    public static VersionNumber LuaJIT { get; } = new(5, 1, 999, 0);
+
+    public static VersionNumber Lua52 { get; } = new(5, 2, 0, 0);
+
+    public static VersionNumber Lua53 { get; } = new(5, 3, 0, 0);
+
+    public static VersionNumber Lua54 { get; } = new(5, 4, 0, 0);
+
+    public static VersionNumber LuaLatest { get; } = Lua54;
 }
 
-public class LuaLanguage(LuaLanguageLevel languageLevel = LuaLanguageLevel.Lua54)
+public class LuaLanguage(VersionNumber languageLevel)
 {
-    public static LuaLanguage Default { get; } = new();
+    public static LuaLanguage Default { get; } = new(LuaLanguageLevel.Lua54);
 
-    public LuaLanguageLevel LanguageLevel { get; set; } = languageLevel;
+    public VersionNumber LanguageLevel { get; set; } = languageLevel;
 }

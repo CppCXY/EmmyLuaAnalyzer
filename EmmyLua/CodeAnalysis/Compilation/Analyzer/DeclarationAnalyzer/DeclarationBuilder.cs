@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -290,7 +291,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 relatedExpr = new LuaExprRef(lastValidExpr, retId);
             }
 
-            if (localName is {Name: { } name})
+            if (localName is { Name: { } name })
             {
                 var declaration = new LuaDeclaration(
                     name.RepresentText,
@@ -430,7 +431,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.Local);
                 if (dic.TryGetValue(name.RepresentText, out var paramInfo))
                 {
-                    declaration.Info = declaration.Info with {DeclarationType = paramInfo.Item1};
+                    declaration.Info = declaration.Info with { DeclarationType = paramInfo.Item1 };
                 }
 
                 AddDeclaration(declaration);
@@ -444,7 +445,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeForStatDeclaration(LuaForStatSyntax forStatSyntax)
     {
-        if (forStatSyntax is {IteratorName.Name: { } name})
+        if (forStatSyntax is { IteratorName.Name: { } name })
         {
             AddDeclaration(new LuaDeclaration(
                 name.RepresentText,
@@ -467,7 +468,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
 
         var tagNameTypeSyntax = docList.OfType<LuaDocTagNamedTypeSyntax>().FirstOrDefault();
-        if (tagNameTypeSyntax is {Name.RepresentText: { } name})
+        if (tagNameTypeSyntax is { Name.RepresentText: { } name })
         {
             return new LuaNamedType(name);
         }
@@ -501,7 +502,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
         foreach (var tagParamSyntax in docList.OfType<LuaDocTagParamSyntax>())
         {
-            if (tagParamSyntax is {Name: { } name, Type: { } type, Nullable: { } nullable})
+            if (tagParamSyntax is { Name: { } name, Type: { } type, Nullable: { } nullable })
             {
                 var ty = Context.Infer(type);
                 if (nullable)
@@ -511,7 +512,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
                 dic.TryAdd(name.RepresentText, (ty, nullable));
             }
-            else if (tagParamSyntax is {VarArgs: { } _, Type: { } type2, Nullable: { } nullable2})
+            else if (tagParamSyntax is { VarArgs: { } _, Type: { } type2, Nullable: { } nullable2 })
             {
                 var ty = Context.Infer(type2);
                 dic.TryAdd("...", (ty, nullable2));
@@ -620,7 +621,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
                         if (declarationType is not null)
                         {
-                            declaration.Info = declaration.Info with {DeclarationType = declarationType};
+                            declaration.Info = declaration.Info with { DeclarationType = declarationType };
                         }
                     }
 
@@ -637,7 +638,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         switch (luaFuncStat)
         {
-            case {IsLocal: true, LocalName.Name: { } name, ClosureExpr: { } closureExpr}:
+            case { IsLocal: true, LocalName.Name: { } name, ClosureExpr: { } closureExpr }:
             {
                 var declaration = new LuaDeclaration(
                     name.RepresentText,
@@ -656,7 +657,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 AddUnResolved(unResolved);
                 break;
             }
-            case {IsLocal: false, NameExpr.Name: { } name2, ClosureExpr: { } closureExpr}:
+            case { IsLocal: false, NameExpr.Name: { } name2, ClosureExpr: { } closureExpr }:
             {
                 var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
                 if (prevDeclaration is null)
@@ -681,9 +682,9 @@ public class DeclarationBuilder : ILuaElementWalker
 
                 break;
             }
-            case {IsMethod: true, IndexExpr: { } indexExpr, ClosureExpr: { } closureExpr}:
+            case { IsMethod: true, IndexExpr: { } indexExpr, ClosureExpr: { } closureExpr }:
             {
-                if (indexExpr is {Name: { } name})
+                if (indexExpr is { Name: { } name })
                 {
                     var declaration = new LuaDeclaration(
                         name,
@@ -720,7 +721,7 @@ public class DeclarationBuilder : ILuaElementWalker
             {
                 var variadic = i == genericParams.Count - 1 && generic.Variadic;
                 var param = genericParams[i];
-                if (param is {Name: { } name})
+                if (param is { Name: { } name })
                 {
                     var declaration = new LuaDeclaration(
                         name.RepresentText,
@@ -751,7 +752,7 @@ public class DeclarationBuilder : ILuaElementWalker
             PopScope();
         }
 
-        if (closureExprSyntax.Parent is LuaCallArgListSyntax {Parent: LuaCallExprSyntax callExprSyntax} callArgList)
+        if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
         {
             var index = callArgList.ArgList.ToList().IndexOf(closureExprSyntax);
             var unResolved = new UnResolvedClosureParameters(parameters, callExprSyntax, index);
@@ -759,7 +760,7 @@ public class DeclarationBuilder : ILuaElementWalker
         }
 
         var mainRetType = GetRetType(docList);
-        var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax {IsColonFunc: true};
+        var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
         var method = genericParameters.Count != 0
             ? new LuaGenericMethodType(
                 genericParameters,
@@ -776,7 +777,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
     {
-        if (tagClassSyntax is {Name: { } name})
+        if (tagClassSyntax is { Name: { } name })
         {
             var luaClass = new LuaNamedType(name.RepresentText);
             var declaration = new LuaDeclaration(
@@ -794,17 +795,17 @@ public class DeclarationBuilder : ILuaElementWalker
             AnalyzeTypeFields(luaClass, tagClassSyntax);
             AnalyzeTypeOperator(luaClass, tagClassSyntax);
 
-            if (tagClassSyntax is {Body: { } body})
+            if (tagClassSyntax is { Body: { } body })
             {
                 AnalyzeDocBody(luaClass, body);
             }
 
-            if (tagClassSyntax is {ExtendTypeList: { } extendTypeList})
+            if (tagClassSyntax is { ExtendTypeList: { } extendTypeList })
             {
                 AnalyzeTypeSupers(extendTypeList, luaClass);
             }
 
-            if (tagClassSyntax is {GenericDeclareList: { } genericDeclareList})
+            if (tagClassSyntax is { GenericDeclareList: { } genericDeclareList })
             {
                 AnalyzeTypeGenericParam(genericDeclareList, luaClass);
             }
@@ -813,7 +814,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeAliasTagDeclaration(LuaDocTagAliasSyntax tagAliasSyntax)
     {
-        if (tagAliasSyntax is {Name: { } name, Type: { } type})
+        if (tagAliasSyntax is { Name: { } name, Type: { } type })
         {
             var luaAlias = new LuaNamedType(name.RepresentText);
             var baseTy = Context.Infer(type);
@@ -831,7 +832,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeEnumTagDeclaration(LuaDocTagEnumSyntax tagEnumSyntax)
     {
-        if (tagEnumSyntax is {Name: { } name})
+        if (tagEnumSyntax is { Name: { } name })
         {
             var baseType = tagEnumSyntax.BaseType is { } type
                 ? Context.Infer(type)
@@ -849,7 +850,7 @@ public class DeclarationBuilder : ILuaElementWalker
             DbManager.AddEnum(DocumentId, name.RepresentText, baseType, declaration);
             foreach (var field in tagEnumSyntax.FieldList)
             {
-                if (field is {Name: { } fieldName})
+                if (field is { Name: { } fieldName })
                 {
                     var fieldDeclaration = new LuaDeclaration(
                         fieldName.RepresentText,
@@ -866,7 +867,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeInterfaceTagDeclaration(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
     {
-        if (tagInterfaceSyntax is {Name: { } name})
+        if (tagInterfaceSyntax is { Name: { } name })
         {
             var luaInterface = new LuaNamedType(name.RepresentText);
             var declaration = new LuaDeclaration(
@@ -882,17 +883,17 @@ public class DeclarationBuilder : ILuaElementWalker
             DbManager.AddType(DocumentId, name.RepresentText, declaration);
             AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
             AnalyzeTypeOperator(luaInterface, tagInterfaceSyntax);
-            if (tagInterfaceSyntax is {Body: { } body})
+            if (tagInterfaceSyntax is { Body: { } body })
             {
                 AnalyzeDocBody(luaInterface, body);
             }
 
-            if (tagInterfaceSyntax is {ExtendTypeList: { } extendTypeList})
+            if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
             {
                 AnalyzeTypeSupers(extendTypeList, luaInterface);
             }
 
-            if (tagInterfaceSyntax is {GenericDeclareList: { } genericDeclareList})
+            if (tagInterfaceSyntax is { GenericDeclareList: { } genericDeclareList })
             {
                 AnalyzeTypeGenericParam(genericDeclareList, luaInterface);
             }
@@ -1204,7 +1205,7 @@ public class DeclarationBuilder : ILuaElementWalker
         var visibility = field.Visibility;
         switch (field)
         {
-            case {NameField: { } nameField, Type: { } type1}:
+            case { NameField: { } nameField, Type: { } type1 }:
             {
                 var type = Context.Infer(type1);
                 var declaration = new LuaDeclaration(
@@ -1219,7 +1220,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
-            case {IntegerField: { } integerField, Type: { } type2}:
+            case { IntegerField: { } integerField, Type: { } type2 }:
             {
                 var type = Context.Infer(type2);
                 var declaration = new LuaDeclaration(
@@ -1235,7 +1236,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
-            case {StringField: { } stringField, Type: { } type3}:
+            case { StringField: { } stringField, Type: { } type3 }:
             {
                 var type = Context.Infer(type3);
                 var declaration = new LuaDeclaration(
@@ -1250,7 +1251,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 DbManager.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
-            case {TypeField: { } typeField, Type: { } type4}:
+            case { TypeField: { } typeField, Type: { } type4 }:
             {
                 var keyType = Context.Infer(typeField);
                 var valueType = Context.Infer(type4);
@@ -1302,7 +1303,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         foreach (var param in generic.Params)
         {
-            if (param is {Name: { } name})
+            if (param is { Name: { } name })
             {
                 var type = param.Type is not null ? Context.Infer(param.Type) : null;
                 var declaration = new LuaDeclaration(
@@ -1322,7 +1323,7 @@ public class DeclarationBuilder : ILuaElementWalker
         var tableClass = tableExprSyntax.UniqueString;
         foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
-            if (fieldSyntax is {Name: { } fieldName, Value: { } value})
+            if (fieldSyntax is { Name: { } fieldName, Value: { } value })
             {
                 // TODO get type from ---@field ---@type
                 var declaration = new LuaDeclaration(
@@ -1376,19 +1377,19 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (diagnosticSyntax is
             {
-                Action: {RepresentText: { } actionName},
-                Diagnostics: {DiagnosticNames: { } diagnosticNames}
+                Action: { RepresentText: { } actionName },
+                Diagnostics: { DiagnosticNames: { } diagnosticNames }
             })
         {
             switch (actionName)
             {
                 case "disable-next-line":
                 {
-                    if (diagnosticSyntax.Parent is LuaCommentSyntax {Owner.Range: { } range})
+                    if (diagnosticSyntax.Parent is LuaCommentSyntax { Owner.Range: { } range })
                     {
                         foreach (var diagnosticName in diagnosticNames)
                         {
-                            if (diagnosticName is {RepresentText: { } name})
+                            if (diagnosticName is { RepresentText: { } name })
                             {
                                 Compilation.Diagnostics.AddDiagnosticDisableNextLine(DocumentId, range, name);
                             }
@@ -1401,7 +1402,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     foreach (var diagnosticName in diagnosticNames)
                     {
-                        if (diagnosticName is {RepresentText: { } name})
+                        if (diagnosticName is { RepresentText: { } name })
                         {
                             Compilation.Diagnostics.AddDiagnosticDisable(DocumentId, name);
                         }
@@ -1413,7 +1414,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     foreach (var diagnosticName in diagnosticNames)
                     {
-                        if (diagnosticName is {RepresentText: { } name})
+                        if (diagnosticName is { RepresentText: { } name })
                         {
                             Compilation.Diagnostics.AddDiagnosticEnable(DocumentId, name);
                         }
@@ -1427,7 +1428,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeModule(LuaDocTagModuleSyntax moduleSyntax)
     {
-        if (moduleSyntax.Module is {Value: { } moduleName})
+        if (moduleSyntax.Module is { Value: { } moduleName })
         {
             Compilation.Workspace.ModuleGraph.AddVirtualModule(DocumentId, moduleName);
         }
@@ -1450,6 +1451,19 @@ public class DeclarationBuilder : ILuaElementWalker
                     case LuaDocTagVisibilitySyntax visibilitySyntax:
                     {
                         declaration.Visibility = GetVisibility(visibilitySyntax.Visibility);
+                        break;
+                    }
+                    case LuaDocTagVersionSyntax versionSyntax:
+                    {
+                        var requiredVersions = new List<RequiredVersion>();
+                        foreach (var version in versionSyntax.Versions)
+                        {
+                            var action = version.Action;
+                            var framework = version.Version?.RepresentText ?? string.Empty;
+                            var versionNumber = version.VersionNumber?.Version ?? new VersionNumber(0, 0, 0, 0);
+                            requiredVersions.Add(new RequiredVersion(action, framework, versionNumber));
+                        }
+                        declaration.RequiredVersions = requiredVersions;
                         break;
                     }
                 }

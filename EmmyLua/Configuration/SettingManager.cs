@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Workspace;
 using Newtonsoft.Json;
 
 
@@ -131,7 +132,16 @@ public class SettingManager
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
-        features.Language.LanguageLevel = setting.Runtime.Version;
+        features.Language.LanguageLevel = setting.Runtime.Version switch
+        {
+            LuaVersion.Lua51 => LuaLanguageLevel.Lua51,
+            LuaVersion.LuaJIT => LuaLanguageLevel.LuaJIT,
+            LuaVersion.Lua52 => LuaLanguageLevel.Lua52,
+            LuaVersion.Lua53 => LuaLanguageLevel.Lua53,
+            LuaVersion.Lua54 => LuaLanguageLevel.Lua54,
+            LuaVersion.LuaLatest => LuaLanguageLevel.LuaLatest,
+            _ => LuaLanguageLevel.Lua54
+        };
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
         features.RequireLikeFunction.UnionWith(setting.Runtime.RequireLikeFunction);

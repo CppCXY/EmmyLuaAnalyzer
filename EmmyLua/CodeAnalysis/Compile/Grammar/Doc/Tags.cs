@@ -620,16 +620,16 @@ public static class TagParser
 
     private static CompleteMarker TagVersion(LuaDocParser p)
     {
-        p.SetState(LuaDocLexerState.Normal);
+        p.SetState(LuaDocLexerState.Version);
         var m = p.Marker();
         p.Bump();
         try
         {
-            p.Expect(LuaTokenKind.TkName);
-            while (p.Current is LuaTokenKind.TkComma)
+            var cm = Version(p);
+            while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
             {
                 p.Bump();
-                p.Expect(LuaTokenKind.TkName);
+                cm = Version(p);
             }
 
             DescriptionParser.Description(p);
@@ -638,6 +638,30 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocVersion, e.Message);
+        }
+    }
+
+    private static CompleteMarker Version(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            if (p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkLt or LuaTokenKind.TkGe or LuaTokenKind.TkLe)
+            {
+                p.Bump();
+            }
+
+            if (p.Current is LuaTokenKind.TkName)
+            {
+                p.Bump();
+            }
+
+            p.Expect(LuaTokenKind.TkVersionNumber);
+            return m.Complete(p, LuaSyntaxKind.Version);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.Version, e.Message);
         }
     }
 
@@ -723,6 +747,7 @@ public static class TagParser
                 p.Bump();
                 p.Expect(LuaTokenKind.TkName);
             }
+
             p.Expect(LuaTokenKind.TkRightParen);
 
             return m.Complete(p, LuaSyntaxKind.DocAttribute);

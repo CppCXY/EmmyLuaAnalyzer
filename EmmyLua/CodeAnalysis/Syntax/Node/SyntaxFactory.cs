@@ -2,6 +2,7 @@
 using System.Text;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -11,7 +12,8 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
 public static class SyntaxFactory
 {
-    public static LuaSyntaxElement CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    public static LuaSyntaxElement CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         if (greenNode.IsNode)
         {
@@ -94,10 +96,13 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocBody => new LuaDocBodySyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent,
+                    startOffset),
                 LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(greenNode, tree, parent,
+                    startOffset),
                 LuaSyntaxKind.DocAttribute => new LuaDocAttributeSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.Version => new LuaDocVersionSyntax(greenNode, tree, parent, startOffset),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }
@@ -117,11 +122,13 @@ public static class SyntaxFactory
             LuaTokenKind.TkDots => new LuaDotsToken(greenNode, tree, parent, startOffset),
             LuaTokenKind.TkName => new LuaNameToken(greenNode, tree, parent, startOffset),
             LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(greenNode, tree, parent, startOffset),
+            LuaTokenKind.TkVersionNumber => CalculateVersionNumber(greenNode, tree, parent, startOffset),
             _ => new LuaSyntaxToken(greenNode, tree, parent, startOffset)
         };
     }
 
-    private static LuaIntegerToken CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    private static LuaIntegerToken CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         var hex = false;
         var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
@@ -166,7 +173,8 @@ public static class SyntaxFactory
         }
     }
 
-    private static LuaFloatToken CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    private static LuaFloatToken CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         double value = 0;
         var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
@@ -196,6 +204,7 @@ public static class SyntaxFactory
                 {
                     fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
                 }
+
                 fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
             }
             else
@@ -239,7 +248,8 @@ public static class SyntaxFactory
     }
 
     // luajit 支持复数干嘛?
-    private static LuaComplexToken CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    private static LuaComplexToken CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         // 裁剪掉complex的i
@@ -247,7 +257,8 @@ public static class SyntaxFactory
         return new LuaComplexToken(text.ToString(), greenNode, tree, parent, startOffset);
     }
 
-    private static LuaStringToken CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    private static LuaStringToken CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
+        int startOffset)
     {
         var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
         if (text.Length < 2)
@@ -417,6 +428,7 @@ public static class SyntaxFactory
                                         new SourceRange(startOffset + i - j, unicodeHex.Length)));
                                     break;
                                 }
+
                                 var codePoint = Convert.ToInt32(unicodeHex.ToString(), 16);
                                 if (codePoint > 0x10FFFF)
                                 {
@@ -542,5 +554,29 @@ public static class SyntaxFactory
         var content = text[i..(text.Length - equalNum - 2)];
 
         return new LuaStringToken(content.ToString(), greenNode, tree, parent, startOffset);
+    }
+
+    private static LuaVersionNumberToken CalculateVersionNumber(GreenNode greenNode, LuaSyntaxTree tree,
+        LuaSyntaxElement? parent, int startOffset)
+    {
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
+        if (text is "JIT")
+        {
+            return new LuaVersionNumberToken(LuaLanguageLevel.LuaJIT, greenNode, tree, parent, startOffset);
+        }
+
+        try
+        {
+            var version = VersionNumber.Parse(text.ToString());
+            return new LuaVersionNumberToken(version, greenNode, tree, parent, startOffset);
+        }
+        catch (Exception e)
+        {
+            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
+                $"Invalid version number '{text}', {e.Message}",
+                new SourceRange(startOffset, greenNode.Length)));
+            return new LuaVersionNumberToken(new VersionNumber(0, 0, 0, 0), greenNode, tree, parent, startOffset);
+        }
     }
 }

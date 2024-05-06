@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -104,3 +105,14 @@ public class LuaNameToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElem
 
 public class LuaWhitespaceToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaSyntaxToken(greenNode, tree, parent, startOffset);
+
+public class LuaVersionNumberToken(
+    VersionNumber version,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset)
+{
+    public VersionNumber Version { get; } = version;
+}

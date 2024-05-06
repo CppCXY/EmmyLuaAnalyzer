@@ -8,10 +8,8 @@ using EmmyLua.CodeAnalysis.Workspace;
 var document = LuaDocument.FromText(
     """
     ---@alias AAA
-    ---| "fuckme" #我知道了
-    ---| "yes" #原来是这样
     ---| "nonono" #好吧好吧
-    """, new LuaLanguage());
+    """, new LuaLanguage(LuaLanguageLevel.LuaLatest));
 // workspace.AddDocument(document);
     
 Console.WriteLine(document.SyntaxTree.SyntaxRoot.DebugSyntaxInspect());

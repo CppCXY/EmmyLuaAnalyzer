@@ -91,7 +91,10 @@ package.path = ""
 --- variable do not change the table used by `require`.
 package.preload = {}
 
----
+---@version 5.1
+package.loaders = {}
+
+---@version >= 5.2
 --- A table used by require to control how to load modules.
 ---
 --- Each entry in this table is a *searcher function*. When looking for a
@@ -136,6 +139,7 @@ package.preload = {}
 --- The first searcher returns no extra value.
 package.searchers = {}
 
+---@version >=5.2,JIT
 ---
 --- Searches for the given name in the given path.
 ---
@@ -160,5 +164,12 @@ package.searchers = {}
 ---@param rep string
 ---@return string
 function package.searchpath(name, path, sep, rep) end
+
+---
+---Sets a metatable for `module` with its `__index` field referring to the global environment, so that this module inherits values from the global environment. To be used as an option to function `module` .
+---
+---@version 5.1
+---@param module table
+function package.seeall(module) end
 
 return package

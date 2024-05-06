@@ -6,6 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.DocumentLink;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBase
 {
     private DocumentLinkBuilder Builder { get; } = new();

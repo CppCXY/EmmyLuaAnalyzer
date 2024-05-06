@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -216,4 +217,28 @@ public class LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntax
     : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public IEnumerable<LuaDocFieldSyntax> FieldList => ChildNodes<LuaDocFieldSyntax>();
+}
+
+public class LuaDocVersionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+{
+    public RequiredVersionAction Action
+    {
+        get
+        {
+            var tk = FirstChildToken();
+            return tk?.Kind switch
+            {
+                LuaTokenKind.TkGt => RequiredVersionAction.Greater,
+                LuaTokenKind.TkGe => RequiredVersionAction.GreaterOrEqual,
+                LuaTokenKind.TkLt => RequiredVersionAction.Less,
+                LuaTokenKind.TkLe => RequiredVersionAction.LessOrEqual,
+                _ => RequiredVersionAction.Equal
+            };
+        }
+    }
+
+    public LuaSyntaxToken? Version => FirstChildToken(LuaTokenKind.TkName);
+
+    public LuaVersionNumberToken? VersionNumber => FirstChild<LuaVersionNumberToken>();
 }

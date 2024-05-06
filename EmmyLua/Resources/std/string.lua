@@ -41,6 +41,7 @@ function string.byte(s, i, j) end
 --- code equal to its corresponding argument.
 ---
 --- Note that numerical codes are not necessarily portable across platforms.
+---@param ... int
 ---@return string
 function string.char(...) end
 
@@ -223,7 +224,7 @@ function string.lower(s) end
 ---@return any
 function string.match(s, pattern, init) end
 
----
+---@version >=5.3
 --- Returns a binary string containing the values `v1`, `v2`, etc. packed (that
 --- is, serialized in binary form) according to the format string `fmt`.
 ---@param fmt string
@@ -232,7 +233,7 @@ function string.match(s, pattern, init) end
 ---@return string
 function string.pack(fmt, v1, v2, ...) end
 
----
+---@version >=5.3
 --- Returns the size of a string resulting from `string.pack` with the given
 --- format. The format string cannot have the variable-length options '`s`' or
 --- '`z`'
@@ -280,7 +281,7 @@ function string.reverse(s) end
 ---@return string
 function string.sub(s, i, j) end
 
----
+---@version >=5.3
 --- Returns the values packed in string `s` according to the format string
 --- `fmt`. An optional `pos` marks where to start reading in `s` (default is 1).
 --- After the read values, this function also returns the index of the first

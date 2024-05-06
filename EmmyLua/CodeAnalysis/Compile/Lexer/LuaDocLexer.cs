@@ -14,6 +14,7 @@ public enum LuaDocLexerState
     Description,
     Trivia,
     See,
+    Version
 }
 
 public class LuaDocLexer(LuaDocument document)
@@ -36,7 +37,6 @@ public class LuaDocLexer(LuaDocument document)
             "enum" => LuaTokenKind.TkTagEnum,
             "interface" => LuaTokenKind.TkTagInterface,
             "alias" => LuaTokenKind.TkTagAlias,
-
             "module" => LuaTokenKind.TkTagModule,
             "field" => LuaTokenKind.TkTagField,
             "type" => LuaTokenKind.TkTagType,
@@ -49,6 +49,7 @@ public class LuaDocLexer(LuaDocument document)
             "cast" => LuaTokenKind.TkTagCast,
             "deprecated" => LuaTokenKind.TkTagDeprecated,
             "private" or "protected" or "public" or "package" => LuaTokenKind.TkTagVisibility,
+            // TODO internal
             "diagnostic" => LuaTokenKind.TkTagDiagnostic,
             "meta" => LuaTokenKind.TkTagMeta,
             "version" => LuaTokenKind.TkTagVersion,
@@ -102,6 +103,7 @@ public class LuaDocLexer(LuaDocument document)
             LuaDocLexerState.Trivia => LexTrivia(),
             LuaDocLexerState.FieldStart => LexFieldStart(),
             LuaDocLexerState.See => LexSee(),
+            LuaDocLexerState.Version => LexVersion(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -301,7 +303,9 @@ public class LuaDocLexer(LuaDocument document)
                     {
                         return LuaTokenKind.TkDocTrivia;
                     }
-                };
+                }
+
+                ;
             }
             case '#' or '@':
             {
@@ -326,7 +330,8 @@ public class LuaDocLexer(LuaDocument document)
             }
             case var ch when LuaLexer.IsNameStart(ch):
             {
-                Reader.EatWhen(c => (LuaLexer.IsNameContinue(c) || c == '.' || c == '-') && !(c == '.' && Reader.NextChar == '.'));
+                Reader.EatWhen(c =>
+                    (LuaLexer.IsNameContinue(c) || c == '.' || c == '-') && !(c == '.' && Reader.NextChar == '.'));
                 return LuaTokenKind.TkName;
             }
             default:
@@ -371,7 +376,9 @@ public class LuaDocLexer(LuaDocument document)
                     {
                         return LuaTokenKind.TkDocTrivia;
                     }
-                };
+                }
+
+                ;
             }
             default:
             {
@@ -415,6 +422,59 @@ public class LuaDocLexer(LuaDocument document)
             default:
             {
                 return LexNormal();
+            }
+        }
+    }
+
+    private LuaTokenKind LexVersion()
+    {
+        switch (Reader.CurrentChar)
+        {
+            case ',':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkComma;
+            }
+            case '>':
+            {
+                Reader.Bump();
+                if (Reader.CurrentChar is '=')
+                {
+                    Reader.Bump();
+                    return LuaTokenKind.TkGe;
+                }
+
+                return LuaTokenKind.TkGt;
+            }
+            case '<':
+            {
+                Reader.Bump();
+                if (Reader.CurrentChar is '=')
+                {
+                    Reader.Bump();
+                    return LuaTokenKind.TkLe;
+                }
+                return LuaTokenKind.TkLt;
+            }
+            case var num when char.IsDigit(num):
+            {
+                Reader.EatWhen(ch => char.IsDigit(ch) || ch == '.');
+                return LuaTokenKind.TkVersionNumber;
+            }
+            case var ch when LuaLexer.IsNameStart(ch):
+            {
+                Reader.EatWhen(LuaLexer.IsNameContinue);
+                return Reader.CurrentSavedText is "JIT" ? LuaTokenKind.TkVersionNumber : LuaTokenKind.TkName;
+            }
+            case ' ':
+            {
+                Reader.EatWhen(IsDocWhitespace);
+                return LuaTokenKind.TkWhitespace;
+            }
+            default:
+            {
+                Reader.EatWhen(_ => true);
+                return LuaTokenKind.TkDocTrivia;
             }
         }
     }

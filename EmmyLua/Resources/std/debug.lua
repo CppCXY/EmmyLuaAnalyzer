@@ -26,6 +26,15 @@ debug = {}
 --- function, and so have no direct access to local variables.
 function debug.debug() end
 
+---@version 5.1
+---
+---Returns the environment of object `o` .
+---
+---@param o any
+---@return table
+---@nodiscard
+function debug.getfenv(o) end
+
 ---
 --- Returns the current hook settings of the thread, as three values: the
 --- current hook function, the current hook mask, and the current hook count
@@ -36,17 +45,32 @@ function debug.debug() end
 function debug.gethook(thread) end
 
 ---@class DebugInfo
----@field linedefined number
----@field lastlinedefined number
----@field currentline number
----@field func function
----@field isvararg boolean
----@field namewhat string
----@field source string
----@field nups number
----@field what string
----@field nparams number
----@field short_src string
+---@field name            string
+---@field namewhat        string
+---@field source          string
+---@field short_src       string
+---@field linedefined     integer
+---@field lastlinedefined integer
+---@field what            string
+---@field currentline     integer
+---@field istailcall      boolean
+---@field nups            integer
+---@field nparams         integer
+---@field isvararg        boolean
+---@field func            function
+---@field ftransfer       integer
+---@field ntransfer       integer
+---@field activelines     table
+
+---@alias Infowhat
+---|+"n"     # `name` and `namewhat`
+---|+"S"     # `source`, `short_src`, `linedefined`, `lastlinedefined`, and `what`
+---|+"l"     # `currentline`
+---|+"t"     # `istailcall`
+---|+"u"     # `nups`, `nparams`, and `isvararg`
+---|+"f"     # `func`
+---|+"r"     # `ftransfer` and `ntransfer`
+---|+"L"     # `activelines`
 
 ---
 --- Returns a table with information about a function. You can give the
@@ -68,10 +92,10 @@ function debug.gethook(thread) end
 --- with a name for the current function, if a reasonable name can be found,
 --- and the expression `debug.getinfo(print)` returns a table with all available
 --- information about the `print` function.
----@overload fun(f:function):DebugInfo
+---@overload fun(f: int|function, what?: InfoWhat):DebugInfo
 ---@param thread thread
 ---@param f function
----@param what string
+---@param what? Infowhat
 ---@return DebugInfo
 function debug.getinfo(thread, f, what) end
 
@@ -135,6 +159,33 @@ function debug.getupvalue(f, up) end
 function debug.getuservalue(u, n) end
 
 ---
+---### **Deprecated in `Lua 5.4.2`**
+---
+---Sets a new limit for the C stack. This limit controls how deeply nested calls can go in Lua, with the intent of avoiding a stack overflow.
+---
+---In case of success, this function returns the old limit. In case of error, it returns `false`.
+---
+---
+---@deprecated
+---@param limit integer
+---@return integer|boolean
+function debug.setcstacklimit(limit) end
+---
+---Sets the environment of the given `object` to the given `table` .
+---
+---@version 5.1
+---@generic T
+---@param object T
+---@param env    table
+---@return T object
+function debug.setfenv(object, env) end
+
+---@alias Hookmask
+---|+"c" # Calls hook when Lua calls a function.
+---|+"r" # Calls hook when Lua returns from a function.
+---|+"l" # Calls hook when Lua enters a new line of code.
+
+---
 --- Sets the given function as a hook. The string `mask` and the number `count`
 --- describe when the hook will be called. The string mask may have any
 --- combination of the following characters, with the given meaning:
@@ -155,10 +206,10 @@ function debug.getuservalue(u, n) end
 --- call `getinfo` with level 2 to get more information about the running
 --- function (level 0 is the `getinfo` function, and level 1 is the hook
 --- function)
----@overload fun(hook:(fun():any), mask:any)
+---@overload fun(hook:(fun():any), mask:Hookmask)
 ---@param thread thread
 ---@param hook fun():any
----@param mask string
+---@param mask Hookmask
 ---@param count number
 function debug.sethook(thread, hook, mask, count) end
 
@@ -180,10 +231,11 @@ function debug.setlocal(thread, level, var, value) end
 ---
 --- Sets the metatable for the given `object` to the given `table` (which
 --- can be **nil**). Returns value.
----@param value any
----@param table table
----@return boolean
-function debug.setmetatable(value, table) end
+---@generic T
+---@param value T
+---@param meta? table
+---@return T value
+function debug.setmetatable(value, meta) end
 
 ---
 --- This function assigns the value `value` to the upvalue with index `up`
@@ -218,6 +270,7 @@ function debug.setuservalue(udata, value, n) end
 ---@return string
 function debug.traceback(thread, message, level) end
 
+---@version >=5.2, JIT
 --- Returns a unique identifier (as a light userdata) for the upvalue numbered
 --- `n` from the given function.
 ---
@@ -230,6 +283,7 @@ function debug.traceback(thread, message, level) end
 ---@return number
 function debug.upvalueid(f, n) end
 
+---@version >=5.2, JIT
 ---
 --- Make the `n1`-th upvalue of the Lua closure f1 refer to the `n2`-th upvalue
 --- of the Lua closure f2.

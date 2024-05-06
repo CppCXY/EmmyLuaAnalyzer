@@ -13,6 +13,7 @@
 -- License for the specific language governing permissions and limitations under
 -- the License.
 
+---@version >=5.3
 utf8 = {}
 
 ---
@@ -49,7 +50,7 @@ function utf8.codes(s) end
 ---@param i number
 ---@param j number
 ---@return number
-function utf8.codepoint (s, i, j) end
+function utf8.codepoint(s, i, j) end
 
 ---
 --- Returns the number of UTF-8 characters in string `s` that start between
@@ -80,4 +81,4 @@ function utf8.len(s, i, j) end
 ---@param n number
 ---@param i number
 ---@return number
-function utf8.offset (s, n, i) end
+function utf8.offset(s, n, i) end

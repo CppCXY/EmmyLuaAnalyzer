@@ -30,6 +30,17 @@ function coroutine.create(f) end
 ---@return boolean
 function coroutine.isyieldable() end
 
+
+---@version >=5.4
+---
+---Closes coroutine `co` , closing all its pending to-be-closed variables and putting the coroutine in a dead state.
+---
+---@param co thread
+---@return boolean noerror
+---@return any errorobject
+function coroutine.close(co) end
+
+
 ---
 --- Starts or continues the execution of coroutine `co`. The first time you
 --- resume a coroutine, it starts running its body. The values `val1`, ...
@@ -61,7 +72,11 @@ function coroutine.running() end
 --- is, it has resumed another coroutine); and "`dead`" if the coroutine has
 --- finished its body function, or if it has stopped with an error.
 ---@param co thread
----@return string
+---@return
+---| '"running"'   # Is running.
+---| '"suspended"' # Is suspended or not started.
+---| '"normal"'    # Is active but not running.
+---| '"dead"'      # Has finished or stopped with an error.
 function coroutine.status(co) end
 
 ---
@@ -77,5 +92,6 @@ function coroutine.wrap(f) end
 ---
 --- Suspends the execution of the calling coroutine. Any arguments to `yield`
 --- are passed as extra results to `resume`.
----@return any
+---@async
+---@return ...
 function coroutine.yield(...) end

@@ -23,7 +23,7 @@ public class GlobalProvider : ICompleteProviderBase
             {
                 context.CreateCompletion(globalDecl.Name, globalDecl.Info.DeclarationType)
                     .WithData(globalDecl.Info.Ptr.Stringify)
-                    .WithCheckDeprecated(globalDecl)
+                    .WithCheckDeclaration(globalDecl)
                     .AddToContext();
             }
         }

@@ -118,4 +118,5 @@ public enum LuaTokenKind : ushort
     TkNullable, // '?'
     TkDocVisibility, // public private protected package
     TkAt, // '@', invalid lua token, but for postfix completion
+    TkVersionNumber, // version number
 }

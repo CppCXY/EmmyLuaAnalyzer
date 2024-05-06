@@ -8,7 +8,7 @@ public class ResourceManager
 
     public string? ResolvePath(string path)
     {
-        if (File.Exists(path))
+        if (Path.IsPathRooted(path) && File.Exists(path))
         {
             return path;
         }

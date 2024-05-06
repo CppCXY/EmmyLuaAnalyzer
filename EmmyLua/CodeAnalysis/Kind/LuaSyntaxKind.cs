@@ -99,5 +99,8 @@ public enum LuaSyntaxKind : ushort
     DiagnosticNameList,
     DocAttribute,
     // start with '#' or '@'
-    Description
+    Description,
+
+    // [<|>] [<framework>] <version>, <version> can be '5.1', '5.2', '5.3', '5.4', 'JIT', <framework> can be 'openresty'
+    Version,
 }

@@ -98,6 +98,8 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
         switch (Lexer.State)
         {
             case LuaDocLexerState.Normal:
+            case LuaDocLexerState.Description:
+            case LuaDocLexerState.Version:
             {
                 while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
                        or LuaTokenKind.TkDocContinue)
@@ -109,27 +111,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
                 break;
             }
             case LuaDocLexerState.FieldStart:
-            {
-                while (_current.Kind is LuaTokenKind.TkWhitespace)
-                {
-                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                    _current = LexToken();
-                }
-
-                break;
-            }
-            case LuaDocLexerState.Description:
-            {
-                while (_current.Kind is LuaTokenKind.TkWhitespace or LuaTokenKind.TkEndOfLine
-                       or LuaTokenKind.TkDocContinue)
-                {
-                    Events.Add(new MarkEvent.EatToken(_current.Range, _current.Kind));
-                    _current = LexToken();
-                }
-
-                break;
-            }
-            case LuaDocLexerState.See:
+                case LuaDocLexerState.See:
             {
                 while (_current.Kind is LuaTokenKind.TkWhitespace)
                 {

@@ -159,7 +159,7 @@ public class LuaDocTagAsSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
 public class LuaDocTagVersionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
     : LuaDocTagSyntax(greenNode, tree, parent, startOffset)
 {
-    public IEnumerable<LuaNameToken> Versions => ChildNodes<LuaNameToken>();
+    public IEnumerable<LuaDocVersionSyntax> Versions => ChildNodes<LuaDocVersionSyntax>();
 }
 
 public class LuaDocTagDiagnosticSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
