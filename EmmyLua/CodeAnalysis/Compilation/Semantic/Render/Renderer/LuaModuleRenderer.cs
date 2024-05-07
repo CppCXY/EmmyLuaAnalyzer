@@ -7,12 +7,6 @@ internal static class LuaModuleRenderer
 {
     public static void RenderModule(LuaDocument document, LuaRenderContext renderContext)
     {
-        var declarationTree = renderContext.SearchContext.Compilation.GetDeclarationTree(document.Id);
-        if (declarationTree is null)
-        {
-            return;
-        }
-
         var exports = renderContext.SearchContext.Compilation.DbManager
             .GetModuleExportExprs(document.Id)
             .Select(it => it.ToNode(document));
@@ -20,7 +14,7 @@ internal static class LuaModuleRenderer
         {
             if (exportElement is LuaNameExprSyntax nameExpr)
             {
-                var declaration = declarationTree.FindDeclaration(nameExpr, renderContext.SearchContext);
+                var declaration =  renderContext.SearchContext.FindDeclaration(nameExpr);
                 if (declaration is not null)
                 {
                     LuaCommentRenderer.RenderDeclarationStatComment(declaration, renderContext);

@@ -1,14 +1,17 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
-public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnostics)
+public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnostics, SearchContext searchContext)
 {
     private LuaDiagnostics LuaDiagnostics { get; } = luaDiagnostics;
 
     public LuaDocument Document { get; } = document;
 
     public DiagnosticConfig Config => LuaDiagnostics.Config;
+
+    public SearchContext SearchContext { get; } = searchContext;
 
     public void Report(Diagnostic diagnostic)
     {

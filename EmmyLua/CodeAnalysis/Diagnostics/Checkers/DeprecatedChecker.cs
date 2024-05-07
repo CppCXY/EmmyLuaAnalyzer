@@ -12,12 +12,6 @@ public class DeprecatedChecker(LuaCompilation compilation)
 {
     public override void Check(DiagnosticContext context)
     {
-        var semanticModel = Compilation.GetSemanticModel(context.Document.Id);
-        if (semanticModel is null)
-        {
-            return;
-        }
-
         var document = context.Document;
         foreach (var node in document.SyntaxTree.SyntaxRoot.Descendants)
         {
@@ -25,7 +19,7 @@ public class DeprecatedChecker(LuaCompilation compilation)
             {
                 case LuaNameExprSyntax nameExpr:
                 {
-                    var declaration = semanticModel.DeclarationTree.FindDeclaration(nameExpr, semanticModel.Context);
+                    var declaration = context.SearchContext.FindDeclaration(nameExpr);
                     if (declaration is not null)
                     {
                         CheckDeprecated(context, declaration, nameExpr.Range);
@@ -35,7 +29,7 @@ public class DeprecatedChecker(LuaCompilation compilation)
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    var declaration = semanticModel.DeclarationTree.FindDeclaration(indexExpr, semanticModel.Context);
+                    var declaration = context.SearchContext.FindDeclaration(indexExpr);
                     if (declaration is not null && indexExpr is { KeyElement.Range: { } range })
                     {
                         CheckDeprecated(context, declaration, range);
@@ -45,7 +39,7 @@ public class DeprecatedChecker(LuaCompilation compilation)
                 }
                 case LuaLocalNameSyntax localName:
                 {
-                    var declaration = semanticModel.DeclarationTree.FindDeclaration(localName, semanticModel.Context);
+                    var declaration = context.SearchContext.FindDeclaration(localName);
                     if (declaration is not null)
                     {
                         CheckDeprecated(context, declaration, localName.Range);
@@ -55,7 +49,7 @@ public class DeprecatedChecker(LuaCompilation compilation)
                 }
                 case LuaTableFieldSyntax tableField:
                 {
-                    var declaration = semanticModel.DeclarationTree.FindDeclaration(tableField, semanticModel.Context);
+                    var declaration = context.SearchContext.FindDeclaration(tableField);
                     if (declaration is not null && tableField is { KeyElement.Range: { } range })
                     {
                         CheckDeprecated(context, declaration, range);

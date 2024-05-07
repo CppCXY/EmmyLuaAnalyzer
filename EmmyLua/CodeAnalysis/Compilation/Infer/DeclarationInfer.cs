@@ -7,20 +7,10 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class DeclarationInfer
 {
-    public static LuaDeclarationTree? GetSymbolTree(LuaSyntaxElement element, SearchContext context)
-    {
-        return context.Compilation.GetDeclarationTree(element.DocumentId);
-    }
 
     public static LuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
     {
-        var declarationTree = GetSymbolTree(localName, context);
-        if (declarationTree is null)
-        {
-            return Builtin.Unknown;
-        }
-
-        var symbol = declarationTree.FindDeclaration(localName, context);
+        var symbol = context.FindDeclaration(localName);
         return symbol?.Info.DeclarationType ?? Builtin.Unknown;
     }
 
@@ -31,13 +21,7 @@ public static class DeclarationInfer
 
     public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)
     {
-        var symbolTree = GetSymbolTree(paramDef, context);
-        if (symbolTree is null)
-        {
-            return Builtin.Unknown;
-        }
-
-        var symbol = symbolTree.FindDeclaration(paramDef, context);
+        var symbol = context.FindDeclaration(paramDef);
         return symbol?.Info.DeclarationType ?? Builtin.Unknown;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 using EmmyLua.CodeAnalysis.Document;
 
@@ -6,14 +7,14 @@ namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public class LuaDiagnostics(LuaCompilation compilation)
 {
-    private List<DiagnosticCheckerBase> Checkers { get; } = new()
-    {
+    private List<DiagnosticCheckerBase> Checkers { get; } =
+    [
         new UnusedChecker(compilation),
         new UndefinedGlobalChecker(compilation),
         new TypeChecker(compilation),
         new DeprecatedChecker(compilation),
-        new VisibilityChecker(compilation),
-    };
+        new VisibilityChecker(compilation)
+    ];
 
     public LuaCompilation Compilation { get; } = compilation;
 
@@ -29,14 +30,14 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     private Dictionary<LuaDocumentId, List<Diagnostic>> Diagnostics { get; } = new();
 
-    public void Check(LuaDocument document)
+    public void Check(LuaDocument document, SearchContext searchContext)
     {
         if (IsMetaDocument.Contains(document.Id))
         {
             return;
         }
 
-        var context = new DiagnosticContext(document, this);
+        var context = new DiagnosticContext(document, this, searchContext);
         foreach (var checker in Checkers)
         {
             if (CanCheck(document.Id, checker))

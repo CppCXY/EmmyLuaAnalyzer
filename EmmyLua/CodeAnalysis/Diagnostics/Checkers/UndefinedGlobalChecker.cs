@@ -10,14 +10,8 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
 {
     public override void Check(DiagnosticContext context)
     {
-        var semanticModel = Compilation.GetSemanticModel(context.Document.Id);
-        if (semanticModel is null)
-        {
-            return;
-        }
-
         var globals = context.Config.Globals;
-        var nameExprs = semanticModel
+        var nameExprs = context
             .Document
             .SyntaxTree
             .SyntaxRoot
@@ -28,7 +22,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
         foreach (var nameExpr in nameExprs)
         {
             if (nameExpr is { Name: { RepresentText: { } name } nameToken } &&
-                semanticModel.DeclarationTree.FindDeclaration(nameExpr, semanticModel.Context) is null)
+                context.SearchContext.FindDeclaration(nameExpr) is null)
             {
                 if (globals.Contains(name))
                 {
@@ -54,7 +48,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                         context.Report(new Diagnostic(
                             DiagnosticSeverity.Error,
                             DiagnosticCode.UndefinedGlobal,
-                            "undefined global",
+                            "Undefined global",
                             nameToken.Range
                         ));
                         continue;
@@ -71,7 +65,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                         context.Report(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.NeedImport,
-                            $"import '{moduleIndex.ModulePath}'",
+                            $"Import '{moduleIndex.ModulePath}'",
                             nameToken.Range,
                             Data: documentIds.First().Id.ToString()));
                     }
@@ -80,7 +74,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                         context.Report(new Diagnostic(
                             DiagnosticSeverity.Warning,
                             DiagnosticCode.NeedImport,
-                            "need import from multiple modules",
+                            "Need import from multiple modules",
                             nameToken.Range,
                             Data: string.Join(",", documentIds.Select(d => d.Id.ToString()))
                         ));
@@ -91,7 +85,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                     context.Report(new Diagnostic(
                         DiagnosticSeverity.Error,
                         DiagnosticCode.UndefinedGlobal,
-                        "undefined global",
+                        "Undefined global",
                         nameToken.Range));
                 }
             }

@@ -57,6 +57,7 @@ function io.input(file) end
 ---@return fun():any
 function io.lines(filename, ...) end
 
+---@alias OpenMode '"r"' | '"w"' | '"a"' | '"r+"' | '"w+"' | '"a+"' | '"rb"' | '"wb"' | '"ab"' | '"rb+"' | '"wb+"' | '"ab+"'
 ---
 --- This function opens a file, in the mode specified in the string `mode`.  In
 --- case of success, it returns a new file handle. The `mode` string can be
@@ -74,9 +75,9 @@ function io.lines(filename, ...) end
 --- some systems to open the file in binary mode.
 ---@overload fun(filename:string):file
 ---@param filename string
----@param mode string | '"r"' | '"w"' | '"a"' | '"r+"' | '"w+"' | '"a+"' | '"rb"' | '"wb"' | '"ab"' | '"rb+"' | '"wb+"' | '"ab+"'
+---@param mode OpenMode
 ---@return file
-function io.open(filename, mode) return file end
+function io.open(filename, mode) return end
 
 ---
 --- Similar to `io.input`, but operates over the default output file.

@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
@@ -150,11 +151,13 @@ public class LuaCompilation
                     analyzer.Analyze(analyzeContext);
                 }
 
+                var context = new SearchContext(this, new SearchContextFeatures());
                 foreach (var document in list)
                 {
                     Workspace.Monitor?.OnDiagnosticChecking(document.Path, list.Count);
-                    Diagnostics.Check(document);
+                    Diagnostics.Check(document, context);
                 }
+                context.ClearCache();
             }
             finally
             {
@@ -201,11 +204,12 @@ public class LuaCompilation
     {
         Diagnostics.ClearAllDiagnostic();
         Workspace.Monitor?.OnStartDiagnosticCheck();
+        var context = new SearchContext(this, new SearchContextFeatures());
         var documents = Workspace.AllDocuments.ToList();
         foreach (var document in documents)
         {
             Workspace.Monitor?.OnDiagnosticChecking(document.Path, documents.Count);
-            Diagnostics.Check(document);
+            Diagnostics.Check(document, context);
         }
 
         Workspace.Monitor?.OnFinishDiagnosticCheck();

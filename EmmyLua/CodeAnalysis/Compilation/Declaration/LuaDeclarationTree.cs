@@ -12,7 +12,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
     public DeclarationScope? RootScope { get; internal set; }
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement element, SearchContext context)
+    internal LuaDeclaration? FindDeclaration(LuaSyntaxElement? element, SearchContext context)
     {
         switch (element)
         {
@@ -65,7 +65,6 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
                 var scope = FindScope(element);
                 return scope?.FindDeclaration(element);
             }
-
         }
 
         return null;

@@ -55,8 +55,7 @@ public class LuaRenderBuilder(SearchContext context)
 
     private void RenderElement(LuaSyntaxElement element, LuaRenderContext renderContext)
     {
-        var declarationTree = renderContext.SearchContext.Compilation.GetDeclarationTree(element.DocumentId);
-        var declaration = declarationTree?.FindDeclaration(element, renderContext.SearchContext);
+        var declaration = renderContext.SearchContext.FindDeclaration(element);
         if (declaration is not null)
         {
             LuaDeclarationRenderer.RenderDeclaration(declaration, renderContext);

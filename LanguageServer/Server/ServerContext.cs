@@ -15,7 +15,7 @@ namespace LanguageServer.Server;
 public class ServerContext(ILanguageServerFacade server)
 {
     private string MainWorkspacePath { get; set; } = string.Empty;
-    
+
     private ReaderWriterLockSlim LockSlim { get; } = new();
 
     public LuaWorkspace LuaWorkspace { get; private set; } = LuaWorkspace.CleanCreate();
@@ -27,7 +27,7 @@ public class ServerContext(ILanguageServerFacade server)
     private ProcessMonitor Monitor { get; } = new(server);
 
     public ResourceManager ResourceManager { get; } = new();
-    
+
     public void StartServer(string workspacePath)
     {
         LockSlim.EnterWriteLock();
@@ -94,7 +94,7 @@ public class ServerContext(ILanguageServerFacade server)
             LockSlim.ExitWriteLock();
         }
     }
-    
+
     private void UpdateFeatures(LuaFeatures newFeatures)
     {
         var oldFeatures = LuaWorkspace.Features;

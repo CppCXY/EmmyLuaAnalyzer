@@ -191,7 +191,7 @@ public class InlayHintBuilder
 
         if (callExpr.PrefixExpr is { } prefixExpr)
         {
-            var luaDeclaration = semanticModel.DeclarationTree.FindDeclaration(prefixExpr, semanticModel.Context);
+            var luaDeclaration = semanticModel.Context.FindDeclaration(prefixExpr);
             if (luaDeclaration?.Info is MethodInfo info)
             {
                 var funcStat = info.FuncStatPtr.ToNode(semanticModel.Context);

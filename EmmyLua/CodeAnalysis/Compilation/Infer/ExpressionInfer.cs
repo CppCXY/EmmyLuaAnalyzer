@@ -122,7 +122,7 @@ public static class ExpressionInfer
 
     private static LuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
-        var declaration = DeclarationInfer.GetSymbolTree(indexExpr, context)?.FindDeclaration(indexExpr, context);
+        var declaration = context.FindDeclaration(indexExpr);
 
         if (declaration is { Info.DeclarationType: { } ty2 })
         {
@@ -152,9 +152,7 @@ public static class ExpressionInfer
             return Builtin.Unknown;
         }
 
-        var symbolTree = DeclarationInfer.GetSymbolTree(nameExpr, context);
-        var nameDecl = symbolTree?.FindDeclaration(nameExpr, context);
-
+        var nameDecl = context.FindDeclaration(nameExpr);
         if (nameDecl?.Info.DeclarationType is { } ty)
         {
             return ty;

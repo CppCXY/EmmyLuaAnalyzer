@@ -9,13 +9,13 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
 {
     public override void Check(DiagnosticContext context)
     {
-        var semanticModel = Compilation.GetSemanticModel(context.Document.Id);
-        if (semanticModel is null)
+        var declarationTree = context.SearchContext.Compilation.GetDeclarationTree(context.Document.Id);
+        if (declarationTree is null)
         {
             return;
         }
 
-        var declarations = semanticModel.DeclarationTree.RootScope?.Descendants;
+        var declarations = declarationTree.RootScope?.Descendants;
         if (declarations is null)
         {
             return;
@@ -30,15 +30,14 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
             }
         }
 
-        LocalOrParamUnusedCheck(localOrParamDeclarations, semanticModel, context);
+        LocalOrParamUnusedCheck(localOrParamDeclarations, context);
     }
 
     private void LocalOrParamUnusedCheck(
         HashSet<LuaDeclaration> declarationSet,
-        SemanticModel semanticModel,
         DiagnosticContext context)
     {
-        var nameExprs = semanticModel
+        var nameExprs = context
             .Document
             .SyntaxTree
             .SyntaxRoot
@@ -47,7 +46,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
 
         foreach (var nameExpr in nameExprs)
         {
-            if (semanticModel.DeclarationTree.FindDeclaration(nameExpr, semanticModel.Context) is { } declaration)
+            if (context.SearchContext.FindDeclaration(nameExpr) is { } declaration)
             {
                 declarationSet.Remove(declaration);
             }
@@ -60,7 +59,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
                 context.Report(new Diagnostic(
                         DiagnosticSeverity.Hint,
                         DiagnosticCode.Unused,
-                        "unused variable",
+                        "Unused variable",
                         node.Range,
                     DiagnosticTag.Unnecessary
                 ));

@@ -12,19 +12,12 @@ public class VisibilityChecker(LuaCompilation compilation)
 {
     public override void Check(DiagnosticContext context)
     {
-        var semanticModel = Compilation.GetSemanticModel(context.Document.Id);
-        if (semanticModel is null)
-        {
-            return;
-        }
-
-        var declarationTree = semanticModel.DeclarationTree;
         // var searchContext = semanticModel.Context;
         var indexExprs = context.Document.SyntaxTree
             .SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>();
         foreach (var indexExpr in indexExprs)
         {
-            var declaration = declarationTree.FindDeclaration(indexExpr, semanticModel.Context);
+            var declaration = context.SearchContext.FindDeclaration(indexExpr);
             var prefixExpr = indexExpr.PrefixExpr;
             if (prefixExpr is LuaNameExprSyntax { Name.Text: "self" } && declaration is { IsPrivate: true })
             {
@@ -32,7 +25,7 @@ public class VisibilityChecker(LuaCompilation compilation)
                 continue;
             }
 
-            var prefixType = semanticModel.Context.Infer(prefixExpr);
+            var prefixType = context.SearchContext.Infer(prefixExpr);
             if (prefixType.Equals(Builtin.Unknown) || prefixType.Equals(Builtin.Any))
             {
                 continue;

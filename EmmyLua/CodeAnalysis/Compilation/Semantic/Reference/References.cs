@@ -9,16 +9,10 @@ public class References(SearchContext context)
 {
     public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)
     {
-        var declarationTree = context.Compilation.GetDeclarationTree(element.DocumentId);
-        if (declarationTree is null)
-        {
-            return Enumerable.Empty<LuaReference>();
-        }
-
-        var declaration = declarationTree.FindDeclaration(element, context);
+        var declaration = context.FindDeclaration(element);
         return declaration?.Info switch
         {
-            LocalInfo localInfo => LocalReferences(declaration, localInfo, declarationTree),
+            LocalInfo localInfo => LocalReferences(declaration, localInfo),
             GlobalInfo => GlobalReferences(declaration),
             MethodInfo methodInfo => MethodReferences(declaration, methodInfo),
             DocFieldInfo docFieldInfo => DocFieldReferences(declaration, docFieldInfo),
@@ -32,8 +26,7 @@ public class References(SearchContext context)
         };
     }
 
-    private IEnumerable<LuaReference> LocalReferences(LuaDeclaration declaration, DeclarationInfo info,
-        LuaDeclarationTree declarationTree)
+    private IEnumerable<LuaReference> LocalReferences(LuaDeclaration declaration, DeclarationInfo info)
     {
         var references = new List<LuaReference>();
         var localNameSyntax = info.Ptr.ToNode(context);
@@ -46,7 +39,7 @@ public class References(SearchContext context)
             {
                 if (node is LuaNameExprSyntax nameExpr && nameExpr.Name?.RepresentText == declaration.Name)
                 {
-                    if (declarationTree.FindDeclaration(nameExpr, context) == declaration)
+                    if (context.FindDeclaration(nameExpr) == declaration)
                     {
                         references.Add(new LuaReference(nameExpr.Location, nameExpr));
                     }
@@ -65,8 +58,7 @@ public class References(SearchContext context)
 
         foreach (var nameExpr in nameExprs)
         {
-            var declarationTree = context.Compilation.GetDeclarationTree(nameExpr.DocumentId);
-            if (declarationTree?.FindDeclaration(nameExpr, context) == declaration)
+            if (context.FindDeclaration(nameExpr) == declaration)
             {
                 references.Add(new LuaReference(nameExpr.Location, nameExpr));
             }
@@ -81,8 +73,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.DbManager.GetIndexExprs(fieldName);
         foreach (var indexExpr in indexExprs)
         {
-            var declarationTree = context.Compilation.GetDeclarationTree(indexExpr.DocumentId);
-            if (declarationTree?.FindDeclaration(indexExpr, context) == declaration)
+            if (context.FindDeclaration(indexExpr) == declaration)
             {
                 references.Add(new LuaReference(indexExpr.KeyElement.Location, indexExpr.KeyElement));
             }
@@ -95,24 +86,17 @@ public class References(SearchContext context)
     {
         switch (declaration)
         {
-            case {IsLocal: true}:
+            case { IsLocal: true }:
             {
-                var id = declaration.Info.Ptr.DocumentId;
-                var declarationTree = context.Compilation.GetDeclarationTree(id);
-                if (declarationTree is not null)
-                {
-                    return LocalReferences(declaration, methodInfo, declarationTree);
-                }
-
-                break;
+                return LocalReferences(declaration, methodInfo);
             }
-            case {IsGlobal: true}:
+            case { IsGlobal: true }:
             {
                 return GlobalReferences(declaration);
             }
             default:
             {
-                if (methodInfo.IndexPtr.ToNode(context) is {Name: { } name})
+                if (methodInfo.IndexPtr.ToNode(context) is { Name: { } name })
                 {
                     return FieldReferences(declaration, name);
                 }
@@ -143,9 +127,9 @@ public class References(SearchContext context)
                 {
                     if (member is
                         {
-                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
+                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
                         }
-                        && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
+                        && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
                        )
                     {
                         references.Add(new LuaReference(keyElement.Location, keyElement));
@@ -179,8 +163,8 @@ public class References(SearchContext context)
                 {
                     if (member is
                         {
-                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
-                        } && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
+                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
+                        } && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
                        )
                     {
                         references.Add(new LuaReference(keyElement.Location, keyElement));
@@ -213,8 +197,8 @@ public class References(SearchContext context)
                 {
                     if (member is
                         {
-                            Name: { } name2, Info: DocFieldInfo {FieldDefPtr: { } fieldDefPtr}
-                        } && fieldDefPtr.ToNode(context) is {FieldElement: { } fieldElement}
+                            Name: { } name2, Info: DocFieldInfo { FieldDefPtr: { } fieldDefPtr }
+                        } && fieldDefPtr.ToNode(context) is { FieldElement: { } fieldElement }
                        )
                     {
                         references.Add(new LuaReference(fieldElement.Location, fieldElement));
@@ -244,8 +228,8 @@ public class References(SearchContext context)
                 {
                     if (member is
                         {
-                            Name: { } name2, Info: TableFieldInfo {TableFieldPtr: { } tableFieldPtr}
-                        } && tableFieldPtr.ToNode(context) is {KeyElement: { } keyElement}
+                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
+                        } && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
                        )
                     {
                         references.Add(new LuaReference(keyElement.Location, keyElement));
@@ -263,14 +247,13 @@ public class References(SearchContext context)
     {
         var name = declaration.Name;
         var references = new List<LuaReference>();
-        if (info.TypeDefinePtr.ToNode(context) is {Name: { } typeName})
+        if (info.TypeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new LuaReference(typeName.Location, typeName));
             var nameTypes = context.Compilation.DbManager.GetNameTypes(name);
             foreach (var nameType in nameTypes)
             {
-                var declarationTree = context.Compilation.GetDeclarationTree(nameType.DocumentId);
-                if (declarationTree?.FindDeclaration(nameType, context) == declaration && nameType.Name is { } name2)
+                if (context.FindDeclaration(nameType) == declaration && nameType.Name is { } name2)
                 {
                     references.Add(new LuaReference(name2.Location, name2));
                 }
@@ -291,14 +274,9 @@ public class References(SearchContext context)
                 references.Add(luaReference);
             }
 
-            var documentId = paramDef.DocumentId;
-            var declarationTree = context.Compilation.GetDeclarationTree(documentId);
-            if (declarationTree is not null)
-            {
-                references.AddRange(LocalReferences(declaration, info, declarationTree));
-            }
+            references.AddRange(LocalReferences(declaration, info));
         }
-        else if (info.TypedParamPtr.ToNode(context) is {Name: { } typedParamName})
+        else if (info.TypedParamPtr.ToNode(context) is { Name: { } typedParamName })
         {
             references.Add(new LuaReference(typedParamName.Location, typedParamName));
         }
@@ -319,7 +297,7 @@ public class References(SearchContext context)
         {
             foreach (var tagParamSyntax in comment.DocList.OfType<LuaDocTagParamSyntax>())
             {
-                if (tagParamSyntax.Name is {RepresentText: { } name} && name == paramDefName)
+                if (tagParamSyntax.Name is { RepresentText: { } name } && name == paramDefName)
                 {
                     return new LuaReference(tagParamSyntax.Name.Location, tagParamSyntax.Name);
                 }
@@ -332,7 +310,7 @@ public class References(SearchContext context)
     private IEnumerable<LuaReference> IndexExprReferences(LuaDeclaration declaration, IndexInfo info)
     {
         var references = new List<LuaReference>();
-        if (info.IndexExprPtr.ToNode(context) is {Name: { } name})
+        if (info.IndexExprPtr.ToNode(context) is { Name: { } name })
         {
             references.AddRange(FieldReferences(declaration, name));
         }

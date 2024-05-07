@@ -47,10 +47,9 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                 }
 
                 var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
-                var declarationTree = semanticModel.DeclarationTree;
                 if (node is not null)
                 {
-                    var declaration = declarationTree.FindDeclaration(node, semanticModel.Context);
+                    var declaration = semanticModel.Context.FindDeclaration(node);
                     if (declaration?.Info.Ptr.ToNode(semanticModel.Context) is { Location: { } location })
                     {
                         locationLinks = LocationOrLocationLinks.From(

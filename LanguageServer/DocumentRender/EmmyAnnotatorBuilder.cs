@@ -29,7 +29,7 @@ public class EmmyAnnotatorBuilder
                 {
                     if (nameExpr.Name is {RepresentText: { } name2} nameToken && name2 != "self")
                     {
-                        var declaration = declarationTree.FindDeclaration(nameExpr, context);
+                        var declaration = context.FindDeclaration(nameExpr);
                         if (declaration is null || declaration.IsGlobal)
                         {
                             globalAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));

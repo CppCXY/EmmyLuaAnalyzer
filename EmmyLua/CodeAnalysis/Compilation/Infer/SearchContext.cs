@@ -12,7 +12,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     public SearchContextFeatures Features { get; set; } = features;
 
-    private Dictionary<LuaSyntaxElement, LuaType> Caches { get; } = new();
+    private Dictionary<long, LuaType> Caches { get; } = new();
 
     private Dictionary<LuaType, List<LuaDeclaration>> MemberCaches { get; } = new();
 
@@ -20,7 +20,9 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     private Dictionary<LuaType, Dictionary<TypeOperatorKind, List<TypeOperator>>> TypeOperatorCaches { get; } = new();
 
-    private HashSet<LuaSyntaxElement> InferGuard { get; } = new();
+    private Dictionary<long, LuaDeclaration?> DeclarationCaches { get; } = new();
+
+    private HashSet<long> InferGuard { get; } = new();
 
     private const int MaxDepth = 1000;
 
@@ -36,7 +38,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         if (Features.Cache)
         {
-            if (Caches.TryGetValue(element, out var luaType))
+            if (Caches.TryGetValue(element.UniqueId, out var luaType))
             {
                 return luaType;
             }
@@ -44,7 +46,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             luaType = InferCore(element);
             if (Features.CacheUnknown || !luaType.Equals(Builtin.Unknown))
             {
-                Caches[element] = luaType;
+                Caches[element.UniqueId] = luaType;
             }
 
             return luaType;
@@ -57,6 +59,9 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         Caches.Clear();
         MemberCaches.Clear();
+        BaseMemberCaches.Clear();
+        TypeOperatorCaches.Clear();
+        DeclarationCaches.Clear();
     }
 
     private LuaType InferCore(LuaSyntaxElement element)
@@ -66,7 +71,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             return Builtin.Unknown;
         }
 
-        if (!InferGuard.Add(element))
+        if (!InferGuard.Add(element.UniqueId))
         {
             return Builtin.Unknown;
         }
@@ -87,7 +92,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         finally
         {
             _currentDepth--;
-            InferGuard.Remove(element);
+            InferGuard.Remove(element.UniqueId);
         }
     }
 
@@ -483,5 +488,27 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             .OfType<IndexOperator>()
             .FirstOrDefault(it => it.Key.Equals(key));
         return bestMatched;
+    }
+
+    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    {
+        if (element is null)
+        {
+            return null;
+        }
+
+        if (Features.Cache && DeclarationCaches.TryGetValue(element.UniqueId, out var declaration))
+        {
+            return declaration;
+        }
+
+        var declarationTree = Compilation.GetDeclarationTree(element.DocumentId);
+        declaration = declarationTree?.FindDeclaration(element, this);
+        if (Features.Cache)
+        {
+            DeclarationCaches[element.UniqueId] = declaration;
+        }
+
+        return declaration;
     }
 }
