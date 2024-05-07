@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using System.Text.RegularExpressions;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
 using Newtonsoft.Json;
@@ -145,6 +146,24 @@ public class SettingManager
         };
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
+        foreach (var globalRegexString in setting.Diagnostics.GlobalRegex)
+        {
+            try
+            {
+                var regex = new Regex(globalRegexString);
+                features.DiagnosticConfig.GlobalRegexes.Add(regex);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        foreach (var (code, severity) in setting.Diagnostics.Severity)
+        {
+            features.DiagnosticConfig.SeverityOverrides[code] = severity;
+        }
+
         features.RequireLikeFunction.UnionWith(setting.Runtime.RequireLikeFunction);
         foreach (var framework in setting.Runtime.FrameworkVersions)
         {

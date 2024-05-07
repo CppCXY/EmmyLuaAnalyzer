@@ -82,6 +82,71 @@
               "null"
             ]
           }
+        },
+        "globalRegex": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "severity": {
+          "type": "object",
+          "properties": {
+            "none": {
+              "type": "string",
+              "enum": [
+                "error",
+                "warning",
+                "information",
+                "hint"
+              ]
+            },
+            "syntax-error": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "type-not-found": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "missing-return": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "type-not-match": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "missing-parameter": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "inject-field-fail": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "unreachable-code": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "unused": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "undefined-global": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "need-import": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "deprecated": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "access-private-member": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
+            "*": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            }
+          }
         }
       }
     },
@@ -138,10 +203,23 @@
             "LuaJIT",
             "Lua5.2",
             "Lua5.3",
-            "Lua5.4"
+            "Lua5.4",
+            "LuaLatest"
           ]
         },
         "requireLikeFunction": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "frameworkVersions": {
           "type": [
             "array",
             "null"

@@ -34,12 +34,11 @@ public class VisibilityChecker(LuaCompilation compilation)
             if (declaration?.Visibility is DeclarationVisibility.Private or DeclarationVisibility.Protected &&
                 indexExpr is { KeyElement: { } keyElement, Parent: not LuaStatSyntax })
             {
-                context.Report(new Diagnostic(
-                    DiagnosticSeverity.Error,
+                context.Report(
                     DiagnosticCode.AccessPrivateMember,
                     $"Cannot access private member '{indexExpr.Name}'",
                     keyElement.Range
-                ));
+                );
             }
         }
     }

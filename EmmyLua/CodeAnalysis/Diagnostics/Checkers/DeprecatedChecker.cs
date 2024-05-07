@@ -65,13 +65,12 @@ public class DeprecatedChecker(LuaCompilation compilation)
     {
         if (declaration.IsDeprecated)
         {
-            context.Report(new Diagnostic(
-                DiagnosticSeverity.Hint,
+            context.Report(
                 DiagnosticCode.Deprecated,
                 "Deprecated",
                 range,
                 DiagnosticTag.Deprecated
-            ));
+            );
         }
     }
 }

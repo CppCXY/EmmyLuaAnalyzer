@@ -65,6 +65,55 @@ public class Diagnostics
 
     [JsonProperty("globals", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> Globals { get; set; } = [];
+
+    [JsonProperty("globalRegex", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> GlobalRegex { get; set; } = [];
+
+    [JsonProperty("severity", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore),
+     JsonConverter(typeof(DiagnosticSeverityConverter))]
+    public Dictionary<DiagnosticCode, DiagnosticSeverity> Severity { get; set; } = [];
+}
+
+public class DiagnosticSeverityConverter : JsonConverter<Dictionary<DiagnosticCode, DiagnosticSeverity>>
+{
+    public override void WriteJson(JsonWriter writer, Dictionary<DiagnosticCode, DiagnosticSeverity>? value,
+        JsonSerializer serializer)
+    {
+        writer.WriteStartObject();
+        if (value is not null)
+        {
+            foreach (var (key, val) in value)
+            {
+                writer.WritePropertyName(key.ToString());
+                writer.WriteValue(val.ToString());
+            }
+        }
+
+        writer.WriteEndObject();
+    }
+
+    public override Dictionary<DiagnosticCode, DiagnosticSeverity> ReadJson(
+        JsonReader reader, Type objectType,
+        Dictionary<DiagnosticCode, DiagnosticSeverity>? existingValue, bool hasExistingValue,
+        JsonSerializer serializer)
+    {
+        var dictionary = new Dictionary<DiagnosticCode, DiagnosticSeverity>();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.PropertyName)
+            {
+                var key = DiagnosticCodeHelper.GetCode(reader.Value?.ToString() ?? string.Empty);
+                if (!reader.Read()) throw new JsonSerializationException("Unexpected end when reading dictionary.");
+                var value = DiagnosticSeverityHelper.GetSeverity(reader.Value?.ToString() ?? string.Empty);
+                dictionary[key] = value;
+            }
+            else if (reader.TokenType == JsonToken.EndObject)
+            {
+                return dictionary;
+            }
+        }
+        throw new JsonSerializationException("Unexpected end when reading dictionary.");
+    }
 }
 
 public class Hint

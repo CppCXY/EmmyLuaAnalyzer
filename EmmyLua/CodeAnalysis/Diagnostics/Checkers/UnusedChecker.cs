@@ -10,12 +10,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
     public override void Check(DiagnosticContext context)
     {
         var declarationTree = context.SearchContext.Compilation.GetDeclarationTree(context.Document.Id);
-        if (declarationTree is null)
-        {
-            return;
-        }
-
-        var declarations = declarationTree.RootScope?.Descendants;
+        var declarations = declarationTree?.RootScope?.Descendants;
         if (declarations is null)
         {
             return;
@@ -56,13 +51,12 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
         {
             if (luaDeclaration.Info.Ptr.ToNode(context.Document) is { } node)
             {
-                context.Report(new Diagnostic(
-                        DiagnosticSeverity.Hint,
-                        DiagnosticCode.Unused,
-                        "Unused variable",
-                        node.Range,
+                context.Report(
+                    DiagnosticCode.Unused,
+                    "Unused variable",
+                    node.Range,
                     DiagnosticTag.Unnecessary
-                ));
+                );
             }
         }
     }

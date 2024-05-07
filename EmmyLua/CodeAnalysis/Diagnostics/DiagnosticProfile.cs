@@ -2,6 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
+// ReSharper disable once UnusedType.Global
 public class DiagnosticProfile
 {
     private Dictionary<DiagnosticCode, long> DiagnosticTime { get; } = new();

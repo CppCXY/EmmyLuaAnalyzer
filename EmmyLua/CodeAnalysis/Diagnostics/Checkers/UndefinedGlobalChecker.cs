@@ -11,6 +11,26 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
     public override void Check(DiagnosticContext context)
     {
         var globals = context.Config.Globals;
+        var globalRegexes = context.Config.GlobalRegexes;
+
+        bool CheckGlobals(string name)
+        {
+            if (globals.Contains(name))
+            {
+                return true;
+            }
+
+            foreach (var regex in globalRegexes)
+            {
+                if (regex.IsMatch(name))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         var nameExprs = context
             .Document
             .SyntaxTree
@@ -24,7 +44,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
             if (nameExpr is { Name: { RepresentText: { } name } nameToken } &&
                 context.SearchContext.FindDeclaration(nameExpr) is null)
             {
-                if (globals.Contains(name))
+                if (CheckGlobals(name))
                 {
                     continue;
                 }
@@ -45,12 +65,11 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
 
                     if (documentIds.Count == 0)
                     {
-                        context.Report(new Diagnostic(
-                            DiagnosticSeverity.Error,
+                        context.Report(
                             DiagnosticCode.UndefinedGlobal,
                             "Undefined global",
                             nameToken.Range
-                        ));
+                        );
                         continue;
                     }
 
@@ -62,31 +81,30 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                             continue;
                         }
 
-                        context.Report(new Diagnostic(
-                            DiagnosticSeverity.Warning,
+                        context.Report(
                             DiagnosticCode.NeedImport,
                             $"Import '{moduleIndex.ModulePath}'",
                             nameToken.Range,
-                            Data: documentIds.First().Id.ToString()));
+                            data: documentIds.First().Id.ToString()
+                        );
                     }
                     else
                     {
-                        context.Report(new Diagnostic(
-                            DiagnosticSeverity.Warning,
+                        context.Report(
                             DiagnosticCode.NeedImport,
                             "Need import from multiple modules",
                             nameToken.Range,
-                            Data: string.Join(",", documentIds.Select(d => d.Id.ToString()))
-                        ));
+                            data: string.Join(",", documentIds.Select(d => d.Id.ToString()))
+                        );
                     }
                 }
                 else
                 {
-                    context.Report(new Diagnostic(
-                        DiagnosticSeverity.Error,
+                    context.Report(
                         DiagnosticCode.UndefinedGlobal,
                         "Undefined global",
-                        nameToken.Range));
+                        nameToken.Range
+                    );
                 }
             }
         }

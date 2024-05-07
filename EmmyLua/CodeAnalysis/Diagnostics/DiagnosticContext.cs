@@ -13,10 +13,21 @@ public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnosti
 
     public SearchContext SearchContext { get; } = searchContext;
 
-    public void Report(Diagnostic diagnostic)
+    public void Report(
+        DiagnosticCode code,
+        string message,
+        SourceRange range,
+        DiagnosticTag tag = DiagnosticTag.None,
+        LuaLocation? location = null,
+        string? data = null)
     {
-        if (LuaDiagnostics.CanAddDiagnostic(Document.Id, diagnostic.Code, diagnostic.Range))
+        if (LuaDiagnostics.CanAddDiagnostic(Document.Id, code, range))
         {
+            var severity = Config.SeverityOverrides.TryGetValue(code, out var severityOverride)
+                ? severityOverride
+                : DiagnosticSeverityHelper.GetDefaultSeverity(code);
+
+            var diagnostic = new Diagnostic(severity, code, message, range, tag, location, data);
             LuaDiagnostics.AddDiagnostic(Document.Id, diagnostic);
         }
     }
