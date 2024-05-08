@@ -279,6 +279,12 @@ public class LuaDocLexer(LuaDocument document)
                 Reader.Bump();
                 return LuaTokenKind.TkNullable;
             }
+            // support luals '|+' what is this
+            case '+':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkPlus;
+            }
             case '-':
             {
                 var count = Reader.EatWhen('-');
@@ -304,8 +310,6 @@ public class LuaDocLexer(LuaDocument document)
                         return LuaTokenKind.TkDocTrivia;
                     }
                 }
-
-                ;
             }
             case '#' or '@':
             {
@@ -331,7 +335,19 @@ public class LuaDocLexer(LuaDocument document)
             case var ch when LuaLexer.IsNameStart(ch):
             {
                 Reader.EatWhen(c =>
-                    (LuaLexer.IsNameContinue(c) || c == '.' || c == '-') && !(c == '.' && Reader.NextChar == '.'));
+                    {
+                        if (LuaLexer.IsNameContinue(c))
+                        {
+                            return true;
+                        }
+                        // support 'aaa.bbbb' 'aaa-bbbb' 'file*'
+                        else if ((c is '.' or '-' or '*') && Reader.NextChar != c)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    });
                 return LuaTokenKind.TkName;
             }
             default:
@@ -377,8 +393,6 @@ public class LuaDocLexer(LuaDocument document)
                         return LuaTokenKind.TkDocTrivia;
                     }
                 }
-
-                ;
             }
             default:
             {

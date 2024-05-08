@@ -531,11 +531,6 @@ public static class TagParser
         p.Bump();
         try
         {
-            if (p.CurrentNameText is not "fun")
-            {
-                throw new UnexpectedTokenException("expected fun", p.Current);
-            }
-
             TypesParser.FunType(p);
 
             DescriptionParser.Description(p);

@@ -64,6 +64,11 @@ public static class TypesParser
         try
         {
             p.Accept(LuaTokenKind.TkDocOr);
+            // compact luals
+            if (p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
+            {
+                p.Bump();
+            }
             var cm2 = Type(p, false);
             if (cm2.Kind == LuaSyntaxKind.TypeLiteral)
             {
@@ -73,6 +78,11 @@ public static class TypesParser
             while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
             {
                 p.Bump();
+                // compact luals
+                if (p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
+                {
+                    p.Bump();
+                }
                 cm2 = Type(p, false);
                 if (cm2.Kind == LuaSyntaxKind.LiteralExpr)
                 {
@@ -235,7 +245,7 @@ public static class TypesParser
 
     private static CompleteMarker OtherType(LuaDocParser p)
     {
-        if (p.CurrentNameText is "fun")
+        if (p.CurrentNameText is "fun" or "async")
         {
             return FunType(p);
         }
@@ -266,7 +276,23 @@ public static class TypesParser
         var m = p.Marker();
         try
         {
-            p.Expect(LuaTokenKind.TkName);
+            if (p.CurrentNameText is "async")
+            {
+                p.Bump();
+                if (p.CurrentNameText is "fun")
+                {
+                    p.Bump();
+                }
+                else
+                {
+                    return m.Complete(p, LuaSyntaxKind.TypeName);
+                }
+            }
+            else
+            {
+                p.Expect(LuaTokenKind.TkName);
+            }
+
             p.Expect(LuaTokenKind.TkLeftParen);
             if (p.Current != LuaTokenKind.TkRightParen)
             {

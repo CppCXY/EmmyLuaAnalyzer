@@ -1466,6 +1466,11 @@ public class DeclarationBuilder : ILuaElementWalker
                         declaration.RequiredVersions = requiredVersions;
                         break;
                     }
+                    case LuaDocTagNodiscardSyntax:
+                    {
+                        declaration.Feature |= DeclarationFeature.NoDiscard;
+                        break;
+                    }
                 }
             }
         }

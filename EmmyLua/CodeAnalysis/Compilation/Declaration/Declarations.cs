@@ -77,6 +77,7 @@ public enum DeclarationFeature
     Deprecated = 0x01,
     Local = 0x02,
     Global = 0x04,
+    NoDiscard = 0x08,
 }
 
 public enum DeclarationVisibility
