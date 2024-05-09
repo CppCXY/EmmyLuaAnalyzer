@@ -50,7 +50,7 @@ internal static class LuaTypeRenderer
             renderContext.Append($"{aliasName}:\n");
             foreach (var typeDeclaration in aggregateType.Declarations)
             {
-                renderContext.Append("| ");
+                renderContext.Append("    | ");
                 InnerRenderType(typeDeclaration.Info.DeclarationType!, renderContext, 1);
                 if (typeDeclaration.Info is AggregateMemberInfo {TypePtr: { } typePtr} &&
                     typePtr.ToNode(renderContext.SearchContext) is {Description: { } description})

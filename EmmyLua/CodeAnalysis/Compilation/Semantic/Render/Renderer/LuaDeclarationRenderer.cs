@@ -98,8 +98,6 @@ internal static class LuaDeclarationRenderer
     private static void RenderLocalDeclaration(LuaDeclaration declaration, LocalInfo localInfo,
         LuaRenderContext renderContext)
     {
-        var localName = localInfo.LocalNamePtr.ToNode(renderContext.SearchContext);
-
         var attrib = "";
         if (localInfo.IsConst)
         {

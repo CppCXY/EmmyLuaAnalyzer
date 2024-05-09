@@ -40,7 +40,6 @@ public class LuaSyntaxNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement
         ChildFinishIndex = child.ElementId;
     }
 
-
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelf
     {
         get

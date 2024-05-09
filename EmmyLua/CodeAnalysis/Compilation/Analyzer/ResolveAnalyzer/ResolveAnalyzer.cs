@@ -6,15 +6,17 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
 public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Resolve")
 {
-    private SearchContext Context { get; } = new(compilation, new SearchContextFeatures()
-    {
-        Cache = true,
-        CacheUnknown = false,
-        CacheBaseMember = false
-    });
+    private SearchContext Context { get; set; } = null!;
 
     public override void Analyze(AnalyzeContext analyzeContext)
     {
+        Context = new(Compilation, new SearchContextFeatures()
+        {
+            Cache = true,
+            CacheUnknown = false,
+            CacheBaseMember = false
+        });
+
         var resolveDependencyGraph = new ResolveDependencyGraph(Context, analyzeContext);
         resolveDependencyGraph.OnResolved += (unResolved, state) =>
         {
@@ -57,6 +59,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         resolveDependencyGraph.Resolve(analyzeContext.UnResolves);
         Context.ClearCache();
+        Context = null!;
     }
 
     private void ResolveType(UnResolved unResolved)
@@ -102,8 +105,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                         DeclarationType = multiReturnType.GetElementType(i)
                                     };
                                 }
-
-                                ;
                             }
                         }
                         else if (unResolvedForRangeParameter.ParameterLuaDeclarations.FirstOrDefault() is
@@ -116,8 +117,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                     DeclarationType = returnType
                                 };
                             }
-
-                            ;
                         }
                     }
 

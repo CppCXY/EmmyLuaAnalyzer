@@ -1,6 +1,5 @@
 using System.Runtime.Serialization;
 using EmmyLua.CodeAnalysis.Diagnostics;
-using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -66,8 +65,8 @@ public class Diagnostics
     [JsonProperty("globals", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> Globals { get; set; } = [];
 
-    [JsonProperty("globalRegex", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public List<string> GlobalRegex { get; set; } = [];
+    [JsonProperty("globalsRegex", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> GlobalsRegex { get; set; } = [];
 
     [JsonProperty("severity", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore),
      JsonConverter(typeof(DiagnosticSeverityConverter))]

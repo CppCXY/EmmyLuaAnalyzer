@@ -46,6 +46,11 @@ public class SettingManager
 
     public void Watch(string workspace)
     {
+        if (!Directory.Exists(workspace))
+        {
+            return;
+        }
+
         Workspace = workspace;
         if (Watcher is null)
         {
@@ -146,7 +151,7 @@ public class SettingManager
         };
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
-        foreach (var globalRegexString in setting.Diagnostics.GlobalRegex)
+        foreach (var globalRegexString in setting.Diagnostics.GlobalsRegex)
         {
             try
             {

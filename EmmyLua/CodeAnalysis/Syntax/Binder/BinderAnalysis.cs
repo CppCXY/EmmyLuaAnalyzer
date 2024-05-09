@@ -8,8 +8,8 @@ public static class BinderAnalysis
 {
     public static BinderData Analysis(LuaSyntaxElement root)
     {
-        Dictionary<LuaCommentSyntax, LuaSyntaxElement> commentOwners = new();
-        Dictionary<LuaSyntaxElement, List<LuaCommentSyntax>> comments = new();
+        Dictionary<long, LuaElementPtr<LuaSyntaxElement>> commentOwners = new();
+        Dictionary<long, List<LuaElementPtr<LuaCommentSyntax>>> comments = new();
 
         foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
         {
@@ -18,14 +18,14 @@ public static class BinderAnalysis
                 var inlineNodeOrToken = GetInlineNodeOrToken(commentSyntax);
                 if (inlineNodeOrToken != null)
                 {
-                    commentOwners.Add(commentSyntax, inlineNodeOrToken);
-                    if (!comments.TryGetValue(inlineNodeOrToken, out var commentList))
+                    commentOwners.Add(commentSyntax.UniqueId, new(inlineNodeOrToken));
+                    if (!comments.TryGetValue(inlineNodeOrToken.UniqueId, out var commentList))
                     {
-                        commentList = new List<LuaCommentSyntax>();
-                        comments.Add(inlineNodeOrToken, commentList);
+                        commentList = new List<LuaElementPtr<LuaCommentSyntax>>();
+                        comments.Add(inlineNodeOrToken.UniqueId, commentList);
                     }
 
-                    commentList.Add(commentSyntax);
+                    commentList.Add(new(commentSyntax));
                 }
                 else
                 {
@@ -33,14 +33,14 @@ public static class BinderAnalysis
                     // ReSharper disable once InvertIf
                     if (attachedNodeOrToken != null)
                     {
-                        commentOwners.Add(commentSyntax, attachedNodeOrToken);
-                        if (!comments.TryGetValue(attachedNodeOrToken, out var commentList))
+                        commentOwners.Add(commentSyntax.UniqueId, new(attachedNodeOrToken));
+                        if (!comments.TryGetValue(attachedNodeOrToken.UniqueId, out var commentList))
                         {
-                            commentList = new List<LuaCommentSyntax>();
-                            comments.Add(attachedNodeOrToken, commentList);
+                            commentList = new List<LuaElementPtr<LuaCommentSyntax>>();
+                            comments.Add(attachedNodeOrToken.UniqueId, commentList);
                         }
 
-                        commentList.Add(commentSyntax);
+                        commentList.Add(new(commentSyntax));
                     }
                 }
             }
