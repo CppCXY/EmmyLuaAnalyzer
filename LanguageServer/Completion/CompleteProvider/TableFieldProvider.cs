@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using LanguageServer.Completion.CompletionData;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LanguageServer.Completion.CompleteProvider;
@@ -14,7 +14,7 @@ public class TableFieldProvider : ICompleteProviderBase
             return;
         }
 
-        if (!tableFieldSyntax.IsValue)
+        if (!tableFieldSyntax.IsValue || context.TriggerToken?.Parent is not LuaNameExprSyntax)
         {
             return;
         }
@@ -24,13 +24,10 @@ public class TableFieldProvider : ICompleteProviderBase
             var exprType = context.SemanticModel.Context.InferExprShouldBeType(expr);
             AddTypeMemberCompletion(exprType, context);    
         }
+        
+        AddMetaFieldCompletion(context);
     }
     
-    // private void AddMetaFieldCompletion(CompleteContext context)
-    // {
-    //
-    // }
-    //
     private void AddTypeMemberCompletion(LuaType type, CompleteContext context)
     {
         var members = context.SemanticModel.Context.GetMembers(type);
@@ -46,5 +43,10 @@ public class TableFieldProvider : ICompleteProviderBase
                     .AddToContext();
             }
         }
+    }
+
+    private void AddMetaFieldCompletion(CompleteContext context)
+    {
+        context.AddRange(Metatable.MetaFields);
     }
 }
