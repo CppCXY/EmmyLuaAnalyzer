@@ -262,7 +262,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             {
                 Detail = RenderSignatureParams(signature, colonDefine),
                 Description =
-                    CompleteContext.SemanticModel.RenderBuilder.RenderType(Type, CompleteContext.RenderFeature)
+                    CompleteContext.SemanticModel.RenderBuilder.RenderType(signature.ReturnType, CompleteContext.RenderFeature)
             },
             Data = Data,
             Command = Command,

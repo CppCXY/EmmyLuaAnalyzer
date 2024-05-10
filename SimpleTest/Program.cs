@@ -10,7 +10,7 @@ var document = LuaDocument.FromText(
     ---@alias AAA
     ---| "nonono" #好吧好吧
     """, new LuaLanguage(LuaLanguageLevel.LuaLatest));
-workspace.AddDocument(document);
+// workspace.AddDocument(document);
     
 Console.WriteLine(document.SyntaxTree.SyntaxRoot.DebugSyntaxInspect());
 

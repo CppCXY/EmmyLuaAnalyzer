@@ -511,4 +511,9 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         return declaration;
     }
+
+    public LuaType InferExprShouldBeType(LuaExprSyntax expr)
+    {
+        return ExpressionShouldBeInfer.InferExprShouldBe(expr, this);
+    }
 }

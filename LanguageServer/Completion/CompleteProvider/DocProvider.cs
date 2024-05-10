@@ -22,7 +22,7 @@ public class DocProvider : ICompleteProviderBase
         var triggerToken = context.TriggerToken;
         switch (triggerToken)
         {
-            case { Kind: LuaTokenKind.TkDocStart }:
+            case { Kind: LuaTokenKind.TkDocStart or LuaTokenKind.TkTagOther }:
             {
                 AddTagCompletion(context);
                 break;

@@ -9,6 +9,7 @@ public class CompletionBuilder
         new RequireProvider(),
         new ResourcePathProvider(),
         new AliasAndEnumProvider(),
+        new TableFieldProvider(),
         new LocalEnvProvider(),
         new GlobalProvider(),
         new KeywordsProvider(),

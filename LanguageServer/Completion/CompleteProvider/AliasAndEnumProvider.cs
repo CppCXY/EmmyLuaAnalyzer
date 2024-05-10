@@ -26,6 +26,10 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         {
             AddFuncParamCompletion(callArgs2, context);
         }
+        else if (trigger is LuaStringToken { Parent.Parent: LuaCallArgListSyntax callArgs3 })
+        {
+            AddFuncParamCompletion(callArgs3, context);
+        }
     }
 
     private void AddFuncParamCompletion(LuaCallArgListSyntax callArgList, CompleteContext context)
@@ -80,6 +84,10 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                     {
                         AddAggregateTypeCompletion(aggregateType, context);
                     }
+                    else if (paramType is LuaUnionType unionType)
+                    {
+                        AddUnionTypeCompletion(unionType, context);
+                    }
                 }
             }
         });
@@ -90,6 +98,10 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         if (aliasDetailType.OriginType is LuaAggregateType aggregateType)
         {
             AddAggregateTypeCompletion(aggregateType, context);
+        }
+        else if (aliasDetailType.OriginType is LuaUnionType unionType)
+        {
+            AddUnionTypeCompletion(unionType, context);
         }
     }
 
@@ -129,6 +141,12 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                     {
                         label = stringLiteralType.Content;
                     }
+                    
+                    if (context.TriggerToken is not LuaStringToken)
+                    {
+                        label = $"\"{label}\"";
+                    }
+                    
                     context.Add(new CompletionItem
                     {
                         Label = label,
@@ -145,6 +163,40 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                         Detail = detail
                     });
                 }
+            }
+        }
+    }
+    
+    private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
+    {
+        foreach (var luaType in unionType.UnionTypes)
+        {
+            if (luaType is LuaStringLiteralType stringLiteralType)
+            {
+                var label = stringLiteralType.Content;
+                if (stringLiteralType.Content.StartsWith('\'') || stringLiteralType.Content.StartsWith('"'))
+                {
+                    label = stringLiteralType.Content.Trim('\'', '"');
+                }
+
+                if (context.TriggerToken is not LuaStringToken)
+                {
+                    label = $"\"{label}\"";
+                }
+                
+                context.Add(new CompletionItem
+                {
+                    Label = label,
+                    Kind = CompletionItemKind.EnumMember,
+                });
+            }
+            else if (luaType is LuaIntegerLiteralType intLiteralType)
+            {
+                context.Add(new CompletionItem
+                {
+                    Label = intLiteralType.Value.ToString(),
+                    Kind = CompletionItemKind.EnumMember,
+                });
             }
         }
     }
