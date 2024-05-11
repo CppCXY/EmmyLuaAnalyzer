@@ -19,7 +19,7 @@ public class InlayHintBuilder
         true,
         100
     );
-    
+
     public List<InlayHintType> Build(SemanticModel semanticModel, SourceRange range, InlayHintConfig config,
         CancellationToken cancellationToken)
     {
@@ -121,7 +121,7 @@ public class InlayHintBuilder
                         hints.Add(new InlayHintType()
                         {
                             Position = args[0].Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts($"self:"),
+                            Label = new StringOrInlayHintLabelParts("self:"),
                             Kind = InlayHintKind.Parameter,
                             PaddingRight = true
                         });
@@ -133,7 +133,7 @@ public class InlayHintBuilder
             }
 
             var parameters = perfectSignature.Parameters.Skip(skipParam).ToList();
-            var hasVarArg = parameters.LastOrDefault()?.Info is ParamInfo {IsVararg: true};
+            var hasVarArg = parameters.LastOrDefault()?.Info is ParamInfo { IsVararg: true };
             var parameterCount = hasVarArg ? (parameters.Count - 1) : parameters.Count;
             var varCount = 0;
             for (var i = 0; i < args.Count; i++)
@@ -192,26 +192,15 @@ public class InlayHintBuilder
         if (callExpr.PrefixExpr is { } prefixExpr)
         {
             var luaDeclaration = semanticModel.Context.FindDeclaration(prefixExpr);
-            if (luaDeclaration?.Info is MethodInfo info)
+            if (luaDeclaration is { IsAsync: true })
             {
-                var funcStat = info.FuncStatPtr.ToNode(semanticModel.Context);
-
-                if (funcStat is {Comments: { } comments})
+                hints.Add(new InlayHintType()
                 {
-                    foreach (var comment in comments)
-                    {
-                        if (comment.IsAsync)
-                        {
-                            hints.Add(new InlayHintType()
-                            {
-                                Position = callExpr.Range.StartOffset.ToLspPosition(semanticModel.Document),
-                                Label = new StringOrInlayHintLabelParts("await "),
-                                Kind = InlayHintKind.Type,
-                                PaddingRight = true
-                            });
-                        }
-                    }
-                }
+                    Position = callExpr.Range.StartOffset.ToLspPosition(semanticModel.Document),
+                    Label = new StringOrInlayHintLabelParts("await "),
+                    Kind = InlayHintKind.Type,
+                    PaddingRight = true
+                });
             }
         }
     }
@@ -239,7 +228,7 @@ public class InlayHintBuilder
 
             foreach (var parameter in parameters)
             {
-                if (parameter is {RepresentText: { } name})
+                if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
                     if (type is not null && !type.Equals(Builtin.Unknown))
@@ -267,7 +256,7 @@ public class InlayHintBuilder
         }
 
         var document = semanticModel.Document;
-        if (indexExpr is {PrefixExpr: { } prefixExpr, KeyElement: { } keyElement})
+        if (indexExpr is { PrefixExpr: { } prefixExpr, KeyElement: { } keyElement })
         {
             if (document.GetLine(prefixExpr.Range.EndOffset) != document.GetLine(keyElement.Range.StartOffset))
             {
@@ -288,6 +277,11 @@ public class InlayHintBuilder
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (localName.Parent is LuaFuncStatSyntax)
         {
             return;
         }
@@ -313,8 +307,8 @@ public class InlayHintBuilder
 
         if (funcStat is
             {
-                IsMethod: true, IndexExpr: {PrefixExpr: { } prefixExpr, Name: { } name},
-                ClosureExpr: {ParamList: { } paramList}
+                IsMethod: true, IndexExpr: { PrefixExpr: { } prefixExpr, Name: { } name },
+                ClosureExpr: { ParamList: { } paramList }
             })
         {
             var prefixType = semanticModel.Context.Infer(prefixExpr);
@@ -327,7 +321,7 @@ public class InlayHintBuilder
                 if (parentDocument is not null)
                 {
                     location = info.Ptr.ToNode(parentDocument)!.Range.ToLspLocation(parentDocument);
-                    if (info.Ptr.ToNode(semanticModel.Context) is LuaIndexExprSyntax {KeyElement: { } keyElement})
+                    if (info.Ptr.ToNode(semanticModel.Context) is LuaIndexExprSyntax { KeyElement: { } keyElement })
                     {
                         location = keyElement.Range.ToLspLocation(parentDocument);
                     }

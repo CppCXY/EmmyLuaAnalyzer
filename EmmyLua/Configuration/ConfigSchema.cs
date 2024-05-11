@@ -31,6 +31,9 @@ public class Setting
 
     [JsonProperty("resource", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Resource Resource { get; set; } = new();
+
+    [JsonProperty("codeLens", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public CodeLens CodeLens { get; set; } = new();
 }
 
 public class Completion
@@ -183,3 +186,8 @@ public class Resource
     public List<string> Paths { get; set; } = [];
 }
 
+public class CodeLens
+{
+    [JsonProperty("enable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool Enable { get; set; } = false;
+}

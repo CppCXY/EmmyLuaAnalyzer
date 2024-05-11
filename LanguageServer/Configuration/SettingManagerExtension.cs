@@ -1,4 +1,5 @@
 ﻿using EmmyLua.Configuration;
+using LanguageServer.CodeLens;
 using LanguageServer.Completion;
 using LanguageServer.InlayHint;
 using LanguageServer.Server.Resource;
@@ -50,6 +51,20 @@ public static class SettingManagerExtension
         }
 
         config.Paths = setting.Resource.Paths;
+
+        return config;
+    }
+    
+    public static CodeLensConfig GetCodeLensConfig(this SettingManager settingManager)
+    {
+        var config = new CodeLensConfig();
+        var setting = settingManager.Setting;
+        if (setting is null)
+        {
+            return config;
+        }
+
+        config.Enable = setting.CodeLens.Enable;
 
         return config;
     }

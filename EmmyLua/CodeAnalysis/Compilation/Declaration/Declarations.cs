@@ -78,6 +78,7 @@ public enum DeclarationFeature
     Local = 0x02,
     Global = 0x04,
     NoDiscard = 0x08,
+    Async = 0x10,
 }
 
 public enum DeclarationVisibility
@@ -112,6 +113,8 @@ public class LuaDeclaration(
     public bool IsLocal => Feature.HasFlag(DeclarationFeature.Local);
 
     public bool IsGlobal => Feature.HasFlag(DeclarationFeature.Global);
+
+    public bool IsAsync => Feature.HasFlag(DeclarationFeature.Async);
 
     public DeclarationVisibility Visibility { get; internal set; } = visibility;
 

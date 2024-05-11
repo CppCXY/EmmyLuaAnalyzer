@@ -1471,6 +1471,11 @@ public class DeclarationBuilder : ILuaElementWalker
                         declaration.Feature |= DeclarationFeature.NoDiscard;
                         break;
                     }
+                    case LuaDocTagAsyncSyntax:
+                    {
+                        declaration.Feature |= DeclarationFeature.Async;
+                        break;
+                    }
                 }
             }
         }
