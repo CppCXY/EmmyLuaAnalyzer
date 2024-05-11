@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using LanguageServer.CodeAction;
+using LanguageServer.CodeLens;
 using LanguageServer.Completion;
 using LanguageServer.Definition;
 using LanguageServer.DocumentColor;
@@ -81,6 +82,7 @@ var server = await From(options =>
         .WithHandler<DocumentLinkHandler>()
         .WithHandler<TypeHierarchyHandler>()
         .WithHandler<WorkspaceSymbolHandler>()
+        .WithHandler<CodeLensHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(

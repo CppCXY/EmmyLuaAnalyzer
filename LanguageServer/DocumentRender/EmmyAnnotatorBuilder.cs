@@ -22,7 +22,7 @@ public class EmmyAnnotatorBuilder
             {
                 case LuaParamDefSyntax {Name: { } paramName}:
                 {
-                    paramAnnotator.ranges.Add(new RenderRange(paramName.Range.ToLspRange(document)));
+                    paramAnnotator.Ranges.Add(new RenderRange(paramName.Range.ToLspRange(document)));
                     break;
                 }
                 case LuaNameExprSyntax nameExpr:
@@ -32,15 +32,15 @@ public class EmmyAnnotatorBuilder
                         var declaration = context.FindDeclaration(nameExpr);
                         if (declaration is null || declaration.IsGlobal)
                         {
-                            globalAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
+                            globalAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
                         else if (declaration is {Info: ParamInfo})
                         {
-                            paramAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
+                            paramAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
                         else if (declarationTree.IsUpValue(nameExpr, declaration))
                         {
-                            upvalueAnnotator.ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
+                            upvalueAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
                     }
 

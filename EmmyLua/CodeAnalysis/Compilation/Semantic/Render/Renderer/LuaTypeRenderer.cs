@@ -407,6 +407,11 @@ internal static class LuaTypeRenderer
 
             var parameter = mainSignature.Parameters[i];
             renderContext.Append(parameter.Name);
+            if (parameter.Info is ParamInfo { Nullable: true })
+            {
+                renderContext.Append('?');
+            }
+
             renderContext.Append(':');
             InnerRenderType(parameter.Info.DeclarationType ?? Builtin.Any, renderContext, 0);
         }

@@ -46,6 +46,11 @@ public class CodeLensHandler(ServerContext context) : CodeLensHandlerBase
     public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens> Handle(
         OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        context.ReadyRead(() =>
+        {
+            request = Builder.Resolve(request, context);
+        });
+
+        return Task.FromResult(request);
     }
 }

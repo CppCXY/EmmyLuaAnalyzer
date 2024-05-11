@@ -143,6 +143,11 @@ public class InlayHintBuilder
                 {
                     var parameter = parameters[i];
                     var document = semanticModel.Compilation.Workspace.GetDocument(parameter.Info.Ptr.DocumentId);
+                    var nullableText = string.Empty;
+                    if (parameter.Info is ParamInfo { Nullable: true })
+                    {
+                        nullableText = "?";
+                    }
                     if (document is not null && parameter.Info.Ptr.ToNode(document) is { } node)
                     {
                         hints.Add(new InlayHintType()
@@ -152,7 +157,7 @@ public class InlayHintBuilder
                             {
                                 new InlayHintLabelPart()
                                 {
-                                    Value = $"{parameter.Name}:",
+                                    Value = $"{parameter.Name}{nullableText}:",
                                     Location = node.Range.ToLspLocation(document)
                                 }
                             }),
@@ -165,7 +170,7 @@ public class InlayHintBuilder
                         hints.Add(new InlayHintType()
                         {
                             Position = arg.Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts($"{parameter.Name}:"),
+                            Label = new StringOrInlayHintLabelParts($"{parameter.Name}{nullableText}:"),
                             Kind = InlayHintKind.Parameter,
                             PaddingRight = true
                         });

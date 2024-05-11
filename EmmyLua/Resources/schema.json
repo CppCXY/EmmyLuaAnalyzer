@@ -1,5 +1,16 @@
 {
   "definitions": {
+    "CodeLens": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enable": {
+          "type": "boolean"
+        }
+      }
+    },
     "Completion": {
       "type": [
         "object",
@@ -83,7 +94,7 @@
             ]
           }
         },
-        "globalRegex": {
+        "globalsRegex": {
           "type": [
             "array",
             "null"
@@ -306,6 +317,9 @@
     },
     "resource": {
       "$ref": "#/definitions/Resource"
+    },
+    "codeLens": {
+      "$ref": "#/definitions/CodeLens"
     }
   }
 }

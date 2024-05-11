@@ -373,7 +373,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     new ParamInfo(
                         new(param),
                         luaType,
-                        false,
+                        true,
                         nullable
                     ),
                     DeclarationFeature.Local

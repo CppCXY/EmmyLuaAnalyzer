@@ -133,7 +133,7 @@ public class LuaDeclaration(
     {
         if (Info.DeclarationType is { } type)
         {
-            return WithInfo(Info with {DeclarationType = type.Instantiate(genericMap)});
+            return WithInfo(Info with { DeclarationType = type.Instantiate(genericMap) });
         }
 
         return this;
@@ -227,7 +227,7 @@ public record MethodInfo(
     LuaElementPtr<LuaSyntaxElement> Ptr,
     LuaMethodType? Method,
     LuaElementPtr<LuaFuncStatSyntax> FuncStatPtr
-    ) : DeclarationInfo(Ptr, Method)
+) : DeclarationInfo(Ptr, Method)
 {
     public LuaElementPtr<LuaNameExprSyntax> NamePtr => Ptr.Cast<LuaNameExprSyntax>();
 

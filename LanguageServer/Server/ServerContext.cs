@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 using LanguageServer.Configuration;
@@ -78,6 +79,11 @@ public class ServerContext(ILanguageServerFacade server)
     public SemanticModel? GetSemanticModel(string uri)
     {
         return LuaWorkspace.Compilation.GetSemanticModel(uri);
+    }
+    
+    public SemanticModel? GetSemanticModel(LuaDocumentId documentId)
+    {
+        return LuaWorkspace.Compilation.GetSemanticModel(documentId);
     }
 
     private void OnConfigChanged(SettingManager settingManager)
