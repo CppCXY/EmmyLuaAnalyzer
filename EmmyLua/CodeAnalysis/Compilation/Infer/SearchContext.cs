@@ -96,7 +96,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
     }
 
-    private IEnumerable<LuaDeclaration> GetRawMembers(string name)
+    public IEnumerable<LuaDeclaration> GetRawMembers(string name)
     {
         if (name is "_G" or "_ENV" or "global")
         {

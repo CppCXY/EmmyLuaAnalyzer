@@ -16,7 +16,8 @@ switch (args.First())
             .WithParsed<DocOptions>(o =>
             {
                 var docGenerator = new DocGenerator(o);
-                docGenerator.Generate();
+                var exitCode = docGenerator.Run();
+                Environment.Exit(exitCode.GetAwaiter().GetResult());
             });
         break;
     }

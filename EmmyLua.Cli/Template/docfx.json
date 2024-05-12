@@ -1,0 +1,31 @@
+﻿{
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{yml,md}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "statictoc"
+    ],
+    "globalMetadata": {
+      "_appName": "{projectName}",
+      "_appTitle": "{projectName}",
+      "_enableSearch": true,
+      "pdf": true
+    }
+  }
+}

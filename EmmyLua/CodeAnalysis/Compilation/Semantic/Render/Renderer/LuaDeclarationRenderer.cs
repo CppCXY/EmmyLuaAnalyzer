@@ -4,7 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 
-internal static class LuaDeclarationRenderer
+public static class LuaDeclarationRenderer
 {
     public static void RenderDeclaration(LuaDeclaration declaration, LuaRenderContext renderContext)
     {
@@ -201,6 +201,7 @@ internal static class LuaDeclarationRenderer
                 renderContext.Append($"function {declaration.Name}");
                 LuaTypeRenderer.RenderFunc(methodInfo.Method, renderContext);
             });
+
             if (methodInfo.IndexPtr.ToNode(renderContext.SearchContext) is { } indexExpr)
             {
                 RenderInClass(indexExpr, renderContext);
@@ -265,7 +266,7 @@ internal static class LuaDeclarationRenderer
             renderContext.Append($"(field){visibility} {declaration.Name} : ");
             LuaTypeRenderer.RenderType(tableFieldInfo.DeclarationType, renderContext);
             if (tableFieldInfo.TableFieldPtr.ToNode(renderContext.SearchContext) is
-                {IsValue: false, Value: LuaLiteralExprSyntax expr})
+                { IsValue: false, Value: LuaLiteralExprSyntax expr })
             {
                 RenderLiteral(expr, renderContext);
             }

@@ -79,8 +79,30 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             RenderAliasExpand();
         }
 
-        RenderLink();
+        if (Feature.ShowTypeLink)
+        {
+            RenderLink();
+        }
+
         return _sb.ToString();
+    }
+
+    public void AddH1Title(string title)
+    {
+        _sb.Append("# ");
+        _sb.Append(title);
+    }
+
+    public void AddH2Title(string title)
+    {
+        _sb.Append("## ");
+        _sb.Append(title);
+    }
+
+    public void AddH3Title(string title)
+    {
+        _sb.Append("### ");
+        _sb.Append(title);
     }
 
     private void RenderLink()

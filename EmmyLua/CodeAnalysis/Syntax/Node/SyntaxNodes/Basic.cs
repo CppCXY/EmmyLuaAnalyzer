@@ -115,11 +115,14 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
                 }
                 else if(token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocContinue, Range.Length: {} length })
                 {
-                    sb.Append('\n');
                     if (length > 3)
                     {
                         sb.Append(' ', length - 3);
                     }
+                }
+                else if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkEndOfLine })
+                {
+                    sb.Append('\n');
                 }
             }
 

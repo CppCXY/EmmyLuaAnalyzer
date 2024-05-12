@@ -173,4 +173,5 @@ public class LuaSyntaxNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement
         }
     }
 
+    public ReadOnlySpan<char> Text => Tree.Document.Text.AsSpan(Range.StartOffset, Range.Length);
 }

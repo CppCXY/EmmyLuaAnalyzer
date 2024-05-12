@@ -16,4 +16,7 @@
       <PackageReference Include="Docfx.App" Version="2.76.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="Template\**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>

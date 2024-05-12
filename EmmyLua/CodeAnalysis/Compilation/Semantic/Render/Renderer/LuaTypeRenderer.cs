@@ -6,7 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 
-internal static class LuaTypeRenderer
+public static class LuaTypeRenderer
 {
     public static void RenderType(LuaType? type, LuaRenderContext renderContext)
     {

@@ -374,6 +374,12 @@ public class LuaDocLexer(LuaDocument document)
             }
             case '-':
             {
+                if (Reader.CurrentPosition != 0)
+                {
+                    Reader.EatWhen(_ => true);
+                    return LuaTokenKind.TkDocDetail;
+                }
+
                 var count = Reader.EatWhen('-');
                 switch (count)
                 {

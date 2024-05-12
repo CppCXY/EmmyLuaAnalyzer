@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 
-internal static class LuaModuleRenderer
+public static class LuaModuleRenderer
 {
     public static void RenderModule(LuaDocument document, LuaRenderContext renderContext)
     {

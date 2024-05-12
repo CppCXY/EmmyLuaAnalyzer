@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -50,6 +51,13 @@ public class LuaRenderBuilder(SearchContext context)
     {
         var renderContext = new LuaRenderContext(context, feature);
         LuaModuleRenderer.RenderModule(document, renderContext);
+        return renderContext.GetText();
+    }
+
+    public string RenderDeclaration(LuaDeclaration declaration, LuaRenderFeature feature)
+    {
+        var renderContext = new LuaRenderContext(context, feature);
+        LuaDeclarationRenderer.RenderDeclaration(declaration, renderContext);
         return renderContext.GetText();
     }
 
