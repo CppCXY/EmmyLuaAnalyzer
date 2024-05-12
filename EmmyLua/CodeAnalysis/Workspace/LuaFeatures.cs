@@ -16,8 +16,8 @@ public class LuaFeatures
 
     public List<FrameworkVersion> FrameworkVersions { get; set; } = new();
 
-    public List<string> Extensions { get; set; } = [
-        "*.lua", "*.lua.txt"
+    public HashSet<string> Extensions { get; set; } = [
+        "*.lua"
     ];
 
     public HashSet<string> ExcludeFolders { get; set; } =

@@ -178,6 +178,22 @@ public class SettingManager
             }
         }
 
+        foreach (var extension in setting.Runtime.Extensions)
+        {
+            if (extension.StartsWith('.'))
+            {
+                features.Extensions.Add($"*{extension}");
+            }
+            else if (extension.StartsWith("*."))
+            {
+                features.Extensions.Add(extension);
+            }
+            else
+            {
+                features.Extensions.Add($"*.{extension}");
+            }
+        }
+
         return features;
     }
 

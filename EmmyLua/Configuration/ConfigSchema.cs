@@ -144,6 +144,9 @@ public class Runtime
 
     [JsonProperty("frameworkVersions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> FrameworkVersions { get; set; } = [];
+
+    [JsonProperty("extensions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> Extensions { get; set; } = [];
 }
 
 public enum LuaVersion

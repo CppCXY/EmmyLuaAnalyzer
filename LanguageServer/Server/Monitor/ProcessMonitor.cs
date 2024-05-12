@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Workspace;
-using LanguageServer.Monitor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace LanguageServer.Server.Monitor;
@@ -22,14 +21,14 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         DiagnosticCount = 0;
         languageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
         {
-            health = "ok",
-            loading = true,
-            message = "Loading workspace"
+            Health = "ok",
+            Loading = true,
+            Message = "Loading workspace"
         });
         languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
         {
-            text = "Loading workspace",
-            percent = 0
+            Text = "Loading workspace",
+            Percent = 0
         });
     }
     
@@ -41,14 +40,14 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
             DiagnosticCount = 0;
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
-                text = "Finished!",
-                percent = 1
+                Text = "Finished!",
+                Percent = 1
             });
             languageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
             {
-                health = "ok",
-                loading = false,
-                message = "EmmyLua Language Server"
+                Health = "ok",
+                Loading = false,
+                Message = "EmmyLua Language Server"
             });
         }
     }
@@ -59,8 +58,8 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         {
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
-                text = $"{text} analyzing",
-                percent = 0.5
+                Text = $"{text} analyzing",
+                Percent = 0.5
             });
         }
     }
@@ -72,8 +71,8 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
             DiagnosticCount++;
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
-                text = $"checking {Path.GetFileName(path)} {DiagnosticCount}/{total}",
-                percent = 0.5
+                Text = $"checking {Path.GetFileName(path)} {DiagnosticCount}/{total}",
+                Percent = 0.5
             });
         }
     }
@@ -85,8 +84,8 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
             State = ProcessState.Running;
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
-                text = "checking diagnostics",
-                percent = 0.5
+                Text = "checking diagnostics",
+                Percent = 0.5
             });
         }
     }
@@ -99,8 +98,8 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
             DiagnosticCount = 0;
             languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
-                text = "Check finished!",
-                percent = 1
+                Text = "Check finished!",
+                Percent = 1
             });
         }
     }

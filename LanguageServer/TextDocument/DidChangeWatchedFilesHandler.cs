@@ -3,11 +3,13 @@ using MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
+using Serilog;
 
 namespace LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class DidChangeWatchedFilesHandler(ServerContext context) : IDidChangeWatchedFilesHandler
+public class DidChangeWatchedFilesHandler(ServerContext context)
+    : IDidChangeWatchedFilesHandler
 {
     public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions() => new();
 
@@ -21,7 +23,15 @@ public class DidChangeWatchedFilesHandler(ServerContext context) : IDidChangeWat
                 {
                     case FileChangeType.Created:
                     {
-                        context.LuaWorkspace.UpdateDocumentByUri(fileEvent.Uri.ToUnencodedString(), string.Empty);
+                        try
+                        {
+                            var fileText = File.ReadAllText(fileEvent.Uri.GetFileSystemPath());
+                            context.LuaWorkspace.UpdateDocumentByUri(fileEvent.Uri.ToUnencodedString(), fileText);
+                        }
+                        catch(Exception e)
+                        {
+                            Log.Logger.Error(e.Message);
+                        }
                         break;
                     }
                     case FileChangeType.Changed:

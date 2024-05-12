@@ -21,7 +21,7 @@ public class SemanticTokensAnalyzer
         };
     }
 
-    public List<SemanticTokenType> TokenTypes = new()
+    public readonly List<SemanticTokenType> TokenTypes = new()
     {
         SemanticTokenType.Comment,
         SemanticTokenType.Keyword,
@@ -45,7 +45,7 @@ public class SemanticTokensAnalyzer
         SemanticTokenType.Decorator
     };
 
-    public List<SemanticTokenModifier> TokenModifiers = new()
+    public readonly List<SemanticTokenModifier> TokenModifiers = new()
     {
         SemanticTokenModifier.Declaration,
         SemanticTokenModifier.Definition,
