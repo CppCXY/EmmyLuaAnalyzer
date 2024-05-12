@@ -8,4 +8,4 @@ fi
 
 mkdir -p "$outputPath"
 
-dotnet publish ../LanguageServer -c Release --output "$outputPath" -r Linux-x64
+dotnet publish ../EmmyLua.LanguageServer -c Release --output "$outputPath" -r Linux-x64
