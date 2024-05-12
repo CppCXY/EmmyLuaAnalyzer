@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLua", "EmmyLua\EmmyLua.csproj", "{FFF8037C-9545-4958-AA07-73D051BE0346}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer", "LanguageServer\LanguageServer.csproj", "{DDD2F974-A7AC-4D56-8958-C41CAD025136}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLua.LanguageServer", "EmmyLua.LanguageServer\EmmyLua.LanguageServer.csproj", "{DDD2F974-A7AC-4D56-8958-C41CAD025136}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}"
 EndProject
