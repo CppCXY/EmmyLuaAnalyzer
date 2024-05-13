@@ -13,52 +13,70 @@ public class DocGenerator(DocOptions options)
 
     public async Task<int> Run()
     {
-        if (!Directory.Exists(options.Output))
-        {
-            Directory.CreateDirectory(options.Output);
-        }
-
-        try
-        {
-            if (Directory.Exists(ApisPath))
-            {
-                Directory.Delete(ApisPath, true);
-            }
-        }
-        catch (IOException ex)
-        {
-            Console.WriteLine($"can not delete directory {ApisPath}: {ex.Message}");
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            Console.WriteLine($"not enough permission {ApisPath}: {ex.Message}");
-        }
-
-        Directory.CreateDirectory(ApisPath);
-
+        var rootTocItems = new List<TocItem>();
         DocfxInit();
-        var luaWorkspace = LoadLuaWorkspace();
-        GenerateApis(luaWorkspace);
-        await Docfx.Docset.Build(Path.Combine(options.Output, "docfx.json"));
 
+        CopyReadmeAndDocs(rootTocItems);
+        GenerateApis(rootTocItems);
+        GenerateToc(options.Output, rootTocItems);
+
+        await Docset.Build(Path.Combine(options.Output, "docfx.json"));
         return 0;
     }
 
     private void DocfxInit()
     {
+        if (!Directory.Exists(options.Output))
+        {
+            Directory.CreateDirectory(options.Output);
+        }
+
+        if (!Directory.Exists(ApisPath))
+        {
+            Directory.CreateDirectory(ApisPath);
+        }
+
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "docfx.json");
         var docfxTemplate = File.ReadAllText(path);
         var docfxJson = docfxTemplate.Replace("{projectName}", options.ProjectName);
         File.WriteAllText(Path.Combine(options.Output, "docfx.json"), docfxJson);
-        File.WriteAllText(Path.Combine(options.Output, "index.md"), $"# {options.ProjectName}\n");
-        GenerateToc(options.Output, new List<TocItem>()
+    }
+
+    private void CopyReadmeAndDocs(List<TocItem> rootTocItems)
+    {
+        rootTocItems.Add(new TocItem()
         {
-            new TocItem()
-            {
-                Name = "Apis",
-                Href = "apis/"
-            }
+            Name = "Home",
+            Href = "docs/"
         });
+
+        var rootReadme = Path.Combine(options.Workspace, "README.md");
+        if (File.Exists(rootReadme))
+        {
+            File.Copy(rootReadme, Path.Combine(options.Output, "index.md"));
+        }
+
+        if (Directory.Exists(options.DocsPath))
+        {
+            if (!Directory.Exists(Path.Combine(options.Output, "docs")))
+            {
+                Directory.CreateDirectory(Path.Combine(options.Output, "docs"));
+            }
+
+            var tocItems = new List<TocItem>();
+            foreach (var file in Directory.EnumerateFiles(options.DocsPath))
+            {
+                var fileName = Path.GetFileName(file);
+                File.Copy(file, Path.Combine(options.Output, "docs", fileName));
+                tocItems.Add(new TocItem()
+                {
+                    Name = fileName,
+                    Href = fileName
+                });
+            }
+
+            GenerateToc(Path.Combine(options.Output, "docs"), tocItems);
+        }
     }
 
     private LuaWorkspace LoadLuaWorkspace()
@@ -69,8 +87,9 @@ public class DocGenerator(DocOptions options)
         return LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
     }
 
-    private void GenerateApis(LuaWorkspace luaWorkspace)
+    private void GenerateApis(List<TocItem> rootTocItems)
     {
+        var luaWorkspace = LoadLuaWorkspace();
         var tocItems = new List<TocItem>();
         foreach (var module in luaWorkspace.ModuleGraph.GetAllModules())
         {
@@ -81,13 +100,18 @@ public class DocGenerator(DocOptions options)
                 var fileName = $"{module.ModulePath}.md";
                 tocItems.Add(new TocItem()
                 {
-                    Name = module.ModulePath,
+                    Name = $"module {module.ModulePath}",
                     Href = fileName
                 });
                 File.WriteAllText(Path.Combine(ApisPath, fileName), text);
             }
         }
 
+        rootTocItems.Add(new TocItem()
+        {
+            Name = "APIs",
+            Href = "apis/"
+        });
         GenerateToc(ApisPath, tocItems);
     }
 

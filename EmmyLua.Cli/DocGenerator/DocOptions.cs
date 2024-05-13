@@ -12,4 +12,7 @@ public class DocOptions
     
     [Option('o', "output", Required = true, HelpText = "Output directory")]
     public string Output { get; set; } = string.Empty;
+
+    [Option('d', "docs", Required = false, HelpText = "Docs directory")]
+    public string DocsPath { get; set; } = "docs";
 }
