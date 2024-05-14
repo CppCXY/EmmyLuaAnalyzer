@@ -35,7 +35,7 @@ public class ModuleDoc
 
     public string Build()
     {
-        RenderContext.AddH1Title(ModuleIndex.ModulePath);
+        RenderContext.AddH1Title($"module {ModuleIndex.ModulePath}");
         var document = SearchContext.Compilation.Workspace.GetDocument(ModuleIndex.DocumentId);
         if (document is null)
         {
@@ -59,7 +59,7 @@ public class ModuleDoc
 
     private IEnumerable<LuaFuncStatSyntax> GetModuleStats(LuaDocument document)
     {
-        if (document.SyntaxTree.SyntaxRoot?.Block is { StatList: { } statList })
+        if (document.SyntaxTree.SyntaxRoot.Block is { StatList: { } statList })
         {
             foreach (var funcStat in statList.OfType<LuaFuncStatSyntax>())
             {
@@ -117,8 +117,7 @@ public class ModuleDoc
             {
                 if (comment.CommentText is { Length: > 0 } commentText)
                 {
-                    // RenderContext.Append("    ");
-                    RenderContext.Append(commentText); //.Replace("\n", "\n    "));
+                    RenderContext.Append(commentText);
                 }
 
                 RenderContext.AppendLine();

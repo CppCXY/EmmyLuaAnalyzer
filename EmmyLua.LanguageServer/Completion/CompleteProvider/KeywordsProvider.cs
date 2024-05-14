@@ -16,7 +16,7 @@ public class KeywordsProvider : ICompleteProviderBase
             return;
         }
 
-        if (nameExpr.Parent is not LuaBlockSyntax)
+        if (nameExpr.Parent?.Parent is not LuaBlockSyntax)
         {
             return;
         }

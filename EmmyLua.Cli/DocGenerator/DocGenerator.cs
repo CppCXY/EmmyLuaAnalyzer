@@ -100,7 +100,7 @@ public class DocGenerator(DocOptions options)
                 var fileName = $"{module.ModulePath}.md";
                 tocItems.Add(new TocItem()
                 {
-                    Name = $"module {module.ModulePath}",
+                    Name = module.ModulePath,
                     Href = fileName
                 });
                 File.WriteAllText(Path.Combine(ApisPath, fileName), text);
