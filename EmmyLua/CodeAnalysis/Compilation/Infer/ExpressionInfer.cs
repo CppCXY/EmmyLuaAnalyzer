@@ -101,7 +101,18 @@ public static class ExpressionInfer
         {
             return bop.Ret;
         }
-        return leftTy;
+        var bop2 = context.GetBestMatchedBinaryOperator(opKind, rightTy, leftTy);
+        if (bop2 is not null)
+        {
+            return bop2.Ret;
+        }
+
+        if (leftTy.Equals(Builtin.Integer) && rightTy.Equals(Builtin.Integer))
+        {
+            return Builtin.Integer;
+        }
+
+        return Builtin.Number;
     }
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)

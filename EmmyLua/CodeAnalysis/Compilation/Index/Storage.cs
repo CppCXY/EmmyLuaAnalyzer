@@ -142,7 +142,7 @@ public class SyntaxStorage<TKey, TSyntaxElement, TElement>
     {
         return _storage.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it)
-            : Enumerable.Empty<(TSyntaxElement, TElement)>();
+            : [];
     }
 }
 
@@ -187,11 +187,6 @@ public class TypeOperatorStorage
 
     public IEnumerable<TypeOperator> GetTypeOperators(string typeName)
     {
-        if (TypeOperators.TryGetValue(typeName, out var entry))
-        {
-            return entry.Files.Values.SelectMany(it => it);
-        }
-
-        return Enumerable.Empty<TypeOperator>();
+        return TypeOperators.TryGetValue(typeName, out var entry) ? entry.Files.Values.SelectMany(it => it) : [];
     }
 }

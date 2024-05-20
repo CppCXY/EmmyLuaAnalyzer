@@ -2,33 +2,11 @@
 
 namespace EmmyLua.CodeAnalysis.Document;
 
-public readonly struct LuaDocumentId(int id)
+public readonly record struct LuaDocumentId(int Id)
 {
     public static LuaDocumentId VirtualDocumentId { get; } = new(0);
 
-    public int Id { get; } = id;
-
     public bool IsVirtual => Id == 0;
-
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
-    }
-
-    public static bool operator ==(LuaDocumentId left, LuaDocumentId right)
-    {
-        return left.Id == right.Id;
-    }
-
-    public static bool operator !=(LuaDocumentId left, LuaDocumentId right)
-    {
-        return !(left == right);
-    }
-
-    public override string ToString()
-    {
-        return Id.ToString();
-    }
 }
 
 public sealed class LuaDocument
