@@ -612,22 +612,28 @@ public class DeclarationBuilder : ILuaElementWalker
                         new IndexInfo(
                             new(indexExpr),
                             valueExprPtr,
-                            luaType
+                            luaType,
+                            false
                         )
                     );
                     AnalyzeDeclarationDoc(declaration, luaAssignStat);
-                    if (i == 0)
-                    {
-                        var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
-                        if (declarationType is not null)
-                        {
-                            declaration.Info = declaration.Info with { DeclarationType = declarationType };
-                        }
-                    }
-
                     var unResolveDeclaration = new UnResolvedDeclaration(declaration, relatedExpr,
                         ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
                     AddUnResolved(unResolveDeclaration);
+                    if (i == 0)
+                    {
+                        var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
+                        if (declarationType is not null && declaration.Info is IndexInfo indexInfo)
+                        {
+                            declaration.Info = indexInfo with
+                            {
+                                DeclarationType = declarationType,
+                                IsTypeDefine = true
+                            };
+                            unResolveDeclaration.IsTypeDeclaration = true;
+                        }
+                    }
+
                     break;
                 }
             }

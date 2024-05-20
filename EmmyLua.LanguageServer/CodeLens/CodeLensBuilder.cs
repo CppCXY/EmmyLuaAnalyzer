@@ -52,10 +52,10 @@ public class CodeLensBuilder
                         var semanticModel = context.GetSemanticModel(documentId);
                         if (semanticModel is not null)
                         {
-                            var renferences = semanticModel.FindReferences(element);
+                            var references = semanticModel.FindReferences(element);
                             codeLens = codeLens with
                             {
-                                Command = MakeCommand(renferences.Count() - 1)
+                                Command = MakeCommand(references.Count() - 1)
                             };
                         }
                     }
@@ -74,7 +74,7 @@ public class CodeLensBuilder
     {
         return new Command
         {
-            Title = $"usage:{count}"
+            Title = $"{count} usage"
         };
     }
 }

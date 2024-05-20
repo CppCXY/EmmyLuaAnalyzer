@@ -40,7 +40,7 @@ public static class CallExprInfer
             var fnName = indexExpr.Name;
             if (fnName is not null && string.Equals(fnName, "new", StringComparison.CurrentCultureIgnoreCase))
             {
-                return context.Infer(indexExpr.PrefixExpr);
+                returnType = context.Infer(indexExpr.PrefixExpr);
             }
         }
 
@@ -74,6 +74,18 @@ public static class CallExprInfer
             case LuaVariadicType variadicType:
             {
                 return UnwrapVariadicType(variadicType, callExprSyntax, context, level);
+            }
+            case LuaNamedType namedType:
+            {
+                if (namedType.Name == "self")
+                {
+                    if (callExprSyntax.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
+                    {
+                        return context.Infer(prefixExpr);
+                    }
+                }
+
+                break;
             }
         }
 

@@ -56,7 +56,7 @@ public class ModuleDoc
     {
         RenderContext.Append(RenderBuilder.RenderModule(document, Feature));
     }
-
+    
     private IEnumerable<LuaFuncStatSyntax> GetModuleStats(LuaDocument document)
     {
         if (document.SyntaxTree.SyntaxRoot.Block is { StatList: { } statList })

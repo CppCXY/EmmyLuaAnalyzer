@@ -283,7 +283,8 @@ public record GenericParamInfo(
 public record IndexInfo(
     LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr,
     LuaElementPtr<LuaExprSyntax> ValueExprPtr,
-    LuaType? DeclarationType
+    LuaType? DeclarationType,
+    bool IsTypeDefine
 ) : DeclarationInfo(IndexExprPtr.UpCast(), DeclarationType)
 {
     public LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr => Ptr.Cast<LuaIndexExprSyntax>();

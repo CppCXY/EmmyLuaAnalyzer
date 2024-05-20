@@ -74,10 +74,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     public string GetText()
     {
-        if (_allowExpandAlias)
-        {
-            RenderAliasExpand();
-        }
+        RenderAliasExpand();
 
         if (Feature.ShowTypeLink)
         {
@@ -115,7 +112,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             {
                 var type = typeList[index];
                 var typeDeclaration = SearchContext.Compilation.DbManager.GetNamedType(type.Name).FirstOrDefault();
-                if (typeDeclaration is {Info.Ptr: { } ptr} && ptr.ToNode(SearchContext) is { } node)
+                if (typeDeclaration is { Info.Ptr: { } ptr } && ptr.ToNode(SearchContext) is { } node)
                 {
                     if (index == 0)
                     {
@@ -157,11 +154,16 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
         if (_allowExpandAlias && type is LuaNamedType namedType2)
         {
-            var detailType = namedType2.GetDetailType(SearchContext);
-            if (detailType.IsAlias)
-            {
-                _aliasExpand.Add(namedType2);
-            }
+            AddAliasExpand(namedType2);
+        }
+    }
+
+    public void AddAliasExpand(LuaNamedType type)
+    {
+        var detailType = type.GetDetailType(SearchContext);
+        if (detailType.IsAlias)
+        {
+            _aliasExpand.Add(type);
         }
     }
 }

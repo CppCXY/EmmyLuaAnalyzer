@@ -13,6 +13,8 @@ public static class Builtin
     public static LuaNamedType Thread { get; } = new("thread");
     public static LuaNamedType UserData { get; } = new("userdata");
 
+    public static LuaNamedType Self { get; } = new("self");
+
     public static LuaNamedType? FromName(string name)
     {
         return name switch
@@ -27,6 +29,7 @@ public static class Builtin
             "table" => Table,
             "thread" => Thread,
             "userdata" => UserData,
+            "self" => Self,
             _ => null,
         };
     }
