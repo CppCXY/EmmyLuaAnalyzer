@@ -274,6 +274,11 @@ public static class LuaTypeRenderer
                 RenderNamedType(namedType, renderContext, level);
                 break;
             }
+            case LuaTemplateType templateType:
+            {
+                renderContext.Append($"<{templateType.TemplateName}>");
+                break;
+            }
             default:
             {
                 renderContext.Append("unknown");

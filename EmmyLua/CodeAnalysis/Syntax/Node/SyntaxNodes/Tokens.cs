@@ -116,3 +116,14 @@ public class LuaVersionNumberToken(
 {
     public VersionNumber Version { get; } = version;
 }
+
+public class LuaTemplateTypeToken(
+    string name,
+    GreenNode greenNode,
+    LuaSyntaxTree tree,
+    LuaSyntaxElement? parent,
+    int startOffset)
+    : LuaSyntaxToken(greenNode, tree, parent, startOffset)
+{
+    public string Name { get; } = name;
+}

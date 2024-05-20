@@ -332,6 +332,17 @@ public class LuaDocLexer(LuaDocument document)
 
                 return LuaTokenKind.TkString;
             }
+            case '`':
+            {
+                Reader.Bump();
+                Reader.EatWhen(ch => ch != '`');
+                if (Reader.CurrentChar == '`')
+                {
+                    Reader.Bump();
+                }
+
+                return LuaTokenKind.TkTypeTemplate;
+            }
             case var ch when LuaLexer.IsNameStart(ch):
             {
                 Reader.EatWhen(c =>

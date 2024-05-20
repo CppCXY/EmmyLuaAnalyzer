@@ -12,6 +12,12 @@ public static class GenericInfer
         Dictionary<string, LuaType> result,
         SearchContext context)
     {
+        if (type is LuaTemplateType templateType && expr is LuaLiteralExprSyntax {Literal: LuaStringToken {} stringToken})
+        {
+            TemplateTypeInstantiateByString(templateType, stringToken, genericParameter, result, context);
+            return;
+        }
+
         var exprType = context.Infer(expr);
         InferInstantiateByType(type, exprType, genericParameter, result, context);
     }
@@ -315,6 +321,19 @@ public static class GenericInfer
                     }
                 }
             }
+        }
+    }
+
+    private static void TemplateTypeInstantiateByString(
+        LuaTemplateType templateType,
+        LuaStringToken stringToken,
+        HashSet<string> genericParameter,
+        Dictionary<string, LuaType> result,
+        SearchContext context)
+    {
+        if (IsGenericParameter(templateType.TemplateName, genericParameter))
+        {
+            result.TryAdd(templateType.TemplateName, new LuaNamedType(stringToken.Value));
         }
     }
 }

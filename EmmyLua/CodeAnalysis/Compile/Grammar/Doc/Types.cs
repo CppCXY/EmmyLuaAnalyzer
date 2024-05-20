@@ -169,7 +169,8 @@ public static class TypesParser
             LuaTokenKind.TkLeftParen => ParenType(p),
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt => LiteralType(p),
-            LuaTokenKind.TkName => OtherType(p),
+            LuaTokenKind.TkName => FuncOrNameType(p),
+            LuaTokenKind.TkTypeTemplate => TemplateType(p),
             LuaTokenKind.TkDots => VariadicType(p),
             _ => CompleteMarker.Empty
         };
@@ -243,7 +244,7 @@ public static class TypesParser
         return m.Complete(p, LuaSyntaxKind.TypeLiteral);
     }
 
-    private static CompleteMarker OtherType(LuaDocParser p)
+    private static CompleteMarker FuncOrNameType(LuaDocParser p)
     {
         if (p.CurrentNameText is "fun" or "async")
         {
@@ -253,6 +254,13 @@ public static class TypesParser
         var m = p.Marker();
         p.Bump();
         return m.Complete(p, LuaSyntaxKind.TypeName);
+    }
+
+    private static CompleteMarker TemplateType(LuaDocParser p)
+    {
+        var m = p.Marker();
+        p.Bump();
+        return m.Complete(p, LuaSyntaxKind.TypeTemplate);
     }
 
     private static CompleteMarker VariadicType(LuaDocParser p)

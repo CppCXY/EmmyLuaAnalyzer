@@ -122,6 +122,17 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
     }
 }
 
+public class LuaTemplateType(string templateName): LuaType(TypeKind.Template), IEquatable<LuaTemplateType>
+{
+    public string TemplateName { get; } = templateName;
+
+    public bool Equals(LuaTemplateType? other)
+    {
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && TemplateName == other.TemplateName;
+    }
+}
+
 public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union), IEquatable<LuaUnionType>
 {
     public HashSet<LuaType> UnionTypes { get; } = [..unionTypes];

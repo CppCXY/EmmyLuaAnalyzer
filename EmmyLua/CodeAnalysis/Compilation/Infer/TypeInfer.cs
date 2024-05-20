@@ -35,6 +35,8 @@ public static class TypeInfer
                 return InferExpandType(expandType, context);
             case LuaDocAggregateTypeSyntax aggregateType:
                 return InferAggregateType(aggregateType, context);
+            case LuaDocTemplateTypeSyntax templateType:
+                return InferTemplateType(templateType, context);
             default:
                 throw new UnreachableException();
         }
@@ -188,5 +190,15 @@ public static class TypeInfer
             )
             .ToList();
         return new LuaAggregateType(declarations);
+    }
+
+    private static LuaType InferTemplateType(LuaDocTemplateTypeSyntax templateType, SearchContext context)
+    {
+        if (templateType.TemplateName?.Name is { } name)
+        {
+            return new LuaTemplateType(name);
+        }
+
+        return Builtin.Unknown;
     }
 }

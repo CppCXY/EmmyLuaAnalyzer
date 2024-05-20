@@ -162,6 +162,11 @@ public class SemanticTokensAnalyzer
                 }
                 break;
             }
+            case LuaTokenKind.TkTypeTemplate:
+            {
+                builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Type, string.Empty);
+                break;
+            }
             // TODO 
             // case LuaTokenKind.TkTagAlias:
             // case LuaTokenKind.TkTagClass:

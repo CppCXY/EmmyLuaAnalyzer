@@ -90,6 +90,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.TypeAggregate => new LuaDocAggregateTypeSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.TypeTemplate => new LuaDocTemplateTypeSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent, startOffset),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent, startOffset),
@@ -123,6 +124,7 @@ public static class SyntaxFactory
             LuaTokenKind.TkName => new LuaNameToken(greenNode, tree, parent, startOffset),
             LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(greenNode, tree, parent, startOffset),
             LuaTokenKind.TkVersionNumber => CalculateVersionNumber(greenNode, tree, parent, startOffset),
+            LuaTokenKind.TkTypeTemplate => CalculateTemplateType(greenNode, tree, parent, startOffset),
             _ => new LuaSyntaxToken(greenNode, tree, parent, startOffset)
         };
     }
@@ -578,5 +580,21 @@ public static class SyntaxFactory
                 new SourceRange(startOffset, greenNode.Length)));
             return new LuaVersionNumberToken(new VersionNumber(0, 0, 0, 0), greenNode, tree, parent, startOffset);
         }
+    }
+
+    private static LuaTemplateTypeToken CalculateTemplateType(GreenNode greenNode, LuaSyntaxTree tree,
+        LuaSyntaxElement? parent, int startOffset)
+    {
+        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
+        if (text.Length < 3)
+        {
+            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
+                DiagnosticCode.SyntaxError,
+                "Invalid template type",
+                new SourceRange(startOffset, greenNode.Length)));
+            return new LuaTemplateTypeToken(string.Empty, greenNode, tree, parent, startOffset);
+        }
+
+        return new LuaTemplateTypeToken(text[1..^1].ToString(), greenNode, tree, parent, startOffset);
     }
 }

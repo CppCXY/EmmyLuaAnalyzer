@@ -105,3 +105,9 @@ public class LuaDocAggregateTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, 
 {
     public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
 }
+
+public class LuaDocTemplateTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
+    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+{
+    public LuaTemplateTypeToken? TemplateName => FirstChild<LuaTemplateTypeToken>();
+}
