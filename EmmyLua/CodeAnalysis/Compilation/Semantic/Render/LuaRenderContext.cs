@@ -13,7 +13,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     private StringBuilder _sb = new StringBuilder();
 
-    private HashSet<LuaNamedType> _typeLinks = [];
+    private HashSet<string> _typeLinks = [];
 
     private HashSet<LuaNamedType> _aliasExpand = [];
 
@@ -110,20 +110,20 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             var typeList = _typeLinks.ToList();
             for (var index = 0; index < typeList.Count; index++)
             {
-                var type = typeList[index];
-                var typeDeclaration = SearchContext.Compilation.DbManager.GetNamedType(type.Name).FirstOrDefault();
+                if (index == 0)
+                {
+                    Append("Go to ");
+                }
+                var typeName = typeList[index];
+                var typeDeclaration = SearchContext.Compilation.DbManager.GetNamedType(typeName).FirstOrDefault();
                 if (typeDeclaration is { Info.Ptr: { } ptr } && ptr.ToNode(SearchContext) is { } node)
                 {
-                    if (index == 0)
-                    {
-                        Append("Go to ");
-                    }
-                    else if (index > 0)
+                    if (index > 0)
                     {
                         Append('|');
                     }
 
-                    Append($"[{type.Name}]({node.Location.ToUriLocation(1)})");
+                    Append($"[{typeName}]({node.Location.ToUriLocation(1)})");
                 }
             }
         }
@@ -149,7 +149,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
     {
         if (Feature.ShowTypeLink && type is LuaNamedType namedType)
         {
-            _typeLinks.Add(namedType);
+            _typeLinks.Add(namedType.Name);
         }
 
         if (_allowExpandAlias && type is LuaNamedType namedType2)

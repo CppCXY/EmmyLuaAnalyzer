@@ -12,6 +12,8 @@ namespace EmmyLua.LanguageServer.CodeLens;
 
 public class CodeLensBuilder
 {
+    public static string VscodeCommandName = "emmy.showReferences";
+
     public CodeLensContainer Build(SemanticModel semanticModel, ServerContext context)
     {
         var codeLens = new List<OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens>();
@@ -47,7 +49,10 @@ public class CodeLensBuilder
                 var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
                 if (ptr.DocumentId is { } documentId)
                 {
-                    if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax { NameElement.Parent: {} element })
+                    if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
+                        {
+                            NameElement: { Parent: { } element } nameElement
+                        })
                     {
                         var semanticModel = context.GetSemanticModel(documentId);
                         if (semanticModel is not null)
@@ -55,7 +60,7 @@ public class CodeLensBuilder
                             var references = semanticModel.FindReferences(element);
                             codeLens = codeLens with
                             {
-                                Command = MakeCommand(references.Count() - 1)
+                                Command = MakeCommand(references.Count() - 1, nameElement)
                             };
                         }
                     }
@@ -70,11 +75,16 @@ public class CodeLensBuilder
         return codeLens;
     }
 
-    private static Command MakeCommand(int count)
+    private static Command MakeCommand(int count, LuaSyntaxElement element)
     {
+        var range = element.Range;
+        var line = element.Tree.Document.GetLine(range.StartOffset);
+        var col = element.Tree.Document.GetCol(range.StartOffset);
         return new Command
         {
-            Title = $"{count} usage"
+            Title = $"{count} usage",
+            Name = VscodeCommandName,
+            Arguments = [element.Tree.Document.Uri, line, col]
         };
     }
 }
