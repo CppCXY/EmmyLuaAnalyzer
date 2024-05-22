@@ -15,6 +15,4 @@ public record Diagnostic(
     {
         return $"{Range}: {Severity}: {Message} ({Code})";
     }
-
-
 }

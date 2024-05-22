@@ -29,12 +29,15 @@ public class ServerContext(ILanguageServerFacade server)
     private ProcessMonitor Monitor { get; } = new(server);
 
     public ResourceManager ResourceManager { get; } = new();
-
+    
+    private CancellationTokenSource? CancellationTokenSource { get; set; } = null;
+    
     public void StartServer(string workspacePath)
     {
         LockSlim.EnterWriteLock();
         try
         {
+            CancellationTokenSource?.Cancel();
             MainWorkspacePath = workspacePath;
             LuaWorkspace.Monitor = Monitor;
             SettingManager.Watch(workspacePath);
@@ -43,6 +46,7 @@ public class ServerContext(ILanguageServerFacade server)
             LuaWorkspace.InitStdLib();
             LuaWorkspace.LoadMainWorkspace(workspacePath);
             ResourceManager.Config = SettingManager.GetResourceConfig();
+            CancellationTokenSource = new CancellationTokenSource();
             PushWorkspaceDiagnostics();
         }
         finally
@@ -125,8 +129,15 @@ public class ServerContext(ILanguageServerFacade server)
             PushWorkspaceDiagnostics();
         }
     }
-
+    // 可能不能异步
     private void PushWorkspaceDiagnostics()
+    {
+        CancellationTokenSource?.Cancel();
+        CancellationTokenSource = new CancellationTokenSource();
+        _ = PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token);
+    }
+
+    private Task PushWorkspaceDiagnosticsAsync(CancellationToken cancellationToken)
     {
         Monitor.OnStartDiagnosticCheck();
         var documents = LuaWorkspace.AllDocuments.ToList();
@@ -134,6 +145,11 @@ public class ServerContext(ILanguageServerFacade server)
         var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
         foreach (var document in LuaWorkspace.AllDocuments)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
             Monitor.OnDiagnosticChecking(document.Path, diagnosticCount);
             var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
             Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
@@ -144,5 +160,6 @@ public class ServerContext(ILanguageServerFacade server)
         }
         
         Monitor.OnFinishDiagnosticCheck();
+        return Task.CompletedTask;
     }
 }

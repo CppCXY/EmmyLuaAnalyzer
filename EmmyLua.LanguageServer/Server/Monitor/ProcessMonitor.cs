@@ -64,7 +64,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         }
     }
     
-    public override void OnDiagnosticChecking(string path, int total)
+    public void OnDiagnosticChecking(string path, int total)
     {
         if (State == ProcessState.Running)
         {
@@ -77,7 +77,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         }
     }
     
-    public override void OnStartDiagnosticCheck()
+    public void OnStartDiagnosticCheck()
     {
         if (State == ProcessState.None)
         {
@@ -90,7 +90,7 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         }
     }
     
-    public override void OnFinishDiagnosticCheck()
+    public void OnFinishDiagnosticCheck()
     {
         if (State == ProcessState.Running)
         {

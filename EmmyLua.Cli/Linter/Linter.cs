@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Diagnostics;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 
@@ -13,17 +14,25 @@ public class Linter(CheckOptions options)
         settingManager.LoadSetting(workspacePath);
         var luaWorkspace = LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
         var foundedError = false;
-        foreach (var diagnostic in luaWorkspace.Compilation.GetAllDiagnostics())
-        {
-            if (diagnostic.Severity == DiagnosticSeverity.Error)
-            {
-                foundedError = true;
-            }
 
-            Console.WriteLine(diagnostic);
+        var searchContext = new SearchContext(luaWorkspace.Compilation, new SearchContextFeatures());
+        var documents = luaWorkspace.AllDocuments.ToList();
+        foreach (var document in documents)
+        {
+            var diagnostics = luaWorkspace.Compilation.GetDiagnostics(document.Id, searchContext);
+            foreach (var diagnostic in diagnostics)
+            {
+                if (diagnostic.Severity == DiagnosticSeverity.Error)
+                {
+                    foundedError = true;
+                }
+
+                var location = document.GetLocation(diagnostic.Range, 1);
+                Console.WriteLine($"{location}: {diagnostic.Severity}: {diagnostic.Message} ({diagnostic.Code})");
+            }
         }
 
-        Console.WriteLine("Check done");
+        Console.WriteLine("Check done!");
         return foundedError ? 1 : 0;
     }
 }

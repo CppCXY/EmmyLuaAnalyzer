@@ -89,7 +89,7 @@ public class ModuleGraph
                 }
 
                 var moduleIndex = new ModuleIndex(documentId, name, workspace, requiredModulePath);
-                DocumentIndex.Add(documentId, moduleIndex);
+                DocumentIndex[documentId] = moduleIndex;
 
                 if (!ModuleNameToDocumentId.TryGetValue(name, out var documentIds))
                 {

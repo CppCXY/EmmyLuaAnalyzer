@@ -266,6 +266,11 @@ public class LuaLexer(LuaDocument document)
             }
             case '.':
             {
+                if (Reader.NextChar is >= '0' and <= '9')
+                {
+                    return LexNumber();
+                }
+
                 Reader.Bump();
                 if (Reader.CurrentChar != '.') return LuaTokenKind.TkDot;
                 Reader.Bump();
