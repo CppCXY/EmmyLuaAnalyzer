@@ -14,7 +14,7 @@ public class WorkspaceSymbolBuilder
         try
         {
             var luaWorkspace = context.LuaWorkspace;
-            var globals = context.LuaWorkspace.Compilation.DbManager.GetGlobals();
+            var globals = context.LuaWorkspace.Compilation.Db.GetGlobals();
             foreach (var global in globals)
             {
                 if (global.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
@@ -32,7 +32,7 @@ public class WorkspaceSymbolBuilder
                      }
                 }
             }
-            var members = context.LuaWorkspace.Compilation.DbManager.GetAllMembers();
+            var members = context.LuaWorkspace.Compilation.Db.GetAllMembers();
             foreach (var member in members)
             {
                 if (member.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))

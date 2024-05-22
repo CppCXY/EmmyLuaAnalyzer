@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
@@ -121,21 +122,27 @@ public class ServerContext(ILanguageServerFacade server)
         else // TODO check condition
         {
             LuaWorkspace.Features = newFeatures;
-            LuaWorkspace.RefreshDiagnostics();
             PushWorkspaceDiagnostics();
         }
     }
 
     private void PushWorkspaceDiagnostics()
     {
+        Monitor.OnStartDiagnosticCheck();
+        var documents = LuaWorkspace.AllDocuments.ToList();
+        var diagnosticCount = documents.Count;
+        var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
         foreach (var document in LuaWorkspace.AllDocuments)
         {
-            var diagnostics = LuaWorkspace.Compilation.PopDiagnostics(document.Id);
+            Monitor.OnDiagnosticChecking(document.Path, diagnosticCount);
+            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
             Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
                 Uri = document.Uri,
             });
         }
+        
+        Monitor.OnFinishDiagnosticCheck();
     }
 }

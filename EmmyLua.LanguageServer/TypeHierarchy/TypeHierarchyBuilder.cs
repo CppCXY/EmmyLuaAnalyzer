@@ -26,13 +26,13 @@ public class TypeHierarchyBuilder
 
     public List<TypeHierarchyItem> BuildSupers(LuaCompilation compilation, string name)
     {
-        var supers = compilation.DbManager.GetSupers(name);
+        var supers = compilation.Db.GetSupers(name);
         var items = new List<TypeHierarchyItem>();
         foreach (var super in supers)
         {
             if (super is LuaNamedType superNamedType)
             {
-                var typeDefine = compilation.DbManager.GetTypeLuaDeclaration(superNamedType.Name);
+                var typeDefine = compilation.Db.GetTypeLuaDeclaration(superNamedType.Name);
                 if (typeDefine is {Info: NamedTypeInfo info})
                 {
                     var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
@@ -59,11 +59,11 @@ public class TypeHierarchyBuilder
 
     public List<TypeHierarchyItem> BuildSubTypes(LuaCompilation compilation, string name)
     {
-        var subTypes = compilation.DbManager.GetSubTypes(name);
+        var subTypes = compilation.Db.GetSubTypes(name);
         var items = new List<TypeHierarchyItem>();
         foreach (var subTypeName in subTypes)
         {
-            var typeDefine = compilation.DbManager.GetTypeLuaDeclaration(subTypeName);
+            var typeDefine = compilation.Db.GetTypeLuaDeclaration(subTypeName);
             if (typeDefine is { Info: NamedTypeInfo info})
             {
                 var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);

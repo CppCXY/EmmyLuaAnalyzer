@@ -16,7 +16,7 @@ public static class DeclarationInfer
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        return context.Compilation.DbManager.GetModuleExportType(source.DocumentId) ?? Builtin.Unknown;
+        return context.Compilation.Db.GetModuleExportType(source.DocumentId) ?? Builtin.Unknown;
     }
 
     public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)

@@ -93,7 +93,7 @@ public class DocProvider : ICompleteProviderBase
 
     private void AddTypeNameCompletion(CompleteContext context)
     {
-        var namedTypes = context.SemanticModel.Compilation.DbManager.GetNamedTypes();
+        var namedTypes = context.SemanticModel.Compilation.Db.GetNamedTypes();
         foreach (var typeDeclaration in namedTypes)
         {
             if (typeDeclaration.Info is NamedTypeInfo namedTypeInfo)

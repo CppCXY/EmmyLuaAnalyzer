@@ -54,7 +54,7 @@ public class References(SearchContext context)
     {
         var references = new List<LuaReference>();
         var globalName = declaration.Name;
-        var nameExprs = context.Compilation.DbManager.GetNameExprs(globalName);
+        var nameExprs = context.Compilation.Db.GetNameExprs(globalName);
 
         foreach (var nameExpr in nameExprs)
         {
@@ -70,7 +70,7 @@ public class References(SearchContext context)
     private IEnumerable<LuaReference> FieldReferences(LuaDeclaration declaration, string fieldName)
     {
         var references = new List<LuaReference>();
-        var indexExprs = context.Compilation.DbManager.GetIndexExprs(fieldName);
+        var indexExprs = context.Compilation.Db.GetIndexExprs(fieldName);
         foreach (var indexExpr in indexExprs)
         {
             if (context.FindDeclaration(indexExpr) == declaration)
@@ -119,7 +119,7 @@ public class References(SearchContext context)
                 references.Add(new LuaReference(fieldElement.Location, fieldElement));
             }
 
-            var parentType = context.Compilation.DbManager.GetParentType(fieldDef);
+            var parentType = context.Compilation.Db.GetParentType(fieldDef);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -155,7 +155,7 @@ public class References(SearchContext context)
                 references.Add(new LuaReference(enumFieldName.Location, enumFieldName));
             }
 
-            var parentType = context.Compilation.DbManager.GetParentType(enumFieldDef);
+            var parentType = context.Compilation.Db.GetParentType(enumFieldDef);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -189,7 +189,7 @@ public class References(SearchContext context)
                 references.Add(new LuaReference(keyElement.Location, keyElement));
             }
 
-            var parentType = context.Compilation.DbManager.GetParentType(fieldDef);
+            var parentType = context.Compilation.Db.GetParentType(fieldDef);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -220,7 +220,7 @@ public class References(SearchContext context)
         {
             references.Add(new LuaReference(tupleMember.Location, tupleMember));
 
-            var parentType = context.Compilation.DbManager.GetParentType(tupleMember);
+            var parentType = context.Compilation.Db.GetParentType(tupleMember);
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
@@ -250,7 +250,7 @@ public class References(SearchContext context)
         if (info.TypeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new LuaReference(typeName.Location, typeName));
-            var nameTypes = context.Compilation.DbManager.GetNameTypes(name);
+            var nameTypes = context.Compilation.Db.GetNameTypes(name);
             foreach (var nameType in nameTypes)
             {
                 if (context.FindDeclaration(nameType) == declaration && nameType.Name is { } name2)

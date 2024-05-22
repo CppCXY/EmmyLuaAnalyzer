@@ -94,7 +94,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
                 return declaration;
             }
 
-            return context.Compilation.DbManager.GetGlobal(name.RepresentText).FirstOrDefault();
+            return context.Compilation.Db.GetGlobal(name.RepresentText).FirstOrDefault();
         }
 
         return null;
@@ -104,7 +104,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
     {
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
-            var relatedType = context.Compilation.DbManager.GetTypeFromId(parentTable.UniqueId).FirstOrDefault() ??
+            var relatedType = context.Compilation.Db.GetTypeFromId(parentTable.UniqueId).FirstOrDefault() ??
                               new LuaTableLiteralType(parentTable);
             return context.FindMember(relatedType, name).FirstOrDefault();
         }
@@ -127,9 +127,9 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
     {
         if (name is not null)
         {
-            if (context.Compilation.DbManager.IsDefinedType(name))
+            if (context.Compilation.Db.IsDefinedType(name))
             {
-                return context.Compilation.DbManager.GetNamedType(name).FirstOrDefault();
+                return context.Compilation.Db.GetNamedType(name).FirstOrDefault();
             }
         }
 
@@ -138,7 +138,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
 
     private LuaDeclaration? FindDocFieldDeclaration(LuaDocFieldSyntax docField, SearchContext context)
     {
-        var parentType = context.Compilation.DbManager.GetParentType(docField);
+        var parentType = context.Compilation.Db.GetParentType(docField);
         if (parentType is not null && docField.Name is { } name)
         {
             return context.FindMember(parentType, name).FirstOrDefault();

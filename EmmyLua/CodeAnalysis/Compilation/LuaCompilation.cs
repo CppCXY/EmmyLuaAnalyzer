@@ -21,9 +21,9 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    public DbManager DbManager { get; }
+    public DbManager Db { get; }
 
-    private HashSet<LuaDocumentId> DirtyDocuments { get; } = [];
+    private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
 
     internal Dictionary<LuaDocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
 
@@ -34,7 +34,7 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        DbManager = new DbManager(this);
+        Db = new DbManager(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
@@ -85,7 +85,7 @@ public class LuaCompilation
         }
 
         DeclarationTrees.Remove(documentId);
-        DbManager.Remove(documentId);
+        Db.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }
 
@@ -130,45 +130,47 @@ public class LuaCompilation
 
     private void Analyze()
     {
-        if (DirtyDocuments.Count != 0)
+        if (DirtyDocumentIds.Count != 0)
         {
             try
             {
-                var list = new List<LuaDocument>();
-                foreach (var documentId in DirtyDocuments)
+                var documents = new List<LuaDocument>();
+                foreach (var documentId in DirtyDocumentIds)
                 {
                     var document = Workspace.GetDocument(documentId);
                     if (document is not null && document.Text.Length < Workspace.Features.DontIndexMaxFileSize)
                     {
-                        list.Add(document);
+                        documents.Add(document);
                     }
                 }
 
-                var analyzeContext = new AnalyzeContext(list);
+                var analyzeContext = new AnalyzeContext(documents);
                 foreach (var analyzer in Analyzers)
                 {
                     Workspace.Monitor?.OnAnalyzing(analyzer.Name);
                     analyzer.Analyze(analyzeContext);
                 }
 
-                var context = new SearchContext(this, new SearchContextFeatures());
-                foreach (var document in list)
+                foreach (var document in documents)
                 {
-                    Workspace.Monitor?.OnDiagnosticChecking(document.Path, list.Count);
-                    Diagnostics.Check(document, context);
+                    foreach (var diagnostic in document.SyntaxTree.Diagnostics)
+                    {
+                        Diagnostics.AddDiagnostic(document.Id, diagnostic);
+                    }
+
+                    document.SyntaxTree.Diagnostics.Clear();
                 }
-                context.ClearCache();
             }
             finally
             {
-                DirtyDocuments.Clear();
+                DirtyDocumentIds.Clear();
             }
         }
     }
 
     private void AddDirtyDocument(LuaDocumentId documentId)
     {
-        DirtyDocuments.Add(documentId);
+        DirtyDocumentIds.Add(documentId);
     }
 
     public LuaDeclarationTree? GetDeclarationTree(LuaDocumentId documentId)
@@ -178,40 +180,28 @@ public class LuaCompilation
 
     public IEnumerable<Diagnostic> GetAllDiagnostics()
     {
-        return Workspace.AllDocuments.SelectMany(it => GetDiagnostics(it.Id));
-    }
-
-    public IEnumerable<Diagnostic> GetDiagnostics(LuaDocumentId documentId) =>
-        _syntaxTrees.TryGetValue(documentId, out var tree)
-            ? tree.Diagnostics.Concat(Diagnostics.GetDiagnostics(documentId)).Select(it => it with
-            {
-                Location = tree.Document.GetLocation(it.Range)
-            })
-            : Enumerable.Empty<Diagnostic>();
-
-    public IEnumerable<Diagnostic> PopDiagnostics(LuaDocumentId documentId)
-    {
-        var diagnostics = GetDiagnostics(documentId).ToList();
-        Diagnostics.ClearDiagnostic(documentId);
-        if (_syntaxTrees.TryGetValue(documentId, out var tree))
-        {
-            tree.Diagnostics.Clear();
-        }
-        return diagnostics;
-    }
-
-    public void RefreshDiagnostics()
-    {
-        Diagnostics.ClearAllDiagnostic();
-        Workspace.Monitor?.OnStartDiagnosticCheck();
+        var result = new List<Diagnostic>();
         var context = new SearchContext(this, new SearchContextFeatures());
-        var documents = Workspace.AllDocuments.ToList();
+        var documents = Workspace.AllDocuments;
         foreach (var document in documents)
         {
-            Workspace.Monitor?.OnDiagnosticChecking(document.Path, documents.Count);
-            Diagnostics.Check(document, context);
+            if (Diagnostics.Check(document, context, out var documentDiagnostics))
+            {
+                result.AddRange(documentDiagnostics);
+            }
         }
 
-        Workspace.Monitor?.OnFinishDiagnosticCheck();
+        return result;
+    }
+
+    public IEnumerable<Diagnostic> GetDiagnostics(LuaDocumentId documentId, SearchContext context)
+    {
+        var document = Workspace.GetDocument(documentId);
+        if (document is null)
+        {
+            return [];
+        }
+
+        return !Diagnostics.Check(document, context, out var results) ? [] : results;
     }
 }

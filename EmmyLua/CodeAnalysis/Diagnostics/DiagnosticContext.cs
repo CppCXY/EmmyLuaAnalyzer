@@ -3,7 +3,11 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
-public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnostics, SearchContext searchContext)
+public class DiagnosticContext(
+    LuaDocument document,
+    LuaDiagnostics luaDiagnostics,
+    SearchContext searchContext,
+    List<Diagnostic> diagnostics)
 {
     private LuaDiagnostics LuaDiagnostics { get; } = luaDiagnostics;
 
@@ -18,7 +22,6 @@ public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnosti
         string message,
         SourceRange range,
         DiagnosticTag tag = DiagnosticTag.None,
-        LuaLocation? location = null,
         string? data = null)
     {
         if (LuaDiagnostics.CanAddDiagnostic(Document.Id, code, range))
@@ -27,8 +30,8 @@ public class DiagnosticContext(LuaDocument document, LuaDiagnostics luaDiagnosti
                 ? severityOverride
                 : DiagnosticSeverityHelper.GetDefaultSeverity(code);
 
-            var diagnostic = new Diagnostic(severity, code, message, range, tag, location, data);
-            LuaDiagnostics.AddDiagnostic(Document.Id, diagnostic);
+            var diagnostic = new Diagnostic(severity, code, message, range, tag, data);
+            diagnostics.Add(diagnostic);
         }
     }
 }

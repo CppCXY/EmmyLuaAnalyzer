@@ -292,9 +292,4 @@ public class LuaWorkspace
             }
         }
     }
-
-    public void RefreshDiagnostics()
-    {
-        Compilation.RefreshDiagnostics();
-    }
 }

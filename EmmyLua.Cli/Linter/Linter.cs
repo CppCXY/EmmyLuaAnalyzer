@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Diagnostics;
+using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 
 namespace EmmyLua.Cli.Linter;
@@ -12,15 +13,16 @@ public class Linter(CheckOptions options)
         settingManager.LoadSetting(workspacePath);
         var luaWorkspace = LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
         var foundedError = false;
-        foreach (var document in luaWorkspace.AllDocuments)
+        foreach (var diagnostic in luaWorkspace.Compilation.GetAllDiagnostics())
         {
-            var diagnostics = luaWorkspace.Compilation.PopDiagnostics(document.Id);
-            foreach (var diagnostic in diagnostics)
+            if (diagnostic.Severity == DiagnosticSeverity.Error)
             {
                 foundedError = true;
-                Console.WriteLine(diagnostic);
             }
+
+            Console.WriteLine(diagnostic);
         }
+
         Console.WriteLine("Check done");
         return foundedError ? 1 : 0;
     }

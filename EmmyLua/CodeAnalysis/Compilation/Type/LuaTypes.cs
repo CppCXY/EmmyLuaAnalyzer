@@ -62,7 +62,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 
     public BasicDetailType GetDetailType(SearchContext context)
     {
-        return context.Compilation.DbManager.GetDetailNamedType(Name, context);
+        return context.Compilation.Db.GetDetailNamedType(Name, context);
     }
 
     public override bool Equals(object? obj)
@@ -112,7 +112,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
             return false;
         }
 
-        var supers = context.Compilation.DbManager.GetSupers(Name);
+        var supers = context.Compilation.Db.GetSupers(Name);
         return supers.Any(super => super.SubTypeOf(namedType, context));
     }
 

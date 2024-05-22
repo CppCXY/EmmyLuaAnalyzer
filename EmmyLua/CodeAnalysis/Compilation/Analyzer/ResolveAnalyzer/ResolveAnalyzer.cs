@@ -149,7 +149,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var ty = Context.Infer(prefixExpr);
                 if (ty is LuaNamedType namedType)
                 {
-                    Compilation.DbManager.AddMember(documentId, namedType.Name, declaration);
+                    Compilation.Db.AddMember(documentId, namedType.Name, declaration);
                 }
             }
         }
@@ -178,7 +178,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 returnType = multiReturnType.GetElementType(0);
             }
 
-            Compilation.DbManager.AddModuleExport(unResolvedSource.DocumentId, returnType, relatedExpr);
+            Compilation.Db.AddModuleExport(unResolvedSource.DocumentId, returnType, relatedExpr);
         }
     }
 
@@ -293,20 +293,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (type is LuaTableLiteralType tableType)
                 {
                     var typeName = namedType.Name;
-                    var members = Compilation.DbManager.GetMembers(tableType.Name);
+                    var members = Compilation.Db.GetMembers(tableType.Name);
                     var documentId = declaration.Info.Ptr.DocumentId;
 
                     foreach (var member in members)
                     {
-                        Compilation.DbManager.AddMember(documentId, typeName, member);
+                        Compilation.Db.AddMember(documentId, typeName, member);
                     }
 
-                    Compilation.DbManager.AddIdRelatedType(documentId, tableType.TableExprPtr.UniqueId, namedType);
+                    Compilation.Db.AddIdRelatedType(documentId, tableType.TableExprPtr.UniqueId, namedType);
                 }
                 else
                 {
                     var documentId = declaration.Info.Ptr.DocumentId;
-                    Compilation.DbManager.AddSuper(documentId, namedType.Name, type);
+                    Compilation.Db.AddSuper(documentId, namedType.Name, type);
                 }
             }
         }

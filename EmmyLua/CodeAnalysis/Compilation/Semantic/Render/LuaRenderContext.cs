@@ -115,7 +115,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
                     Append("Go to ");
                 }
                 var typeName = typeList[index];
-                var typeDeclaration = SearchContext.Compilation.DbManager.GetNamedType(typeName).FirstOrDefault();
+                var typeDeclaration = SearchContext.Compilation.Db.GetNamedType(typeName).FirstOrDefault();
                 if (typeDeclaration is { Info.Ptr: { } ptr } && ptr.ToNode(SearchContext) is { } node)
                 {
                     if (index > 0)
@@ -136,7 +136,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             foreach (var type in _aliasExpand)
             {
                 var name = type.Name;
-                var originType = SearchContext.Compilation.DbManager.GetAliasOriginType(name).FirstOrDefault();
+                var originType = SearchContext.Compilation.Db.GetAliasOriginType(name).FirstOrDefault();
                 if (originType is LuaAggregateType aggregateType)
                 {
                     LuaTypeRenderer.RenderAliasMember(name, aggregateType, this);

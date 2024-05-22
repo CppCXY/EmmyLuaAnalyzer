@@ -147,6 +147,9 @@ public class Runtime
 
     [JsonProperty("extensions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public List<string> Extensions { get; set; } = [];
+
+    [JsonProperty("requirePattern", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> RequirePattern { get; set; } = [];
 }
 
 public enum LuaVersion

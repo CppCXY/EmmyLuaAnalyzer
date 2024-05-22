@@ -28,16 +28,18 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public DiagnosticConfig Config => Compilation.Workspace.Features.DiagnosticConfig;
 
-    private Dictionary<LuaDocumentId, List<Diagnostic>> Diagnostics { get; } = new();
+    private Dictionary<LuaDocumentId, List<Diagnostic>> BasicSyntaxErrors { get; } = new();
 
-    public void Check(LuaDocument document, SearchContext searchContext)
+    public bool Check(LuaDocument document, SearchContext searchContext, out List<Diagnostic> results)
     {
+        results = new List<Diagnostic>();
         if (IsMetaDocument.Contains(document.Id))
         {
-            return;
+            return false;
         }
 
-        var context = new DiagnosticContext(document, this, searchContext);
+        results.AddRange(GetDiagnostics(document.Id));
+        var context = new DiagnosticContext(document, this, searchContext, results);
         foreach (var checker in Checkers)
         {
             if (CanCheck(document.Id, checker))
@@ -45,6 +47,8 @@ public class LuaDiagnostics(LuaCompilation compilation)
                 checker.Check(context);
             }
         }
+
+        return true;
     }
 
     public bool CanCheck(LuaDocumentId documentId, DiagnosticCheckerBase checkerBase)
@@ -95,10 +99,10 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public void AddDiagnostic(LuaDocumentId documentId, Diagnostic diagnostic)
     {
-        if (!Diagnostics.TryGetValue(documentId, out var diagnostics))
+        if (!BasicSyntaxErrors.TryGetValue(documentId, out var diagnostics))
         {
             diagnostics = new List<Diagnostic>();
-            Diagnostics[documentId] = diagnostics;
+            BasicSyntaxErrors[documentId] = diagnostics;
         }
 
         diagnostics.Add(diagnostic);
@@ -166,26 +170,39 @@ public class LuaDiagnostics(LuaCompilation compilation)
         Disables.Remove(documentId);
         Enables.Remove(documentId);
         DisableNextLines.Remove(documentId);
-        Diagnostics.Remove(documentId);
+        BasicSyntaxErrors.Remove(documentId);
     }
 
     public void ClearDiagnostic(LuaDocumentId documentId)
     {
-        Diagnostics.Remove(documentId);
+        BasicSyntaxErrors.Remove(documentId);
     }
 
     public void ClearAllDiagnostic()
     {
-        Diagnostics.Clear();
+        BasicSyntaxErrors.Clear();
     }
 
     public IEnumerable<Diagnostic> GetDiagnostics(LuaDocumentId documentId)
     {
-        return Diagnostics.GetValueOrDefault(documentId) ?? Enumerable.Empty<Diagnostic>();
+        return BasicSyntaxErrors.GetValueOrDefault(documentId) ?? Enumerable.Empty<Diagnostic>();
     }
 
     public List<string> GetDiagnosticNames()
     {
         return Checkers.SelectMany(handler => handler.Codes.Select(DiagnosticCodeHelper.GetName)).ToList();
+    }
+
+    public void AddChecker(DiagnosticCheckerBase checker)
+    {
+        Checkers.Add(checker);
+    }
+
+    /// <summary>
+    /// for custom diagnostic
+    /// </summary>
+    public void ClearCheckers()
+    {
+        Checkers.Clear();
     }
 }

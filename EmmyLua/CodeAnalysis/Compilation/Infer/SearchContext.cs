@@ -100,15 +100,15 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         if (name is "_G" or "_ENV" or "global")
         {
-            return Compilation.DbManager.GetGlobals();
+            return Compilation.Db.GetGlobals();
         }
 
-        return Compilation.DbManager.GetMembers(name);
+        return Compilation.Db.GetMembers(name);
     }
 
     private void CollectSupers(string name, HashSet<LuaType> hashSet, List<LuaNamedType> result)
     {
-        var supers = Compilation.DbManager.GetSupers(name).ToList();
+        var supers = Compilation.Db.GetSupers(name).ToList();
         var namedTypes = new List<LuaNamedType>();
         foreach (var super in supers)
         {
@@ -213,7 +213,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
 
         var members = GetMembers(genericType.Name);
-        var genericParams = Compilation.DbManager.GetGenericParams(genericType.Name).ToList();
+        var genericParams = Compilation.Db.GetGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 
         var genericMap = new Dictionary<string, LuaType>();
@@ -417,10 +417,10 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
                 }
             }
 
-            var originOperators = Compilation.DbManager.GetTypeOperators(left.Name)
+            var originOperators = Compilation.Db.GetTypeOperators(left.Name)
                 .Where(it => it.Kind == kind).ToList();
 
-            var genericParams = Compilation.DbManager.GetGenericParams(genericType.Name).ToList();
+            var genericParams = Compilation.Db.GetGenericParams(genericType.Name).ToList();
             var genericArgs = genericType.GenericArgs;
 
             var genericMap = new Dictionary<string, LuaType>();
@@ -444,7 +444,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             return instanceOperators;
         }
 
-        return Compilation.DbManager.GetTypeOperators(left.Name)
+        return Compilation.Db.GetTypeOperators(left.Name)
             .Where(it => it.Kind == kind);
     }
 

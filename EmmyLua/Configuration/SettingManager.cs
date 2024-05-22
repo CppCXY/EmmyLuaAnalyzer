@@ -194,6 +194,12 @@ public class SettingManager
             }
         }
 
+        if (setting.Runtime.RequirePattern.Count > 0)
+        {
+            features.RequirePattern.Clear();
+            features.RequirePattern.AddRange(setting.Runtime.RequirePattern);
+        }
+
         return features;
     }
 

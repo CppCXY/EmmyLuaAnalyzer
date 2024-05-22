@@ -83,7 +83,7 @@ public class TextDocumentHandler(
 
     private void PushDiagnostic(TextDocumentIdentifier identifier, SemanticModel semanticModel)
     {
-        var diagnostics = semanticModel.PopDiagnostics()
+        var diagnostics = semanticModel.GetDiagnostics()
             .Select(it => it.ToLspDiagnostic(semanticModel.Document))
             .ToList();
 

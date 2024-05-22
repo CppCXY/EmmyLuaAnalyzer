@@ -7,6 +7,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.CodeLens;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class CodeLensHandler(ServerContext context) : CodeLensHandlerBase
 {
     private CodeLensBuilder Builder { get; } = new();

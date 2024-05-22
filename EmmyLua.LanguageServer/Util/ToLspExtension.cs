@@ -10,7 +10,7 @@ using LuaDiagnostic = EmmyLua.CodeAnalysis.Diagnostics.Diagnostic;
 
 namespace EmmyLua.LanguageServer.Util;
 
-public static class LocationExtension
+public static class LspExtension
 {
     public static Location ToLspLocation(this LuaLocation location)
     {

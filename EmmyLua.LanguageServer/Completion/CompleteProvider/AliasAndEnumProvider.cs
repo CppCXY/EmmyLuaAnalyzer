@@ -108,7 +108,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
     private void AddEnumParamCompletion(EnumDetailType enumDetailType, CompleteContext context)
     {
         var enumName = enumDetailType.Name;
-        var members = context.SemanticModel.Compilation.DbManager
+        var members = context.SemanticModel.Compilation.Db
             .GetMembers(enumName);
 
         foreach (var field in members)

@@ -30,7 +30,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private LuaCompilation Compilation => Analyzer.Compilation;
 
-    private DbManager DbManager => Compilation.DbManager;
+    private DbManager DbManager => Compilation.Db;
 
     private AnalyzeContext AnalyzeContext { get; }
 
