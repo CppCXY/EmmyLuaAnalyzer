@@ -7,7 +7,7 @@ using EmmyLua.CodeAnalysis.Workspace;
 
 var stopwatch = Stopwatch.StartNew();
 
-var workspace = LuaWorkspace.Create("C:\\Users\\zc\\Desktop\\server_gonghui_dev\\gameserver\\script");
+var workspace = LuaWorkspace.Create();
 // var _ = workspace.Compilation.GetAllDiagnosticsParallel().ToList();
 
 stopwatch.Stop();
