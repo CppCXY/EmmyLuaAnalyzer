@@ -200,5 +200,5 @@ public class Resource
 public class CodeLens
 {
     [JsonProperty("enable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public bool Enable { get; set; } = false;
+    public bool Enable { get; set; } = true;
 }
