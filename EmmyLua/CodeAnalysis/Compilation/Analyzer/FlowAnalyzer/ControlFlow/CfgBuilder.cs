@@ -19,7 +19,7 @@ public class CfgBuilder
         public CfgNode Source { get; } = source;
     }
 
-    private List<GotoNode> _gotoNodes = new();
+    private List<GotoNode> _gotoNodes = [];
 
     public ControlFlowGraph Build(LuaBlockSyntax block)
     {

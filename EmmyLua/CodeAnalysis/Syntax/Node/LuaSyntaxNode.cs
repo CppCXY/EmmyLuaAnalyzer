@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 

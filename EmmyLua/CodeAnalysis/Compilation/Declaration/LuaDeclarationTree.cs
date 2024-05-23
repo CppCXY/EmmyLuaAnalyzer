@@ -178,7 +178,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
             return result;
         }
 
-        return Enumerable.Empty<LuaDeclaration>();
+        return [];
     }
 
     public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)

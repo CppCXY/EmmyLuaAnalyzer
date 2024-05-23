@@ -1,5 +1,4 @@
 ﻿using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.Util;
 using EmmyLua.LanguageServer.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -17,7 +16,6 @@ public class CodeLensHandler(ServerContext context) : CodeLensHandlerBase
     {
         return new CodeLensRegistrationOptions()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             ResolveProvider = true,
         };
     }

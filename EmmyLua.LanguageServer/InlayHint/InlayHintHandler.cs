@@ -19,7 +19,6 @@ public class InlayHintHandler(ServerContext context) : InlayHintsHandlerBase
         return new InlayHintRegistrationOptions()
         {
             ResolveProvider = true,
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace)
         };
     }
 

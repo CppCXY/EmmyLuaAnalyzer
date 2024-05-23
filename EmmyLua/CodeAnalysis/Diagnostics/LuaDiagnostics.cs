@@ -18,7 +18,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public LuaCompilation Compilation { get; } = compilation;
 
-    private HashSet<LuaDocumentId> IsMetaDocument { get; } = new();
+    private HashSet<LuaDocumentId> IsMetaDocument { get; } = [];
 
     private Dictionary<LuaDocumentId, HashSet<DiagnosticCode>> Disables { get; } = new();
 
@@ -32,7 +32,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     public bool Check(LuaDocument document, SearchContext searchContext, out List<Diagnostic> results)
     {
-        results = new List<Diagnostic>();
+        results = [];
         if (IsMetaDocument.Contains(document.Id))
         {
             return false;
@@ -101,7 +101,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
     {
         if (!BasicSyntaxErrors.TryGetValue(documentId, out var diagnostics))
         {
-            diagnostics = new List<Diagnostic>();
+            diagnostics = [];
             BasicSyntaxErrors[documentId] = diagnostics;
         }
 
@@ -120,7 +120,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
         {
             if (!Disables.TryGetValue(documentId, out var disables))
             {
-                disables = new HashSet<DiagnosticCode>();
+                disables = [];
                 Disables[documentId] = disables;
             }
 
@@ -135,7 +135,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
         {
             if (!Enables.TryGetValue(documentId, out var enables))
             {
-                enables = new HashSet<DiagnosticCode>();
+                enables = [];
                 Enables[documentId] = enables;
             }
 
@@ -156,7 +156,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
             if (!disableNextLine.Ranges.TryGetValue(code, out var ranges))
             {
-                ranges = new List<SourceRange>();
+                ranges = [];
                 disableNextLine.Ranges[code] = ranges;
             }
 

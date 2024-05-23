@@ -218,7 +218,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         AnalyzeContext analyzeContext)
     {
         LuaType returnType = Builtin.Unknown;
-        relatedExpr = new List<LuaExprSyntax>();
+        relatedExpr = [];
         var cfg = analyzeContext.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {

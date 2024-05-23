@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Workspace;
+﻿using System.Collections.Concurrent;
+using EmmyLua.CodeAnalysis.Workspace;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace EmmyLua.LanguageServer.Server.Monitor;
@@ -10,40 +11,68 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
         None,
         Running,
     }
-    
+
     private ProcessState State { get; set; } = ProcessState.None;
-    
-    private int DiagnosticCount { get; set; }
-    
+
+    private ILanguageServerFacade LanguageServerFacade { get; } = languageServerFacade;
+
+    // private readonly BlockingCollection<ProgressReport> _messageQueue = new();
+    //
+    // private CancellationTokenSource? CancellationTokenSource { get; set; } = null;
+    //
+    // private async Task ProcessMessagesAsync(CancellationToken cancellationToken)
+    // {
+    //     while (!cancellationToken.IsCancellationRequested)
+    //     {
+    //         ProgressReport? sendMessage = null;
+    //         while (_messageQueue.TryTake(out var message))
+    //         {
+    //             if (sendMessage is null)
+    //             {
+    //                 sendMessage = message;
+    //             }
+    //             else if (sendMessage.Percent < message.Percent)
+    //             {
+    //                 sendMessage = message;
+    //             }
+    //         }
+    //
+    //         if (sendMessage is not null)
+    //         {
+    //             LanguageServerFacade.SendNotification("emmy/progressReport", sendMessage);
+    //         }
+    //
+    //         await Task.Delay(100, cancellationToken); // 确保每200ms发送一次
+    //     }
+    // }
+
     public override void OnStartLoadWorkspace()
     {
         State = ProcessState.Running;
-        DiagnosticCount = 0;
-        languageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
+        LanguageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
         {
             Health = "ok",
             Loading = true,
             Message = "Loading workspace"
         });
-        languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+        LanguageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
         {
             Text = "Loading workspace",
             Percent = 0
         });
     }
-    
+
     public override void OnFinishLoadWorkspace()
     {
         if (State == ProcessState.Running)
         {
             State = ProcessState.None;
-            DiagnosticCount = 0;
-            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            LanguageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
                 Text = "Finished!",
                 Percent = 1
             });
-            languageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
+            LanguageServerFacade.SendNotification("emmy/setServerStatus", new ServerStatusParams
             {
                 Health = "ok",
                 Loading = false,
@@ -51,52 +80,58 @@ public class ProcessMonitor(ILanguageServerFacade languageServerFacade) : LuaWor
             });
         }
     }
-    
+
     public override void OnAnalyzing(string text)
     {
         if (State == ProcessState.Running)
         {
-            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            LanguageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
                 Text = $"{text} analyzing",
                 Percent = 0.5
             });
         }
     }
-    
-    public void OnDiagnosticChecking(string path, int total)
+
+    public void OnDiagnosticChecking(int count, int total)
     {
         if (State == ProcessState.Running)
         {
-            DiagnosticCount++;
-            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            var message = new ProgressReport
             {
-                Text = $"checking {Path.GetFileName(path)} {DiagnosticCount}/{total}",
-                Percent = 0.5
-            });
+                Text = $"checking {count}/{total}",
+                Percent = (double)count / total
+            };
+            
+            LanguageServerFacade.SendNotification("emmy/progressReport", message);
+            // _messageQueue.Add(message);
         }
     }
-    
+
     public void OnStartDiagnosticCheck()
     {
         if (State == ProcessState.None)
         {
             State = ProcessState.Running;
-            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            // CancellationTokenSource = new CancellationTokenSource();
+            // _ = ProcessMessagesAsync(CancellationTokenSource.Token);
+            LanguageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
                 Text = "checking diagnostics",
                 Percent = 0.5
             });
         }
     }
-    
+
     public void OnFinishDiagnosticCheck()
     {
         if (State == ProcessState.Running)
         {
             State = ProcessState.None;
-            DiagnosticCount = 0;
-            languageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
+            // _messageQueue.CompleteAdding(); // 停止添加新的消息
+            // CancellationTokenSource?.Cancel();
+            // CancellationTokenSource = null;
+            LanguageServerFacade.SendNotification("emmy/progressReport", new ProgressReport
             {
                 Text = "Check finished!",
                 Percent = 1

@@ -53,7 +53,7 @@ public class LineIndex
         public bool ExistSurrogate { get; set; }
     }
 
-    private List<LineOffset> _indexs = new();
+    private List<LineOffset> _indexs = [];
 
     public int GetLine(int offset)
     {

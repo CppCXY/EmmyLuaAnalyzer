@@ -15,7 +15,6 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
     {
         return new DefinitionRegistrationOptions()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace)
         };
     }
 

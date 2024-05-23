@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -8,7 +8,7 @@ public class LuaStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEle
     : LuaSyntaxNode(greenNode, tree, parent, startOffset)
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(this) ?? Enumerable.Empty<LuaCommentSyntax>();
+        Tree.BinderData?.GetComments(this) ?? [];
 }
 
 public class LuaLocalStatSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)

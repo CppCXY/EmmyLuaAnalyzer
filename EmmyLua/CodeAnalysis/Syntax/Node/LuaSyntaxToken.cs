@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -14,7 +14,7 @@ public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
 
     public string RepresentText => Text.ToString();
 
-    protected override IEnumerable<LuaSyntaxElement> ChildrenElements => Enumerable.Empty<LuaSyntaxElement>();
+    protected override IEnumerable<LuaSyntaxElement> ChildrenElements => [];
 
     public override void AddChild(LuaSyntaxElement child)
     {
@@ -25,7 +25,7 @@ public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
         get { yield return this; }
     }
 
-    public override IEnumerable<LuaSyntaxElement> Descendants => Enumerable.Empty<LuaSyntaxElement>();
+    public override IEnumerable<LuaSyntaxElement> Descendants => [];
 
     public override IEnumerable<LuaSyntaxElement> DescendantsInRange(SourceRange range)
     {
@@ -35,7 +35,7 @@ public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
         }
     }
 
-    public override IEnumerable<LuaSyntaxElement> DescendantsWithToken => Enumerable.Empty<LuaSyntaxElement>();
+    public override IEnumerable<LuaSyntaxElement> DescendantsWithToken => [];
 
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelfWithTokens
     {

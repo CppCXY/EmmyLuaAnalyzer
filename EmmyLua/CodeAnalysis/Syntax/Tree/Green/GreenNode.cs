@@ -1,12 +1,11 @@
-﻿using System.Collections.Immutable;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 
-namespace EmmyLua.CodeAnalysis.Syntax.Green;
+namespace EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 /// <summary>
 /// 红绿树中的绿树节点
 /// </summary>
-public readonly struct GreenNode
+public class GreenNode
 {
     [Flags]
     private enum NodeFlags
@@ -19,7 +18,7 @@ public readonly struct GreenNode
 
     private readonly int _kind;
 
-    private readonly ImmutableArray<GreenNode>? _children;
+    private readonly List<GreenNode>? _children;
 
     private NodeFlags Flag => (NodeFlags)(_kind >> 16);
 
@@ -35,7 +34,7 @@ public readonly struct GreenNode
 
     public bool IsToken => Flag == NodeFlags.Token;
 
-    public GreenNode(LuaSyntaxKind kind, int length, ImmutableArray<GreenNode>? children)
+    public GreenNode(LuaSyntaxKind kind, int length, List<GreenNode>? children)
     {
         Length = length;
         _kind = (ushort)kind | (int)NodeFlags.Node << 16;

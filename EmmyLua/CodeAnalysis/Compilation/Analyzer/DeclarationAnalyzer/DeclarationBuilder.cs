@@ -34,7 +34,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private AnalyzeContext AnalyzeContext { get; }
 
-    private SearchContext Context => Analyzer.Context;
+    private SearchContext Context { get; }
 
     private LuaDocumentId DocumentId { get; }
 
@@ -56,6 +56,7 @@ public class DeclarationBuilder : ILuaElementWalker
         Analyzer = analyzer;
         DocumentId = documentId;
         AnalyzeContext = analyzeContext;
+        Context = new(Analyzer.Compilation, new SearchContextFeatures() { Cache = false });
     }
 
     private LuaDeclaration? FindDeclaration(LuaNameExprSyntax nameExpr)

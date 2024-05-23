@@ -22,7 +22,7 @@ public class References(SearchContext context)
             NamedTypeInfo namedTypeInfo => NamedTypeReferences(declaration, namedTypeInfo),
             ParamInfo paramInfo => ParameterReferences(declaration, paramInfo),
             IndexInfo indexInfo => IndexExprReferences(declaration, indexInfo),
-            _ => Enumerable.Empty<LuaReference>()
+            _ => []
         };
     }
 
@@ -105,7 +105,7 @@ public class References(SearchContext context)
             }
         }
 
-        return Enumerable.Empty<LuaReference>();
+        return [];
     }
 
     private IEnumerable<LuaReference> DocFieldReferences(LuaDeclaration fieldDeclaration, DocFieldInfo info)

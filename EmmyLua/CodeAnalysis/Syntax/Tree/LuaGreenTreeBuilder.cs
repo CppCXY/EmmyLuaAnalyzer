@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Green;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -13,7 +13,7 @@ public class LuaGreenTreeBuilder(LuaParser parser)
 
     private GreenNodeBuilder NodeBuilder { get; } = new();
 
-    private List<Diagnostic> Diagnostics { get; } = new();
+    private List<Diagnostic> Diagnostics { get; } = [];
 
     // 多返回值
     public (GreenNode, List<Diagnostic>) Build()

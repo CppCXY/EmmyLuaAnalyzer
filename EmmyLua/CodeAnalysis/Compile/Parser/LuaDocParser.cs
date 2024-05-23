@@ -18,7 +18,7 @@ public class LuaDocParser(LuaParser luaParser) : IMarkerEventContainer
 
     private int _originTokenIndex;
 
-    private List<LuaTokenData> OriginLuaTokenList { get; set; } = new();
+    private List<LuaTokenData> OriginLuaTokenList { get; set; } = [];
 
     public List<MarkEvent> Events => OwnerParser.Events;
 

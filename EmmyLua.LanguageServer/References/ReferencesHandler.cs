@@ -14,7 +14,6 @@ public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
     {
         return new ReferenceRegistrationOptions()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace)
         };
     }
 

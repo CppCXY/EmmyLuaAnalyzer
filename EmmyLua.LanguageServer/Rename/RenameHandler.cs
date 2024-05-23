@@ -1,5 +1,4 @@
 ﻿using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -16,7 +15,6 @@ public class RenameHandler(ServerContext context) : RenameHandlerBase
     {
         return new RenameRegistrationOptions()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             PrepareProvider = false
         };
     }

@@ -3,15 +3,15 @@ using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Binder;
-using EmmyLua.CodeAnalysis.Syntax.Green;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
 public class LuaSyntaxTree
 {
-    private List<LuaSyntaxElement> Elements { get; } = new();
+    private List<LuaSyntaxElement> Elements { get; } = [];
 
     public LuaDocument Document { get; }
 
@@ -36,10 +36,12 @@ public class LuaSyntaxTree
     {
         var parser = new LuaParser(new LuaLexer(document));
         var greenTreeBuilder = new LuaGreenTreeBuilder(parser);
+
         var (root, diagnostics) = greenTreeBuilder.Build();
         var syntaxTree = new LuaSyntaxTree(document, diagnostics);
         var redTreeBuilder = new LuaRedTreeBuilder();
         syntaxTree.SyntaxRoot = redTreeBuilder.Build(root, syntaxTree);
+
         syntaxTree.BinderData = BinderAnalysis.Analysis(syntaxTree.SyntaxRoot);
         return syntaxTree;
     }

@@ -47,16 +47,16 @@ public class DeprecatedChecker(LuaCompilation compilation)
 
                     break;
                 }
-                case LuaTableFieldSyntax tableField:
-                {
-                    var declaration = context.SearchContext.FindDeclaration(tableField);
-                    if (declaration is not null && tableField is { KeyElement.Range: { } range })
-                    {
-                        CheckDeprecated(context, declaration, range);
-                    }
-
-                    break;
-                }
+                // case LuaTableFieldSyntax tableField:
+                // {
+                //     var declaration = context.SearchContext.FindDeclaration(tableField);
+                //     if (declaration is not null && tableField is { KeyElement.Range: { } range })
+                //     {
+                //         CheckDeprecated(context, declaration, range);
+                //     }
+                //
+                //     break;
+                // }
             }
         }
     }

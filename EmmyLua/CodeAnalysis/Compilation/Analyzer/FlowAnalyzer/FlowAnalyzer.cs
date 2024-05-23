@@ -7,19 +7,14 @@ public class FlowAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        foreach (var document in analyzeContext.LuaDocuments)
-        {
-            var syntaxTree = document.SyntaxTree;
+        var cfgTuples = analyzeContext.LuaDocuments
+            .SelectMany(it => it.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaBlockSyntax>())
+            // .AsParallel()
+            .Select(it => (it.UniqueId, new CfgBuilder().Build(it)));
 
-            var builder = new CfgBuilder();
-            var blocks = syntaxTree.SyntaxRoot.Descendants.OfType<LuaBlockSyntax>();
-            foreach (var block in blocks)
-            {
-                if (block.Parent is LuaSourceSyntax or LuaClosureExprSyntax)
-                {
-                    analyzeContext.ControlFlowGraphs[block.UniqueId] = builder.Build(block);
-                }
-            }
+        foreach (var cfgTuple in cfgTuples)
+        {
+            analyzeContext.ControlFlowGraphs[cfgTuple.Item1] = cfgTuple.Item2;
         }
     }
 }

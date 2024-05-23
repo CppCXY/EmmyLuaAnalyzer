@@ -2,6 +2,7 @@
 
 namespace EmmyLua.Cli.Linter;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class CheckOptions
 {
     [Option('w', "workspace", Required = true, HelpText = "Workspace directory")]

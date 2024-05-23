@@ -1,5 +1,4 @@
 ﻿using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -14,7 +13,6 @@ public class DocumentHighlight(ServerContext context) : DocumentHighlightHandler
     {
         return new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
         };
     }
 

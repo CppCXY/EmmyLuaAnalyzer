@@ -7,7 +7,7 @@ public class DiagnosticProfile
 {
     private Dictionary<DiagnosticCode, long> DiagnosticTime { get; } = new();
 
-    private List<DiagnosticCode> CurrentCodes { get; set; } = new();
+    private List<DiagnosticCode> CurrentCodes { get; set; } = [];
 
     private long CurrentTime { get; set; }
 

@@ -1,7 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Completion.CompletionData;
-using EmmyLua.LanguageServer.ExecuteCommand.Commands;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 

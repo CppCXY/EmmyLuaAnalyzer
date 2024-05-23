@@ -21,7 +21,7 @@ public class IndexEntry<TStubElement>
 
         if (!Files.TryGetValue(documentId, out var elements))
         {
-            elements = new List<TStubElement>();
+            elements = [];
             Files.Add(documentId, elements);
         }
 
@@ -80,7 +80,7 @@ public class IndexStorage<TKey, TStubElement>
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it)
-            : Enumerable.Empty<TStubElement>();
+            : [];
     }
 
     public TStubElement? GetOne(TKey key)

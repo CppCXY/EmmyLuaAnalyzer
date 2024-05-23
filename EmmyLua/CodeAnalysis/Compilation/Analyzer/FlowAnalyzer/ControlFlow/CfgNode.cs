@@ -7,7 +7,7 @@ public class CfgNode(int index, CfgNodeKind kind)
 {
     public CfgNodeKind Kind { get; } = kind;
 
-    public List<LuaElementPtr<LuaStatSyntax>> Statements { get; } = new();
+    public List<LuaElementPtr<LuaStatSyntax>> Statements { get; } = [];
 
     // public SourceRange Range
     // {

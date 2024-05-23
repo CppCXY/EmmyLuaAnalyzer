@@ -7,9 +7,9 @@ public class ControlFlowGraph
     public CfgNode EntryNode { get; }
     public CfgNode ExitNode { get; }
 
-    public List<CfgNode> Nodes { get; } = new();
+    public List<CfgNode> Nodes { get; } = [];
 
-    private List<CfgEdge> Edges { get; } = new();
+    private List<CfgEdge> Edges { get; } = [];
 
     private Dictionary<int, List<int>> Predecessors { get; } = new();
 
@@ -27,13 +27,13 @@ public class ControlFlowGraph
         Edges.Add(edge);
         if (!Successors.ContainsKey(source.Index))
         {
-            Successors[source.Index] = new List<int>();
+            Successors[source.Index] = [];
         }
 
         Successors[source.Index].Add(target.Index);
         if (!Predecessors.ContainsKey(target.Index))
         {
-            Predecessors[target.Index] = new List<int>();
+            Predecessors[target.Index] = [];
         }
 
         Predecessors[target.Index].Add(source.Index);
@@ -54,7 +54,7 @@ public class ControlFlowGraph
             return predecessors.Select(i => Nodes[i]);
         }
 
-        return Enumerable.Empty<CfgNode>();
+        return [];
     }
 
     public IEnumerable<CfgNode> GetSuccessors(CfgNode node)
@@ -64,6 +64,6 @@ public class ControlFlowGraph
             return successors.Select(i => Nodes[i]);
         }
 
-        return Enumerable.Empty<CfgNode>();
+        return [];
     }
 }

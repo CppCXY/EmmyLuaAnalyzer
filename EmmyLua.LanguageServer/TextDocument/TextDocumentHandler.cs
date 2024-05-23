@@ -28,7 +28,6 @@ public class TextDocumentHandler(
         ClientCapabilities clientCapabilities)
         => new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace),
             Change = Change,
             Save = new SaveOptions() { IncludeText = false }
         };

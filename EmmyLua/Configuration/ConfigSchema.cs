@@ -173,14 +173,19 @@ public class Workspace
 {
     [JsonProperty("ignoreDir", Required = Required.Default,
         NullValueHandling = NullValueHandling.Ignore)]
-    public List<string> IgnoreDir { get; set; } = new();
+    public List<string> IgnoreDir { get; set; } =
+    [
+        ".idea",
+        ".vs",
+        ".vscode"
+    ];
 
     [JsonProperty("library", Required = Required.Default,
         NullValueHandling = NullValueHandling.Ignore)]
-    public List<string> Library { get; set; } = new();
+    public List<string> Library { get; set; } = [];
 
     [JsonProperty("workspaceRoots", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public List<string> WorkspaceRoots { get; set; } = new();
+    public List<string> WorkspaceRoots { get; set; } = [];
 
     [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public int PreloadFileSize { get; set; } = 1048576; // 1Mb

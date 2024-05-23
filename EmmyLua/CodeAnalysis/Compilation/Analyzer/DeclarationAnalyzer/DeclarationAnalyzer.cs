@@ -1,17 +1,15 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Declaration")
 {
-    public SearchContext Context { get; } = new(compilation, new SearchContextFeatures() { Cache = false });
-
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        foreach (var document in analyzeContext.LuaDocuments)
+        var declarationTrees = analyzeContext.LuaDocuments.Select(
+            it => new DeclarationBuilder(it.Id, it.SyntaxTree, this, analyzeContext).Build()
+        );
+        foreach (var declarationTree in declarationTrees)
         {
-            var builder = new DeclarationBuilder(document.Id, document.SyntaxTree, this, analyzeContext);
-            Compilation.DeclarationTrees[document.Id] = builder.Build();
+            Compilation.DeclarationTrees[declarationTree.SyntaxTree.Document.Id] = declarationTree;
         }
     }
 }

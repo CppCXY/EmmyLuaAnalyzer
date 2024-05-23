@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using MediatR;
 using Newtonsoft.Json.Linq;

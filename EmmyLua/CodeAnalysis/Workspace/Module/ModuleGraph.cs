@@ -13,9 +13,9 @@ public class ModuleGraph
 
     public Dictionary<string, List<LuaDocumentId>> ModuleNameToDocumentId { get; } = new();
 
-    public HashSet<LuaDocumentId> VirtualDocumentIds { get; } = new();
+    public HashSet<LuaDocumentId> VirtualDocumentIds { get; } = [];
 
-    private List<Regex> Pattern { get; } = new();
+    private List<Regex> Pattern { get; } = [];
 
     public ModuleGraph(LuaWorkspace luaWorkspace)
     {
@@ -66,6 +66,11 @@ public class ModuleGraph
 
     public void AddDocument(ModuleNode root, string workspace, LuaDocument document)
     {
+        if (workspace.Length == 0)
+        {
+            return;
+        }
+
         var documentId = document.Id;
 
         // 取得相对于workspace的路径
@@ -93,7 +98,7 @@ public class ModuleGraph
 
                 if (!ModuleNameToDocumentId.TryGetValue(name, out var documentIds))
                 {
-                    documentIds = new List<LuaDocumentId> { documentId };
+                    documentIds = [documentId];
                     ModuleNameToDocumentId.Add(name, documentIds);
                 }
                 else
@@ -185,7 +190,7 @@ public class ModuleGraph
         DocumentIndex[documentId] = newModuleIndex;
         if (!ModuleNameToDocumentId.TryGetValue(name, out var documentIds))
         {
-            documentIds = new List<LuaDocumentId> { documentId };
+            documentIds = [documentId];
             ModuleNameToDocumentId.Add(name, documentIds);
         }
         else

@@ -5,11 +5,11 @@ namespace EmmyLua.CodeAnalysis.Diagnostics;
 
 public class DiagnosticConfig
 {
-    public HashSet<string> Globals { get; } = new();
+    public HashSet<string> Globals { get; } = [];
 
-    public List<Regex> GlobalRegexes { get; } = new();
+    public List<Regex> GlobalRegexes { get; } = [];
 
-    public HashSet<DiagnosticCode> WorkspaceDisabledCodes { get; } = new();
+    public HashSet<DiagnosticCode> WorkspaceDisabledCodes { get; } = [];
 
     public Dictionary<DiagnosticCode, DiagnosticSeverity> SeverityOverrides { get; } = new();
 }

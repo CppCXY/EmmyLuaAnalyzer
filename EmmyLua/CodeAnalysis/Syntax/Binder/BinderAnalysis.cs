@@ -21,7 +21,7 @@ public static class BinderAnalysis
                     commentOwners.Add(commentSyntax.UniqueId, new(inlineNodeOrToken));
                     if (!comments.TryGetValue(inlineNodeOrToken.UniqueId, out var commentList))
                     {
-                        commentList = new List<LuaElementPtr<LuaCommentSyntax>>();
+                        commentList = [];
                         comments.Add(inlineNodeOrToken.UniqueId, commentList);
                     }
 
@@ -36,7 +36,7 @@ public static class BinderAnalysis
                         commentOwners.Add(commentSyntax.UniqueId, new(attachedNodeOrToken));
                         if (!comments.TryGetValue(attachedNodeOrToken.UniqueId, out var commentList))
                         {
-                            commentList = new List<LuaElementPtr<LuaCommentSyntax>>();
+                            commentList = [];
                             comments.Add(attachedNodeOrToken.UniqueId, commentList);
                         }
 

@@ -3,7 +3,6 @@ using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.ExecuteCommand.Commands;
 using EmmyLua.LanguageServer.Util;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;

@@ -16,7 +16,11 @@ namespace EmmyLua.LanguageServer.Server;
 
 public class ServerContext(ILanguageServerFacade server)
 {
+    public bool IsVscode { get; set; } = true;
+
     private string MainWorkspacePath { get; set; } = string.Empty;
+
+    private List<string> ExternalWorkspacePaths { get; } = new();
 
     private ReaderWriterLockSlim LockSlim { get; } = new();
 
@@ -29,25 +33,47 @@ public class ServerContext(ILanguageServerFacade server)
     private ProcessMonitor Monitor { get; } = new(server);
 
     public ResourceManager ResourceManager { get; } = new();
-    
+
     private CancellationTokenSource? CancellationTokenSource { get; set; } = null;
-    
-    public void StartServer(string workspacePath)
+
+    public void StartServer(InitializeParams initializeParams)
     {
         LockSlim.EnterWriteLock();
         try
         {
             CancellationTokenSource?.Cancel();
-            MainWorkspacePath = workspacePath;
-            LuaWorkspace.Monitor = Monitor;
-            SettingManager.Watch(workspacePath);
-            SettingManager.OnSettingChanged += OnConfigChanged;
-            LuaWorkspace.Features = SettingManager.GetLuaFeatures();
-            LuaWorkspace.InitStdLib();
-            LuaWorkspace.LoadMainWorkspace(workspacePath);
-            ResourceManager.Config = SettingManager.GetResourceConfig();
-            CancellationTokenSource = new CancellationTokenSource();
-            PushWorkspaceDiagnostics();
+            IsVscode = string.Equals(initializeParams.ClientInfo?.Name, "Visual Studio Code",
+                StringComparison.CurrentCultureIgnoreCase);
+            if (initializeParams.RootPath is { } rootPath)
+            {
+                MainWorkspacePath = rootPath;
+                LuaWorkspace.Monitor = Monitor;
+                SettingManager.Watch(MainWorkspacePath);
+                SettingManager.OnSettingChanged += OnConfigChanged;
+                LuaWorkspace.Features = SettingManager.GetLuaFeatures();
+                LuaWorkspace.InitStdLib();
+                if (IsVscode && initializeParams.WorkspaceFolders is { } workspaceFolders)
+                {
+                    foreach (var workspaceFolder in workspaceFolders)
+                    {
+                        var path = workspaceFolder.Uri.ToUri().LocalPath;
+                        if (path != MainWorkspacePath)
+                        {
+                            ExternalWorkspacePaths.Add(path);
+                            LuaWorkspace.LoadWorkspace(path);
+                        }
+                    }
+                }
+
+                LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
+                ResourceManager.Config = SettingManager.GetResourceConfig();
+                CancellationTokenSource = new CancellationTokenSource();
+                PushWorkspaceDiagnostics();
+            }
+            else
+            {
+                LuaWorkspace.InitStdLib();
+            }
         }
         finally
         {
@@ -85,7 +111,7 @@ public class ServerContext(ILanguageServerFacade server)
     {
         return LuaWorkspace.Compilation.GetSemanticModel(uri);
     }
-    
+
     public SemanticModel? GetSemanticModel(LuaDocumentId documentId)
     {
         return LuaWorkspace.Compilation.GetSemanticModel(documentId);
@@ -120,6 +146,12 @@ public class ServerContext(ILanguageServerFacade server)
             LuaWorkspace = LuaWorkspace.CleanCreate();
             LuaWorkspace.Monitor = Monitor;
             LuaWorkspace.Features = newFeatures;
+            LuaWorkspace.InitStdLib();
+            foreach (var workspacePath in ExternalWorkspacePaths)
+            {
+                LuaWorkspace.LoadWorkspace(workspacePath);
+            }
+
             LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
             PushWorkspaceDiagnostics();
         }
@@ -129,6 +161,7 @@ public class ServerContext(ILanguageServerFacade server)
             PushWorkspaceDiagnostics();
         }
     }
+
     // 可能不能异步
     private void PushWorkspaceDiagnostics()
     {
@@ -142,23 +175,26 @@ public class ServerContext(ILanguageServerFacade server)
         Monitor.OnStartDiagnosticCheck();
         var documents = LuaWorkspace.AllDocuments.ToList();
         var diagnosticCount = documents.Count;
-        var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
-        foreach (var document in LuaWorkspace.AllDocuments)
+        var context = new ThreadLocal<SearchContext>(()=> new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures()));
+
+        var currentCount = 0;
+        Parallel.ForEach(LuaWorkspace.AllDocuments, document =>
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                break;
+                return;
             }
-            
-            Monitor.OnDiagnosticChecking(document.Path, diagnosticCount);
-            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
+
+            var count = Interlocked.Increment(ref currentCount);
+            Monitor.OnDiagnosticChecking(count, diagnosticCount);
+            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
             Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
                 Uri = document.Uri,
             });
-        }
-        
+        });
+
         Monitor.OnFinishDiagnosticCheck();
         return Task.CompletedTask;
     }

@@ -1,5 +1,4 @@
 ﻿using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.Util;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -17,7 +16,6 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
     {
         return new()
         {
-            DocumentSelector = ToSelector.ToTextDocumentSelector(context.LuaWorkspace)
         };
     }
 

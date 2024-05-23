@@ -122,7 +122,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
         if (!dict.TryGetValue(state, out var list))
         {
-            list = new List<LuaExprSyntax>();
+            list = [];
             dict[state] = list;
         }
 

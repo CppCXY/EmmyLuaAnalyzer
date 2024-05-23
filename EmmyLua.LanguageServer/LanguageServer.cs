@@ -22,6 +22,7 @@ using EmmyLua.LanguageServer.TypeHierarchy;
 using EmmyLua.LanguageServer.WorkspaceSymbol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Serilog;
@@ -55,7 +56,7 @@ var server = await From(options =>
         options.WithOutput(networkStream).WithInput(networkStream);
     }
 
-    var workspacePath = "";
+    InitializeParams requestParams = null!;
     options
         .ConfigureLogging(
             x => x
@@ -94,13 +95,13 @@ var server = await From(options =>
         })
         .OnInitialize((server, request, token) =>
         {
-            workspacePath = request.RootPath;
+            requestParams = request;
             return Task.CompletedTask;
         })
         .OnStarted((server, _) =>
         {
             var context = server.GetRequiredService<ServerContext>();
-            context.StartServer(workspacePath);
+            context.StartServer(requestParams);
             return Task.CompletedTask;
         });
 }).ConfigureAwait(false);

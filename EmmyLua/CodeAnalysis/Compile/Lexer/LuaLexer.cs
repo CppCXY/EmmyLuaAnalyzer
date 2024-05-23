@@ -11,7 +11,7 @@ public class LuaLexer(LuaDocument document)
     public LuaDocument Document { get; } = document;
     private SourceReader Reader { get; } = new(document.Text);
 
-    public List<Diagnostic> Diagnostics { get; } = new();
+    public List<Diagnostic> Diagnostics { get; } = [];
 
     // 名字开始, 包括unicode
     public static bool IsNameStart(char c)

@@ -153,6 +153,7 @@ public class LuaCompilation
 
                 foreach (var document in documents)
                 {
+                    Diagnostics.ClearDiagnostic(document.Id);
                     foreach (var diagnostic in document.SyntaxTree.Diagnostics)
                     {
                         Diagnostics.AddDiagnostic(document.Id, diagnostic);
@@ -178,17 +179,48 @@ public class LuaCompilation
         return DeclarationTrees.GetValueOrDefault(documentId);
     }
 
+    public IEnumerable<Diagnostic> GetAllDiagnosticsParallel()
+    {
+        var result = new List<Diagnostic>();
+        var context =
+            new ThreadLocal<SearchContext>(() => new SearchContext(this, new SearchContextFeatures()));
+
+        var diagnosticResults = Workspace.AllDocuments
+            .AsParallel()
+            .Select(it =>
+            {
+                if (Diagnostics.Check(it, context.Value!, out var documentDiagnostics))
+                {
+                    return documentDiagnostics;
+                }
+
+                return [];
+            });
+        foreach (var diagnosticResult in diagnosticResults)
+        {
+            result.AddRange(diagnosticResult);
+        }
+
+        return result;
+    }
+
     public IEnumerable<Diagnostic> GetAllDiagnostics()
     {
         var result = new List<Diagnostic>();
         var context = new SearchContext(this, new SearchContextFeatures());
-        var documents = Workspace.AllDocuments;
-        foreach (var document in documents)
-        {
-            if (Diagnostics.Check(document, context, out var documentDiagnostics))
+        var diagnosticResults = Workspace.AllDocuments
+            .Select(it =>
             {
-                result.AddRange(documentDiagnostics);
-            }
+                if (Diagnostics.Check(it, context, out var documentDiagnostics))
+                {
+                    return documentDiagnostics;
+                }
+
+                return [];
+            });
+        foreach (var diagnosticResult in diagnosticResults)
+        {
+            result.AddRange(diagnosticResult);
         }
 
         return result;

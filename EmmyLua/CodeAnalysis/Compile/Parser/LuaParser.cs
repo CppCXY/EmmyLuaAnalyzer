@@ -25,8 +25,8 @@ public class LuaParser : IMarkerEventContainer
     public LuaParser(LuaLexer lexer)
     {
         Lexer = lexer;
-        Tokens = new List<LuaTokenData>();
-        Events = new List<MarkEvent>();
+        Tokens = [];
+        Events = [];
         _current = LuaTokenKind.TkEof;
         _tokenIndex = 0;
         _invalid = true;

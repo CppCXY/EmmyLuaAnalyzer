@@ -77,7 +77,7 @@ public class AnalyzeContext(List<LuaDocument> documents)
 {
     public List<LuaDocument> LuaDocuments { get; } = documents;
 
-    public List<UnResolved> UnResolves { get; } = new();
+    public List<UnResolved> UnResolves { get; } = [];
 
     public Dictionary<long, ControlFlowGraph> ControlFlowGraphs { get; } = new();
 

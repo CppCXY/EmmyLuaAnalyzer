@@ -142,8 +142,14 @@ public class LuaWorkspace
             PathToDocument[document.Path] = document.Id;
         }
 
+        // for parallel
+        var syntaxTrees = documents
+            .AsParallel()
+            .Select(it => (it.Id, it.SyntaxTree))
+            .ToList();
+
         ModuleGraph.AddDocuments(documents);
-        Compilation.AddSyntaxTrees(documents.AsParallel().Select(it => (it.Id, it.SyntaxTree)));
+        Compilation.AddSyntaxTrees(syntaxTrees);
         Monitor?.OnFinishLoadWorkspace();
     }
 
