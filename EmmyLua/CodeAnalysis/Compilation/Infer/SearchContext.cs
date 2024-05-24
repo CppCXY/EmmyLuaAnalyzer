@@ -10,11 +10,13 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 {
     public LuaCompilation Compilation { get; } = compilation;
 
-    public SearchContextFeatures Features { get; set; } = features;
+    private SearchContextFeatures Features { get; set; } = features;
 
-    private Dictionary<long, LuaType> Caches { get; } = new();
+    private Dictionary<long, LuaType> InferCaches { get; } = new();
 
-    private Dictionary<LuaType, List<LuaDeclaration>> MemberCaches { get; } = new();
+    private Dictionary<string, List<LuaDeclaration>> NamedTypeMemberCaches { get; } = new();
+
+    private Dictionary<LuaType, List<LuaDeclaration>> GenericMemberCaches { get; } = new();
 
     private Dictionary<string, List<LuaDeclaration>> BaseMemberCaches { get; } = new();
 
@@ -38,7 +40,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         if (Features.Cache)
         {
-            if (Caches.TryGetValue(element.UniqueId, out var luaType))
+            if (InferCaches.TryGetValue(element.UniqueId, out var luaType))
             {
                 return luaType;
             }
@@ -46,7 +48,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             luaType = InferCore(element);
             if (Features.CacheUnknown || !luaType.Equals(Builtin.Unknown))
             {
-                Caches[element.UniqueId] = luaType;
+                InferCaches[element.UniqueId] = luaType;
             }
 
             return luaType;
@@ -57,8 +59,9 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     public void ClearCache()
     {
-        Caches.Clear();
-        MemberCaches.Clear();
+        InferCaches.Clear();
+        NamedTypeMemberCaches.Clear();
+        GenericMemberCaches.Clear();
         BaseMemberCaches.Clear();
         TypeOperatorCaches.Clear();
         DeclarationCaches.Clear();
@@ -98,12 +101,23 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     public IEnumerable<LuaDeclaration> GetRawMembers(string name)
     {
-        if (name is "_G" or "_ENV" or "global")
+        if (Features.Cache && NamedTypeMemberCaches.TryGetValue(name, out var members))
         {
-            return Compilation.Db.GetGlobals();
+            return members;
         }
 
-        return Compilation.Db.GetMembers(name);
+        members = name switch
+        {
+            "_G" or "_ENV" or "global" => Compilation.Db.GetGlobals().ToList(),
+            _ => Compilation.Db.GetMembers(name).ToList()
+        };
+
+        if (Features.Cache)
+        {
+            NamedTypeMemberCaches[name] = members;
+        }
+
+        return members;
     }
 
     private void CollectSupers(string name, HashSet<LuaType> hashSet, List<LuaNamedType> result)
@@ -132,7 +146,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
     }
 
-    public IEnumerable<LuaDeclaration> GetBaseMembers(string name)
+    public IEnumerable<LuaDeclaration> GetSupersMembers(string name)
     {
         if (Features is { Cache: true, CacheBaseMember: true } && BaseMemberCaches.TryGetValue(name, out var members))
         {
@@ -162,8 +176,8 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     private IEnumerable<LuaDeclaration> GetMembers(string name)
     {
         var selfMembers = GetRawMembers(name);
-        var baseMembers = GetBaseMembers(name);
-        var allMembers = selfMembers.Concat(baseMembers);
+        var supersMembers = GetSupersMembers(name);
+        var allMembers = selfMembers.Concat(supersMembers);
         var distinctMembers = allMembers.GroupBy(m => m.Name).Select(g => g.First());
         return distinctMembers;
     }
@@ -207,7 +221,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     private IEnumerable<LuaDeclaration> GetGenericMembers(LuaGenericType genericType)
     {
-        if (Features.Cache && MemberCaches.TryGetValue(genericType, out var instanceMembers))
+        if (Features.Cache && GenericMemberCaches.TryGetValue(genericType, out var instanceMembers))
         {
             return instanceMembers;
         }
@@ -230,7 +244,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         if (Features.Cache)
         {
-            MemberCaches.TryAdd(genericType, instanceMembers);
+            GenericMemberCaches.TryAdd(genericType, instanceMembers);
         }
 
         return instanceMembers;
@@ -245,10 +259,8 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
                 return FindTableMember(namedType, memberName);
             }
 
-            var fieldDeclarations = GetMembers(namedType)
+            return GetMembers(namedType)
                 .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
-
-            return fieldDeclarations;
         }
 
         if (luaType is LuaUnionType unionType)
@@ -347,18 +359,26 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
     {
-        var declarations = new List<LuaDeclaration>();
+        var notFounded = true;
         if (indexExpr is { Name: { } name })
         {
-            declarations.AddRange(FindMember(luaType, name));
+            foreach (var declaration in FindMember(luaType, name))
+            {
+                notFounded = false;
+                yield return declaration;
+            }
         }
         else if (indexExpr is { IndexKeyExpr: { } keyExpr })
         {
             var keyExprType = Infer(keyExpr);
-            declarations.AddRange(FindIndexMember(luaType, keyExprType));
+            foreach (var declaration in FindIndexMember(luaType, keyExprType))
+            {
+                notFounded = false;
+                yield return declaration;
+            }
         }
 
-        if (declarations.Count == 0)
+        if (notFounded)
         {
             LuaType keyType = Builtin.Unknown;
             if (indexExpr.DotOrColonIndexName != null)
@@ -384,19 +404,17 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             var op = GetBestMatchedIndexOperator(luaType, keyType);
             if (op != null)
             {
-                declarations.Add(op.LuaDeclaration);
+                yield return op.LuaDeclaration;
             }
         }
-
-        return declarations;
     }
 
     public IEnumerable<LuaDeclaration> FindSuperMember(LuaType luaType, string member)
     {
         if (luaType is LuaNamedType namedType)
         {
-            var members = GetBaseMembers(namedType.Name);
-            return members.Where(it => it.Name == member);
+            var members = GetSupersMembers(namedType.Name);
+            return members.Where(it => string.Equals(it.Name, member, StringComparison.CurrentCulture));
         }
 
         return [];
@@ -460,7 +478,6 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         var bestMatched = operators
             .OfType<BinaryOperator>()
             .FirstOrDefault(it => it.Right.Equals(right));
-
         return bestMatched;
     }
 
@@ -472,7 +489,6 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
 
         var operators = GetOperators(kind, namedType);
-
         return operators.OfType<UnaryOperator>().FirstOrDefault();
     }
 
