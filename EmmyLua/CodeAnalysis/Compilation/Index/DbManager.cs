@@ -60,8 +60,31 @@ public class DbManager(LuaCompilation compilation)
         AliasTypesStorage.Remove(documentId);
     }
 
+    private static HashSet<string> NotMemberNames { get; } =
+    [
+        "unknown",
+        "nil",
+        "boolean",
+        "number",
+        "int",
+        "integer",
+        "function",
+        "thread",
+        "userdata",
+        "any",
+        "void",
+        "never",
+        "self",
+        "T"
+    ];
+
     public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
+        if (NotMemberNames.Contains(name))
+        {
+            return;
+        }
+
         if (name == "global")
         {
             AddGlobal(documentId, luaDeclaration.Name, luaDeclaration);
