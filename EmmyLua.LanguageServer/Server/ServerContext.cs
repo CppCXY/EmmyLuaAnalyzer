@@ -167,18 +167,7 @@ public class ServerContext(ILanguageServerFacade server)
     {
         CancellationTokenSource?.Cancel();
         CancellationTokenSource = new CancellationTokenSource();
-        _ = Task.Run(async () =>
-            {
-                LockSlim.EnterReadLock();
-                try
-                {
-                    await PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token);
-                }
-                finally
-                {
-                    LockSlim.ExitReadLock();
-                }
-            },
+        _ = Task.Run(async () => { await PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token); },
             CancellationTokenSource.Token);
     }
 
@@ -204,16 +193,24 @@ public class ServerContext(ILanguageServerFacade server)
 
                     var count = Interlocked.Increment(ref currentCount);
                     Monitor.OnDiagnosticChecking(count, diagnosticCount);
-                    // ReSharper disable once AccessToDisposedClosure
-                    var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
-                    Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+                    LockSlim.EnterReadLock();
+                    try
                     {
-                        Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
-                        Uri = document.Uri,
-                    });
+                        // ReSharper disable once AccessToDisposedClosure
+                        var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
+                        Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+                        {
+                            Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                            Uri = document.Uri,
+                        });
+                    }
+                    finally
+                    {
+                        LockSlim.ExitReadLock();
+                    }
                 }, cancellationToken));
             }
-            
+
             await Task.WhenAll(tasks);
         }
         finally
