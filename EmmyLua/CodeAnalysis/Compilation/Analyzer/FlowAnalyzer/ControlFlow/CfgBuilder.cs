@@ -307,7 +307,7 @@ public class CfgBuilder
         {
             if (!_scopeLabels.TryAdd(name, labelBlock))
             {
-                labelStat.PushDiagnostic(DiagnosticSeverity.Error, $"Label {name} already defined");
+                // labelStat.PushDiagnostic(DiagnosticSeverity.Error, $"Label {name} already defined");
             }
         }
 

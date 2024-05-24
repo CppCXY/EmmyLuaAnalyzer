@@ -520,7 +520,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         var declarationTree = Compilation.GetDeclarationTree(element.DocumentId);
         declaration = declarationTree?.FindDeclaration(element, this);
-        if (Features.Cache)
+        if (Features.Cache && declaration is not null)
         {
             DeclarationCaches[element.UniqueId] = declaration;
         }
