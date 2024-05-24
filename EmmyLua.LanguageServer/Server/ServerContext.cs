@@ -167,35 +167,60 @@ public class ServerContext(ILanguageServerFacade server)
     {
         CancellationTokenSource?.Cancel();
         CancellationTokenSource = new CancellationTokenSource();
-        _ = PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token);
+        _ = Task.Run(async () =>
+            {
+                LockSlim.EnterReadLock();
+                try
+                {
+                    await PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token);
+                }
+                finally
+                {
+                    LockSlim.ExitReadLock();
+                }
+            },
+            CancellationTokenSource.Token);
     }
 
-    private Task PushWorkspaceDiagnosticsAsync(CancellationToken cancellationToken)
+    private async Task PushWorkspaceDiagnosticsAsync(CancellationToken cancellationToken)
     {
         Monitor.OnStartDiagnosticCheck();
         var documents = LuaWorkspace.AllDocuments.ToList();
         var diagnosticCount = documents.Count;
-        var context = new ThreadLocal<SearchContext>(()=> new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures()));
-
-        var currentCount = 0;
-        Parallel.ForEach(LuaWorkspace.AllDocuments, document =>
+        var context = new ThreadLocal<SearchContext>(() =>
+            new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures()));
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
+            var tasks = new List<Task>();
+            var currentCount = 0;
+            foreach (var document in LuaWorkspace.AllDocuments)
             {
-                return;
-            }
+                tasks.Add(Task.Run(() =>
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
-            var count = Interlocked.Increment(ref currentCount);
-            Monitor.OnDiagnosticChecking(count, diagnosticCount);
-            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
-            Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
-            {
-                Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
-                Uri = document.Uri,
-            });
-        });
+                    var count = Interlocked.Increment(ref currentCount);
+                    Monitor.OnDiagnosticChecking(count, diagnosticCount);
+                    // ReSharper disable once AccessToDisposedClosure
+                    var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
+                    Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+                    {
+                        Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                        Uri = document.Uri,
+                    });
+                }, cancellationToken));
+            }
+            
+            await Task.WhenAll(tasks);
+        }
+        finally
+        {
+            context.Dispose();
+        }
 
         Monitor.OnFinishDiagnosticCheck();
-        return Task.CompletedTask;
     }
 }

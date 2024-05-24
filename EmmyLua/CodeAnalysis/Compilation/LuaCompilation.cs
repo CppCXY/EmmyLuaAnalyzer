@@ -189,6 +189,7 @@ public class LuaCompilation
             .AsParallel()
             .Select(it =>
             {
+                // ReSharper disable once AccessToDisposedClosure
                 if (Diagnostics.Check(it, context.Value!, out var documentDiagnostics))
                 {
                     return documentDiagnostics;
@@ -196,6 +197,7 @@ public class LuaCompilation
 
                 return [];
             });
+        context.Dispose();
         foreach (var diagnosticResult in diagnosticResults)
         {
             result.AddRange(diagnosticResult);
