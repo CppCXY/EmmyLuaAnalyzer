@@ -38,7 +38,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
             .Descendants
             .OfType<LuaNameExprSyntax>();
 
-        var moduleToDocumentIds = Compilation.Workspace.ModuleGraph.ModuleNameToDocumentId;
+        var moduleToDocumentIds = Compilation.Workspace.ModuleManager.ModuleNameToDocumentId;
         foreach (var nameExpr in nameExprs)
         {
             if (nameExpr is { Name: { RepresentText: { } name } nameToken } &&
@@ -75,7 +75,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
 
                     if (documentIds.Count == 1)
                     {
-                        var moduleIndex = Compilation.Workspace.ModuleGraph.GetModuleInfo(documentIds.First());
+                        var moduleIndex = Compilation.Workspace.ModuleManager.GetModuleInfo(documentIds.First());
                         if (moduleIndex is null)
                         {
                             continue;

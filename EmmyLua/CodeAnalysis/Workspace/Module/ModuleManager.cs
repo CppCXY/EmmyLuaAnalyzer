@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Workspace.Module;
 
-public class ModuleGraph
+public class ModuleManager
 {
     private LuaWorkspace Workspace { get; }
 
@@ -17,7 +17,9 @@ public class ModuleGraph
 
     private List<Regex> Pattern { get; } = [];
 
-    public ModuleGraph(LuaWorkspace luaWorkspace)
+    private LuaFeatures Features => Workspace.Features;
+
+    public ModuleManager(LuaWorkspace luaWorkspace)
     {
         Workspace = luaWorkspace;
         var virtualModule = new ModuleNode();
@@ -216,6 +218,37 @@ public class ModuleGraph
             if (documentId.HasValue)
             {
                 return Workspace.GetDocument(documentId.Value);
+            }
+        }
+
+        if (!Features.RequirePathStrict)
+        {
+            return FuzzyFindModule(modulePath);
+        }
+
+        return null;
+    }
+
+    private LuaDocument? FuzzyFindModule(string modulePath)
+    {
+        var modulePaths = modulePath.Split('.');
+        if (modulePaths.Length == 0)
+        {
+            return null;
+        }
+
+        var lastModulePath = modulePaths[^1];
+        if (ModuleNameToDocumentId.TryGetValue(lastModulePath, out var documentIds))
+        {
+            foreach (var documentId in documentIds)
+            {
+                if (DocumentIndex.TryGetValue(documentId, out var moduleIndex))
+                {
+                    if (moduleIndex.ModulePath.EndsWith(modulePath))
+                    {
+                        return Workspace.GetDocument(documentId);
+                    }
+                }
             }
         }
 

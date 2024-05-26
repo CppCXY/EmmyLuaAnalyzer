@@ -189,7 +189,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var callExpr = unResolvedClosureParameters.CallExprSyntax;
             var prefixType = Context.Infer(callExpr.PrefixExpr);
             var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
-            TypeHelper.Each<LuaMethodType>(prefixType, type =>
+            Context.FindMethodsForType(prefixType, type =>
             {
                 var signature = type.FindPerfectMatchSignature(callExpr, callArgList, Context);
                 var paramIndex = unResolvedClosureParameters.Index;
@@ -197,7 +197,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
                 if (paramDeclaration is not {Info.DeclarationType: { } paramType}) return;
                 var closureParams = unResolvedClosureParameters.ParameterLuaDeclarations;
-                TypeHelper.Each<LuaMethodType>(paramType, methodType =>
+                Context.FindMethodsForType(paramType, methodType =>
                 {
                     var mainParams = methodType.MainSignature.Parameters;
                     for (var i = 0; i < closureParams.Count && i < mainParams.Count; i++)

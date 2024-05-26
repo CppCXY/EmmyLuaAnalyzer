@@ -22,7 +22,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         {
             AddFuncParamCompletion(callArgs, context);
         }
-        else if (trigger is LuaNameToken {Parent: LuaCallArgListSyntax callArgs2})
+        else if (trigger is LuaNameToken { Parent: LuaCallArgListSyntax callArgs2 })
         {
             AddFuncParamCompletion(callArgs2, context);
         }
@@ -44,50 +44,47 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             .Count(comma => comma.Position <= trigger.Position);
 
         var prefixType = context.SemanticModel.Context.Infer(callExpr.PrefixExpr);
-        TypeHelper.Each(prefixType, type =>
+        context.SemanticModel.Context.FindMethodsForType(prefixType, methodType =>
         {
-            if (type is LuaMethodType methodType)
+            var colonDefine = methodType.ColonDefine;
+            var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
+            switch ((colonDefine, colonCall))
             {
-                var colonDefine = methodType.ColonDefine;
-                var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
-                switch ((colonDefine, colonCall))
+                case (true, false):
                 {
-                    case (true, false):
+                    activeParam--;
+                    break;
+                }
+                case (false, true):
+                {
+                    activeParam++;
+                    break;
+                }
+            }
+
+            if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
+            {
+                var param = methodType.MainSignature.Parameters[activeParam];
+                var paramType = param.Info.DeclarationType;
+                if (paramType is LuaNamedType namedType)
+                {
+                    var detailType = namedType.GetDetailType(context.SemanticModel.Context);
+                    if (detailType.IsAlias && detailType is AliasDetailType aliasDetailType)
                     {
-                        activeParam--;
-                        break;
+                        AddAliasParamCompletion(aliasDetailType, context);
                     }
-                    case (false, true):
+                    else if (detailType.IsEnum && detailType is EnumDetailType enumDetailType)
                     {
-                        activeParam++;
-                        break;
+                        AddEnumParamCompletion(enumDetailType, context);
                     }
                 }
-
-                if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
+                else if (paramType is LuaAggregateType aggregateType)
                 {
-                    var param = methodType.MainSignature.Parameters[activeParam];
-                    var paramType = param.Info.DeclarationType;
-                    if (paramType is LuaNamedType namedType)
-                    {
-                        var detailType = namedType.GetDetailType(context.SemanticModel.Context);
-                        if (detailType.IsAlias && detailType is AliasDetailType aliasDetailType)
-                        {
-                            AddAliasParamCompletion(aliasDetailType, context);
-                        }
-                        else if (detailType.IsEnum && detailType is EnumDetailType enumDetailType)
-                        {
-                            AddEnumParamCompletion(enumDetailType, context);
-                        }
-                    }
-                    else if (paramType is LuaAggregateType aggregateType)
-                    {
-                        AddAggregateTypeCompletion(aggregateType, context);
-                    }
-                    else if (paramType is LuaUnionType unionType)
-                    {
-                        AddUnionTypeCompletion(unionType, context);
-                    }
+                    AddAggregateTypeCompletion(aggregateType, context);
+                }
+                else if (paramType is LuaUnionType unionType)
+                {
+                    AddUnionTypeCompletion(unionType, context);
                 }
             }
         });
@@ -128,11 +125,12 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
             {
                 var detail = string.Empty;
-                if (literalType.Description is {Details: {} details  })
+                if (literalType.Description is { Details: { } details })
                 {
                     detail = string.Join("\n", details.Select(d => d.RepresentText.Trim('#', '@')));
                 }
-                if (literalType is {IsString: true, String: {} stringLiteral })
+
+                if (literalType is { IsString: true, String: { } stringLiteral })
                 {
                     var label = stringLiteral.RepresentText;
                     // compact emmylua old alias
@@ -141,12 +139,12 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                     {
                         label = stringLiteralType.Content;
                     }
-                    
+
                     if (context.TriggerToken is not LuaStringToken)
                     {
                         label = $"\"{label}\"";
                     }
-                    
+
                     context.Add(new CompletionItem
                     {
                         Label = label,
@@ -166,7 +164,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             }
         }
     }
-    
+
     private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
     {
         foreach (var luaType in unionType.UnionTypes)
@@ -183,7 +181,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                 {
                     label = $"\"{label}\"";
                 }
-                
+
                 context.Add(new CompletionItem
                 {
                     Label = label,

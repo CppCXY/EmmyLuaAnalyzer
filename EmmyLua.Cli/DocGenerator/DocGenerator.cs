@@ -91,7 +91,7 @@ public class DocGenerator(DocOptions options)
     {
         var luaWorkspace = LoadLuaWorkspace();
         var tocItems = new List<TocItem>();
-        foreach (var module in luaWorkspace.ModuleGraph.GetAllModules())
+        foreach (var module in luaWorkspace.ModuleManager.GetAllModules())
         {
             if (module.Workspace == luaWorkspace.MainWorkspace)
             {

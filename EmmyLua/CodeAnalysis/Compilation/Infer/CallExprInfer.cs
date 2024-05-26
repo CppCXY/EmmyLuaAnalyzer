@@ -17,23 +17,15 @@ public static class CallExprInfer
 
         var luaType = context.Infer(prefixExpr);
         var args = callExpr.ArgList?.ArgList.ToList() ?? [];
-        TypeHelper.Each(luaType, type =>
+        context.FindMethodsForType(luaType, luaMethod =>
         {
-            switch (type)
+            var perfectSig = luaMethod.FindPerfectMatchSignature(callExpr, args, context);
+            if (perfectSig.ReturnType is { } retTy)
             {
-                case LuaMethodType luaMethod:
-                {
-                    var perfectSig = luaMethod.FindPerfectMatchSignature(callExpr, args, context);
-                    if (perfectSig.ReturnType is { } retTy)
-                    {
-                        returnType = returnType.Union(retTy);
-                    }
-
-                    break;
-                }
+                // ReSharper disable once AccessToModifiedClosure
+                returnType = returnType.Union(retTy);
             }
         });
-
 
         if (returnType.Equals(Builtin.Unknown) && prefixExpr is LuaIndexExprSyntax indexExpr)
         {
@@ -172,7 +164,7 @@ public static class CallExprInfer
         var firstArg = callExpr.ArgList?.ArgList.FirstOrDefault();
         if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { Value: { } modulePath } })
         {
-            var document = context.Compilation.Workspace.ModuleGraph.FindModule(modulePath);
+            var document = context.Compilation.Workspace.ModuleManager.FindModule(modulePath);
             if (document is not null)
             {
                 return context.Infer(document.SyntaxTree.SyntaxRoot);

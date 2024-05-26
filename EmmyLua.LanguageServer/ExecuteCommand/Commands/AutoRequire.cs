@@ -54,7 +54,7 @@ public class AutoRequire : ICommandBase
                 range = new Range(line, 0, line, 0);
             }
 
-            var module = executor.Context.LuaWorkspace.ModuleGraph.GetModuleInfo(needRequireId);
+            var module = executor.Context.LuaWorkspace.ModuleManager.GetModuleInfo(needRequireId);
             if (module is null) return;
             var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireFilenameConvention
                     ?? FilenameConvention.SnakeCase;

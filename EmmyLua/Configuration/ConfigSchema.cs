@@ -34,6 +34,9 @@ public class Setting
 
     [JsonProperty("codeLens", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public CodeLens CodeLens { get; set; } = new();
+
+    [JsonProperty("strict", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public Strict Strict { get; set; } = new();
 }
 
 public class Completion
@@ -201,4 +204,13 @@ public class CodeLens
 {
     [JsonProperty("enable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool Enable { get; set; } = true;
+}
+
+public class Strict
+{
+    [JsonProperty("requirePath", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool RequirePath { get; set; } = true;
+
+    [JsonProperty("typeCall", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool TypeCall { get; set; } = true;
 }

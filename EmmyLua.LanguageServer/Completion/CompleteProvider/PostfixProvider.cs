@@ -20,8 +20,7 @@ public class PostfixProvider : ICompleteProviderBase
             }
         }
     }
-
-
+    
     private void AddPostfixCompletion(CompleteContext context, LuaSyntaxNode paramNode)
     {
         var document = paramNode.Tree.Document;

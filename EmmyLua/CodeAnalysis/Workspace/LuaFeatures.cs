@@ -23,7 +23,8 @@ public class LuaFeatures
     public HashSet<string> ExcludeFolders { get; set; } =
     [
         ".git",
-        ".svn"
+        ".svn",
+        ".p4",
     ];
 
     public List<string> RequirePattern { get; set; } = [
@@ -35,6 +36,10 @@ public class LuaFeatures
     [
         "require"
     ];
+
+    public bool RequirePathStrict { get; set; } = true;
+
+    public bool TypeCallStrict { get; set; } = true;
 
     public bool InitStdLib { get; set; } = true;
 

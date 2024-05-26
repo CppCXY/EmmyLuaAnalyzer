@@ -13,7 +13,7 @@ public class RequireProvider : ICompleteProviderBase
             && context.SemanticModel.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
         {
             var moduleInfos =
-                context.SemanticModel.Compilation.Workspace.ModuleGraph.GetCurrentModuleNames(modulePathToken.Value);
+                context.SemanticModel.Compilation.Workspace.ModuleManager.GetCurrentModuleNames(modulePathToken.Value);
             
             var modulePath = modulePathToken.Value;
             var parts = modulePath.Split('.');

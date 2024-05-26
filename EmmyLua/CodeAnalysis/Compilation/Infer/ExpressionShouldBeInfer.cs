@@ -28,7 +28,7 @@ public static class ExpressionShouldBeInfer
 
         var prefixType = context.Infer(callExpr.PrefixExpr);
         LuaType exprType = Builtin.Unknown;
-        TypeHelper.Each<LuaMethodType>(prefixType, methodType =>
+        context.FindMethodsForType(prefixType, methodType =>
         {
             var colonDefine = methodType.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;

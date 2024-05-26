@@ -89,7 +89,7 @@ public class LuaRenderBuilder(SearchContext context)
                     && searchContext.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
                 {
                     renderContext.WrapperLuaAppend($"module {display}");
-                    var moduleDocument = searchContext.Compilation.Workspace.ModuleGraph.FindModule(stringLiteral.Value);
+                    var moduleDocument = searchContext.Compilation.Workspace.ModuleManager.FindModule(stringLiteral.Value);
                     if (moduleDocument is not null)
                     {
                         LuaModuleRenderer.RenderModule(moduleDocument, renderContext);

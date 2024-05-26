@@ -61,41 +61,34 @@ public class SignatureHelperBuilder
             .Count(comma => comma.Position <= triggerToken.Position);
 
         var activeSignature = 0;
-        var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax {IsColonIndex: true};
+        var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
 
-        TypeHelper.Each(parentType, type =>
+        semanticModel.Context.FindMethodsForType(parentType, luaMethod =>
         {
-            switch (type)
+            var signatures = new List<LuaSignature>();
+            if (luaMethod is LuaGenericMethodType genericMethodType)
             {
-                case LuaMethodType luaMethod:
+                signatures = genericMethodType.GetInstantiatedSignatures(callExpr, callArgs.ArgList.ToList(),
+                    semanticModel.Context);
+            }
+            else
+            {
+                signatures.Add(luaMethod.MainSignature);
+                if (luaMethod.Overloads is not null)
                 {
-                    var signatures = new List<LuaSignature>();
-                    if (luaMethod is LuaGenericMethodType genericMethodType)
-                    {
-                        signatures = genericMethodType.GetInstantiatedSignatures(callExpr, callArgs.ArgList.ToList(),
-                            semanticModel.Context);
-                    }
-                    else
-                    {
-                        signatures.Add(luaMethod.MainSignature);
-                        if (luaMethod.Overloads is not null)
-                        {
-                            signatures.AddRange(luaMethod.Overloads);
-                        }
-                    }
-
-                    ResolveSignature(
-                        signatures,
-                        activeParameter,
-                        ref activeSignature,
-                        signatureInfos,
-                        colonCall,
-                        luaMethod.ColonDefine,
-                        semanticModel
-                    );
-                    break;
+                    signatures.AddRange(luaMethod.Overloads);
                 }
             }
+
+            ResolveSignature(
+                signatures,
+                activeParameter,
+                ref activeSignature,
+                signatureInfos,
+                colonCall,
+                luaMethod.ColonDefine,
+                semanticModel
+            );
         });
 
 
@@ -167,7 +160,7 @@ public class SignatureHelperBuilder
             }
 
             var returnType = signature.ReturnType;
-            if (parameters.LastOrDefault() is {Name: "..."})
+            if (parameters.LastOrDefault() is { Name: "..." })
             {
                 if (activeParameter >= parameterInfos.Count)
                 {
@@ -188,7 +181,7 @@ public class SignatureHelperBuilder
             }
 
             sb.Append(") -> ");
-            sb.Append(semanticModel.RenderBuilder.RenderType(returnType, RenderFeature with {ShowTypeLink = false}));
+            sb.Append(semanticModel.RenderBuilder.RenderType(returnType, RenderFeature with { ShowTypeLink = false }));
 
             signatureInfos.Add(new SignatureInformation()
             {

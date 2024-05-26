@@ -36,6 +36,9 @@ public enum TypeOperatorKind
 
     // index
     Index, // []
+
+    // call
+    Call, // ()
 }
 
 public static class TypeOperatorKindHelper

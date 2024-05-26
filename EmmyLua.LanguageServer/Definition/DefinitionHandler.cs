@@ -35,7 +35,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                     && token.Parent?.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
                     && workspace.Features.RequireLikeFunction.Contains(funcName))
                 {
-                    var moduleDocument = workspace.ModuleGraph.FindModule(module.Value);
+                    var moduleDocument = workspace.ModuleManager.FindModule(module.Value);
                     if (moduleDocument is not null)
                     {
                         locationLinks = LocationOrLocationLinks.From(

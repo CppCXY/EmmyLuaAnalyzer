@@ -30,7 +30,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private LuaCompilation Compilation => Analyzer.Compilation;
 
-    private DbManager DbManager => Compilation.Db;
+    private DbManager Db => Compilation.Db;
 
     private AnalyzeContext AnalyzeContext { get; }
 
@@ -572,7 +572,7 @@ public class DeclarationBuilder : ILuaElementWalker
                                 DeclarationFeature.Global
                             );
                             AnalyzeDeclarationDoc(declaration, luaAssignStat);
-                            DbManager.AddGlobal(DocumentId, name.RepresentText, declaration);
+                            Db.AddGlobal(DocumentId, name.RepresentText, declaration);
                             var unResolveDeclaration =
                                 new UnResolvedDeclaration(declaration, relatedExpr, ResolveState.UnResolvedType);
                             AddUnResolved(unResolveDeclaration);
@@ -680,7 +680,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         DeclarationFeature.Global
                     );
                     AnalyzeDeclarationDoc(declaration, luaFuncStat);
-                    DbManager.AddGlobal(DocumentId, name2.RepresentText, declaration);
+                    Db.AddGlobal(DocumentId, name2.RepresentText, declaration);
                     AddDeclaration(declaration);
                     var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
@@ -779,7 +779,7 @@ public class DeclarationBuilder : ILuaElementWalker
             AddUnResolved(unResolved);
         }
 
-        DbManager.AddIdRelatedType(DocumentId, closureExprSyntax.UniqueId, method);
+        Db.AddIdRelatedType(DocumentId, closureExprSyntax.UniqueId, method);
     }
 
     private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
@@ -797,7 +797,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 )
             );
 
-            DbManager.AddType(DocumentId, name.RepresentText, declaration);
+            Db.AddType(DocumentId, name.RepresentText, declaration);
 
             AnalyzeTypeFields(luaClass, tagClassSyntax);
             AnalyzeTypeOperator(luaClass, tagClassSyntax);
@@ -833,7 +833,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     luaAlias,
                     NamedTypeKind.Alias
                 ));
-            DbManager.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
+            Db.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
         }
     }
 
@@ -854,7 +854,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     NamedTypeKind.Enum
                 ));
 
-            DbManager.AddEnum(DocumentId, name.RepresentText, baseType, declaration);
+            Db.AddEnum(DocumentId, name.RepresentText, baseType, declaration);
             foreach (var field in tagEnumSyntax.FieldList)
             {
                 if (field is { Name: { } fieldName })
@@ -866,7 +866,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             new(field),
                             baseType
                         ));
-                    DbManager.AddMember(DocumentId, name.RepresentText, fieldDeclaration);
+                    Db.AddMember(DocumentId, name.RepresentText, fieldDeclaration);
                 }
             }
         }
@@ -887,7 +887,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 ));
 
 
-            DbManager.AddType(DocumentId, name.RepresentText, declaration);
+            Db.AddType(DocumentId, name.RepresentText, declaration);
             AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
             AnalyzeTypeOperator(luaInterface, tagInterfaceSyntax);
             if (tagInterfaceSyntax is { Body: { } body })
@@ -925,7 +925,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "sub":
@@ -940,7 +940,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "mul":
@@ -955,7 +955,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "div":
@@ -970,7 +970,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "mod":
@@ -985,7 +985,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "pow":
@@ -1000,7 +1000,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "unm":
@@ -1014,7 +1014,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "idiv":
@@ -1029,7 +1029,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "band":
@@ -1044,7 +1044,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bor":
@@ -1059,7 +1059,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bxor":
@@ -1074,7 +1074,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "bnot":
@@ -1088,7 +1088,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "shl":
@@ -1103,7 +1103,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "shr":
@@ -1118,7 +1118,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "concat":
@@ -1133,7 +1133,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "len":
@@ -1147,7 +1147,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "eq":
@@ -1161,7 +1161,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "lt":
@@ -1175,7 +1175,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
                 case "le":
@@ -1189,9 +1189,24 @@ public class DeclarationBuilder : ILuaElementWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean, opDeclaration);
-                    DbManager.AddTypeOperator(DocumentId, op);
+                    Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
+                // TODO:
+                // case "call":
+                // {
+                //
+                //     break;
+                // }
+            }
+        }
+
+        foreach (var overloadSyntax in typeTag.NextOfType<LuaDocTagOverloadSyntax>())
+        {
+            var overloadType = Context.Infer(overloadSyntax.TypeFunc);
+            if (overloadType is LuaMethodType methodType)
+            {
+                Db.AddTypeOverload(DocumentId, namedType.Name, methodType);
             }
         }
     }
@@ -1224,7 +1239,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                DbManager.AddMember(DocumentId, namedType.Name, declaration);
+                Db.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
@@ -1240,7 +1255,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                DbManager.AddMember(DocumentId, namedType.Name, declaration);
+                Db.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
             case { StringField: { } stringField, Type: { } type3 }:
@@ -1255,7 +1270,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                DbManager.AddMember(DocumentId, namedType.Name, declaration);
+                Db.AddMember(DocumentId, namedType.Name, declaration);
                 break;
             }
             case { TypeField: { } typeField, Type: { } type4 }:
@@ -1271,7 +1286,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         new(field)
                     ));
                 var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
-                DbManager.AddTypeOperator(DocumentId, indexOperator);
+                Db.AddTypeOperator(DocumentId, indexOperator);
                 break;
             }
         }
@@ -1301,7 +1316,7 @@ public class DeclarationBuilder : ILuaElementWalker
         foreach (var extend in extendList)
         {
             var type = Context.Infer(extend);
-            DbManager.AddSuper(DocumentId, namedType.Name, type);
+            Db.AddSuper(DocumentId, namedType.Name, type);
         }
     }
 
@@ -1320,7 +1335,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         new(param),
                         type
                     ));
-                DbManager.AddGenericParam(DocumentId, namedType.Name, declaration);
+                Db.AddGenericParam(DocumentId, namedType.Name, declaration);
             }
         }
     }
@@ -1340,7 +1355,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         new(fieldSyntax),
                         null
                     ));
-                DbManager.AddMember(DocumentId, tableClass, declaration);
+                Db.AddMember(DocumentId, tableClass, declaration);
                 var unResolveDeclaration =
                     new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
                 AddUnResolved(unResolveDeclaration);
@@ -1367,17 +1382,17 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void IndexNameExpr(LuaNameExprSyntax nameExpr)
     {
-        DbManager.AddNameExpr(DocumentId, nameExpr);
+        Db.AddNameExpr(DocumentId, nameExpr);
     }
 
     private void IndexIndexExpr(LuaIndexExprSyntax indexExpr)
     {
-        DbManager.AddIndexExpr(DocumentId, indexExpr);
+        Db.AddIndexExpr(DocumentId, indexExpr);
     }
 
     private void IndexDocNameType(LuaDocNameTypeSyntax docNameType)
     {
-        DbManager.AddNameType(DocumentId, docNameType);
+        Db.AddNameType(DocumentId, docNameType);
     }
 
     private void AnalyzeDiagnostic(LuaDocTagDiagnosticSyntax diagnosticSyntax)
@@ -1437,7 +1452,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (moduleSyntax.Module is { Value: { } moduleName })
         {
-            Compilation.Workspace.ModuleGraph.AddVirtualModule(DocumentId, moduleName);
+            Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
         }
     }
 

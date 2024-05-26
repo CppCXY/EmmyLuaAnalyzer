@@ -532,4 +532,54 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
     {
         return ExpressionShouldBeInfer.InferExprShouldBe(expr, this);
     }
+
+    public void FindMethodsForType(LuaType type, Action<LuaMethodType> action)
+    {
+        switch (type)
+        {
+            case LuaUnionType unionType:
+            {
+                foreach (var t in unionType.UnionTypes)
+                {
+                    InnerFindMethods(t, action);
+                }
+
+                break;
+            }
+            default:
+            {
+                InnerFindMethods(type, action);
+                break;
+            }
+        }
+    }
+
+    private void InnerFindMethods(LuaType type, Action<LuaMethodType> action)
+    {
+        switch (type)
+        {
+            case LuaMethodType methodType:
+            {
+                action(methodType);
+                break;
+            }
+            case LuaNamedType namedType:
+            {
+                var founded = false;
+                var overloads = Compilation.Db.GetTypeOverloads(namedType.Name);
+                foreach (var methodType in overloads)
+                {
+                    founded = true;
+                    action(methodType);
+                }
+
+                if (!founded && !Compilation.Workspace.Features.TypeCallStrict)
+                {
+                    var luaMethod = new LuaMethodType(namedType, [], false);
+                    action(luaMethod);
+                }
+                break;
+            }
+        }
+    }
 }

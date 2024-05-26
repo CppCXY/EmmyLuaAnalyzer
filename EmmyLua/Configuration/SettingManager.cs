@@ -200,6 +200,9 @@ public class SettingManager
             features.RequirePattern.AddRange(setting.Runtime.RequirePattern);
         }
 
+        features.RequirePathStrict = setting.Strict.RequirePath;
+        features.TypeCallStrict = setting.Strict.TypeCall;
+
         return features;
     }
 

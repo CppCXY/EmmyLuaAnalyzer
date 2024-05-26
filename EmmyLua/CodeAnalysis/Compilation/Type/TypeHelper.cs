@@ -2,49 +2,6 @@
 
 public static class TypeHelper
 {
-    public static void Each(LuaType type, Action<LuaType> action)
-    {
-        switch (type)
-        {
-            case LuaUnionType unionType:
-            {
-                foreach (var t in unionType.UnionTypes)
-                {
-                    action(t);
-                }
-
-                break;
-            }
-            default:
-            {
-                action(type);
-                break;
-            }
-        }
-    }
-
-    public static void Each<TLuaType>(LuaType type, Action<TLuaType> action)
-        where TLuaType : LuaType
-    {
-        switch (type)
-        {
-            case LuaUnionType unionType:
-            {
-                foreach (var t in unionType.UnionTypes.OfType<TLuaType>())
-                {
-                    action(t);
-                }
-
-                break;
-            }
-            case TLuaType luaType:
-            {
-                action(luaType);
-                break;
-            }
-        }
-    }
-
     public static LuaType Union(this LuaType left, LuaType right)
     {
         if (left.Equals(right))
