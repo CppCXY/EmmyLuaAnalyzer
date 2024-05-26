@@ -102,6 +102,38 @@ public class LuaParser : IMarkerEventContainer
                         ParseComments(docTokenData);
                         docTokenData.Clear();
                     }
+                    else if (docTokenData.Count == 1 && index - 2 >= 0)
+                    {
+                        var tempIndex = index - 2;
+                        var inlineComment = false;
+                        for (; tempIndex >= 0; tempIndex--)
+                        {
+                            var kind = Tokens[tempIndex].Kind;
+                            switch (kind)
+                            {
+                                case LuaTokenKind.TkEndOfLine:
+                                {
+                                    goto endLoop;
+                                }
+                                case LuaTokenKind.TkWhitespace:
+                                {
+                                    continue;
+                                }
+                                default:
+                                {
+                                    inlineComment = true;
+                                    goto endLoop;
+                                }
+                            }
+                        }
+                        endLoop:
+
+                        if (inlineComment)
+                        {
+                            ParseComments(docTokenData);
+                            docTokenData.Clear();
+                        }
+                    }
 
                     goto case LuaTokenKind.TkWhitespace;
                 }
