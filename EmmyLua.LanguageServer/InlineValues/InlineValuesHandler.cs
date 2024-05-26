@@ -27,11 +27,11 @@ public class InlineValuesHandler(ServerContext context): InlineValuesHandlerBase
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var result =  Builder.Build(semanticModel, request.Range, request.Context);
+                var result =  Builder.Build(semanticModel, request.Range, request.Context, cancellationToken);
                 container = new Container<InlineValueBase>(result);
             }
         });
         
-        return Task.FromResult<Container<InlineValueBase>?>(container);
+        return Task.FromResult(container);
     }
 }

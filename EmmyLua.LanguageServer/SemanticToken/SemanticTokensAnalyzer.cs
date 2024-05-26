@@ -62,32 +62,41 @@ public class SemanticTokensAnalyzer
     {
         var document = semanticModel.Document;
         var syntaxTree = document.SyntaxTree;
-        foreach (var nodeOrToken in syntaxTree.SyntaxRoot.DescendantsWithToken)
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
+            foreach (var nodeOrToken in syntaxTree.SyntaxRoot.DescendantsWithToken)
             {
-                return;
-            }
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
-            switch (nodeOrToken)
-            {
-                case LuaSyntaxToken token:
+                switch (nodeOrToken)
                 {
-                    TokenizeToken(builder, token, semanticModel, cancellationToken);
-                    break;
-                }
-                case LuaSyntaxNode node:
-                {
-                    TokenizeNode(builder, node, semanticModel, cancellationToken);
-                    break;
+                    case LuaSyntaxToken token:
+                    {
+                        TokenizeToken(builder, token, semanticModel, cancellationToken);
+                        break;
+                    }
+                    case LuaSyntaxNode node:
+                    {
+                        TokenizeNode(builder, node, semanticModel, cancellationToken);
+                        break;
+                    }
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // ignored
         }
     }
 
     private void TokenizeToken(SemanticTokensBuilder builder, LuaSyntaxToken token, SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var tokenKind = token.Kind;
         switch (tokenKind)
         {
@@ -158,8 +167,10 @@ public class SemanticTokensAnalyzer
                 var range = token.Range.ToLspRange(semanticModel.Document);
                 if (range.Start.Line == range.End.Line)
                 {
-                    builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Comment, string.Empty);
+                    builder.Push(token.Range.ToLspRange(semanticModel.Document), SemanticTokenType.Comment,
+                        string.Empty);
                 }
+
                 break;
             }
             case LuaTokenKind.TkTypeTemplate:
@@ -185,6 +196,7 @@ public class SemanticTokensAnalyzer
     private void TokenizeNode(SemanticTokensBuilder builder, LuaSyntaxNode node, SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         switch (node)
         {
             case LuaDocTagClassSyntax docTagClassSyntax:

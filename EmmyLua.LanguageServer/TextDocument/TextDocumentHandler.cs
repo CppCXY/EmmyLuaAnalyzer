@@ -32,36 +32,19 @@ public class TextDocumentHandler(
             Save = new SaveOptions() { IncludeText = false }
         };
 
-    public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
+    public override async Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        context.ReadyWrite(() =>
-        {
-            context.LuaWorkspace.UpdateDocumentByUri(uri, request.TextDocument.Text);
-            if (context.LuaWorkspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
-            {
-                PushDiagnostic(request.TextDocument, semanticModel);
-            }
-        });
-
-
-        return Unit.Task;
+        await context.UpdateDocumentAsync(uri, request.TextDocument.Text, cancellationToken);
+        return Unit.Value;
     }
 
-    public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
+    public override async Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
     {
         var changes = request.ContentChanges.ToList();
         var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        context.ReadyWrite(() =>
-        {
-            context.LuaWorkspace.UpdateDocumentByUri(uri, changes[0].Text);
-            if (context.LuaWorkspace.Compilation.GetSemanticModel(uri) is { } semanticModel)
-            {
-                PushDiagnostic(request.TextDocument, semanticModel);
-            }
-        });
-
-        return Unit.Task;
+        await context.UpdateDocumentAsync(uri, changes[0].Text, cancellationToken);
+        return Unit.Value;
     }
 
     public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
@@ -78,18 +61,5 @@ public class TextDocumentHandler(
         });
         
         return Unit.Task;
-    }
-
-    private void PushDiagnostic(TextDocumentIdentifier identifier, SemanticModel semanticModel)
-    {
-        var diagnostics = semanticModel.GetDiagnostics()
-            .Select(it => it.ToLspDiagnostic(semanticModel.Document))
-            .ToList();
-
-        languageServerFacade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
-        {
-            Diagnostics = Container.From(diagnostics),
-            Uri = identifier.Uri,
-        });
     }
 }

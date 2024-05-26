@@ -8,7 +8,8 @@ namespace EmmyLua.LanguageServer.InlineValues;
 
 public class InlineValuesBuilder
 {
-    public List<InlineValueBase> Build(SemanticModel semanticModel, Range range, InlineValueContext context)
+    public List<InlineValueBase> Build(SemanticModel semanticModel, Range range, InlineValueContext context,
+        CancellationToken cancellationToken)
     {
         var result = new List<InlineValueBase>();
         var stopRange = context.StoppedLocation;
@@ -24,6 +25,11 @@ public class InlineValuesBuilder
         if (baseRange.StartOffset < stopOffset)
         {
             baseRange = baseRange with { Length = stopOffset - baseRange.StartOffset };
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return result;
         }
 
         foreach (var node in semanticModel.Document.SyntaxTree.SyntaxRoot.DescendantsInRange(baseRange))

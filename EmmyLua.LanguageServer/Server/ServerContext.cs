@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using System.Collections.Concurrent;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -34,14 +35,17 @@ public class ServerContext(ILanguageServerFacade server)
 
     public ResourceManager ResourceManager { get; } = new();
 
-    private CancellationTokenSource? CancellationTokenSource { get; set; } = null;
+    private CancellationTokenSource? WorkspaceCancellationTokenSource { get; set; } = null;
+
+    private ConcurrentDictionary<LuaDocumentId, CancellationTokenSource> DocumentCancellationTokenSources { get; } =
+        new();
 
     public void StartServer(InitializeParams initializeParams)
     {
         LockSlim.EnterWriteLock();
         try
         {
-            CancellationTokenSource?.Cancel();
+            WorkspaceCancellationTokenSource?.Cancel();
             IsVscode = string.Equals(initializeParams.ClientInfo?.Name, "Visual Studio Code",
                 StringComparison.CurrentCultureIgnoreCase);
             if (initializeParams.RootPath is { } rootPath)
@@ -67,7 +71,7 @@ public class ServerContext(ILanguageServerFacade server)
 
                 LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
                 ResourceManager.Config = SettingManager.GetResourceConfig();
-                CancellationTokenSource = new CancellationTokenSource();
+                WorkspaceCancellationTokenSource = new CancellationTokenSource();
                 PushWorkspaceDiagnostics();
             }
             else
@@ -162,13 +166,12 @@ public class ServerContext(ILanguageServerFacade server)
         }
     }
 
-    // 可能不能异步
     private void PushWorkspaceDiagnostics()
     {
-        CancellationTokenSource?.Cancel();
-        CancellationTokenSource = new CancellationTokenSource();
-        _ = Task.Run(async () => { await PushWorkspaceDiagnosticsAsync(CancellationTokenSource.Token); },
-            CancellationTokenSource.Token);
+        WorkspaceCancellationTokenSource?.Cancel();
+        WorkspaceCancellationTokenSource = new CancellationTokenSource();
+        _ = Task.Run(async () => { await PushWorkspaceDiagnosticsAsync(WorkspaceCancellationTokenSource.Token); },
+            WorkspaceCancellationTokenSource.Token);
     }
 
     private async Task PushWorkspaceDiagnosticsAsync(CancellationToken cancellationToken)
@@ -219,5 +222,70 @@ public class ServerContext(ILanguageServerFacade server)
         }
 
         Monitor.OnFinishDiagnosticCheck();
+    }
+
+    public async Task UpdateDocumentAsync(string uri, string text, CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        LuaDocumentId documentId = LuaDocumentId.VirtualDocumentId;
+        ReadyWrite(() =>
+        {
+            LuaWorkspace.UpdateDocumentByUri(uri, text);
+            documentId = LuaWorkspace.GetDocumentIdByUri(uri) ?? LuaDocumentId.VirtualDocumentId;
+        });
+
+        if (documentId != LuaDocumentId.VirtualDocumentId)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (DocumentCancellationTokenSources.TryGetValue(documentId, out var tokenSource))
+                {
+                    await tokenSource.CancelAsync();
+                }
+
+                tokenSource = new CancellationTokenSource();
+                DocumentCancellationTokenSources[documentId] = tokenSource;
+
+                await PushDocumentDiagnosticsAsync(documentId, tokenSource.Token);
+
+                DocumentCancellationTokenSources.TryRemove(documentId, out _);
+            }, cancellationToken);
+        }
+    }
+
+    private async Task PushDocumentDiagnosticsAsync(LuaDocumentId documentId, CancellationToken cancellationToken)
+    {
+        await Task.Delay(1000, cancellationToken);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        LockSlim.EnterReadLock();
+        try
+        {
+            var document = LuaWorkspace.GetDocument(documentId);
+            if (document is null)
+            {
+                return;
+            }
+
+            var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
+            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
+            Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+            {
+                Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                Uri = document.Uri,
+            });
+        }
+        finally
+        {
+            LockSlim.ExitReadLock();
+        }
     }
 }

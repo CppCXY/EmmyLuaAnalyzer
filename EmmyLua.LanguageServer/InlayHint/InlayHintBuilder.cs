@@ -30,56 +30,63 @@ public class InlayHintBuilder
             return hints;
         }
 
-        foreach (var node in sourceBlock.DescendantsInRange(range))
+        try
         {
-            switch (node)
+            foreach (var node in sourceBlock.DescendantsInRange(range))
             {
-                case LuaCallExprSyntax callExpr:
+                switch (node)
                 {
-                    if (config.ParamHint)
+                    case LuaCallExprSyntax callExpr:
                     {
-                        CallExprHint(semanticModel, hints, callExpr, cancellationToken);
-                    }
+                        if (config.ParamHint)
+                        {
+                            CallExprHint(semanticModel, hints, callExpr, cancellationToken);
+                        }
 
-                    break;
-                }
-                case LuaClosureExprSyntax closureExpr:
-                {
-                    if (config.ParamHint)
+                        break;
+                    }
+                    case LuaClosureExprSyntax closureExpr:
                     {
-                        ClosureExprHint(semanticModel, hints, closureExpr, cancellationToken);
-                    }
+                        if (config.ParamHint)
+                        {
+                            ClosureExprHint(semanticModel, hints, closureExpr, cancellationToken);
+                        }
 
-                    break;
-                }
-                case LuaIndexExprSyntax indexExpr:
-                {
-                    if (config.IndexHint)
+                        break;
+                    }
+                    case LuaIndexExprSyntax indexExpr:
                     {
-                        IndexExprHint(semanticModel, hints, indexExpr, cancellationToken);
-                    }
+                        if (config.IndexHint)
+                        {
+                            IndexExprHint(semanticModel, hints, indexExpr, cancellationToken);
+                        }
 
-                    break;
-                }
-                case LuaLocalNameSyntax localName:
-                {
-                    if (config.LocalHint)
+                        break;
+                    }
+                    case LuaLocalNameSyntax localName:
                     {
-                        LocalNameHint(semanticModel, hints, localName, cancellationToken);
-                    }
+                        if (config.LocalHint)
+                        {
+                            LocalNameHint(semanticModel, hints, localName, cancellationToken);
+                        }
 
-                    break;
-                }
-                case LuaFuncStatSyntax funcStat:
-                {
-                    if (config.ParamHint)
+                        break;
+                    }
+                    case LuaFuncStatSyntax funcStat:
                     {
-                        OverrideHint(semanticModel, hints, funcStat, cancellationToken);
-                    }
+                        if (config.ParamHint)
+                        {
+                            OverrideHint(semanticModel, hints, funcStat, cancellationToken);
+                        }
 
-                    break;
+                        break;
+                    }
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore
         }
 
         return hints;
@@ -88,10 +95,7 @@ public class InlayHintBuilder
     private void CallExprHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaCallExprSyntax callExpr,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (semanticModel.Context.Infer(callExpr.PrefixExpr) is LuaMethodType method)
         {
@@ -147,6 +151,7 @@ public class InlayHintBuilder
                     {
                         nullableText = "?";
                     }
+
                     if (document is not null && parameter.Info.Ptr.ToNode(document) is { } node)
                     {
                         hints.Add(new InlayHintType()
@@ -213,10 +218,7 @@ public class InlayHintBuilder
         LuaClosureExprSyntax closureExpr,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (semanticModel.Context.Infer(closureExpr) is LuaMethodType method)
         {
@@ -254,10 +256,7 @@ public class InlayHintBuilder
     private void IndexExprHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaIndexExprSyntax indexExpr,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         var document = semanticModel.Document;
         if (indexExpr is { PrefixExpr: { } prefixExpr, KeyElement: { } keyElement })
@@ -280,10 +279,7 @@ public class InlayHintBuilder
     private void LocalNameHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaLocalNameSyntax localName,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (localName.Parent is LuaFuncStatSyntax)
         {
@@ -304,10 +300,7 @@ public class InlayHintBuilder
     private void OverrideHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaFuncStatSyntax funcStat,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (funcStat is
             {
