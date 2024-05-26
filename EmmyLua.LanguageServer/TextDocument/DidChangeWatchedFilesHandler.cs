@@ -13,40 +13,55 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
 {
     public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions() => new();
 
-    public Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken)
     {
-        context.ReadyWrite(() =>
+        var changes = request.Changes.ToList();
+        if (changes.Count == 1)
         {
-            foreach (var fileEvent in request.Changes)
+            return await UpdateOneFileEventAsync(changes[0], cancellationToken);
+        }
+        else
+        {
+            return await UpdateManyFileEventAsync(changes, cancellationToken);
+        }
+    }
+
+    private async Task<Unit> UpdateOneFileEventAsync(FileEvent fileEvent, CancellationToken cancellationToken)
+    {
+        switch (fileEvent.Type)
+        {
+            case FileChangeType.Created:
+            case FileChangeType.Changed:
             {
-                switch (fileEvent.Type)
+                try
                 {
-                    case FileChangeType.Created:
-                    {
-                        try
-                        {
-                            var fileText = File.ReadAllText(fileEvent.Uri.GetFileSystemPath());
-                            context.LuaWorkspace.UpdateDocumentByUri(fileEvent.Uri.ToUnencodedString(), fileText);
-                        }
-                        catch(Exception e)
-                        {
-                            Log.Logger.Error(e.Message);
-                        }
-                        break;
-                    }
-                    case FileChangeType.Changed:
-                        break;
-                    case FileChangeType.Deleted:
-                    {
-                        context.LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.ToUnencodedString());
-                        break;
-                    }
+                    var fileText = await File.ReadAllTextAsync(fileEvent.Uri.GetFileSystemPath(), cancellationToken);
+                    var uri = fileEvent.Uri.ToUri().AbsoluteUri;
+                    await context.UpdateDocumentAsync(uri, fileText, cancellationToken);
                 }
+                catch (Exception e)
+                {
+                    Log.Logger.Error(e.Message);
+                }
+
+                break;
             }
-        });
+            case FileChangeType.Deleted:
+            {
+                var uri = fileEvent.Uri.ToUri().AbsoluteUri;
+                context.RemoveDocument(uri);
+                break;
+            }
+        }
 
+        return Unit.Value;
+    }
 
-        return Unit.Task;
+    private async Task<Unit> UpdateManyFileEventAsync(List<FileEvent> fileEvents,
+        CancellationToken cancellationToken)
+    {
+        await context.UpdateManyDocumentsAsync(fileEvents, cancellationToken);
+        return Unit.Value;
     }
 
     public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions(DidChangeWatchedFilesCapability capability,

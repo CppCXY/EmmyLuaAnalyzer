@@ -31,6 +31,8 @@ public class LuaCompilation
 
     public LuaDiagnostics Diagnostics { get; }
 
+    private bool DisableAnalyze { get; set; } = false;
+
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
@@ -62,13 +64,13 @@ public class LuaCompilation
             InternalAddSyntaxTree(documentId, syntaxTree);
         }
 
-        Analyze();
+        AnalyzeDirtyDocuments();
     }
 
     public void AddSyntaxTree(LuaDocumentId documentId, LuaSyntaxTree syntaxTree)
     {
         InternalAddSyntaxTree(documentId, syntaxTree);
-        Analyze();
+        AnalyzeDirtyDocuments();
     }
 
     public void RemoveSyntaxTree(LuaDocumentId documentId)
@@ -128,8 +130,13 @@ public class LuaCompilation
         return new SemanticModel(this, document, declarationTree);
     }
 
-    private void Analyze()
+    private void AnalyzeDirtyDocuments()
     {
+        if (DisableAnalyze)
+        {
+            return;
+        }
+
         if (DirtyDocumentIds.Count != 0)
         {
             try
@@ -184,23 +191,28 @@ public class LuaCompilation
         var result = new List<Diagnostic>();
         var context =
             new ThreadLocal<SearchContext>(() => new SearchContext(this, new SearchContextFeatures()));
-
-        var diagnosticResults = Workspace.AllDocuments
-            .AsParallel()
-            .Select(it =>
-            {
-                // ReSharper disable once AccessToDisposedClosure
-                if (Diagnostics.Check(it, context.Value!, out var documentDiagnostics))
-                {
-                    return documentDiagnostics;
-                }
-
-                return [];
-            });
-        context.Dispose();
-        foreach (var diagnosticResult in diagnosticResults)
+        try
         {
-            result.AddRange(diagnosticResult);
+            var diagnosticResults = Workspace.AllDocuments
+                .AsParallel()
+                .Select(it =>
+                {
+                    // ReSharper disable once AccessToDisposedClosure
+                    if (Diagnostics.Check(it, context.Value!, out var documentDiagnostics))
+                    {
+                        return documentDiagnostics;
+                    }
+
+                    return [];
+                });
+            foreach (var diagnosticResult in diagnosticResults)
+            {
+                result.AddRange(diagnosticResult);
+            }
+        }
+        finally
+        {
+            context.Dispose();
         }
 
         return result;
@@ -237,5 +249,20 @@ public class LuaCompilation
         }
 
         return !Diagnostics.Check(document, context, out var results) ? [] : results;
+    }
+
+    public void BulkUpdate(Action action)
+    {
+        try
+        {
+            DisableAnalyze = true;
+            action();
+        }
+        finally
+        {
+            DisableAnalyze = false;
+        }
+
+        AnalyzeDirtyDocuments();
     }
 }

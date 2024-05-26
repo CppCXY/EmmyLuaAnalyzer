@@ -257,6 +257,74 @@ public class ServerContext(ILanguageServerFacade server)
             }, cancellationToken);
         }
     }
+    
+    public async Task UpdateManyDocumentsAsync(List<FileEvent> fileEvents, CancellationToken cancellationToken)
+    {
+        var documentIds = new List<LuaDocumentId>();
+        ReadyWrite(() =>
+        {
+            LuaWorkspace.Compilation.BulkUpdate(() =>
+            {
+                foreach (var fileEvent in fileEvents)
+                {
+                    switch (fileEvent)
+                    {
+                        case { Type: FileChangeType.Created }:
+                        case { Type: FileChangeType.Changed }:
+                        {
+                            var uri = fileEvent.Uri.ToUri().AbsoluteUri;
+                            var fileText = File.ReadAllText(fileEvent.Uri.GetFileSystemPath());
+                            LuaWorkspace.UpdateDocumentByUri(uri, fileText);
+                            var documentId = LuaWorkspace.GetDocumentIdByUri(uri);
+                            if (documentId.HasValue)
+                            {
+                                documentIds.Add(documentId.Value);
+                            }
+
+                            break;
+                        }
+                        case { Type: FileChangeType.Deleted }:
+                        {
+                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.ToUri().AbsoluteUri);
+                            break;
+                        }
+                    }
+                }
+            });
+        });
+
+        var tasks = new List<Task>();
+        foreach (var documentId in documentIds)
+        {
+            if (documentId != LuaDocumentId.VirtualDocumentId)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    if (DocumentCancellationTokenSources.TryGetValue(documentId, out var tokenSource))
+                    {
+                        await tokenSource.CancelAsync();
+                    }
+
+                    tokenSource = new CancellationTokenSource();
+                    DocumentCancellationTokenSources[documentId] = tokenSource;
+
+                    await PushDocumentDiagnosticsAsync(documentId, tokenSource.Token);
+
+                    DocumentCancellationTokenSources.TryRemove(documentId, out _);
+                }, cancellationToken));
+            }
+        }
+
+        await Task.WhenAll(tasks);
+    }
+    
+    public void RemoveDocument(string uri)
+    {
+        ReadyWrite(() =>
+        {
+            LuaWorkspace.RemoveDocumentByUri(uri);
+        });
+    }
 
     private async Task PushDocumentDiagnosticsAsync(LuaDocumentId documentId, CancellationToken cancellationToken)
     {
