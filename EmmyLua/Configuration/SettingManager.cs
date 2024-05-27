@@ -200,6 +200,16 @@ public class SettingManager
             features.RequirePattern.AddRange(setting.Runtime.RequirePattern);
         }
 
+        foreach (var extension in features.Extensions)
+        {
+            var hashSet = features.RequirePattern.ToHashSet();
+            var newPattern = extension.Replace("*", "?");
+            if (!hashSet.Contains(newPattern))
+            {
+                features.RequirePattern.Add(newPattern);
+            }
+        }
+
         features.RequirePathStrict = setting.Strict.RequirePath;
         features.TypeCallStrict = setting.Strict.TypeCall;
 

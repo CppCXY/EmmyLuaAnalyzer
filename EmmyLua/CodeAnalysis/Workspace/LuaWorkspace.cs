@@ -8,7 +8,17 @@ public class LuaWorkspace
 {
     public string MainWorkspace { get; set; } = string.Empty;
 
-    public LuaFeatures Features { get; set; }
+    private LuaFeatures _features;
+
+    public LuaFeatures Features
+    {
+        get => _features;
+        set
+        {
+            _features = value;
+            ModuleManager.UpdatePattern(_features.RequirePattern);
+        }
+    }
 
     private Dictionary<LuaDocumentId, LuaDocument> Documents { get; set; } = new();
 
@@ -69,7 +79,7 @@ public class LuaWorkspace
 
     public LuaWorkspace(LuaFeatures features)
     {
-        Features = features;
+        _features = features;
         Compilation = new LuaCompilation(this);
         ModuleManager = new ModuleManager(this);
         ModuleManager.UpdatePattern(features.RequirePattern);
