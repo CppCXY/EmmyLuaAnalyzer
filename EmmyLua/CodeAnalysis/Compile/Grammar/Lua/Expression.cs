@@ -150,7 +150,11 @@ public static class ExpressionParser
 
             if (ParamList(p).IsComplete)
             {
-                BlockParser.Block(p);
+                if (p.Current is not LuaTokenKind.TkEnd)
+                {
+                    BlockParser.Block(p);
+                }
+
                 p.Expect(LuaTokenKind.TkEnd);
             }
 

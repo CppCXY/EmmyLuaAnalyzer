@@ -150,6 +150,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (ty is LuaNamedType namedType)
                 {
                     Compilation.Db.AddMember(documentId, namedType.Name, declaration);
+                    Context.ClearMemberCache(namedType.Name);
                 }
             }
         }

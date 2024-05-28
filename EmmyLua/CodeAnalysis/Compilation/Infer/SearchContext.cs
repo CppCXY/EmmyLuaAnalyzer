@@ -67,6 +67,12 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         DeclarationCaches.Clear();
     }
 
+    public void ClearMemberCache(string name)
+    {
+        NamedTypeMemberCaches.Remove(name);
+        BaseMemberCaches.Remove(name);
+    }
+
     private LuaType InferCore(LuaSyntaxElement element)
     {
         if (_currentDepth > MaxDepth)
