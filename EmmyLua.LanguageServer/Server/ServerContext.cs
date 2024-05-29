@@ -224,9 +224,16 @@ public class ServerContext(ILanguageServerFacade server)
         Monitor.OnFinishDiagnosticCheck();
     }
 
+    private static readonly int DelayLimit = 1024 * 1024;
+
     public async Task UpdateDocumentAsync(string uri, string text, CancellationToken cancellationToken)
     {
-        await Task.Delay(100, cancellationToken);
+        var shouldDelay = text.Length > DelayLimit;
+        if (shouldDelay)
+        {
+            await Task.Delay(100, cancellationToken);
+        }
+
         if (cancellationToken.IsCancellationRequested)
         {
             return;
@@ -251,13 +258,13 @@ public class ServerContext(ILanguageServerFacade server)
                 tokenSource = new CancellationTokenSource();
                 DocumentCancellationTokenSources[documentId] = tokenSource;
 
-                await PushDocumentDiagnosticsAsync(documentId, tokenSource.Token);
+                await PushDocumentDiagnosticsAsync(documentId, shouldDelay, tokenSource.Token);
 
                 DocumentCancellationTokenSources.TryRemove(documentId, out _);
             }, cancellationToken);
         }
     }
-    
+
     public async Task UpdateManyDocumentsAsync(List<FileEvent> fileEvents, CancellationToken cancellationToken)
     {
         var documentIds = new List<LuaDocumentId>();
@@ -308,7 +315,7 @@ public class ServerContext(ILanguageServerFacade server)
                     tokenSource = new CancellationTokenSource();
                     DocumentCancellationTokenSources[documentId] = tokenSource;
 
-                    await PushDocumentDiagnosticsAsync(documentId, tokenSource.Token);
+                    await PushDocumentDiagnosticsAsync(documentId, false, tokenSource.Token);
 
                     DocumentCancellationTokenSources.TryRemove(documentId, out _);
                 }, cancellationToken));
@@ -317,18 +324,20 @@ public class ServerContext(ILanguageServerFacade server)
 
         await Task.WhenAll(tasks);
     }
-    
+
     public void RemoveDocument(string uri)
     {
-        ReadyWrite(() =>
-        {
-            LuaWorkspace.RemoveDocumentByUri(uri);
-        });
+        ReadyWrite(() => { LuaWorkspace.RemoveDocumentByUri(uri); });
     }
 
-    private async Task PushDocumentDiagnosticsAsync(LuaDocumentId documentId, CancellationToken cancellationToken)
+    private async Task PushDocumentDiagnosticsAsync(LuaDocumentId documentId, bool shouldDelay,
+        CancellationToken cancellationToken)
     {
-        await Task.Delay(1000, cancellationToken);
+        if (shouldDelay)
+        {
+            await Task.Delay(1000, cancellationToken);
+        }
+
         if (cancellationToken.IsCancellationRequested)
         {
             return;
