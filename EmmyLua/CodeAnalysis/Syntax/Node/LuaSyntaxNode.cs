@@ -5,39 +5,33 @@ using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-public class LuaSyntaxNode(GreenNode green, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxElement(green, tree, parent, startOffset)
+public class LuaSyntaxNode(int index, LuaSyntaxTree tree)
+    : LuaSyntaxElement(index, tree)
 {
     public LuaSyntaxKind Kind => (LuaSyntaxKind)RawKind;
 
-    internal int ChildStartIndex { get; private set; } = -1;
+    private List<LuaSyntaxElement>? _children = null;
 
-    internal int ChildFinishIndex { get; private set; } = -1;
-
-    protected override IEnumerable<LuaSyntaxElement> ChildrenElements
+    protected override List<LuaSyntaxElement> ChildrenElements
     {
         get
         {
-            if (ChildStartIndex == -1 || ChildFinishIndex == -1)
+            if (_children == null)
             {
-                yield break;
+                _children = new List<LuaSyntaxElement>();
+                if (ChildStartIndex == -1 || ChildFinishIndex == -1)
+                {
+                    return _children;
+                }
+
+                for(var i = ChildStartIndex; i <= ChildFinishIndex; i++)
+                {
+                    _children.Add(Tree.GetElement(i));
+                }
             }
 
-            for(var i = ChildStartIndex; i <= ChildFinishIndex; i++)
-            {
-                yield return Tree.GetElement(i)!;
-            }
+            return _children;
         }
-    }
-
-    public override void AddChild(LuaSyntaxElement child)
-    {
-        if (ChildStartIndex == -1)
-        {
-            ChildStartIndex = child.ElementId;
-        }
-
-        ChildFinishIndex = child.ElementId;
     }
 
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelf

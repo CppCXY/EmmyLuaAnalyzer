@@ -4,14 +4,12 @@ using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaDocTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDocTypeSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
 }
 
-public class LuaDocLiteralTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocLiteralTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public bool IsInteger => FirstChild<LuaIntegerToken>() != null;
 
@@ -22,26 +20,22 @@ public class LuaDocLiteralTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lu
     public LuaStringToken? String => FirstChild<LuaStringToken>();
 }
 
-public class LuaDocNameTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocNameTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaDocArrayTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocArrayTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTableTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocTableTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
 
-public class LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDocTypedParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -54,60 +48,51 @@ public class LuaDocTypedParamSyntax(GreenNode greenNode, LuaSyntaxTree tree, Lua
     public bool IsVarArgs => VarArgs != null;
 }
 
-public class LuaDocFuncTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocFuncTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildNodes<LuaDocTypedParamSyntax>();
 
     public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildNodes<LuaDocTypeSyntax>();
 }
 
-public class LuaDocUnionTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocUnionTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public IEnumerable<LuaDocTypeSyntax> UnionTypes => ChildNodes<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTupleTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocTupleTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
 }
 
-public class LuaDocParenTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocParenTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }
 
-public class LuaDocGenericTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocGenericTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
 }
 
-public class LuaDocVariadicTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocVariadicTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaDocExpandTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocExpandTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaDocAggregateTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocAggregateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTemplateTypeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaDocTypeSyntax(greenNode, tree, parent, startOffset)
+public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaTemplateTypeToken? TemplateName => FirstChild<LuaTemplateTypeToken>();
 }

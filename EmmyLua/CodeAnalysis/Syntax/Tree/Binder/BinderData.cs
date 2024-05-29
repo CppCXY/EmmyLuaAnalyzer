@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Syntax.Binder;
+namespace EmmyLua.CodeAnalysis.Syntax.Tree.Binder;
 
 public class BinderData(
     Dictionary<long, LuaElementPtr<LuaSyntaxElement>> commentOwners,

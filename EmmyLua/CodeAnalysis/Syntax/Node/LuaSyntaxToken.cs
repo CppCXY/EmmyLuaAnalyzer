@@ -1,12 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxElement(greenNode, tree, parent, startOffset)
+public class LuaSyntaxToken(int index, LuaSyntaxTree tree)
+    : LuaSyntaxElement(index, tree)
 {
     public LuaTokenKind Kind => (LuaTokenKind)RawKind;
 
@@ -14,11 +13,7 @@ public class LuaSyntaxToken(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
 
     public string RepresentText => Text.ToString();
 
-    protected override IEnumerable<LuaSyntaxElement> ChildrenElements => [];
-
-    public override void AddChild(LuaSyntaxElement child)
-    {
-    }
+    protected override List<LuaSyntaxElement> ChildrenElements => [];
 
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelf
     {

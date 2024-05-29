@@ -6,7 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
-public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSyntaxElement, DeclarationScope> scopeOwners)
+public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, DeclarationScope> scopeOwners)
 {
     public LuaSyntaxTree SyntaxTree { get; } = tree;
 
@@ -152,7 +152,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<LuaSynta
         var cur = element;
         while (cur != null)
         {
-            if (scopeOwners.TryGetValue(cur, out var scope))
+            if (scopeOwners.TryGetValue(cur.UniqueId, out var scope))
             {
                 return scope;
             }

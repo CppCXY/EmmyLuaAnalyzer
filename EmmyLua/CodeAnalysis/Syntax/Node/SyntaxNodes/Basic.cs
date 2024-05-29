@@ -6,13 +6,12 @@ using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaSourceSyntax(GreenNode greenNode, LuaSyntaxTree tree) : LuaSyntaxNode(greenNode, tree, null, 0)
+public class LuaSourceSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 }
 
-public class LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaBlockSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
 
@@ -20,24 +19,21 @@ public class LuaBlockSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxEl
         Tree.BinderData?.GetComments(this) ?? [];
 }
 
-public class LuaParamDefSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaParamDefSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
     public bool IsVarArgs => FirstChild<LuaDotsToken>() != null;
 }
 
-public class LuaParamListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaParamListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaParamDefSyntax> Params => ChildNodes<LuaParamDefSyntax>();
 
     public bool HasVarArgs => Params.LastOrDefault()?.IsVarArgs == true;
 }
 
-public class LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaAttributeSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
@@ -68,16 +64,14 @@ public class LuaAttributeSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
     }
 }
 
-public class LuaLocalNameSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaLocalNameSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public LuaAttributeSyntax? Attribute => FirstChild<LuaAttributeSyntax>();
 
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaCallArgListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
 
@@ -90,8 +84,7 @@ public class LuaCallArgListSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
     public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
 }
 
-public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDescriptionSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaSyntaxToken> Details => ChildTokens(LuaTokenKind.TkDocDetail);
 
@@ -102,7 +95,7 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
             var sb = new StringBuilder();
             foreach (var token in ChildrenWithTokens)
             {
-                if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail , RepresentText: {} text})
+                if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text })
                 {
                     if (text.StartsWith('@') || text.StartsWith('#'))
                     {
@@ -113,7 +106,7 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
                         sb.Append(text);
                     }
                 }
-                else if(token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocContinue, Range.Length: {} length })
+                else if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocContinue, Range.Length: { } length })
                 {
                     if (length > 3)
                     {
@@ -131,8 +124,7 @@ public class LuaDescriptionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSy
     }
 }
 
-public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public VisibilityKind Visibility
     {
@@ -216,14 +208,12 @@ public class LuaDocFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
     public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
 }
 
-public class LuaDocBodySyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDocBodySyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaDocFieldSyntax> FieldList => ChildNodes<LuaDocFieldSyntax>();
 }
 
-public class LuaDocVersionSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaDocVersionSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public RequiredVersionAction Action
     {

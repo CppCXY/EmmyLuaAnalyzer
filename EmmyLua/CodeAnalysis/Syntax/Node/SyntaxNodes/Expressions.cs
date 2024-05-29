@@ -4,21 +4,18 @@ using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? [];
 }
 
-public class LuaNameExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaNameExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaCallExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaCallArgListSyntax? ArgList => FirstChild<LuaCallArgListSyntax>();
 
@@ -44,8 +41,7 @@ public class LuaCallExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynta
     }
 }
 
-public class LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaBinaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaExprSyntax LeftExpr => FirstChild<LuaExprSyntax>()!;
 
@@ -61,8 +57,7 @@ public class LuaBinaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
     public LuaExprSyntax? RightExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
 }
 
-public class LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaUnaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public OperatorKind.UnaryOperator Operator
     {
@@ -76,14 +71,12 @@ public class LuaUnaryExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
     public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
 }
 
-public class LuaTableExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaTableExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public IEnumerable<LuaTableFieldSyntax> FieldList => ChildNodes<LuaTableFieldSyntax>();
 }
 
-public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaSyntaxNode(greenNode, tree, parent, startOffset)
+public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
     public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
 
@@ -178,22 +171,19 @@ public class LuaTableFieldSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyn
         Tree.BinderData?.GetComments(this) ?? [];
 }
 
-public class LuaClosureExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaClosureExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 }
 
-public class LuaLiteralExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaLiteralExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaSyntaxToken Literal => FirstChildToken()!;
 }
 
-public class LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaParenExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public LuaSyntaxToken LeftParen => FirstChildToken(LuaTokenKind.TkLeftParen)!;
 
@@ -202,8 +192,7 @@ public class LuaParenExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSynt
     public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
 }
 
-public class LuaIndexExprSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent, int startOffset)
-    : LuaExprSyntax(greenNode, tree, parent, startOffset)
+public class LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
     public bool IsDotIndex => FirstChildToken(LuaTokenKind.TkDot) != null;
 

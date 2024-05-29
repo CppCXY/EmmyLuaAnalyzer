@@ -12,589 +12,127 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
 public static class SyntaxFactory
 {
-    public static LuaSyntaxElement CreateSyntax(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
+    public static LuaSyntaxElement CreateSyntax(int index, LuaSyntaxTree tree)
     {
-        if (greenNode.IsNode)
+        var rawKind = tree.GetRawKind(index);
+        if (IsNode(rawKind))
         {
-            return greenNode.SyntaxKind switch
+            return GetSyntaxKind(rawKind) switch
             {
-                LuaSyntaxKind.Source => new LuaSourceSyntax(greenNode, tree),
-                LuaSyntaxKind.Block => new LuaBlockSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.EmptyStat => new LuaEmptyStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.LocalStat => new LuaLocalStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.LocalFuncStat => new LuaFuncStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.IfStat => new LuaIfStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.IfClauseStat => new LuaIfClauseStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.WhileStat => new LuaWhileStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DoStat => new LuaDoStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ForStat => new LuaForStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ForRangeStat => new LuaForRangeStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.RepeatStat => new LuaRepeatStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.FuncStat => new LuaFuncStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.LabelStat => new LuaLabelStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.BreakStat => new LuaBreakStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ReturnStat => new LuaReturnStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.GotoStat => new LuaGotoStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ExprStat => new LuaCallStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.AssignStat => new LuaAssignStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.UnknownStat => new LuaUnknownStatSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.CallArgList => new LuaCallArgListSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ParenExpr => new LuaParenExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.LiteralExpr => new LuaLiteralExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ClosureExpr => new LuaClosureExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.UnaryExpr => new LuaUnaryExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.BinaryExpr => new LuaBinaryExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TableExpr => new LuaTableExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.CallExpr => new LuaCallExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.IndexExpr => new LuaIndexExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.NameExpr => new LuaNameExprSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TableFieldAssign => new LuaTableFieldSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TableFieldValue => new LuaTableFieldSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.Attribute => new LuaAttributeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ParamList => new LuaParamListSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.Comment => new LuaCommentSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocClass => new LuaDocTagClassSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocEnum => new LuaDocTagEnumSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocInterface => new LuaDocTagInterfaceSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocAlias => new LuaDocTagAliasSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocField => new LuaDocTagFieldSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocEnumField => new LuaDocTagEnumFieldSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocType => new LuaDocTagTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocParam => new LuaDocTagParamSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocReturn => new LuaDocTagReturnSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocGeneric => new LuaDocTagGenericSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocSee => new LuaDocTagSeeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocDeprecated => new LuaDocTagDeprecatedSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocCast => new LuaDocTagCastSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocOverload => new LuaDocTagOverloadSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocAsync => new LuaDocTagAsyncSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocVisibility => new LuaDocTagVisibilitySyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocOther => new LuaDocTagOtherSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocDiagnostic => new LuaDocTagDiagnosticSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocVersion => new LuaDocTagVersionSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocAs => new LuaDocTagAsSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocNodiscard => new LuaDocTagNodiscardSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocMeta => new LuaDocTagMetaSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeGeneric => new LuaDocGenericTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeTuple => new LuaDocTupleTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeTable => new LuaDocTableTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeParen => new LuaDocParenTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeLiteral => new LuaDocLiteralTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeAggregate => new LuaDocAggregateTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.TypeTemplate => new LuaDocTemplateTypeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.ParamName => new LuaParamDefSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocBody => new LuaDocBodySyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(greenNode, tree, parent,
-                    startOffset),
-                LuaSyntaxKind.Description => new LuaDescriptionSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(greenNode, tree, parent,
-                    startOffset),
-                LuaSyntaxKind.DocAttribute => new LuaDocAttributeSyntax(greenNode, tree, parent, startOffset),
-                LuaSyntaxKind.Version => new LuaDocVersionSyntax(greenNode, tree, parent, startOffset),
+                LuaSyntaxKind.Source => new LuaSourceSyntax(index, tree),
+                LuaSyntaxKind.Block => new LuaBlockSyntax(index, tree),
+                LuaSyntaxKind.EmptyStat => new LuaEmptyStatSyntax(index, tree),
+                LuaSyntaxKind.LocalStat => new LuaLocalStatSyntax(index, tree),
+                LuaSyntaxKind.LocalFuncStat => new LuaFuncStatSyntax(index, tree),
+                LuaSyntaxKind.IfStat => new LuaIfStatSyntax(index, tree),
+                LuaSyntaxKind.IfClauseStat => new LuaIfClauseStatSyntax(index, tree),
+                LuaSyntaxKind.WhileStat => new LuaWhileStatSyntax(index, tree),
+                LuaSyntaxKind.DoStat => new LuaDoStatSyntax(index, tree),
+                LuaSyntaxKind.ForStat => new LuaForStatSyntax(index, tree),
+                LuaSyntaxKind.ForRangeStat => new LuaForRangeStatSyntax(index, tree),
+                LuaSyntaxKind.RepeatStat => new LuaRepeatStatSyntax(index, tree),
+                LuaSyntaxKind.FuncStat => new LuaFuncStatSyntax(index, tree),
+                LuaSyntaxKind.LabelStat => new LuaLabelStatSyntax(index, tree),
+                LuaSyntaxKind.BreakStat => new LuaBreakStatSyntax(index, tree),
+                LuaSyntaxKind.ReturnStat => new LuaReturnStatSyntax(index, tree),
+                LuaSyntaxKind.GotoStat => new LuaGotoStatSyntax(index, tree),
+                LuaSyntaxKind.ExprStat => new LuaCallStatSyntax(index, tree),
+                LuaSyntaxKind.AssignStat => new LuaAssignStatSyntax(index, tree),
+                LuaSyntaxKind.UnknownStat => new LuaUnknownStatSyntax(index, tree),
+                LuaSyntaxKind.CallArgList => new LuaCallArgListSyntax(index, tree),
+                LuaSyntaxKind.ParenExpr => new LuaParenExprSyntax(index, tree),
+                LuaSyntaxKind.LiteralExpr => new LuaLiteralExprSyntax(index, tree),
+                LuaSyntaxKind.ClosureExpr => new LuaClosureExprSyntax(index, tree),
+                LuaSyntaxKind.UnaryExpr => new LuaUnaryExprSyntax(index, tree),
+                LuaSyntaxKind.BinaryExpr => new LuaBinaryExprSyntax(index, tree),
+                LuaSyntaxKind.TableExpr => new LuaTableExprSyntax(index, tree),
+                LuaSyntaxKind.CallExpr => new LuaCallExprSyntax(index, tree),
+                LuaSyntaxKind.IndexExpr => new LuaIndexExprSyntax(index, tree),
+                LuaSyntaxKind.NameExpr => new LuaNameExprSyntax(index, tree),
+                LuaSyntaxKind.TableFieldAssign => new LuaTableFieldSyntax(index, tree),
+                LuaSyntaxKind.TableFieldValue => new LuaTableFieldSyntax(index, tree),
+                LuaSyntaxKind.Attribute => new LuaAttributeSyntax(index, tree),
+                LuaSyntaxKind.ParamList => new LuaParamListSyntax(index, tree),
+                LuaSyntaxKind.Comment => new LuaCommentSyntax(index, tree),
+                LuaSyntaxKind.DocClass => new LuaDocTagClassSyntax(index, tree),
+                LuaSyntaxKind.DocEnum => new LuaDocTagEnumSyntax(index, tree),
+                LuaSyntaxKind.DocInterface => new LuaDocTagInterfaceSyntax(index, tree),
+                LuaSyntaxKind.DocAlias => new LuaDocTagAliasSyntax(index, tree),
+                LuaSyntaxKind.DocField => new LuaDocTagFieldSyntax(index, tree),
+                LuaSyntaxKind.DocEnumField => new LuaDocTagEnumFieldSyntax(index, tree),
+                LuaSyntaxKind.DocType => new LuaDocTagTypeSyntax(index, tree),
+                LuaSyntaxKind.DocParam => new LuaDocTagParamSyntax(index, tree),
+                LuaSyntaxKind.DocReturn => new LuaDocTagReturnSyntax(index, tree),
+                LuaSyntaxKind.DocGeneric => new LuaDocTagGenericSyntax(index, tree),
+                LuaSyntaxKind.DocSee => new LuaDocTagSeeSyntax(index, tree),
+                LuaSyntaxKind.DocDeprecated => new LuaDocTagDeprecatedSyntax(index, tree),
+                LuaSyntaxKind.DocCast => new LuaDocTagCastSyntax(index, tree),
+                LuaSyntaxKind.DocOverload => new LuaDocTagOverloadSyntax(index, tree),
+                LuaSyntaxKind.DocAsync => new LuaDocTagAsyncSyntax(index, tree),
+                LuaSyntaxKind.DocVisibility => new LuaDocTagVisibilitySyntax(index, tree),
+                LuaSyntaxKind.DocOther => new LuaDocTagOtherSyntax(index, tree),
+                LuaSyntaxKind.DocDiagnostic => new LuaDocTagDiagnosticSyntax(index, tree),
+                LuaSyntaxKind.DocVersion => new LuaDocTagVersionSyntax(index, tree),
+                LuaSyntaxKind.DocAs => new LuaDocTagAsSyntax(index, tree),
+                LuaSyntaxKind.DocNodiscard => new LuaDocTagNodiscardSyntax(index, tree),
+                LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(index, tree),
+                LuaSyntaxKind.DocMeta => new LuaDocTagMetaSyntax(index, tree),
+                LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeGeneric => new LuaDocGenericTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeTuple => new LuaDocTupleTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeTable => new LuaDocTableTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeParen => new LuaDocParenTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeLiteral => new LuaDocLiteralTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(index, tree),
+                LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(index, tree),
+                LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeAggregate => new LuaDocAggregateTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeTemplate => new LuaDocTemplateTypeSyntax(index, tree),
+                LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(index, tree),
+                LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(index, tree),
+                LuaSyntaxKind.ParamName => new LuaParamDefSyntax(index, tree),
+                LuaSyntaxKind.DocBody => new LuaDocBodySyntax(index, tree),
+                LuaSyntaxKind.DocModule => new LuaDocTagModuleSyntax(index, tree),
+                LuaSyntaxKind.GenericParameter => new LuaDocGenericParamSyntax(index, tree),
+                LuaSyntaxKind.GenericDeclareList => new LuaDocGenericDeclareListSyntax(index, tree),
+                LuaSyntaxKind.Description => new LuaDescriptionSyntax(index, tree),
+                LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(index, tree),
+                LuaSyntaxKind.DocAttribute => new LuaDocAttributeSyntax(index, tree),
+                LuaSyntaxKind.Version => new LuaDocVersionSyntax(index, tree),
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }
 
-        return greenNode.TokenKind switch
+        return GetTokenKind(rawKind) switch
         {
-            LuaTokenKind.TkString => CalculateString(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkLongString => CalculateLongString(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkInt =>
-                CalculateInt(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkFloat =>
-                CalculateFloat(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkComplex =>
-                CalculateComplex(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => new LuaBoolToken(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkNil => new LuaNilToken(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkDots => new LuaDotsToken(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkName => new LuaNameToken(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkVersionNumber => CalculateVersionNumber(greenNode, tree, parent, startOffset),
-            LuaTokenKind.TkTypeTemplate => CalculateTemplateType(greenNode, tree, parent, startOffset),
-            _ => new LuaSyntaxToken(greenNode, tree, parent, startOffset)
+            LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(tree.GetStringTokenValue(index),
+                index, tree),
+            LuaTokenKind.TkInt => GetIntegerToken(index, tree),
+            LuaTokenKind.TkFloat => new LuaFloatToken(tree.GetNumberTokenValue(index), index, tree),
+            LuaTokenKind.TkComplex => new LuaComplexToken(index, tree),
+            LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => new LuaBoolToken(index, tree),
+            LuaTokenKind.TkNil => new LuaNilToken(index, tree),
+            LuaTokenKind.TkDots => new LuaDotsToken(index, tree),
+            LuaTokenKind.TkName => new LuaNameToken(index, tree),
+            LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(index, tree),
+            LuaTokenKind.TkVersionNumber => new LuaVersionNumberToken(tree.GetVersionNumber(index), index, tree),
+            LuaTokenKind.TkTypeTemplate => new LuaTemplateTypeToken(tree.GetStringTokenValue(index), index, tree),
+            _ => new LuaSyntaxToken(index, tree)
         };
     }
 
-    private static LuaIntegerToken CalculateInt(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
+    private static bool IsNode(int rawKind) => rawKind >> 16 == 1;
+
+    private static LuaSyntaxKind GetSyntaxKind(int rawKind) => (LuaSyntaxKind)(rawKind & 0xFFFF);
+
+    private static LuaTokenKind GetTokenKind(int rawKind) => (LuaTokenKind)(rawKind & 0xFFFF);
+
+    private static LuaIntegerToken GetIntegerToken(int index, LuaSyntaxTree tree)
     {
-        var hex = false;
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-        {
-            hex = true;
-        }
-
-        var suffix = string.Empty;
-        for (var i = 0; i < text.Length; i++)
-        {
-            if (text[i] is 'u' or 'l' or 'U' or 'L')
-            {
-                suffix = text[i..].ToString();
-                text = text[..i];
-                break;
-            }
-        }
-
-        try
-        {
-            var value = hex
-                ? Convert.ToInt64(text.ToString(), 16)
-                : Convert.ToInt64(text.ToString(), 10);
-            return new LuaIntegerToken(value, suffix, greenNode, tree, parent, startOffset);
-        }
-        catch (OverflowException)
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"The integer literal '{text}' is too large to be represented in type 'long'",
-                new SourceRange(startOffset, greenNode.Length)));
-            return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
-        }
-        catch (Exception e)
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"The integer literal '{text}' is invalid, {e.Message}",
-                new SourceRange(startOffset, greenNode.Length)));
-            return new LuaIntegerToken(0, suffix, greenNode, tree, parent, startOffset);
-        }
-    }
-
-    private static LuaFloatToken CalculateFloat(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
-    {
-        double value = 0;
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        // 支持16进制浮点数, C# 不能原生支持
-        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-        {
-            var hexFloatText = text[2..].ToString();
-            var exponentPosition = hexFloatText.IndexOf('p', StringComparison.CurrentCultureIgnoreCase);
-            var floatPart = hexFloatText;
-            if (exponentPosition != -1)
-            {
-                floatPart = hexFloatText[..exponentPosition];
-            }
-
-            long integerPart = 0;
-            var fractionValue = 0.0;
-            if (floatPart.IndexOf('.') != -1)
-            {
-                var parts = floatPart.Split('.');
-                if (parts[0].Length != 0)
-                {
-                    integerPart = long.Parse(parts[0], NumberStyles.AllowHexSpecifier);
-                }
-
-                long fractionPart = 0;
-                if (parts[1].Length != 0)
-                {
-                    fractionPart = long.Parse(parts[1], NumberStyles.AllowHexSpecifier);
-                }
-
-                fractionValue = fractionPart * Math.Pow(16, -parts[1].Length);
-            }
-            else
-            {
-                integerPart = long.Parse(floatPart, NumberStyles.AllowHexSpecifier);
-            }
-
-            value = integerPart + fractionValue;
-            if (exponentPosition != -1)
-            {
-                var exponent = hexFloatText[(exponentPosition + 1)..];
-                if (int.TryParse(exponent, out var exp))
-                {
-                    value *= Math.Pow(2, exp);
-                }
-            }
-        }
-        else
-        {
-            var exponent = string.Empty;
-            for (var i = 0; i < text.Length; i++)
-            {
-                if (text[i] is 'e' or 'E')
-                {
-                    exponent = text[(i + 1)..].ToString();
-                    text = text[..i];
-                    break;
-                }
-            }
-
-            if (double.TryParse(text.ToString(), out value))
-            {
-                if (exponent.Length != 0 && int.TryParse(exponent, out var exp))
-                {
-                    value *= Math.Pow(10, exp);
-                }
-            }
-        }
-
-        return new LuaFloatToken(value, greenNode, tree, parent, startOffset);
-    }
-
-    // luajit 支持复数干嘛?
-    private static LuaComplexToken CalculateComplex(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
-    {
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        // 裁剪掉complex的i
-        text = text[..^1];
-        return new LuaComplexToken(text.ToString(), greenNode, tree, parent, startOffset);
-    }
-
-    private static LuaStringToken CalculateString(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
-    {
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        if (text.Length < 2)
-        {
-            return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        var sb = new StringBuilder(text.Length - 2);
-        var delimiter = text[0];
-        for (var i = 1; i < text.Length; i++)
-        {
-            switch (text[i])
-            {
-                case '\\':
-                {
-                    i++;
-                    if (i >= text.Length)
-                    {
-                        tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                            DiagnosticCode.SyntaxError,
-                            "Unexpected end of string",
-                            new SourceRange(startOffset + i - 1, 1)));
-                        break;
-                    }
-
-                    switch (text[i])
-                    {
-                        case 'a':
-                        {
-                            sb.Append('\a');
-                            break;
-                        }
-                        case 'b':
-                        {
-                            sb.Append('\b');
-                            break;
-                        }
-                        case 'f':
-                        {
-                            sb.Append('\f');
-                            break;
-                        }
-                        case 'n':
-                        {
-                            sb.Append('\n');
-                            break;
-                        }
-                        case 'r':
-                        {
-                            sb.Append('\r');
-                            break;
-                        }
-                        case 't':
-                        {
-                            sb.Append('\t');
-                            break;
-                        }
-                        case 'v':
-                        {
-                            sb.Append('\v');
-                            break;
-                        }
-                        case 'x':
-                        {
-                            if (i + 2 >= text.Length)
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    "Unexpected end of string", new SourceRange(startOffset + i, 1)));
-                                break;
-                            }
-
-                            var hex = text[(i + 1)..(i + 3)];
-                            // 检查hex合法性
-                            if (!char.IsAsciiHexDigit(hex[0]) || !char.IsAsciiHexDigit(hex[1]))
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    $"Invalid hex escape sequence '\\x{hex}'",
-                                    new SourceRange(startOffset + i, 2)));
-                                break;
-                            }
-
-                            i += 2;
-                            sb.Append((char)Convert.ToUInt16(hex.ToString(), 16));
-                            break;
-                        }
-                        // 数字
-                        case var digit when char.IsDigit(digit):
-                        {
-                            var j = 0;
-                            var dec = new StringBuilder(3);
-                            while (j < 3 && i + j < text.Length && char.IsDigit(text[i + j]))
-                            {
-                                dec.Append(text[i + j]);
-                                j++;
-                            }
-
-                            i += j - 1;
-                            sb.Append((char)Convert.ToUInt16(dec.ToString(), 10));
-                            break;
-                        }
-                        case 'u':
-                        {
-                            // 解析 \u{xxxx} 形式的unicode字符
-                            if (i + 2 >= text.Length)
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    "Unexpected end of string",
-                                    new SourceRange(startOffset + i - 1, 1)));
-                                break;
-                            }
-
-                            var j = 1;
-                            if (text[i + j] != '{')
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    $"Missing unicode escape sequence start '{{', current '{text[i + j]}'",
-                                    new SourceRange(startOffset + i + j, 1)));
-                                break;
-                            }
-
-                            j++;
-                            while (i + j < text.Length && char.IsAsciiHexDigit(text[i + j]))
-                            {
-                                j++;
-                            }
-
-                            if (i + j >= text.Length)
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    "Unexpected end of string",
-                                    new SourceRange(startOffset + i + j - 1, 1)));
-                                break;
-                            }
-
-                            if (text[i + j] != '}')
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    $"Missing unicode escape sequence end '}}', current '{text[i + j]}'",
-                                    new SourceRange(startOffset + i + j, 1)));
-                                break;
-                            }
-
-                            var unicodeHex = text[(i + 2)..(i + j)];
-                            i += j;
-                            if (unicodeHex.Length > 8)
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    $"Invalid unicode escape sequence '{unicodeHex}'",
-                                    new SourceRange(startOffset + i - j, unicodeHex.Length)));
-                                break;
-                            }
-
-                            try
-                            {
-                                if (unicodeHex.Length == 0)
-                                {
-                                    tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                        DiagnosticCode.SyntaxError,
-                                        $"Invalid unicode escape sequence '{unicodeHex}'",
-                                        new SourceRange(startOffset + i - j, unicodeHex.Length)));
-                                    break;
-                                }
-
-                                var codePoint = Convert.ToInt32(unicodeHex.ToString(), 16);
-                                if (codePoint > 0x10FFFF)
-                                {
-                                    tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                        DiagnosticCode.SyntaxError,
-                                        $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
-                                        new SourceRange(startOffset + i - j, unicodeHex.Length)));
-                                    break;
-                                }
-
-                                sb.Append(char.ConvertFromUtf32(codePoint));
-                            }
-                            catch (OverflowException)
-                            {
-                                tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                    DiagnosticCode.SyntaxError,
-                                    $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
-                                    new SourceRange(startOffset + i - j, unicodeHex.Length)));
-                            }
-
-                            break;
-                        }
-                        case '\r' or '\n':
-                        {
-                            // 跳过换行符
-                            break;
-                        }
-                        case '\\' or '\"' or '\'':
-                        {
-                            sb.Append(text[i]);
-                            break;
-                        }
-                        case 'z':
-                        {
-                            // 跳过空白符
-                            do
-                            {
-                                i++;
-                                if (i >= text.Length)
-                                {
-                                    break;
-                                }
-                            } while (char.IsWhiteSpace(text[i]));
-
-                            break;
-                        }
-                        default:
-                        {
-                            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                                DiagnosticCode.SyntaxError,
-                                $"Invalid escape sequence '\\{text[i]}'",
-                                new SourceRange(startOffset + i, 1)));
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-                default:
-                {
-                    if (text[i] == delimiter)
-                    {
-                        break;
-                    }
-
-                    sb.Append(text[i]);
-                    break;
-                }
-            }
-        }
-
-        return new LuaStringToken(sb.ToString(), greenNode, tree, parent, startOffset);
-    }
-
-    // parse [[xxxx]]
-    private static LuaStringToken CalculateLongString(GreenNode greenNode, LuaSyntaxTree tree,
-        LuaSyntaxElement? parent, int startOffset)
-    {
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        if (text.Length < 4)
-        {
-            return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        var equalNum = 0;
-        var i = 0;
-        if (text[i] != '[')
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"Invalid long string start, expected '[', current '{text[i]}'",
-                new SourceRange(startOffset, 1)));
-            return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        i++;
-        while (i < text.Length && text[i] == '=')
-        {
-            equalNum++;
-            i++;
-        }
-
-        if (i >= text.Length || text[i] != '[')
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"Invalid long string start, expected '[', current '{text[i]}'",
-                new SourceRange(startOffset, 1)));
-            return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        i++;
-
-        if (text.Length < i + equalNum + 2)
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"Invalid long string end, expected '{new string('=', equalNum)}]', current '{text[^1]}'",
-                new SourceRange(startOffset + text.Length - 1, 1)));
-            return new LuaStringToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        var content = text[i..(text.Length - equalNum - 2)];
-
-        return new LuaStringToken(content.ToString(), greenNode, tree, parent, startOffset);
-    }
-
-    private static LuaVersionNumberToken CalculateVersionNumber(GreenNode greenNode, LuaSyntaxTree tree,
-        LuaSyntaxElement? parent, int startOffset)
-    {
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        if (text is "JIT")
-        {
-            return new LuaVersionNumberToken(LuaLanguageLevel.LuaJIT, greenNode, tree, parent, startOffset);
-        }
-
-        try
-        {
-            var version = VersionNumber.Parse(text.ToString());
-            return new LuaVersionNumberToken(version, greenNode, tree, parent, startOffset);
-        }
-        catch (Exception e)
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                $"Invalid version number '{text}', {e.Message}",
-                new SourceRange(startOffset, greenNode.Length)));
-            return new LuaVersionNumberToken(new VersionNumber(0, 0, 0, 0), greenNode, tree, parent, startOffset);
-        }
-    }
-
-    private static LuaTemplateTypeToken CalculateTemplateType(GreenNode greenNode, LuaSyntaxTree tree,
-        LuaSyntaxElement? parent, int startOffset)
-    {
-        var text = tree.Document.Text.AsSpan(startOffset, greenNode.Length);
-        if (text.Length < 3)
-        {
-            tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
-                DiagnosticCode.SyntaxError,
-                "Invalid template type",
-                new SourceRange(startOffset, greenNode.Length)));
-            return new LuaTemplateTypeToken(string.Empty, greenNode, tree, parent, startOffset);
-        }
-
-        return new LuaTemplateTypeToken(text[1..^1].ToString(), greenNode, tree, parent, startOffset);
+        var tp = tree.GetIntegerTokenValue(index);
+        return new LuaIntegerToken(tp.Item1, tp.Item2, index, tree);
     }
 }

@@ -20,7 +20,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private Stack<DeclarationScope> _scopeStack = new();
 
-    private Dictionary<LuaSyntaxElement, DeclarationScope> _scopeOwners = new();
+    private Dictionary<long, DeclarationScope> _scopeOwners = new();
 
     private LuaDeclarationTree _tree;
 
@@ -69,7 +69,7 @@ public class DeclarationBuilder : ILuaElementWalker
         LuaSyntaxElement? cur = element;
         while (cur != null)
         {
-            if (_scopeOwners.TryGetValue(cur, out var scope))
+            if (_scopeOwners.TryGetValue(cur.UniqueId, out var scope))
             {
                 return scope;
             }
@@ -92,7 +92,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void PushScope(LuaSyntaxElement element)
     {
-        if (_scopeOwners.TryGetValue(element, out var scope))
+        if (_scopeOwners.TryGetValue(element.UniqueId, out var scope))
         {
             _scopeStack.Push(scope);
             _curScope = scope;
@@ -129,7 +129,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         _scopeStack.Push(scope);
         _topScope ??= scope;
-        _scopeOwners.Add(element, scope);
+        _scopeOwners.Add(element.UniqueId, scope);
         _curScope?.Add(scope);
         _curScope = scope;
     }

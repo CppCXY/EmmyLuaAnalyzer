@@ -2,24 +2,37 @@
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Binder;
+using EmmyLua.CodeAnalysis.Document.Version;
+using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Binder;
 using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Red;
+using EmmyLua.CodeAnalysis.Syntax.Tree.Token;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree;
 
 public class LuaSyntaxTree
 {
-    private List<LuaSyntaxElement> Elements { get; } = [];
+    // design for optimization
+    private List<RedNode> RedNodes { get; }
+
+    private Dictionary<int, string> StringTokenValues { get; } = new();
+
+    private Dictionary<int, (long, string)> IntegerTokenValues { get; } = new();
+
+    private Dictionary<int, double> NumberTokenValues { get; } = new();
+
+    private Dictionary<int, VersionNumber> VersionNumbers { get; } = new();
 
     public LuaDocument Document { get; }
 
     public List<Diagnostic> Diagnostics { get; }
 
-    public LuaSourceSyntax SyntaxRoot { get; private set; } = null!;
+    public LuaSourceSyntax SyntaxRoot => (GetElement(0) as LuaSourceSyntax)!;
 
-    public BinderData? BinderData { get; private set; }
+    public BinderData? BinderData { get; internal set; }
 
     public static LuaSyntaxTree ParseText(string text, LuaLanguage language)
     {
@@ -36,43 +49,172 @@ public class LuaSyntaxTree
     {
         var parser = new LuaParser(new LuaLexer(document));
         var greenTreeBuilder = new LuaGreenTreeBuilder(parser);
-
         var (root, diagnostics) = greenTreeBuilder.Build();
-        var syntaxTree = new LuaSyntaxTree(document, diagnostics);
         var redTreeBuilder = new LuaRedTreeBuilder();
-        syntaxTree.SyntaxRoot = redTreeBuilder.Build(root, syntaxTree);
-
-        syntaxTree.BinderData = BinderAnalysis.Analysis(syntaxTree.SyntaxRoot);
+        var redNodes = redTreeBuilder.Build(root);
+        var syntaxTree = new LuaSyntaxTree(document, redNodes, diagnostics);
         return syntaxTree;
     }
 
-    private LuaSyntaxTree(LuaDocument document, List<Diagnostic> diagnostics)
+    private LuaSyntaxTree(LuaDocument document, List<RedNode> redNodes, List<Diagnostic> diagnostics)
     {
         Document = document;
+        RedNodes = redNodes;
         Diagnostics = diagnostics;
+
+        InitNodes();
     }
 
-    public LuaSyntaxElement CreateElement(GreenNode greenNode, LuaSyntaxTree tree, LuaSyntaxElement? parent,
-        int startOffset)
+    private void InitNodes()
     {
-        var element = SyntaxFactory.CreateSyntax(greenNode, tree, parent, startOffset);
-        element.ElementId = Elements.Count;
-        Elements.Add(element);
-        return element;
+        TokenAnalyzer.Analyze(RedNodes.Count, this);
+        BinderAnalyzer.Analyze(SyntaxRoot, this);
     }
 
-    public LuaSyntaxElement? GetElement(int elementId)
+    internal LuaSyntaxElement? GetElement(int elementId)
     {
-        if (elementId == -1 || elementId >= Elements.Count)
+        if (elementId == -1)
         {
             return null;
         }
 
-        return Elements[elementId];
+        return SyntaxFactory.CreateSyntax(elementId, this);
     }
 
-    public void PushDiagnostic(Diagnostic diagnostic)
+    internal int GetRawKind(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return 0;
+        }
+
+        return RedNodes[elementId].RawKind;
+    }
+
+    internal bool IsNode(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return false;
+        }
+
+        return RedNodes[elementId].RawKind >> 16 == 1;
+    }
+
+    internal LuaTokenKind GetTokenKind(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return LuaTokenKind.None;
+        }
+
+        var rawKind = RedNodes[elementId].RawKind;
+        if (rawKind >> 16 == 2)
+        {
+            return (LuaTokenKind)(rawKind & 0xFFFF);
+        }
+
+        return LuaTokenKind.None;
+    }
+
+    internal LuaSyntaxKind GetSyntaxKind(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return LuaSyntaxKind.None;
+        }
+
+        var rawKind = RedNodes[elementId].RawKind;
+        if (rawKind >> 16 == 1)
+        {
+            return (LuaSyntaxKind)(rawKind & 0xFFFF);
+        }
+
+        return LuaSyntaxKind.None;
+    }
+
+    internal int GetParent(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return -1;
+        }
+
+        return RedNodes[elementId].Parent;
+    }
+
+    internal SourceRange GetSourceRange(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return SourceRange.Empty;
+        }
+
+        return RedNodes[elementId].Range;
+    }
+
+    internal int GetChildStart(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return -1;
+        }
+
+        return RedNodes[elementId].ChildStart;
+    }
+
+    internal int GetChildEnd(int elementId)
+    {
+        if (elementId == -1)
+        {
+            return -1;
+        }
+
+        return RedNodes[elementId].ChildEnd;
+    }
+
+    internal void PushDiagnostic(Diagnostic diagnostic)
     {
         Diagnostics.Add(diagnostic);
+    }
+
+    internal void SetStringTokenValue(int elementId, string value)
+    {
+        StringTokenValues[elementId] = value;
+    }
+
+    internal string GetStringTokenValue(int elementId)
+    {
+        return StringTokenValues[elementId];
+    }
+
+    internal void SetIntegerTokenValue(int elementId, long value, string raw)
+    {
+        IntegerTokenValues[elementId] = (value, raw);
+    }
+
+    internal (long, string) GetIntegerTokenValue(int elementId)
+    {
+        return IntegerTokenValues[elementId];
+    }
+
+    internal void SetNumberTokenValue(int elementId, double value)
+    {
+        NumberTokenValues[elementId] = value;
+    }
+
+    internal double GetNumberTokenValue(int elementId)
+    {
+        return NumberTokenValues[elementId];
+    }
+
+    internal void SetVersionNumber(int elementId, VersionNumber versionNumber)
+    {
+        VersionNumbers[elementId] = versionNumber;
+    }
+
+    internal VersionNumber GetVersionNumber(int elementId)
+    {
+        return VersionNumbers[elementId];
     }
 }

@@ -2,11 +2,11 @@
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Syntax.Binder;
+namespace EmmyLua.CodeAnalysis.Syntax.Tree.Binder;
 
-public static class BinderAnalysis
+public static class BinderAnalyzer
 {
-    public static BinderData Analysis(LuaSyntaxElement root)
+    public static void Analyze(LuaSyntaxElement root, LuaSyntaxTree tree)
     {
         Dictionary<long, LuaElementPtr<LuaSyntaxElement>> commentOwners = new();
         Dictionary<long, List<LuaElementPtr<LuaCommentSyntax>>> comments = new();
@@ -46,7 +46,7 @@ public static class BinderAnalysis
             }
         }
 
-        return new BinderData(commentOwners, comments);
+        tree.BinderData = new BinderData(commentOwners, comments);
     }
 
     // 通过向前查找, 获取注释的所有者, 会忽略空白/逗号/分号

@@ -3,9 +3,8 @@ using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
-namespace EmmyLua.CodeAnalysis.Syntax.Tree;
+namespace EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 public class LuaGreenTreeBuilder(LuaParser parser)
 {

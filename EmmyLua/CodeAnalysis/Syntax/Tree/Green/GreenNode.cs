@@ -22,13 +22,15 @@ public class GreenNode
 
     private NodeFlags Flag => (NodeFlags)(_kind >> 16);
 
-    public ushort RawKind => (ushort)_kind;
+    public int RawKind => _kind;
+
+    private ushort Kind => (ushort)_kind;
 
     public IEnumerable<GreenNode> Children => IsNode ? _children! : Enumerable.Empty<GreenNode>();
 
-    public LuaSyntaxKind SyntaxKind => Flag == NodeFlags.Node ? (LuaSyntaxKind)RawKind : LuaSyntaxKind.None;
+    public LuaSyntaxKind SyntaxKind => Flag == NodeFlags.Node ? (LuaSyntaxKind)Kind : LuaSyntaxKind.None;
 
-    public LuaTokenKind TokenKind => Flag == NodeFlags.Token ? (LuaTokenKind)RawKind : LuaTokenKind.None;
+    public LuaTokenKind TokenKind => Flag == NodeFlags.Token ? (LuaTokenKind)Kind : LuaTokenKind.None;
 
     public bool IsNode => Flag == NodeFlags.Node;
 
