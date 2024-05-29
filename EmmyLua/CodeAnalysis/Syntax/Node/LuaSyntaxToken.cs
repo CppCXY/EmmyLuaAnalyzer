@@ -13,8 +13,6 @@ public class LuaSyntaxToken(int index, LuaSyntaxTree tree)
 
     public string RepresentText => Text.ToString();
 
-    protected override List<LuaSyntaxElement> ChildrenElements => [];
-
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelf
     {
         get { yield return this; }

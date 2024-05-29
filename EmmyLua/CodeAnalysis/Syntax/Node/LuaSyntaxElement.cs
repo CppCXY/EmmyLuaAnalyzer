@@ -4,7 +4,6 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
@@ -37,7 +36,27 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
 
     public int Position => Range.StartOffset;
 
-    protected abstract List<LuaSyntaxElement> ChildrenElements { get; }
+    protected IEnumerable<LuaSyntaxElement> ChildrenElements
+    {
+        get
+        {
+            var start = ChildStartIndex;
+            if (start == -1)
+            {
+                yield break;
+            }
+
+            var finish = ChildFinishIndex;
+            for (var i = start; i <= finish; i++)
+            {
+                var element = Tree.GetElement(i);
+                if (element is not null)
+                {
+                    yield return element;
+                }
+            }
+        }
+    }
 
     public IEnumerable<LuaSyntaxNode> ChildrenNode => ChildrenElements.OfType<LuaSyntaxNode>();
 

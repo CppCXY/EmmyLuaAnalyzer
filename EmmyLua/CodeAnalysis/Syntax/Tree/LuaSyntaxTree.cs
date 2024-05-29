@@ -61,7 +61,6 @@ public class LuaSyntaxTree
         Document = document;
         RedNodes = redNodes;
         Diagnostics = diagnostics;
-
         InitNodes();
     }
 

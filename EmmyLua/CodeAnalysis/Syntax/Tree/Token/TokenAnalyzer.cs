@@ -4,10 +4,6 @@ using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Red;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree.Token;
 

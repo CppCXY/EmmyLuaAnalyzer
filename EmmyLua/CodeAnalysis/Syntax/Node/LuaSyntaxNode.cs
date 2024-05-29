@@ -1,7 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -9,30 +8,6 @@ public class LuaSyntaxNode(int index, LuaSyntaxTree tree)
     : LuaSyntaxElement(index, tree)
 {
     public LuaSyntaxKind Kind => (LuaSyntaxKind)RawKind;
-
-    private List<LuaSyntaxElement>? _children = null;
-
-    protected override List<LuaSyntaxElement> ChildrenElements
-    {
-        get
-        {
-            if (_children == null)
-            {
-                _children = new List<LuaSyntaxElement>();
-                if (ChildStartIndex == -1 || ChildFinishIndex == -1)
-                {
-                    return _children;
-                }
-
-                for(var i = ChildStartIndex; i <= ChildFinishIndex; i++)
-                {
-                    _children.Add(Tree.GetElement(i));
-                }
-            }
-
-            return _children;
-        }
-    }
 
     public override IEnumerable<LuaSyntaxElement> DescendantsAndSelf
     {

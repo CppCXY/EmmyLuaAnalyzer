@@ -1,12 +1,6 @@
-﻿using System.Globalization;
-using System.Text;
-using EmmyLua.CodeAnalysis.Diagnostics;
-using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Document.Version;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -108,18 +102,17 @@ public static class SyntaxFactory
 
         return GetTokenKind(rawKind) switch
         {
-            LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(tree.GetStringTokenValue(index),
-                index, tree),
-            LuaTokenKind.TkInt => GetIntegerToken(index, tree),
-            LuaTokenKind.TkFloat => new LuaFloatToken(tree.GetNumberTokenValue(index), index, tree),
+            LuaTokenKind.TkString or LuaTokenKind.TkLongString => new LuaStringToken(index, tree),
+            LuaTokenKind.TkInt => new LuaIntegerToken(index, tree),
+            LuaTokenKind.TkFloat => new LuaFloatToken(index, tree),
             LuaTokenKind.TkComplex => new LuaComplexToken(index, tree),
             LuaTokenKind.TkTrue or LuaTokenKind.TkFalse => new LuaBoolToken(index, tree),
             LuaTokenKind.TkNil => new LuaNilToken(index, tree),
             LuaTokenKind.TkDots => new LuaDotsToken(index, tree),
             LuaTokenKind.TkName => new LuaNameToken(index, tree),
             LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(index, tree),
-            LuaTokenKind.TkVersionNumber => new LuaVersionNumberToken(tree.GetVersionNumber(index), index, tree),
-            LuaTokenKind.TkTypeTemplate => new LuaTemplateTypeToken(tree.GetStringTokenValue(index), index, tree),
+            LuaTokenKind.TkVersionNumber => new LuaVersionNumberToken(index, tree),
+            LuaTokenKind.TkTypeTemplate => new LuaTemplateTypeToken(index, tree),
             _ => new LuaSyntaxToken(index, tree)
         };
     }
@@ -129,10 +122,4 @@ public static class SyntaxFactory
     private static LuaSyntaxKind GetSyntaxKind(int rawKind) => (LuaSyntaxKind)(rawKind & 0xFFFF);
 
     private static LuaTokenKind GetTokenKind(int rawKind) => (LuaTokenKind)(rawKind & 0xFFFF);
-
-    private static LuaIntegerToken GetIntegerToken(int index, LuaSyntaxTree tree)
-    {
-        var tp = tree.GetIntegerTokenValue(index);
-        return new LuaIntegerToken(tp.Item1, tp.Item2, index, tree);
-    }
 }
