@@ -15,11 +15,11 @@ public class LuaLocalStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(i
 
     public bool IsLocalDeclare => Assign != null;
 
-    public IEnumerable<LuaLocalNameSyntax> NameList => ChildNodes<LuaLocalNameSyntax>();
+    public IEnumerable<LuaLocalNameSyntax> NameList => ChildrenElement<LuaLocalNameSyntax>();
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
 }
 
 public class LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
@@ -93,7 +93,7 @@ public class LuaReturnStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(
 {
     public LuaSyntaxToken Return => FirstChildToken(LuaTokenKind.TkReturn)!;
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
 }
 
 public class LuaIfStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
@@ -106,7 +106,7 @@ public class LuaIfStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(inde
 
     public LuaBlockSyntax? ThenBlock => FirstChild<LuaBlockSyntax>();
 
-    public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList => ChildNodes<LuaIfClauseStatSyntax>();
+    public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList => ChildrenElement<LuaIfClauseStatSyntax>();
 
     public LuaSyntaxToken End => FirstChildToken(LuaTokenKind.TkEnd)!;
 }
@@ -156,18 +156,18 @@ public class LuaForStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(ind
 
     public LuaExprSyntax? InitExpr => FirstChild<LuaExprSyntax>();
 
-    public LuaExprSyntax? LimitExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    public LuaExprSyntax? LimitExpr => ChildrenElement<LuaExprSyntax>().Skip(1).FirstOrDefault();
 
-    public LuaExprSyntax? Step => ChildNodes<LuaExprSyntax>().Skip(2).FirstOrDefault();
+    public LuaExprSyntax? Step => ChildrenElement<LuaExprSyntax>().Skip(2).FirstOrDefault();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 }
 
 public class LuaForRangeStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
 {
-    public IEnumerable<LuaParamDefSyntax> IteratorNames => ChildNodes<LuaParamDefSyntax>();
+    public IEnumerable<LuaParamDefSyntax> IteratorNames => ChildrenElement<LuaParamDefSyntax>();
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
 
     public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
 }

@@ -49,19 +49,19 @@ public class LuaDocTypedParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNo
 
 public class LuaDocFuncTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildNodes<LuaDocTypedParamSyntax>();
+    public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildrenElement<LuaDocTypedParamSyntax>();
 
-    public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocUnionTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypeSyntax> UnionTypes => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> UnionTypes => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocTupleTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocParenTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
@@ -73,7 +73,7 @@ public class LuaDocGenericTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocType
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 
-    public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocVariadicTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
@@ -88,7 +88,7 @@ public class LuaDocExpandTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeS
 
 public class LuaDocAggregateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)

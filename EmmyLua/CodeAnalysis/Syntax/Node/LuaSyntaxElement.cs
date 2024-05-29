@@ -58,7 +58,30 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         }
     }
 
-    public IEnumerable<LuaSyntaxNode> ChildrenNode => ChildrenElements.OfType<LuaSyntaxNode>();
+    public IEnumerable<LuaSyntaxNode> ChildrenNode
+    {
+        get
+        {
+            var start = ChildStartIndex;
+            if (start == -1)
+            {
+                yield break;
+            }
+
+            var finish = ChildFinishIndex;
+            for (var i = start; i <= finish; i++)
+            {
+                if (Tree.IsNode(i))
+                {
+                    var element = Tree.GetElement(i);
+                    if (element is not null)
+                    {
+                        yield return (element as LuaSyntaxNode)!;
+                    }
+                }
+            }
+        }
+    }
 
     public IEnumerable<LuaSyntaxElement> ChildrenWithTokens => ChildrenElements;
 
@@ -148,7 +171,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         return ChildrenElements.OfType<LuaSyntaxToken>().FirstOrDefault(it => predicate(it.Kind));
     }
 
-    public IEnumerable<T> ChildNodes<T>() where T : LuaSyntaxElement => ChildrenElements.OfType<T>();
+    public IEnumerable<T> ChildrenElement<T>() where T : LuaSyntaxElement => ChildrenElements.OfType<T>();
 
     public IEnumerable<T> ChildNodesBeforeToken<T>(LuaTokenKind kind) where T : LuaSyntaxElement
     {
@@ -203,11 +226,22 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
 
     public IEnumerable<LuaSyntaxToken> ChildTokens(LuaTokenKind kind)
     {
-        foreach (var child in ChildrenElements)
+        var start = ChildStartIndex;
+        if (start == -1)
         {
-            if (child is LuaSyntaxToken token && token.Kind == kind)
+            yield break;
+        }
+
+        var finish = ChildFinishIndex;
+        for (var i = start; i <= finish; i++)
+        {
+            if (Tree.GetTokenKind(i) == kind)
             {
-                yield return token;
+                var element = Tree.GetElement(i);
+                if (element is not null)
+                {
+                    yield return (element as LuaSyntaxToken)!;
+                }
             }
         }
     }

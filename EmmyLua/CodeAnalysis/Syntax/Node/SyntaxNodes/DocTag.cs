@@ -19,7 +19,7 @@ public class LuaDocTagClassSyntax(int index, LuaSyntaxTree tree) : LuaDocTagName
 
     public bool HasExtendType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
-    public IEnumerable<LuaDocTypeSyntax> ExtendTypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> ExtendTypeList => ChildrenElement<LuaDocTypeSyntax>();
 
     public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
@@ -33,14 +33,14 @@ public class LuaDocGenericParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntax
 
 public class LuaDocTagGenericSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
-    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
+    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildrenElement<LuaDocGenericParamSyntax>();
 
     public bool Variadic => FirstChildToken(LuaTokenKind.TkDots) != null;
 }
 
 public class LuaDocGenericDeclareListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildNodes<LuaDocGenericParamSyntax>();
+    public IEnumerable<LuaDocGenericParamSyntax> Params => ChildrenElement<LuaDocGenericParamSyntax>();
 }
 
 public class LuaDocTagEnumSyntax(int index, LuaSyntaxTree tree) : LuaDocTagNamedTypeSyntax(index, tree)
@@ -49,7 +49,7 @@ public class LuaDocTagEnumSyntax(int index, LuaSyntaxTree tree) : LuaDocTagNamed
 
     public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
 
-    public IEnumerable<LuaDocTagEnumFieldSyntax> FieldList => ChildNodes<LuaDocTagEnumFieldSyntax>();
+    public IEnumerable<LuaDocTagEnumFieldSyntax> FieldList => ChildrenElement<LuaDocTagEnumFieldSyntax>();
 }
 
 public class LuaDocTagInterfaceSyntax(int index, LuaSyntaxTree tree) : LuaDocTagNamedTypeSyntax(index, tree)
@@ -58,7 +58,7 @@ public class LuaDocTagInterfaceSyntax(int index, LuaSyntaxTree tree) : LuaDocTag
 
     public bool HasExtendType => FirstChildToken(LuaTokenKind.TkColon) != null;
 
-    public IEnumerable<LuaDocTypeSyntax> ExtendTypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> ExtendTypeList => ChildrenElement<LuaDocTypeSyntax>();
 
     public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
@@ -93,14 +93,14 @@ public class LuaDocTagReturnSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyn
 {
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocTagSeeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree);
 
 public class LuaDocTagTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildNodes<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
 }
 
 public class LuaDocTagOverloadSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
@@ -134,7 +134,7 @@ public class LuaDocTagAsSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(
 
 public class LuaDocTagVersionSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
-    public IEnumerable<LuaDocVersionSyntax> Versions => ChildNodes<LuaDocVersionSyntax>();
+    public IEnumerable<LuaDocVersionSyntax> Versions => ChildrenElement<LuaDocVersionSyntax>();
 }
 
 public class LuaDocTagDiagnosticSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
@@ -146,7 +146,7 @@ public class LuaDocTagDiagnosticSyntax(int index, LuaSyntaxTree tree) : LuaDocTa
 
 public class LuaDocDiagnosticNameListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaNameToken> DiagnosticNames => ChildNodes<LuaNameToken>();
+    public IEnumerable<LuaNameToken> DiagnosticNames => ChildrenElement<LuaNameToken>();
 }
 
 public class LuaDocTagOperatorSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
@@ -167,5 +167,5 @@ public class LuaDocTagModuleSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyn
 
 public class LuaDocAttributeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
-    public IEnumerable<LuaNameToken> Attributes => ChildNodes<LuaNameToken>();
+    public IEnumerable<LuaNameToken> Attributes => ChildrenElement<LuaNameToken>();
 }

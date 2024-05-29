@@ -11,9 +11,9 @@ public class LuaCommentSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(ind
     // TODO
     // public bool IsOverride => FirstChildToken(LuaTokenKind.TkTagOverride) != null;
 
-    public IEnumerable<LuaDocTagSyntax> DocList => ChildNodes<LuaDocTagSyntax>();
+    public IEnumerable<LuaDocTagSyntax> DocList => ChildrenElement<LuaDocTagSyntax>();
 
-    public IEnumerable<LuaDescriptionSyntax> Descriptions => ChildNodes<LuaDescriptionSyntax>();
+    public IEnumerable<LuaDescriptionSyntax> Descriptions => ChildrenElement<LuaDescriptionSyntax>();
 
     public string CommentText => string.Join("\n\n", Descriptions.Select(it => it.CommentText));
 

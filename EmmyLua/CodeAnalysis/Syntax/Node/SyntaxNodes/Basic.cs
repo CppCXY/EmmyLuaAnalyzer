@@ -12,7 +12,7 @@ public class LuaSourceSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(inde
 
 public class LuaBlockSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaStatSyntax> StatList => ChildNodes<LuaStatSyntax>();
+    public IEnumerable<LuaStatSyntax> StatList => ChildrenElement<LuaStatSyntax>();
 
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? [];
@@ -27,7 +27,7 @@ public class LuaParamDefSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
 
 public class LuaParamListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaParamDefSyntax> Params => ChildNodes<LuaParamDefSyntax>();
+    public IEnumerable<LuaParamDefSyntax> Params => ChildrenElement<LuaParamDefSyntax>();
 
     public bool HasVarArgs => Params.LastOrDefault()?.IsVarArgs == true;
 }
@@ -72,7 +72,7 @@ public class LuaLocalNameSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(i
 
 public class LuaCallArgListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaExprSyntax> ArgList => ChildNodes<LuaExprSyntax>();
+    public IEnumerable<LuaExprSyntax> ArgList => ChildrenElement<LuaExprSyntax>();
 
     public bool IsSingleArgCall => FirstChildToken(LuaTokenKind.TkLeftParen) != null;
 
@@ -201,7 +201,7 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
     }
 
     public LuaDocTypeSyntax? Type => IsTypeField
-        ? ChildNodes<LuaDocTypeSyntax>().LastOrDefault()
+        ? ChildrenElement<LuaDocTypeSyntax>().LastOrDefault()
         : FirstChild<LuaDocTypeSyntax>();
 
     public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
@@ -209,7 +209,7 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
 
 public class LuaDocBodySyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public IEnumerable<LuaDocFieldSyntax> FieldList => ChildNodes<LuaDocFieldSyntax>();
+    public IEnumerable<LuaDocFieldSyntax> FieldList => ChildrenElement<LuaDocFieldSyntax>();
 }
 
 public class LuaDocVersionSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)

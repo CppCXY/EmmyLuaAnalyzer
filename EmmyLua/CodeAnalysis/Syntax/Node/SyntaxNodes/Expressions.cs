@@ -53,7 +53,7 @@ public class LuaBinaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(
         }
     }
 
-    public LuaExprSyntax? RightExpr => ChildNodes<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    public LuaExprSyntax? RightExpr => ChildrenElement<LuaExprSyntax>().Skip(1).FirstOrDefault();
 }
 
 public class LuaUnaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
@@ -72,12 +72,12 @@ public class LuaUnaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(i
 
 public class LuaTableExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
-    public IEnumerable<LuaTableFieldSyntax> FieldList => ChildNodes<LuaTableFieldSyntax>();
+    public IEnumerable<LuaTableFieldSyntax> FieldList => ChildrenElement<LuaTableFieldSyntax>();
 }
 
 public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public bool IsExprKey => ChildNodes<LuaExprSyntax>().Count() == 2;
+    public bool IsExprKey => ChildrenElement<LuaExprSyntax>().Count() == 2;
 
     public bool IsNameKey => FirstChild<LuaNameToken>() != null;
 
@@ -95,7 +95,7 @@ public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(
 
     public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
 
-    public LuaExprSyntax? Value => ChildNodes<LuaExprSyntax>().LastOrDefault();
+    public LuaExprSyntax? Value => ChildrenElement<LuaExprSyntax>().LastOrDefault();
 
     public LuaTableExprSyntax? ParentTable => Parent as LuaTableExprSyntax;
 
