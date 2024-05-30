@@ -72,7 +72,7 @@ public static class KeySnippets
             Label = "forp",
             Kind = CompletionItemKind.Snippet,
             InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "for ${1:var} in pairs(${2:table}) do\n\t${0}\nend",
+            InsertText = "for ${1:key},${2:var} in pairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
                 Detail = " (for k,v in pairs(table) do ... end)"
@@ -84,7 +84,7 @@ public static class KeySnippets
             Label = "forip",
             Kind = CompletionItemKind.Snippet,
             InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "for ${1:var} in ipairs(${2:table}) do\n\t${0}\nend",
+            InsertText = "for ${1:i},${2:v} in ipairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
                 Detail = " (for i,v in ipairs(table) do ... end)"
