@@ -462,20 +462,38 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private LuaType? FindFirstLocalOrAssignType(LuaStatSyntax stat)
     {
-        var docList = stat.Comments.FirstOrDefault()?.DocList;
-        if (docList is null)
+        foreach (var comment in stat.Comments)
         {
-            return null;
-        }
-
-        var tagNameTypeSyntax = docList.OfType<LuaDocTagNamedTypeSyntax>().FirstOrDefault();
-        if (tagNameTypeSyntax is { Name.RepresentText: { } name })
-        {
-            return new LuaNamedType(name);
+            var tagNameTypeSyntax = comment.DocList.OfType<LuaDocTagNamedTypeSyntax>().FirstOrDefault();
+            if (tagNameTypeSyntax is { Name.RepresentText: { } name })
+            {
+                return new LuaNamedType(name);
+            }
         }
 
         return null;
     }
+
+    private LuaType? FindTableFieldType(LuaTableFieldSyntax fieldSyntax)
+    {
+        foreach (var comment in fieldSyntax.Comments)
+        {
+            foreach (var tagSyntax in comment.DocList)
+            {
+                if (tagSyntax is LuaDocTagTypeSyntax { TypeList: {} typeList })
+                {
+                    return Context.Infer(typeList.FirstOrDefault());
+                }
+                else if (tagSyntax is LuaDocTagNamedTypeSyntax { Name: { } name })
+                {
+                    return new LuaNamedType(name.RepresentText);
+                }
+            }
+        }
+
+        return null;
+    }
+
 
     private List<LuaType> FindLocalOrAssignTypes(LuaStatSyntax stat) =>
     (
@@ -1347,18 +1365,21 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             if (fieldSyntax is { Name: { } fieldName, Value: { } value })
             {
-                // TODO get type from ---@field ---@type
+                var type = FindTableFieldType(fieldSyntax);
                 var declaration = new LuaDeclaration(
                     fieldName,
                     fieldSyntax.Position,
                     new TableFieldInfo(
                         new(fieldSyntax),
-                        null
+                        type
                     ));
                 Db.AddMember(DocumentId, tableClass, declaration);
-                var unResolveDeclaration =
-                    new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
-                AddUnResolved(unResolveDeclaration);
+                if (type != null)
+                {
+                    var unResolveDeclaration =
+                        new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
+                    AddUnResolved(unResolveDeclaration);
+                }
             }
         }
     }

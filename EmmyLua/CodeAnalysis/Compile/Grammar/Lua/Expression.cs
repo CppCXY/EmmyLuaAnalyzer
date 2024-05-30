@@ -20,11 +20,12 @@ public static class ExpressionParser
             if (uop != OperatorKind.UnaryOperator.OpNop)
             {
                 p.Bump();
-                cm = SubExpression(p, OperatorKind.UNARY_PRIORITY);
-                if (!cm.IsComplete)
+                if (!SubExpression(p, OperatorKind.UNARY_PRIORITY).IsComplete)
                 {
                     return m.Fail(p, LuaSyntaxKind.UnaryExpr, "unary operator not followed by expression");
                 }
+                cm = m.Complete(p, LuaSyntaxKind.UnaryExpr);
+                m = cm.Precede(p);
             }
             else
             {
