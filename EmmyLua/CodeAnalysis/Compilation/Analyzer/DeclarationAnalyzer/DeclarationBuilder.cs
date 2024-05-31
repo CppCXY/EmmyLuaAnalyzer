@@ -59,7 +59,7 @@ public class DeclarationBuilder : ILuaElementWalker
         Context = new(Analyzer.Compilation, new SearchContextFeatures() { Cache = false });
     }
 
-    private LuaDeclaration? FindDeclaration(LuaNameExprSyntax nameExpr)
+    private LuaDeclaration? FindLocalDeclaration(LuaNameExprSyntax nameExpr)
     {
         return FindScope(nameExpr)?.FindNameDeclaration(nameExpr);
     }
@@ -104,22 +104,22 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             case LuaLocalStatSyntax:
             {
-                SetScope(new LocalStatDeclarationScope(_tree, position), element);
+                SetScope(new LocalStatDeclarationScope(position), element);
                 break;
             }
             case LuaRepeatStatSyntax:
             {
-                SetScope(new RepeatStatDeclarationScope(_tree, position), element);
+                SetScope(new RepeatStatDeclarationScope(position), element);
                 break;
             }
             case LuaForRangeStatSyntax:
             {
-                SetScope(new ForRangeStatDeclarationScope(_tree, position), element);
+                SetScope(new ForRangeStatDeclarationScope(position), element);
                 break;
             }
             default:
             {
-                SetScope(new DeclarationScope(_tree, position), element);
+                SetScope(new DeclarationScope(position), element);
                 break;
             }
         }
@@ -480,7 +480,7 @@ public class DeclarationBuilder : ILuaElementWalker
         {
             foreach (var tagSyntax in comment.DocList)
             {
-                if (tagSyntax is LuaDocTagTypeSyntax { TypeList: {} typeList })
+                if (tagSyntax is LuaDocTagTypeSyntax { TypeList: { } typeList })
                 {
                     return Context.Infer(typeList.FirstOrDefault());
                 }
@@ -576,7 +576,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 {
                     if (nameExpr.Name is { } name)
                     {
-                        var prevDeclaration = FindDeclaration(nameExpr);
+                        var prevDeclaration = FindLocalDeclaration(nameExpr);
                         if (prevDeclaration is null)
                         {
                             var declaration = new LuaDeclaration(
@@ -584,8 +584,7 @@ public class DeclarationBuilder : ILuaElementWalker
                                 nameExpr.Position,
                                 new GlobalInfo(
                                     new(nameExpr),
-                                    luaType,
-                                    false
+                                    luaType
                                 ),
                                 DeclarationFeature.Global
                             );
@@ -603,7 +602,6 @@ public class DeclarationBuilder : ILuaElementWalker
                                     declaration.Info = info with
                                     {
                                         DeclarationType = definedType,
-                                        IsTypeDefine = true
                                     };
                                     unResolveDeclaration.IsTypeDeclaration = true;
                                 }
@@ -631,8 +629,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         new IndexInfo(
                             new(indexExpr),
                             valueExprPtr,
-                            luaType,
-                            false
+                            luaType
                         )
                     );
                     AnalyzeDeclarationDoc(declaration, luaAssignStat);
@@ -647,7 +644,6 @@ public class DeclarationBuilder : ILuaElementWalker
                             declaration.Info = indexInfo with
                             {
                                 DeclarationType = declarationType,
-                                IsTypeDefine = true
                             };
                             unResolveDeclaration.IsTypeDeclaration = true;
                         }
@@ -684,7 +680,7 @@ public class DeclarationBuilder : ILuaElementWalker
             }
             case { IsLocal: false, NameExpr.Name: { } name2, ClosureExpr: { } closureExpr }:
             {
-                var prevDeclaration = FindDeclaration(luaFuncStat.NameExpr);
+                var prevDeclaration = FindLocalDeclaration(luaFuncStat.NameExpr);
                 if (prevDeclaration is null)
                 {
                     var declaration = new LuaDeclaration(
@@ -1374,7 +1370,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         type
                     ));
                 Db.AddMember(DocumentId, tableClass, declaration);
-                if (type != null)
+                if (type == null)
                 {
                     var unResolveDeclaration =
                         new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
@@ -1506,6 +1502,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             var versionNumber = version.VersionNumber?.Version ?? new VersionNumber(0, 0, 0, 0);
                             requiredVersions.Add(new RequiredVersion(action, framework, versionNumber));
                         }
+
                         declaration.RequiredVersions = requiredVersions;
                         break;
                     }

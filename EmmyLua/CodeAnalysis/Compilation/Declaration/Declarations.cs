@@ -204,8 +204,7 @@ public record LocalInfo(
 
 public record GlobalInfo(
     LuaElementPtr<LuaNameExprSyntax> VarNamePtr,
-    LuaType? DeclarationType,
-    bool IsTypeDefine
+    LuaType? DeclarationType
 ) : DeclarationInfo(VarNamePtr.UpCast(), DeclarationType)
 {
     public LuaElementPtr<LuaNameExprSyntax> VarNamePtr => Ptr.Cast<LuaNameExprSyntax>();
@@ -283,8 +282,7 @@ public record GenericParamInfo(
 public record IndexInfo(
     LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr,
     LuaElementPtr<LuaExprSyntax> ValueExprPtr,
-    LuaType? DeclarationType,
-    bool IsTypeDefine
+    LuaType? DeclarationType
 ) : DeclarationInfo(IndexExprPtr.UpCast(), DeclarationType)
 {
     public LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr => Ptr.Cast<LuaIndexExprSyntax>();

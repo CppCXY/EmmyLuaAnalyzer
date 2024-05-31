@@ -9,11 +9,9 @@ public enum ScopeFoundState
     NotFounded,
 }
 
-public class DeclarationScope(LuaDeclarationTree tree, int pos)
+public class DeclarationScope(int pos)
     : DeclarationNodeContainer(pos)
 {
-    public LuaDeclarationTree Tree { get; } = tree;
-
     public DeclarationScope? ParentScope => Parent as DeclarationScope;
 
     public virtual ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
@@ -138,8 +136,8 @@ public class DeclarationScope(LuaDeclarationTree tree, int pos)
     }
 }
 
-public class LocalStatDeclarationScope(LuaDeclarationTree tree, int pos)
-    : DeclarationScope(tree, pos)
+public class LocalStatDeclarationScope(int pos)
+    : DeclarationScope(pos)
 {
     public override ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
     {
@@ -152,8 +150,8 @@ public class LocalStatDeclarationScope(LuaDeclarationTree tree, int pos)
     }
 }
 
-public class RepeatStatDeclarationScope(LuaDeclarationTree tree, int pos)
-    : DeclarationScope(tree, pos)
+public class RepeatStatDeclarationScope(int pos)
+    : DeclarationScope(pos)
 {
     public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
@@ -168,8 +166,8 @@ public class RepeatStatDeclarationScope(LuaDeclarationTree tree, int pos)
     }
 }
 
-public class ForRangeStatDeclarationScope(LuaDeclarationTree tree, int pos)
-    : DeclarationScope(tree, pos)
+public class ForRangeStatDeclarationScope(int pos)
+    : DeclarationScope(pos)
 {
     public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
