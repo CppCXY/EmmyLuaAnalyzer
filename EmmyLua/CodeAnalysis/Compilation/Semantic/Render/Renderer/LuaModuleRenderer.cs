@@ -8,7 +8,7 @@ public static class LuaModuleRenderer
     public static void RenderModule(LuaDocument document, LuaRenderContext renderContext)
     {
         var exports = renderContext.SearchContext.Compilation.Db
-            .GetModuleExportExprs(document.Id)
+            .QueryModuleReturns(document.Id)
             .Select(it => it.ToNode(document));
         foreach (var exportElement in exports)
         {

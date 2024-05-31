@@ -56,16 +56,16 @@ public class SemanticModel
 
     public IEnumerable<LuaDeclaration> GetGlobals()
     {
-        return Compilation.Db.GetGlobals();
+        return Compilation.Db.QueryAllGlobal();
     }
 
     public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
-        return DeclarationTree.GetDeclarations(beforeToken);
+        return DeclarationTree.GetDeclarationsBefore(beforeToken);
     }
 
     public LuaType? GetExportType(LuaDocumentId documentId)
     {
-        return Compilation.Db.GetModuleExportType(documentId);
+        return Compilation.Db.QueryModuleType(documentId);
     }
 }

@@ -76,28 +76,14 @@ public class IndexStorage<TKey, TStubElement>
         }
     }
 
-    public IEnumerable<TStubElement> Get(TKey key)
+    public IEnumerable<TStubElement> Query(TKey key)
     {
         return _indexMap.TryGetValue(key, out var entry)
             ? entry.Files.Values.SelectMany(it => it)
             : [];
     }
 
-    public TStubElement? GetOne(TKey key)
-    {
-        return Get(key).FirstOrDefault();
-    }
-
-    public TStubElement? GetLastOne(TKey key)
-    {
-        return Get(key).LastOrDefault();
-    }
-
-    public IEnumerable<TValue> Get<TValue>(TKey key)
-        where TValue : TStubElement
-        => Get(key).OfType<TValue>();
-
-    public IEnumerable<TStubElement> GetAll() =>
+    public IEnumerable<TStubElement> QueryAll() =>
         _indexMap.Values.SelectMany(
             it => it.Files.Values.SelectMany(it2 => it2));
 

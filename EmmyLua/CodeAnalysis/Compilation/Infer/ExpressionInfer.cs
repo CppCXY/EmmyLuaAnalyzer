@@ -117,7 +117,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var methodType = context.Compilation.Db.GetTypeFromId(closureExpr.UniqueId).FirstOrDefault();
+        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId).FirstOrDefault();
         return methodType ?? Builtin.Unknown;
     }
 

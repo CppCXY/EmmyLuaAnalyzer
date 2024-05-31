@@ -54,7 +54,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                     documentIds = documentIds
                         .Where(it =>
                         {
-                            if (Compilation.Db.GetModuleExportType(it) is { } ty
+                            if (Compilation.Db.QueryModuleType(it) is { } ty
                                 && !ty.Equals(Builtin.Unknown) && !ty.Equals(Builtin.Nil))
                             {
                                 return true;

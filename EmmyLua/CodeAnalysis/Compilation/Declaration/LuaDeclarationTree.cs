@@ -72,7 +72,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
 
     private LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr, SearchContext context)
     {
-        if (nameExpr.Name is { RepresentText: "self" })
+        if (nameExpr.Name is { Text: "self" })
         {
             var closures = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>();
             foreach (var closure in closures)
@@ -94,7 +94,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
                 return declaration;
             }
 
-            return context.Compilation.Db.GetGlobal(name.RepresentText).FirstOrDefault();
+            return context.Compilation.Db.QueryGlobals(name.RepresentText).FirstOrDefault();
         }
 
         return null;
@@ -104,7 +104,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
     {
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
-            var relatedType = context.Compilation.Db.GetTypeFromId(parentTable.UniqueId).FirstOrDefault() ??
+            var relatedType = context.Compilation.Db.QueryTypeFromId(parentTable.UniqueId).FirstOrDefault() ??
                               new LuaTableLiteralType(parentTable);
             return context.FindMember(relatedType, name).FirstOrDefault();
         }
@@ -129,7 +129,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
         {
             if (context.Compilation.Db.IsDefinedType(name))
             {
-                return context.Compilation.Db.GetNamedType(name).FirstOrDefault();
+                return context.Compilation.Db.QueryNamedTypeDefinitions(name).FirstOrDefault();
             }
         }
 
@@ -138,7 +138,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
 
     private LuaDeclaration? FindDocFieldDeclaration(LuaDocFieldSyntax docField, SearchContext context)
     {
-        var parentType = context.Compilation.Db.GetParentType(docField);
+        var parentType = context.Compilation.Db.QueryParentType(docField);
         if (parentType is not null && docField.Name is { } name)
         {
             return context.FindMember(parentType, name).FirstOrDefault();
@@ -163,7 +163,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
         return null;
     }
 
-    public IEnumerable<LuaDeclaration> GetDeclarations(LuaSyntaxElement beforeToken)
+    public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
         var token = SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
         if (token is not null)

@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -81,38 +80,33 @@ public static class LuaTypeRenderer
 
     private static void InnerRenderDetailType(LuaNamedType namedType, LuaRenderContext renderContext)
     {
-        var detailType = namedType.GetDetailType(renderContext.SearchContext);
-        if (detailType is AliasDetailType { OriginType: { } originType })
+        var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
+        if (namedTypeKind == NamedTypeKind.Alias)
         {
+            var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name).FirstOrDefault();
             if (originType is LuaAggregateType)
             {
                 renderContext.AddAliasExpand(namedType);
             }
-            else
+            else if (originType is not null)
             {
-                renderContext.Append($" = ");
+                renderContext.Append(" = ");
                 InnerRenderType(originType, renderContext, 1);
             }
         }
-        else if (detailType is ClassDetailType classType)
+        else if (namedTypeKind == NamedTypeKind.Class || namedTypeKind == NamedTypeKind.Interface)
         {
-            var generics = classType.Generics;
-            var supers = classType.Supers;
-            RenderClassOrInterface(classType.Name, generics, supers, renderContext);
+            var generics = renderContext.SearchContext.Compilation.Db.QueryGenericParams(namedType.Name).ToList();
+            var supers =  renderContext.SearchContext.Compilation.Db.QuerySupers(namedType.Name).ToList();
+            RenderClassOrInterface(namedType.Name, generics, supers, renderContext);
         }
-        else if (detailType is InterfaceDetailType interfaceType)
+        else if (namedTypeKind == NamedTypeKind.Enum)
         {
-            var generics = interfaceType.Generics;
-            var supers = interfaceType.Supers;
-            RenderClassOrInterface(interfaceType.Name, generics, supers, renderContext);
-        }
-        else if (detailType is EnumDetailType enumType)
-        {
-            var supers = enumType.BaseType;
-            if (supers is not null)
+            var baseType = renderContext.SearchContext.Compilation.Db.QuerySupers(namedType.Name).FirstOrDefault();
+            if (baseType is not null)
             {
                 renderContext.Append(" extends ");
-                InnerRenderType(supers, renderContext, 1);
+                InnerRenderType(baseType, renderContext, 1);
             }
         }
     }
@@ -289,13 +283,17 @@ public static class LuaTypeRenderer
 
     private static void RenderNamedType(LuaNamedType namedType, LuaRenderContext renderContext, int level)
     {
-        var detailType = namedType.GetDetailType(renderContext.SearchContext);
+        var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
         if (level == 0 && renderContext.Feature.ExpandAlias)
         {
-            if (detailType is AliasDetailType { OriginType: { } originType })
+            if (namedTypeKind == NamedTypeKind.Alias)
             {
-                InnerRenderType(originType, renderContext, 1);
-                return;
+                var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name).FirstOrDefault();
+                if (originType is not null)
+                {
+                    InnerRenderType(originType, renderContext, 1);
+                    return;
+                }
             }
         }
 

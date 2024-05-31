@@ -2,6 +2,7 @@
 
 public enum NamedTypeKind
 {
+    None,
     Class,
     Enum,
     Interface,

@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -60,9 +59,9 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 {
     public string Name { get; } = name;
 
-    public BasicDetailType GetDetailType(SearchContext context)
+    public NamedTypeKind GetTypeKind(SearchContext context)
     {
-        return context.Compilation.Db.GetDetailNamedType(Name, context);
+        return context.Compilation.Db.QueryNamedTypeKind(Name);
     }
 
     public override bool Equals(object? obj)
@@ -112,7 +111,7 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
             return false;
         }
 
-        var supers = context.Compilation.Db.GetSupers(Name);
+        var supers = context.Compilation.Db.QuerySupers(Name);
         return supers.Any(super => super.SubTypeOf(namedType, context));
     }
 

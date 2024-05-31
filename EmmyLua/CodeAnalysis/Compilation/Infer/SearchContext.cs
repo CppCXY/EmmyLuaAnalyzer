@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compilation.Type.DetailType;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -114,8 +113,8 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         members = name switch
         {
-            "_G" or "_ENV" or "global" => Compilation.Db.GetGlobals().ToList(),
-            _ => Compilation.Db.GetMembers(name).ToList()
+            "_G" or "_ENV" or "global" => Compilation.Db.QueryAllGlobal().ToList(),
+            _ => Compilation.Db.QueryMembers(name).ToList()
         };
 
         if (Features.Cache)
@@ -128,7 +127,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     private void CollectSupers(string name, HashSet<LuaType> hashSet, List<LuaNamedType> result)
     {
-        var supers = Compilation.Db.GetSupers(name).ToList();
+        var supers = Compilation.Db.QuerySupers(name).ToList();
         var namedTypes = new List<LuaNamedType>();
         foreach (var super in supers)
         {
@@ -144,8 +143,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         foreach (var namedType in namedTypes)
         {
-            var detailType = namedType.GetDetailType(this);
-            if (detailType.IsClass)
+            if (namedType.GetTypeKind(this) == NamedTypeKind.Class)
             {
                 CollectSupers(namedType.Name, hashSet, result);
             }
@@ -197,16 +195,19 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
         if (luaType is LuaNamedType namedType)
         {
-            var detailType = namedType.GetDetailType(this);
-            if (detailType.IsAlias && detailType is AliasDetailType { OriginType: { } originType, Name: { } name })
+            var namedTypeKind = namedType.GetTypeKind(this);
+            if (namedTypeKind == NamedTypeKind.Alias)
             {
+                var originType = Compilation.Db.QueryAliasOriginTypes(namedType.Name).FirstOrDefault();
                 // TODO 防止错误递归 ---@alias a a
-                if (originType is LuaNamedType { Name: { } originName } && originName == name)
+                if (originType is LuaNamedType { Name: { } originName } && originName == namedType.Name)
                 {
                     return [];
                 }
-
-                return GetMembers(originType);
+                else if (originType is not null)
+                {
+                    return GetMembers(originType);
+                }
             }
 
             return GetMembers(namedType.Name);
@@ -233,7 +234,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
 
         var members = GetMembers(genericType.Name);
-        var genericParams = Compilation.Db.GetGenericParams(genericType.Name).ToList();
+        var genericParams = Compilation.Db.QueryGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 
         var genericMap = new Dictionary<string, LuaType>();
@@ -441,10 +442,10 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
                 }
             }
 
-            var originOperators = Compilation.Db.GetTypeOperators(left.Name)
+            var originOperators = Compilation.Db.QueryTypeOperators(left.Name)
                 .Where(it => it.Kind == kind).ToList();
 
-            var genericParams = Compilation.Db.GetGenericParams(genericType.Name).ToList();
+            var genericParams = Compilation.Db.QueryGenericParams(genericType.Name).ToList();
             var genericArgs = genericType.GenericArgs;
 
             var genericMap = new Dictionary<string, LuaType>();
@@ -468,7 +469,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             return instanceOperators;
         }
 
-        return Compilation.Db.GetTypeOperators(left.Name)
+        return Compilation.Db.QueryTypeOperators(left.Name)
             .Where(it => it.Kind == kind);
     }
 
@@ -572,7 +573,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             case LuaNamedType namedType:
             {
                 var founded = false;
-                var overloads = Compilation.Db.GetTypeOverloads(namedType.Name);
+                var overloads = Compilation.Db.QueryTypeOverloads(namedType.Name);
                 foreach (var methodType in overloads)
                 {
                     founded = true;

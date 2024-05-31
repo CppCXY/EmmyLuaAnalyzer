@@ -811,7 +811,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 )
             );
 
-            Db.AddType(DocumentId, name.RepresentText, declaration);
+            Db.AddTypeDefinition(DocumentId, name.RepresentText, declaration);
 
             AnalyzeTypeFields(luaClass, tagClassSyntax);
             AnalyzeTypeOperator(luaClass, tagClassSyntax);
@@ -901,7 +901,7 @@ public class DeclarationBuilder : ILuaElementWalker
                 ));
 
 
-            Db.AddType(DocumentId, name.RepresentText, declaration);
+            Db.AddTypeDefinition(DocumentId, name.RepresentText, declaration);
             AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
             AnalyzeTypeOperator(luaInterface, tagInterfaceSyntax);
             if (tagInterfaceSyntax is { Body: { } body })
@@ -1206,12 +1206,6 @@ public class DeclarationBuilder : ILuaElementWalker
                     Db.AddTypeOperator(DocumentId, op);
                     break;
                 }
-                // TODO:
-                // case "call":
-                // {
-                //
-                //     break;
-                // }
             }
         }
 

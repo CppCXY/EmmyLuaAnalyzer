@@ -16,60 +16,6 @@ public class DeclarationNode(int position)
     public int Position { get; } = position;
 }
 
-public class DeclarationNodeContainer(int position)
-    : DeclarationNode(position)
-{
-    public List<DeclarationNode> Children { get; } = [];
-
-    public void Add(DeclarationNode node)
-    {
-        node.Parent = this;
-
-        // 如果Children为空，直接添加
-        if (Children.Count == 0)
-        {
-            Children.Add(node);
-            return;
-        }
-
-        // 如果Children的最后一个节点的位置小于等于node的位置，直接添加
-        if (Children.Last().Position <= node.Position)
-        {
-            var last = Children.Last();
-            node.Prev = last;
-            last.Next = node;
-            Children.Add(node);
-        }
-        else
-        {
-            var index = Children.FindIndex(n => n.Position > node.Position);
-            // 否则，插入到找到的位置
-            var nextNode = Children[index];
-            var prevNode = nextNode.Prev;
-
-            node.Next = nextNode;
-            node.Prev = prevNode;
-
-            if (prevNode != null)
-            {
-                prevNode.Next = node;
-            }
-
-            nextNode.Prev = node;
-
-            Children.Insert(index, node);
-        }
-    }
-
-    public DeclarationNode? FirstChild => Children.FirstOrDefault();
-
-    public DeclarationNode? LastChild => Children.LastOrDefault();
-
-    public DeclarationNode? FindFirstChild(Func<DeclarationNode, bool> predicate) => Children.FirstOrDefault(predicate);
-
-    public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
-}
-
 [Flags]
 public enum DeclarationFeature
 {

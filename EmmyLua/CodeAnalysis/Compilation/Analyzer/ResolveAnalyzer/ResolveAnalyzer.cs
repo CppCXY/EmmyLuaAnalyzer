@@ -179,7 +179,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 returnType = multiReturnType.GetElementType(0);
             }
 
-            Compilation.Db.AddModuleExport(unResolvedSource.DocumentId, returnType, relatedExpr);
+            Compilation.Db.AddModuleReturns(unResolvedSource.DocumentId, returnType, relatedExpr);
         }
     }
 
@@ -294,7 +294,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (type is LuaTableLiteralType tableType)
                 {
                     var typeName = namedType.Name;
-                    var members = Compilation.Db.GetMembers(tableType.Name);
+                    var members = Compilation.Db.QueryMembers(tableType.Name);
                     var documentId = declaration.Info.Ptr.DocumentId;
 
                     foreach (var member in members)

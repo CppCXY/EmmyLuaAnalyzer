@@ -74,16 +74,16 @@ public static class LuaDeclarationRenderer
             var parentTypeDescription = "class";
             if (prefixType is LuaNamedType namedType)
             {
-                var detailType = namedType.GetDetailType(renderContext.SearchContext);
-                if (detailType.IsAlias)
+                var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
+                if (namedTypeKind == NamedTypeKind.Alias)
                 {
                     parentTypeDescription = "alias";
                 }
-                else if (detailType.IsEnum)
+                else if (namedTypeKind == NamedTypeKind.Enum)
                 {
                     parentTypeDescription = "enum";
                 }
-                else if (detailType.IsInterface)
+                else if (namedTypeKind == NamedTypeKind.Interface)
                 {
                     parentTypeDescription = "interface";
                 }
@@ -258,26 +258,24 @@ public static class LuaDeclarationRenderer
         {
             if (namedTypeInfo.DeclarationType is LuaNamedType namedType)
             {
-                var detailType = namedType.GetDetailType(renderContext.SearchContext);
-                if (detailType.IsAlias)
+                var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
+                switch (namedTypeKind)
                 {
-                    renderContext.Append("(alias) ");
-                }
-                else if (detailType.IsEnum)
-                {
-                    renderContext.Append("(enum) ");
-                }
-                else if (detailType.IsInterface)
-                {
-                    renderContext.Append("(interface) ");
-                }
-                else if (detailType.IsClass)
-                {
-                    renderContext.Append("(class) ");
-                }
-                else
-                {
-                    renderContext.Append("(type) ");
+                    case NamedTypeKind.Alias:
+                        renderContext.Append("(alias) ");
+                        break;
+                    case NamedTypeKind.Enum:
+                        renderContext.Append("(enum) ");
+                        break;
+                    case NamedTypeKind.Interface:
+                        renderContext.Append("(interface) ");
+                        break;
+                    case NamedTypeKind.Class:
+                        renderContext.Append("(class) ");
+                        break;
+                    default:
+                        renderContext.Append("(type) ");
+                        break;
                 }
             }
 
