@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Common;
+﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -10,12 +9,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
 public class DeclarationNode(int position)
 {
-    public DeclarationNode? Prev { get; set; }
-
-    public DeclarationNode? Next { get; set; }
-
-    public DeclarationNodeContainer? Parent { get; set; }
-
     public int Position { get; } = position;
 }
 
@@ -82,7 +75,7 @@ public class LuaDeclaration(
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
         new(Name, Position, otherInfo, Feature, Visibility);
 
-    public LuaDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
+    public IDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
     {
         if (Info.DeclarationType is { } type)
         {

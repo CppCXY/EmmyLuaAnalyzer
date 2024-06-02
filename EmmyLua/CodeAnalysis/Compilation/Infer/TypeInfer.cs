@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -76,10 +77,10 @@ public static class TypeInfer
 
     public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var typedParameters = new List<LuaDeclaration>();
+        var typedParameters = new List<IDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
-            if (typedParam is {Name: { } name, Nullable: { } nullable})
+            if (typedParam is { Name: { } name, Nullable: { } nullable })
             {
                 var type = context.Infer(typedParam.Type);
                 if (nullable)
@@ -91,7 +92,7 @@ public static class TypeInfer
                     new ParamInfo(new(typedParam), type, false));
                 typedParameters.Add(paramDeclaration);
             }
-            else if (typedParam is {VarArgs: { } varArgs})
+            else if (typedParam is { VarArgs: { } varArgs })
             {
                 var paramDeclaration = new LuaDeclaration("...", typedParam.Position,
                     new ParamInfo(new(typedParam), context.Infer(typedParam.Type), true));
@@ -115,7 +116,7 @@ public static class TypeInfer
 
     private static LuaType InferNameType(LuaDocNameTypeSyntax nameType, SearchContext context)
     {
-        if (nameType.Name is {RepresentText: { } name})
+        if (nameType.Name is { RepresentText: { } name })
         {
             var builtInType = Builtin.FromName(name);
             if (builtInType is not null)
@@ -145,6 +146,7 @@ public static class TypeInfer
                     i + 1, context.Infer(it), new(it)
                 ))
             )
+            .Cast<IDeclaration>()
             .ToList();
         return new LuaTupleType(tupleMembers);
     }
@@ -152,7 +154,7 @@ public static class TypeInfer
     private static LuaType InferGenericType(LuaDocGenericTypeSyntax genericType, SearchContext context)
     {
         var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
-        if (genericType is {Name: { } name})
+        if (genericType is { Name: { } name })
         {
             return new LuaGenericType(name.RepresentText, typeArgs);
         }
@@ -162,7 +164,7 @@ public static class TypeInfer
 
     private static LuaType InferVariadicType(LuaDocVariadicTypeSyntax variadicType, SearchContext context)
     {
-        if (variadicType is {Name: { } name})
+        if (variadicType is { Name: { } name })
         {
             return new LuaVariadicType(new LuaNamedType(name.RepresentText));
         }
@@ -172,7 +174,7 @@ public static class TypeInfer
 
     private static LuaType InferExpandType(LuaDocExpandTypeSyntax expandType, SearchContext context)
     {
-        if (expandType is {Name: { } name})
+        if (expandType is { Name: { } name })
         {
             return new LuaExpandType(name.RepresentText);
         }

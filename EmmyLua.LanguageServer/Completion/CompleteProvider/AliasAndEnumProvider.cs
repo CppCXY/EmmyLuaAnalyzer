@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -64,7 +64,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
             {
                 var param = methodType.MainSignature.Parameters[activeParam];
-                var paramType = param.Info.DeclarationType;
+                var paramType = param.Type;
                 if (paramType is LuaNamedType namedType)
                 {
                     var namedTypeKind = namedType.GetTypeKind(context.SemanticModel.Context);

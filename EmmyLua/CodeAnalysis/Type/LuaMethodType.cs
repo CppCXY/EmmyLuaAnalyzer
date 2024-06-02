@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -64,11 +65,11 @@ public struct SignatureMatchResult
     }
 }
 
-public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) : IEquatable<LuaSignature>
+public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : IEquatable<LuaSignature>
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<LuaDeclaration> Parameters { get; } = parameters;
+    public List<IDeclaration> Parameters { get; } = parameters;
 
     // 返回值表示匹配程度, 匹配程度只是表征对lua来讲有多少个参数匹配了, 但是并不表示类型完全匹配
     // lua没有重载决议, 所以只要参数数量接近就可以了
@@ -131,7 +132,7 @@ public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) :
             return matchResult;
         }
 
-        var firstType = Parameters[skipParam].Info.DeclarationType ?? Builtin.Any;
+        var firstType = Parameters[skipParam].Type;
         if (firstType is LuaStringLiteralType stringLiteralType && args[0] is LuaLiteralExprSyntax
             {
                 Literal: LuaStringToken stringToken
@@ -210,7 +211,8 @@ public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) :
                     matchedParam++;
                 }
 
-                return InnerInstantiate(callExpr, args, genericParameterNames, genericParameterMap, 0, matchedParam, context);
+                return InnerInstantiate(callExpr, args, genericParameterNames, genericParameterMap, 0, matchedParam,
+                    context);
             }
             default:
             {
@@ -233,13 +235,13 @@ public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) :
             return this;
         }
 
-        var newParameters = new List<LuaDeclaration>();
+        var newParameters = new List<IDeclaration>();
         if (skipParam == 1)
         {
             if (args.Count > 0 && callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } callSelf })
             {
                 var prefixType = context.Infer(callSelf);
-                var parameterType = Parameters[0].Info.DeclarationType ?? Builtin.Any;
+                var parameterType = Parameters[0].Type;
                 GenericInfer.InferInstantiateByType(parameterType, prefixType, genericParameters, genericParameterMap,
                     context);
             }
@@ -257,7 +259,10 @@ public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) :
              i++)
         {
             var parameter = Parameters[i + paramStart];
-            if (parameter.Info is ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType })
+            if (parameter is LuaDeclaration
+                {
+                    Info: ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType }
+                })
             {
                 var varargs = args[(i + argStart)..];
                 GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParameters,
@@ -266,7 +271,7 @@ public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) :
             else
             {
                 var arg = args[i + argStart];
-                var parameterType = parameter.Info.DeclarationType ?? Builtin.Any;
+                var parameterType = parameter.Type;
                 GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap,
                     context);
             }
@@ -325,7 +330,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<LuaDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<IDeclaration> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }

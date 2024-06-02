@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
 

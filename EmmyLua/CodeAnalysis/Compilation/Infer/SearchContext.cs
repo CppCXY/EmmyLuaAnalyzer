@@ -347,7 +347,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             var op = GetBestMatchedIndexOperator(luaType, keyType);
             if (op is not null)
             {
-                return [op.LuaDeclaration];
+                return [op.Declaration];
             }
         }
         else if (luaType is LuaUnionType unionType)
@@ -412,7 +412,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
             var op = GetBestMatchedIndexOperator(luaType, keyType);
             if (op != null)
             {
-                yield return op.LuaDeclaration;
+                yield return op.Declaration;
             }
         }
     }

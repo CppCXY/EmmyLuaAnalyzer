@@ -1,9 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.IndexSystem;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
@@ -763,7 +764,7 @@ public class DeclarationBuilder : ILuaElementWalker
             .Cast<LuaMethodType>()
             .Select(it => it.MainSignature).ToList();
 
-        var parameters = new List<LuaDeclaration>();
+        var parameters = new List<IDeclaration>();
         if (closureExprSyntax.ParamList is { } paramList)
         {
             PushScope(closureExprSyntax);

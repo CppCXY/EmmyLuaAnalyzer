@@ -10,20 +10,25 @@ public class References(SearchContext context)
     public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)
     {
         var declaration = context.FindDeclaration(element);
-        return declaration?.Info switch
+        if (declaration is LuaDeclaration luaDeclaration)
         {
-            LocalInfo localInfo => LocalReferences(declaration, localInfo),
-            GlobalInfo => GlobalReferences(declaration),
-            MethodInfo methodInfo => MethodReferences(declaration, methodInfo),
-            DocFieldInfo docFieldInfo => DocFieldReferences(declaration, docFieldInfo),
-            EnumFieldInfo enumFieldInfo => EnumFieldReferences(declaration, enumFieldInfo),
-            TableFieldInfo tableFieldInfo => TableFieldReferences(declaration, tableFieldInfo),
-            TupleMemberInfo tupleMemberInfo => TupleMemberReferences(declaration, tupleMemberInfo),
-            NamedTypeInfo namedTypeInfo => NamedTypeReferences(declaration, namedTypeInfo),
-            ParamInfo paramInfo => ParameterReferences(declaration, paramInfo),
-            IndexInfo indexInfo => IndexExprReferences(declaration, indexInfo),
-            _ => []
-        };
+            return luaDeclaration.Info switch
+            {
+                LocalInfo localInfo => LocalReferences(luaDeclaration, localInfo),
+                GlobalInfo => GlobalReferences(luaDeclaration),
+                MethodInfo methodInfo => MethodReferences(luaDeclaration, methodInfo),
+                DocFieldInfo docFieldInfo => DocFieldReferences(luaDeclaration, docFieldInfo),
+                EnumFieldInfo enumFieldInfo => EnumFieldReferences(luaDeclaration, enumFieldInfo),
+                TableFieldInfo tableFieldInfo => TableFieldReferences(luaDeclaration, tableFieldInfo),
+                TupleMemberInfo tupleMemberInfo => TupleMemberReferences(luaDeclaration, tupleMemberInfo),
+                NamedTypeInfo namedTypeInfo => NamedTypeReferences(luaDeclaration, namedTypeInfo),
+                ParamInfo paramInfo => ParameterReferences(luaDeclaration, paramInfo),
+                IndexInfo indexInfo => IndexExprReferences(luaDeclaration, indexInfo),
+                _ => []
+            };
+        }
+
+        return [];
     }
 
     private IEnumerable<LuaReference> LocalReferences(LuaDeclaration declaration, DeclarationInfo info)
@@ -123,7 +128,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members)
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -159,7 +164,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members)
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -193,7 +198,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members)
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -224,7 +229,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members)
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {

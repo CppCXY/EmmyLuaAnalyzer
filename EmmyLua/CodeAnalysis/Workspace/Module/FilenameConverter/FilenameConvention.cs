@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace EmmyLua.CodeAnalysis.Util.FilenameConverter;
+namespace EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 
 public enum FilenameConvention
 {

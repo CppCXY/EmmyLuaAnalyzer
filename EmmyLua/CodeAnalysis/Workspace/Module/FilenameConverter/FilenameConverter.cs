@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace EmmyLua.CodeAnalysis.Util.FilenameConverter;
+namespace EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 
 // ReSharper disable once IdentifierTypo
 public static class FilenameConverter

@@ -6,11 +6,16 @@ namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 public class DeclarationNodeContainer(int position)
     : DeclarationNode(position)
 {
+    public DeclarationNodeContainer? Parent { get; set; }
+
     public List<DeclarationNode> Children { get; } = [];
 
     public void Add(DeclarationNode node)
     {
-        node.Parent = this;
+        if (node is DeclarationNodeContainer container)
+        {
+            container.Parent = this;
+        }
 
         // 如果Children为空，直接添加
         if (Children.Count == 0)
@@ -22,35 +27,15 @@ public class DeclarationNodeContainer(int position)
         // 如果Children的最后一个节点的位置小于等于node的位置，直接添加
         if (Children.Last().Position <= node.Position)
         {
-            var last = Children.Last();
-            node.Prev = last;
-            last.Next = node;
             Children.Add(node);
         }
         else
         {
             var index = Children.FindIndex(n => n.Position > node.Position);
             // 否则，插入到找到的位置
-            var nextNode = Children[index];
-            var prevNode = nextNode.Prev;
-
-            node.Next = nextNode;
-            node.Prev = prevNode;
-
-            if (prevNode != null)
-            {
-                prevNode.Next = node;
-            }
-
-            nextNode.Prev = node;
-
             Children.Insert(index, node);
         }
     }
-
-    public DeclarationNode? FindFirstChild(Func<DeclarationNode, bool> predicate) => Children.FirstOrDefault(predicate);
-
-    public DeclarationNode? FindLastChild(Func<DeclarationNode, bool> predicate) => Children.LastOrDefault(predicate);
 }
 
 public enum ScopeFoundState
@@ -71,18 +56,16 @@ public class DeclarationScope(int pos)
 
     public virtual void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
-        var cur = FindLastChild(it => it.Position < position);
-        while (cur != null)
+        var curIndex = Children.FindLastIndex(it => it.Position < position);
+        for(var i = curIndex; i >= 0; i--)
         {
-            switch (cur)
+            if (Children[i] is LuaDeclaration declaration && process(declaration) == ScopeFoundState.Founded)
             {
-                case LuaDeclaration declaration when process(declaration) == ScopeFoundState.Founded:
-                    return;
-                case DeclarationScope scope when scope.WalkOver(process) == ScopeFoundState.Founded:
-                    return;
-                default:
-                    cur = cur.Prev;
-                    break;
+                return;
+            }
+            else if (Children[i] is DeclarationScope scope && scope.WalkOver(process) == ScopeFoundState.Founded)
+            {
+                return;
             }
         }
 
@@ -138,7 +121,7 @@ public class DeclarationScope(int pos)
     public LuaDeclaration? FindDeclaration(LuaSyntaxElement element)
     {
         var position = element.Position;
-        var symbolNode = FindFirstChild(it => it.Position == position);
+        var symbolNode = Children.FirstOrDefault(it => it.Position == position);
         if (symbolNode is LuaDeclaration result)
         {
             return result;

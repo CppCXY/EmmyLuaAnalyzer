@@ -197,9 +197,9 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var paramIndex = unResolvedClosureParameters.Index;
                 if (paramIndex == -1) return;
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
-                if (paramDeclaration is not {Info.DeclarationType: { } paramType}) return;
+                if (paramDeclaration is null) return;
                 var closureParams = unResolvedClosureParameters.ParameterLuaDeclarations;
-                Context.FindMethodsForType(paramType, methodType =>
+                Context.FindMethodsForType(paramDeclaration.Type, methodType =>
                 {
                     var mainParams = methodType.MainSignature.Parameters;
                     for (var i = 0; i < closureParams.Count && i < mainParams.Count; i++)
@@ -208,7 +208,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         var mainParam = mainParams[i];
                         if (closureParam.Info.DeclarationType is null)
                         {
-                            closureParam.Info = closureParam.Info with {DeclarationType = mainParam.Info.DeclarationType};
+                            closureParam.Info = closureParam.Info with {DeclarationType = mainParam.Type};
                         }
                     }
                 });

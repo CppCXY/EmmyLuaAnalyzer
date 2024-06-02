@@ -27,4 +27,6 @@ public interface IDeclaration
     public ILocation? GetLocation(IDocumentSystem context);
 
     public string RelationInfomation { get; }
+
+    public IDeclaration Instantiate(Dictionary<string, LuaType> typeDict);
 }

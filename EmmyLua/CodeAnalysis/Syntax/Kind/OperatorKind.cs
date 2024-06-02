@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Kind;
+﻿namespace EmmyLua.CodeAnalysis.Syntax.Kind;
 
 public static class OperatorKind
 {

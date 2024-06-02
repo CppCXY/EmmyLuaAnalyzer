@@ -1,5 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Type;
 
@@ -73,14 +74,14 @@ public static class TypeOperatorKindHelper
     };
 }
 
-public class TypeOperator(TypeOperatorKind kind, LuaDeclaration luaDeclaration)
+public class TypeOperator(TypeOperatorKind kind, IDeclaration declaration)
 {
     public TypeOperatorKind Kind { get; } = kind;
 
-    public LuaDeclaration LuaDeclaration { get; } = luaDeclaration;
+    public IDeclaration Declaration { get; } = declaration;
 
     public virtual TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
-        new TypeOperator(Kind, LuaDeclaration.Instantiate(genericMap));
+        new TypeOperator(Kind, Declaration.Instantiate(genericMap));
 
     public virtual string BelongTypeName => string.Empty;
 }
@@ -90,8 +91,8 @@ public class BinaryOperator(
     LuaType left,
     LuaType right,
     LuaType ret,
-    LuaDeclaration luaDeclaration)
-    : TypeOperator(kind, luaDeclaration)
+    IDeclaration declaration)
+    : TypeOperator(kind, declaration)
 {
     public LuaType Left { get; } = left;
     public LuaType Right { get; } = right;
@@ -128,7 +129,7 @@ public class BinaryOperator(
 
     public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
         new BinaryOperator(Kind, Left.Instantiate(genericMap), Right.Instantiate(genericMap),
-            Ret.Instantiate(genericMap), LuaDeclaration.Instantiate(genericMap));
+            Ret.Instantiate(genericMap), Declaration.Instantiate(genericMap));
 
     public override string BelongTypeName
     {
@@ -144,8 +145,8 @@ public class BinaryOperator(
     }
 }
 
-public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, LuaDeclaration luaDeclaration)
-    : TypeOperator(kind, luaDeclaration)
+public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, IDeclaration declaration)
+    : TypeOperator(kind, declaration)
 {
     public LuaType Operand { get; } = operand;
     public LuaType Ret { get; } = ret;
@@ -161,7 +162,7 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
 
     public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
         new UnaryOperator(Kind, Operand.Instantiate(genericMap), Ret.Instantiate(genericMap),
-            LuaDeclaration.Instantiate(genericMap));
+            Declaration.Instantiate(genericMap));
 
     public override string BelongTypeName
     {
@@ -177,8 +178,8 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
     }
 }
 
-public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaDeclaration luaDeclaration)
-    : TypeOperator(TypeOperatorKind.Index, luaDeclaration)
+public class IndexOperator(LuaType type, LuaType key, LuaType ret, IDeclaration declaration)
+    : TypeOperator(TypeOperatorKind.Index, declaration)
 {
     public LuaType Type { get; } = type;
     public LuaType Key { get; } = key;
@@ -186,7 +187,7 @@ public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaDeclaratio
 
     public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
         new IndexOperator(Type.Instantiate(genericMap), Key.Instantiate(genericMap),
-            Ret.Instantiate(genericMap), LuaDeclaration.Instantiate(genericMap));
+            Ret.Instantiate(genericMap), Declaration.Instantiate(genericMap));
 
     public override string BelongTypeName
     {
