@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 using EmmyLua.LanguageServer.ExecuteCommand.Commands;

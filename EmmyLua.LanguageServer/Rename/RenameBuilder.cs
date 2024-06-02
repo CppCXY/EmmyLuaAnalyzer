@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Document;
@@ -71,7 +72,7 @@ public class RenameBuilder
         return changes;
     }
 
-    private void AddChange(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaLocation location, string newName)
+    private void AddChange(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, ILocation location, string newName)
     {
         var uri = location.Document.Uri;
         if (!changes.TryGetValue(uri, out var edits))
@@ -82,7 +83,7 @@ public class RenameBuilder
 
         var edit = new TextEdit()
         {
-            Range = location.Range.ToLspRange(location.Document),
+            Range = location.ToLspRange(),
             NewText = newName
         };
         ((List<TextEdit>)edits).Add(edit);
@@ -97,8 +98,11 @@ public class RenameBuilder
             return;
         }
 
-        range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
-        AddChange(changes, new LuaLocation(luaReference.Location.Document, range), newName);
+        if (luaReference.Location.Document is LuaDocument document)
+        {
+            range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
+            AddChange(changes, new LuaLocation(document, range), newName);
+        }
     }
 
     private void ChangeNameToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaNameToken nameToken,

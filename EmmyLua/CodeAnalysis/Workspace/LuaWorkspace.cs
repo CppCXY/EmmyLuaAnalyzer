@@ -1,10 +1,11 @@
-﻿using EmmyLua.CodeAnalysis.Compilation;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
-public class LuaWorkspace
+public class LuaWorkspace : IDocumentSystem
 {
     public string MainWorkspace { get; set; } = string.Empty;
 
@@ -307,5 +308,10 @@ public class LuaWorkspace
                 }
             }
         }
+    }
+
+    public IDocument? GetDocument(int id)
+    {
+        return GetDocument(new LuaDocumentId(id));
     }
 }

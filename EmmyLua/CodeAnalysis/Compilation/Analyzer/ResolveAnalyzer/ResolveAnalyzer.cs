@@ -1,6 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -149,7 +150,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var ty = Context.Infer(prefixExpr);
                 if (ty is LuaNamedType namedType)
                 {
-                    Compilation.Db.AddMember(documentId, namedType.Name, declaration);
+                    Compilation.WorkspaceIndex.AddMember(documentId, namedType.Name, declaration);
                     Context.ClearMemberCache(namedType.Name);
                 }
             }
@@ -179,7 +180,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 returnType = multiReturnType.GetElementType(0);
             }
 
-            Compilation.Db.AddModuleReturns(unResolvedSource.DocumentId, returnType, relatedExpr);
+            Compilation.WorkspaceIndex.AddModuleReturns(unResolvedSource.DocumentId, returnType, relatedExpr);
         }
     }
 
@@ -294,20 +295,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (type is LuaTableLiteralType tableType)
                 {
                     var typeName = namedType.Name;
-                    var members = Compilation.Db.QueryMembers(tableType.Name);
+                    var members = Compilation.Db.QueryMembers(tableType.Name).OfType<LuaDeclaration>();
                     var documentId = declaration.Info.Ptr.DocumentId;
 
                     foreach (var member in members)
                     {
-                        Compilation.Db.AddMember(documentId, typeName, member);
+                        Compilation.WorkspaceIndex.AddMember(documentId, typeName, member);
                     }
 
-                    Compilation.Db.AddIdRelatedType(documentId, tableType.TableExprPtr.UniqueId, namedType);
+                    Compilation.WorkspaceIndex.AddIdRelatedType(documentId, tableType.TableExprPtr.UniqueId, namedType);
                 }
                 else
                 {
                     var documentId = declaration.Info.Ptr.DocumentId;
-                    Compilation.Db.AddSuper(documentId, namedType.Name, type);
+                    Compilation.WorkspaceIndex.AddSuper(documentId, namedType.Name, type);
                 }
             }
         }

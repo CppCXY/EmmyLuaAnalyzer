@@ -1,8 +1,9 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
@@ -123,7 +124,7 @@ public class LuaDeclarationTree(LuaSyntaxTree tree, IReadOnlyDictionary<long, De
         return null;
     }
 
-    private LuaDeclaration? FindTypeDeclaration(string? name, SearchContext context)
+    private IDeclaration? FindTypeDeclaration(string? name, SearchContext context)
     {
         if (name is not null)
         {

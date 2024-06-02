@@ -1,7 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 
@@ -111,7 +112,7 @@ public static class LuaTypeRenderer
         }
     }
 
-    private static void RenderClassOrInterface(string name, List<LuaDeclaration> generics, List<LuaType> supers,
+    private static void RenderClassOrInterface(string name, List<IDeclaration> generics, List<LuaType> supers,
         LuaRenderContext renderContext)
     {
         if (generics.Count > 0)
@@ -126,7 +127,7 @@ public static class LuaTypeRenderer
 
                 var generic = generics[i];
                 renderContext.Append(generic.Name);
-                if (generic.Info.DeclarationType is { } baseType)
+                if (generic.Type is { } baseType)
                 {
                     renderContext.Append(':');
                     InnerRenderType(baseType, renderContext, 1);

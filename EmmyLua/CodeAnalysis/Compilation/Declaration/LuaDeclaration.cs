@@ -1,7 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
@@ -15,6 +18,11 @@ public class DeclarationNode(int position)
 
     public int Position { get; } = position;
 }
+
+public abstract record DeclarationInfo(
+    LuaElementPtr<LuaSyntaxElement> Ptr,
+    LuaType? DeclarationType
+);
 
 [Flags]
 public enum DeclarationFeature
@@ -34,11 +42,6 @@ public enum DeclarationVisibility
     Private,
 }
 
-public abstract record DeclarationInfo(
-    LuaElementPtr<LuaSyntaxElement> Ptr,
-    LuaType? DeclarationType
-);
-
 public class LuaDeclaration(
     string name,
     int position,
@@ -46,9 +49,11 @@ public class LuaDeclaration(
     DeclarationFeature feature = DeclarationFeature.None,
     DeclarationVisibility visibility = DeclarationVisibility.Public
 )
-    : DeclarationNode(position)
+    : DeclarationNode(position), IDeclaration
 {
     public string Name { get; } = name;
+
+    public LuaType Type => Info.DeclarationType ?? Builtin.Unknown;
 
     public DeclarationInfo Info { get; internal set; } = info;
 
@@ -61,6 +66,8 @@ public class LuaDeclaration(
     public bool IsGlobal => Feature.HasFlag(DeclarationFeature.Global);
 
     public bool IsAsync => Feature.HasFlag(DeclarationFeature.Async);
+
+    public bool IsNoDiscard => Feature.HasFlag(DeclarationFeature.NoDiscard);
 
     public DeclarationVisibility Visibility { get; internal set; } = visibility;
 
@@ -131,6 +138,20 @@ public class LuaDeclaration(
         return versions.Any(ValidateFrameworkVersion);
     }
 
+    public ILocation? GetLocation(IDocumentSystem documentSystem)
+    {
+        var document = documentSystem.GetDocument(Info.Ptr.DocumentId.Id);
+        if (document is LuaDocument luaDocument)
+        {
+            var range = luaDocument.SyntaxTree.GetSourceRange(Info.Ptr.ElementId);
+            return new LuaLocation(luaDocument, range);
+        }
+
+        return null;
+    }
+
+    public string RelationInfomation => Info.Ptr.Stringify;
+
     public override string ToString()
     {
         return $"{Name}";
@@ -140,7 +161,6 @@ public class LuaDeclaration(
 public record LocalInfo(
     LuaElementPtr<LuaLocalNameSyntax> LocalNamePtr,
     LuaType? DeclarationType,
-    bool IsTypeDefine = false,
     bool IsConst = false,
     bool IsClose = false
 ) : DeclarationInfo(LocalNamePtr.UpCast(), DeclarationType)

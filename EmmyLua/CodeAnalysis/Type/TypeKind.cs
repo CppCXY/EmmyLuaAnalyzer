@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿namespace EmmyLua.CodeAnalysis.Type;
 
 public enum TypeKind
 {

@@ -29,7 +29,7 @@ public class EmmyAnnotatorBuilder
                 {
                     if (nameExpr.Name is {RepresentText: { } name2} nameToken && name2 != "self")
                     {
-                        var declaration = context.FindDeclaration(nameExpr);
+                        var declaration = context.FindDeclaration(nameExpr) as LuaDeclaration;
                         if (declaration is null || declaration.IsGlobal)
                         {
                             globalAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));

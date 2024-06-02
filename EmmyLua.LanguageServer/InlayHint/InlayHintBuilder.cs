@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using InlayHintType = OmniSharp.Extensions.LanguageServer.Protocol.Models.InlayHint;
@@ -310,7 +310,7 @@ public class InlayHintBuilder
         {
             var prefixType = semanticModel.Context.Infer(prefixExpr);
             var superMethod = semanticModel.Context.FindSuperMember(prefixType, name).FirstOrDefault();
-            if (superMethod?.Info is { } info)
+            if (superMethod is LuaDeclaration{Info: {} info})
             {
                 var document = semanticModel.Document;
                 var parentDocument = semanticModel.Compilation.Workspace.GetDocument(info.Ptr.DocumentId);

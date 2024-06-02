@@ -1,7 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -13,15 +14,15 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
 
     private Dictionary<long, LuaType> InferCaches { get; } = new();
 
-    private Dictionary<string, List<LuaDeclaration>> NamedTypeMemberCaches { get; } = new();
+    private Dictionary<string, List<IDeclaration>> NamedTypeMemberCaches { get; } = new();
 
-    private Dictionary<LuaType, List<LuaDeclaration>> GenericMemberCaches { get; } = new();
+    private Dictionary<LuaType, List<IDeclaration>> GenericMemberCaches { get; } = new();
 
-    private Dictionary<string, List<LuaDeclaration>> BaseMemberCaches { get; } = new();
+    private Dictionary<string, List<IDeclaration>> BaseMemberCaches { get; } = new();
 
     private Dictionary<LuaType, Dictionary<TypeOperatorKind, List<TypeOperator>>> TypeOperatorCaches { get; } = new();
 
-    private Dictionary<long, LuaDeclaration?> DeclarationCaches { get; } = new();
+    private Dictionary<long, IDeclaration?> DeclarationCaches { get; } = new();
 
     private HashSet<long> InferGuard { get; } = [];
 
@@ -104,7 +105,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
     }
 
-    public IEnumerable<LuaDeclaration> GetRawMembers(string name)
+    public IEnumerable<IDeclaration> GetRawMembers(string name)
     {
         if (Features.Cache && NamedTypeMemberCaches.TryGetValue(name, out var members))
         {
@@ -150,7 +151,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
     }
 
-    public IEnumerable<LuaDeclaration> GetSupersMembers(string name)
+    public IEnumerable<IDeclaration> GetSupersMembers(string name)
     {
         if (Features is { Cache: true, CacheBaseMember: true } && BaseMemberCaches.TryGetValue(name, out var members))
         {
@@ -177,7 +178,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return members;
     }
 
-    private IEnumerable<LuaDeclaration> GetMembers(string name)
+    private IEnumerable<IDeclaration> GetMembers(string name)
     {
         var selfMembers = GetRawMembers(name);
         var supersMembers = GetSupersMembers(name);
@@ -186,7 +187,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return distinctMembers;
     }
 
-    public IEnumerable<LuaDeclaration> GetMembers(LuaType luaType)
+    public IEnumerable<IDeclaration> GetMembers(LuaType luaType)
     {
         if (luaType is LuaGenericType genericType)
         {
@@ -226,7 +227,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return [];
     }
 
-    private IEnumerable<LuaDeclaration> GetGenericMembers(LuaGenericType genericType)
+    private IEnumerable<IDeclaration> GetGenericMembers(LuaGenericType genericType)
     {
         if (Features.Cache && GenericMemberCaches.TryGetValue(genericType, out var instanceMembers))
         {
@@ -257,7 +258,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return instanceMembers;
     }
 
-    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, string memberName)
+    public IEnumerable<IDeclaration> FindMember(LuaType luaType, string memberName)
     {
         if (luaType is LuaNamedType namedType)
         {
@@ -364,7 +365,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return [];
     }
 
-    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
+    public IEnumerable<IDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
     {
         var notFounded = true;
         if (indexExpr is { Name: { } name })
@@ -416,7 +417,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         }
     }
 
-    public IEnumerable<LuaDeclaration> FindSuperMember(LuaType luaType, string member)
+    public IEnumerable<IDeclaration> FindSuperMember(LuaType luaType, string member)
     {
         if (luaType is LuaNamedType namedType)
         {
@@ -513,7 +514,7 @@ public class SearchContext(LuaCompilation compilation, SearchContextFeatures fea
         return bestMatched;
     }
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    public IDeclaration? FindDeclaration(LuaSyntaxElement? element)
     {
         if (element is null)
         {

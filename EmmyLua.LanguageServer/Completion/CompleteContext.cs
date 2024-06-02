@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;

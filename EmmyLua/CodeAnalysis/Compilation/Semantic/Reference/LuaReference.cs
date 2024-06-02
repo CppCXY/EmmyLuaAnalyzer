@@ -1,6 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 
-public record LuaReference(LuaLocation Location, LuaSyntaxElement Element);
+public record LuaReference(ILocation Location, LuaSyntaxElement Element);

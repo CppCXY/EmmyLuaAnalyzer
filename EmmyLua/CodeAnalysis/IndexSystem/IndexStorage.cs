@@ -1,7 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Type;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Index;
+namespace EmmyLua.CodeAnalysis.IndexSystem;
 
 public class IndexEntry<TStubElement>
 {

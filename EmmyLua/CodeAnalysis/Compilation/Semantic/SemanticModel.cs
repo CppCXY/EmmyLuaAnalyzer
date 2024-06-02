@@ -1,11 +1,12 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 
@@ -54,7 +55,7 @@ public class SemanticModel
         return Compilation.GetDiagnostics(Document.Id, Context);
     }
 
-    public IEnumerable<LuaDeclaration> GetGlobals()
+    public IEnumerable<IDeclaration> GetGlobals()
     {
         return Compilation.Db.QueryAllGlobal();
     }

@@ -13,9 +13,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
     protected override DefinitionRegistrationOptions CreateRegistrationOptions(DefinitionCapability capability,
         ClientCapabilities clientCapabilities)
     {
-        return new DefinitionRegistrationOptions()
-        {
-        };
+        return new DefinitionRegistrationOptions();
     }
 
     public override Task<LocationOrLocationLinks?> Handle(DefinitionParams request, CancellationToken cancellationToken)
@@ -49,7 +47,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                 if (node is not null)
                 {
                     var declaration = semanticModel.Context.FindDeclaration(node);
-                    if (declaration?.Info.Ptr.ToNode(semanticModel.Context) is { Location: { } location })
+                    if (declaration?.GetLocation(semanticModel.Compilation.Workspace) is { } location)
                     {
                         locationLinks = LocationOrLocationLinks.From(
                             location.ToLspLocation()

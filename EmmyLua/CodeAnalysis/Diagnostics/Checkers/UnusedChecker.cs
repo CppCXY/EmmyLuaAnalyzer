@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -15,7 +16,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
             return;
         }
 
-        var localOrParamDeclarations = new HashSet<LuaDeclaration>();
+        var localOrParamDeclarations = new HashSet<IDeclaration>();
         foreach (var luaDeclaration in declarations)
         {
             if (luaDeclaration.Info is LocalInfo or ParamInfo)
@@ -28,7 +29,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
     }
 
     private void LocalOrParamUnusedCheck(
-        HashSet<LuaDeclaration> declarationSet,
+        HashSet<IDeclaration> declarationSet,
         DiagnosticContext context)
     {
         var nameExprs = context
@@ -48,7 +49,7 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
 
         foreach (var luaDeclaration in declarationSet)
         {
-            if (luaDeclaration.Info.Ptr.ToNode(context.Document) is { } node)
+            if (luaDeclaration is LuaDeclaration { Info: { } info } && info.Ptr.ToNode(context.Document) is { } node)
             {
                 context.Report(
                     DiagnosticCode.Unused,

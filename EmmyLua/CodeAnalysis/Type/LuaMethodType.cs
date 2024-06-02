@@ -2,7 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Type;
+namespace EmmyLua.CodeAnalysis.Type;
 
 public enum SignatureMatchType
 {
