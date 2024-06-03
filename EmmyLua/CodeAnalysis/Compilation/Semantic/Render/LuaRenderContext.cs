@@ -1,7 +1,8 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
@@ -117,14 +118,14 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
                 var typeName = typeList[index];
                 var typeDeclaration = SearchContext.Compilation.Db.QueryNamedTypeDefinitions(typeName).FirstOrDefault();
-                if (typeDeclaration is { Info.Ptr: { } ptr } && ptr.ToNode(SearchContext) is { } node)
+                if (typeDeclaration is not null)
                 {
                     if (index > 0)
                     {
                         Append('|');
                     }
 
-                    Append($"[{typeName}]({node.Location.ToUriLocation(1)})");
+                    Append($"[{typeName}]({typeDeclaration.GetLocation(SearchContext.Compilation.Workspace).UriLocation})");
                 }
             }
         }

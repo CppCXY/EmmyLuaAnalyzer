@@ -1,10 +1,11 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.SignatureHelper;
@@ -137,8 +138,8 @@ public class SignatureHelperBuilder
 
             foreach (var parameter in parameters)
             {
-                var syntaxElement = parameter.Info.Ptr.ToNode(semanticModel.Context);
-                if (syntaxElement is not null)
+                if (parameter is LuaDeclaration { Info.Ptr: { } ptr } &&
+                    ptr.ToNode(semanticModel.Context) is { } syntaxElement)
                 {
                     parameterInfos.Add(new ParameterInformation()
                     {

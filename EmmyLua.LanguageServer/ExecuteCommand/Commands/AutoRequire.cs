@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Util.FilenameConverter;
 using EmmyLua.CodeAnalysis.Workspace;
+using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 using MediatR;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;

@@ -1,6 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -49,10 +50,7 @@ public static class ExpressionShouldBeInfer
             if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
             {
                 var param = methodType.MainSignature.Parameters[activeParam];
-                if (param.Info.DeclarationType is {} paramType)
-                {
-                    exprType = exprType.Union(paramType);
-                }
+                exprType = exprType.Union(param.Type);
             }
         });
 
@@ -70,7 +68,7 @@ public static class ExpressionShouldBeInfer
         var exprShouldType = InferExprShouldBe(tableExpr, context);
         if (tableField.Name is { } name)
         {
-            return context.FindMember(exprShouldType, name).FirstOrDefault()?.Info.DeclarationType ?? Builtin.Unknown;
+            return context.FindMember(exprShouldType, name).FirstOrDefault()?.Type ?? Builtin.Unknown;
         }
 
         return Builtin.Unknown;

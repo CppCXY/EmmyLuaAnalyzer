@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Util.FilenameConverter;
+﻿using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 
 namespace EmmyLua.LanguageServer.Completion;
 

@@ -1,6 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
@@ -64,7 +65,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
             {
                 var param = methodType.MainSignature.Parameters[activeParam];
-                var paramType = param.Info.DeclarationType;
+                var paramType = param.Type;
                 if (paramType is LuaNamedType namedType)
                 {
                     var namedTypeKind = namedType.GetTypeKind(context.SemanticModel.Context);
@@ -121,7 +122,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
 
     private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
     {
-        foreach (var declaration in aggregateType.Declarations)
+        foreach (var declaration in aggregateType.Declarations.OfType<LuaDeclaration>())
         {
             if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
             {

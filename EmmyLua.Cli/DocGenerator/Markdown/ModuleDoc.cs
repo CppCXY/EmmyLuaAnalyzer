@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Document;
@@ -75,9 +76,9 @@ public class ModuleDoc
             if (funcStat is { NameElement.Parent: { } node })
             {
                 var declaration = SearchContext.FindDeclaration(node);
-                if (declaration is not null)
+                if (declaration is LuaDeclaration luaDeclaration)
                 {
-                    RenderFuncDeclaration(declaration, funcStat);
+                    RenderFuncDeclaration(luaDeclaration, funcStat);
                     RenderContext.AddSeparator();
                 }
             }

@@ -139,7 +139,7 @@ public class SettingManager
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
-        features.Language.LanguageLevel = setting.Runtime.Version switch
+        features.Language = new LuaLanguage(setting.Runtime.Version switch
         {
             LuaVersion.Lua51 => LuaLanguageLevel.Lua51,
             LuaVersion.LuaJIT => LuaLanguageLevel.LuaJIT,
@@ -148,7 +148,7 @@ public class SettingManager
             LuaVersion.Lua54 => LuaLanguageLevel.Lua54,
             LuaVersion.LuaLatest => LuaLanguageLevel.LuaLatest,
             _ => LuaLanguageLevel.Lua54
-        };
+        });
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
         foreach (var globalRegexString in setting.Diagnostics.GlobalsRegex)

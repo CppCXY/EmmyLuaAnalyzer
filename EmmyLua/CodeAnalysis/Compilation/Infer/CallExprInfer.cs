@@ -1,5 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 

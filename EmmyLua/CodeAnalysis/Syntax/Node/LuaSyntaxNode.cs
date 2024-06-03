@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;

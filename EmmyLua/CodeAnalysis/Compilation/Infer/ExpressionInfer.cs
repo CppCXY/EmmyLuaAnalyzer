@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -117,7 +118,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId).FirstOrDefault();
+        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId);
         return methodType ?? Builtin.Unknown;
     }
 
@@ -134,13 +135,7 @@ public static class ExpressionInfer
     private static LuaType InferIndexExpr(LuaIndexExprSyntax indexExpr, SearchContext context)
     {
         var declaration = context.FindDeclaration(indexExpr);
-
-        if (declaration is { Info.DeclarationType: { } ty2 })
-        {
-            return ty2;
-        }
-
-        return Builtin.Unknown;
+        return declaration?.Type ?? Builtin.Unknown;
     }
 
     private static LuaType InferLiteralExpr(LuaLiteralExprSyntax literalExpr, SearchContext context)
@@ -164,12 +159,12 @@ public static class ExpressionInfer
         }
 
         var nameDecl = context.FindDeclaration(nameExpr);
-        if (nameDecl?.Info.DeclarationType is { } ty)
+        if (nameDecl?.Type is { } ty)
         {
             return ty;
         }
 
-        if (nameExpr.Name is { RepresentText: "self"})
+        if (nameExpr.Name is { Text: "self"})
         {
             return InferSelf(nameExpr, context);
         }

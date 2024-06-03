@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
@@ -33,7 +33,7 @@ public class TypeHierarchyBuilder
             if (super is LuaNamedType superNamedType)
             {
                 var typeDefine = compilation.Db.QueryNamedTypeDefinitions(superNamedType.Name).FirstOrDefault();
-                if (typeDefine is {Info: NamedTypeInfo info})
+                if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
                 {
                     var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
                     if (typeDocument is not null
@@ -64,7 +64,7 @@ public class TypeHierarchyBuilder
         foreach (var subTypeName in subTypes)
         {
             var typeDefine = compilation.Db.QueryNamedTypeDefinitions(subTypeName).FirstOrDefault();
-            if (typeDefine is { Info: NamedTypeInfo info})
+            if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
             {
                 var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
                 if (typeDocument is not null

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -12,12 +13,24 @@ namespace EmmyLua.LanguageServer.Util;
 
 public static class LspExtension
 {
-    public static Location ToLspLocation(this LuaLocation location)
+    public static Location ToLspLocation(this ILocation location)
     {
         return new()
         {
             Uri = location.Document.Uri,
-            Range = location.Range.ToLspRange(location.Document)
+            Range = new()
+            {
+                Start = new Position()
+                {
+                    Line = location.StartLine,
+                    Character = location.StartCol
+                },
+                End = new Position()
+                {
+                    Line = location.EndLine,
+                    Character = location.EndCol
+                }
+            }
         };
     }
 
@@ -65,6 +78,23 @@ public static class LspExtension
             }
         };
     }
+    
+    public static Range ToLspRange(this ILocation location)
+    {
+        return new()
+        {
+            Start = new Position()
+            {
+                Line = location.StartLine,
+                Character = location.StartCol
+            },
+            End = new Position()
+            {
+                Line = location.EndLine,
+                Character = location.EndCol
+            }
+        };
+    }
 
     public static Location ToLspLocation(this SourceRange range, LuaDocument document)
     {
@@ -78,14 +108,14 @@ public static class LspExtension
     public static (string, TextEdit) ToTextEdit(this LuaLocation location, string text)
     {
         return (
-            location.Document.Uri,
+            location.LuaDocument.Uri,
             new()
             {
-                Range = location.Range.ToLspRange(location.Document),
+                Range = location.Range.ToLspRange(location.LuaDocument),
                 NewText = text
             });
     }
-    
+
     public static SourceRange ToSourceRange(this Range range, LuaDocument document)
     {
         var start = document.GetOffset(range.Start.Line, range.Start.Character);

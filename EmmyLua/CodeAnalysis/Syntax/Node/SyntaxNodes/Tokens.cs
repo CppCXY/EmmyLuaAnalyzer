@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using EmmyLua.CodeAnalysis.Document.Version;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 

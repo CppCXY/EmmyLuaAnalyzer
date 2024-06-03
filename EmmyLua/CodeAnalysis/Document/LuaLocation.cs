@@ -1,37 +1,26 @@
-﻿namespace EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Common;
+
+namespace EmmyLua.CodeAnalysis.Document;
 
 /// <summary>
 /// A position in a syntax tree.
 /// </summary>
-public class LuaLocation(LuaDocument document, SourceRange range, int baseLine = 0)
+public record LuaLocation(LuaDocument LuaDocument, SourceRange Range, int BaseLine = 0) : ILocation
 {
-    public LuaDocument Document { get; } = document;
+    private string FilePath => LuaDocument.Path;
 
-    public SourceRange Range { get; } = range;
+    public IDocument Document => LuaDocument;
 
-    public int BaseLine { get;} = baseLine;
+    public int StartLine => LuaDocument.GetLine(Range.StartOffset) + BaseLine;
 
-    public string FilePath => Document.Path;
+    public int StartCol => LuaDocument.GetCol(Range.StartOffset);
+
+    public int EndLine => LuaDocument.GetLine(Range.EndOffset) + BaseLine;
+
+    public int EndCol => LuaDocument.GetCol(Range.EndOffset);
 
     public override string ToString()
     {
-        var document = Document;
-        var startLine = document.GetLine(Range.StartOffset) + BaseLine;
-        var startCol = document.GetCol(Range.StartOffset);
-
-        var endLine = document.GetLine(Range.EndOffset) + BaseLine;
-        var endCol = document.GetCol(Range.EndOffset);
-        return $"{FilePath} [{startLine}:{startCol} - {endLine}:{endCol}]";
-    }
-
-    public string ToUriLocation(int baseLine = 0)
-    {
-        var document = Document;
-        var startLine = document.GetLine(Range.StartOffset) + baseLine;
-        var startCol = document.GetCol(Range.StartOffset);
-
-        var endLine = document.GetLine(Range.EndOffset) + baseLine;
-        var endCol = document.GetCol(Range.EndOffset);
-        return $"{Document.Uri}#{startLine}:{startCol}-{endLine}:{endCol}";
+        return $"{FilePath}({StartLine}, {StartCol}) - ({EndLine}, {EndCol})";
     }
 }

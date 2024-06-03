@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;

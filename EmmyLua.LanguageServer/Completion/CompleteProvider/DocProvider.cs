@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
@@ -14,7 +14,7 @@ public class DocProvider : ICompleteProviderBase
         "type", "overload", "generic", "async", "cast", "private", "protected", "public", "operator",
         "meta", "version", "as", "nodiscard", "diagnostic", // "package",
     ];
-    
+
     private List<string> Actions { get; } = ["disable-next-line", "disable", "enable"];
 
     public void AddCompletion(CompleteContext context)
@@ -96,7 +96,7 @@ public class DocProvider : ICompleteProviderBase
         var namedTypes = context.SemanticModel.Compilation.Db.QueryAllNamedTypeDefinitions();
         foreach (var typeDeclaration in namedTypes)
         {
-            if (typeDeclaration.Info is NamedTypeInfo namedTypeInfo)
+            if (typeDeclaration is LuaDeclaration { Info: NamedTypeInfo namedTypeInfo })
             {
                 context.Add(new CompletionItem
                 {
@@ -119,7 +119,7 @@ public class DocProvider : ICompleteProviderBase
             _ => CompletionItemKind.Text,
         };
     }
-    
+
     private void AddDiagnosticActionCompletion(CompleteContext context)
     {
         foreach (var action in Actions)
@@ -132,7 +132,7 @@ public class DocProvider : ICompleteProviderBase
             });
         }
     }
-    
+
     private void AddDiagnosticCodeCompletion(CompleteContext context)
     {
         var diagnosticCodes = context.SemanticModel.Compilation.Diagnostics.GetDiagnosticNames();

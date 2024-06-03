@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -19,19 +19,19 @@ public class WorkspaceSymbolBuilder
             {
                 if (global.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
-                     cancellationToken.ThrowIfCancellationRequested();
-                     var document = luaWorkspace.GetDocument(global.Info.Ptr.DocumentId);
-                     if (document is not null && global.Info.Ptr.ToNode(document) is { } node)
-                     {
-                         result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
-                         {
-                             Name = global.Name,
-                             Kind = ToSymbolKind(global.Info.DeclarationType),
-                             Location = node.Range.ToLspLocation(document)
-                         });
-                     }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (global.GetLocation(luaWorkspace) is { } location)
+                    {
+                        result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
+                        {
+                            Name = global.Name,
+                            Kind = ToSymbolKind(global.Type),
+                            Location = location.ToLspLocation()
+                        });
+                    }
                 }
             }
+
             var members = context.LuaWorkspace.Compilation.Db.QueryAllMembers();
             foreach (var member in members)
             {
@@ -50,10 +50,10 @@ public class WorkspaceSymbolBuilder
                     }
                 }
             }
-            
+
             return result;
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             return result;
         }

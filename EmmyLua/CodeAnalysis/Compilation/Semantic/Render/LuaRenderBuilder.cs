@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
@@ -64,9 +65,9 @@ public class LuaRenderBuilder(SearchContext context)
     private void RenderElement(LuaSyntaxElement element, LuaRenderContext renderContext)
     {
         var declaration = renderContext.SearchContext.FindDeclaration(element);
-        if (declaration is not null)
+        if (declaration is LuaDeclaration luaDeclaration)
         {
-            LuaDeclarationRenderer.RenderDeclaration(declaration, renderContext);
+            LuaDeclarationRenderer.RenderDeclaration(luaDeclaration, renderContext);
         }
     }
 

@@ -3,7 +3,7 @@ using System.Text;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree.Token;
 

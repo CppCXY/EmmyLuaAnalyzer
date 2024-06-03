@@ -18,9 +18,7 @@ public static class LuaLanguageLevel
     public static VersionNumber LuaLatest { get; } = Lua54;
 }
 
-public class LuaLanguage(VersionNumber languageLevel)
+public record LuaLanguage(VersionNumber LanguageLevel)
 {
     public static LuaLanguage Default { get; } = new(LuaLanguageLevel.Lua54);
-
-    public VersionNumber LanguageLevel { get; set; } = languageLevel;
 }

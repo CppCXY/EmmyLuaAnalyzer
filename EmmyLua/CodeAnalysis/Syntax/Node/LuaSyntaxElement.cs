@@ -1,7 +1,8 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
@@ -30,7 +31,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
 
     public LuaSyntaxNode? Parent => Tree.GetElement(ParentIndex) as LuaSyntaxNode;
 
-    public long UniqueId => ((long)DocumentId.Id << 32) | (uint)ElementId;
+    public SyntaxElementId UniqueId => new(DocumentId, ElementId);
 
     public string UniqueString => UniqueId.ToString();
 
@@ -444,7 +445,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         }
     }
 
-    public LuaLocation Location => Tree.Document.GetLocation(Range);
+    public ILocation Location => Tree.Document.GetLocation(Range);
 
     // 0 based line and col
     public LuaSyntaxToken? TokenAt(int line, int col)

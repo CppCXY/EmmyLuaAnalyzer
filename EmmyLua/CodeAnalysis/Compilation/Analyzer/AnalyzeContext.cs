@@ -1,8 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer;
 
@@ -78,7 +79,7 @@ public class AnalyzeContext(List<LuaDocument> documents)
 
     public List<UnResolved> UnResolves { get; } = [];
 
-    public Dictionary<long, ControlFlowGraph> ControlFlowGraphs { get; } = new();
+    public Dictionary<SyntaxElementId, ControlFlowGraph> ControlFlowGraphs { get; } = new();
 
     public ControlFlowGraph? GetControlFlowGraph(LuaBlockSyntax block)
     {

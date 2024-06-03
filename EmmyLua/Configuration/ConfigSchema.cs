@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 using EmmyLua.CodeAnalysis.Diagnostics;
-using EmmyLua.CodeAnalysis.Util.FilenameConverter;
+using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
@@ -17,7 +17,7 @@ public class VisibilityChecker(LuaCompilation compilation)
             .SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>();
         foreach (var indexExpr in indexExprs)
         {
-            var declaration = context.SearchContext.FindDeclaration(indexExpr);
+            var declaration = context.SearchContext.FindDeclaration(indexExpr) as LuaDeclaration;
             var prefixExpr = indexExpr.PrefixExpr;
             if (prefixExpr is LuaNameExprSyntax { Name.Text: "self" } && declaration is { IsPrivate: true })
             {

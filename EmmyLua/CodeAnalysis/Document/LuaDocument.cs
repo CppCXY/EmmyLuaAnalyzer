@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Tree;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Document;
 
@@ -9,7 +10,7 @@ public readonly record struct LuaDocumentId(int Id)
     public bool IsVirtual => Id == 0;
 }
 
-public sealed class LuaDocument
+public sealed class LuaDocument : IDocument
 {
     public LuaDocumentId Id { get; set; }
 

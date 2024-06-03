@@ -1,5 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -71,7 +72,7 @@ public class RenameBuilder
         return changes;
     }
 
-    private void AddChange(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaLocation location, string newName)
+    private void AddChange(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, ILocation location, string newName)
     {
         var uri = location.Document.Uri;
         if (!changes.TryGetValue(uri, out var edits))
@@ -82,14 +83,14 @@ public class RenameBuilder
 
         var edit = new TextEdit()
         {
-            Range = location.Range.ToLspRange(location.Document),
+            Range = location.ToLspRange(),
             NewText = newName
         };
         ((List<TextEdit>)edits).Add(edit);
     }
 
     private void ChangeStringToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaStringToken stringToken,
-        LuaReference luaReference, string newName)
+        ReferenceResult referenceResult, string newName)
     {
         var range = stringToken.Range;
         if (range.Length < 2)
@@ -97,12 +98,15 @@ public class RenameBuilder
             return;
         }
 
-        range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
-        AddChange(changes, new LuaLocation(luaReference.Location.Document, range), newName);
+        if (referenceResult.Location.Document is LuaDocument document)
+        {
+            range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
+            AddChange(changes, new LuaLocation(document, range), newName);
+        }
     }
 
     private void ChangeNameToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaNameToken nameToken,
-        LuaReference luaReference, string newName, bool notSymbolChar)
+        ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename
         if (notSymbolChar)
@@ -110,11 +114,11 @@ public class RenameBuilder
             return;
         }
 
-        AddChange(changes, luaReference.Location, newName);
+        AddChange(changes, referenceResult.Location, newName);
     }
     
     private void ChangeLocalName(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaLocalNameSyntax localNameSyntax,
-        LuaReference luaReference, string newName, bool notSymbolChar)
+        ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename
         if (notSymbolChar)
@@ -122,6 +126,6 @@ public class RenameBuilder
             return;
         }
         
-        AddChange(changes, luaReference.Location, newName);
+        AddChange(changes, referenceResult.Location, newName);
     }
 }

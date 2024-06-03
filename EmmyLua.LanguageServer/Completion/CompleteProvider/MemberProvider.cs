@@ -1,6 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Kind;
+﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -47,9 +47,9 @@ public class MemberProvider : ICompleteProviderBase
             var colon = indexExpr.IsColonIndex;
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.CreateCompletion(member.Name, member.Info.DeclarationType)
+                context.CreateCompletion(member.Name, member.Type)
                     .WithColon(colon)
-                    .WithData(member.Info.Ptr.Stringify)
+                    .WithData(member.RelationInformation)
                     .WithDotCheckBracketLabel(indexExpr)
                     .WithCheckDeclaration(member)
                     .AddToContext();
@@ -69,8 +69,8 @@ public class MemberProvider : ICompleteProviderBase
         {
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
-                context.CreateCompletion(member.Name, member.Info.DeclarationType)
-                    .WithData(member.Info.Ptr.Stringify)
+                context.CreateCompletion(member.Name, member.Type)
+                    .WithData(member.RelationInformation)
                     .WithCheckDeclaration(member)
                     .AddToContext();
             }
@@ -92,15 +92,15 @@ public class MemberProvider : ICompleteProviderBase
                 if (member.Name.StartsWith("["))
                 {
                     var label = member.Name[1..^1];
-                    context.CreateCompletion(label, member.Info.DeclarationType)
-                        .WithData(member.Info.Ptr.Stringify)
+                    context.CreateCompletion(label, member.Type)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }
                 else
                 {
-                    context.CreateCompletion($"\"{member.Name}\"", member.Info.DeclarationType)
-                        .WithData(member.Info.Ptr.Stringify)
+                    context.CreateCompletion($"\"{member.Name}\"", member.Type)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }
