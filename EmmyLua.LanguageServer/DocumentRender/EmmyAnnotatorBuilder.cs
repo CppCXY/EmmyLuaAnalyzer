@@ -10,7 +10,6 @@ public class EmmyAnnotatorBuilder
     public List<EmmyAnnotatorResponse> Build(SemanticModel semanticModel)
     {
         var document = semanticModel.Document;
-        var declarationTree = semanticModel.DeclarationTree;
         var context = semanticModel.Context;
         var globalAnnotator = new EmmyAnnotatorResponse(semanticModel.Document.Uri, EmmyAnnotatorType.Global);
         var paramAnnotator = new EmmyAnnotatorResponse(semanticModel.Document.Uri, EmmyAnnotatorType.Param);
@@ -38,7 +37,7 @@ public class EmmyAnnotatorBuilder
                         {
                             paramAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
-                        else if (declarationTree.IsUpValue(nameExpr, declaration))
+                        else if (context.IsUpValue(nameExpr, declaration))
                         {
                             upvalueAnnotator.Ranges.Add(new RenderRange(nameToken.Range.ToLspRange(document)));
                         }
@@ -48,8 +47,7 @@ public class EmmyAnnotatorBuilder
                 }
             }
         }
-
-
+        
         return responses;
     }
 }

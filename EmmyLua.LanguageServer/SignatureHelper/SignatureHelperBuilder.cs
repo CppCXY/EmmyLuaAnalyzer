@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
@@ -137,8 +138,8 @@ public class SignatureHelperBuilder
 
             foreach (var parameter in parameters)
             {
-                var syntaxElement = parameter.Info.Ptr.ToNode(semanticModel.Context);
-                if (syntaxElement is not null)
+                if (parameter is LuaDeclaration { Info.Ptr: { } ptr } &&
+                    ptr.ToNode(semanticModel.Context) is { } syntaxElement)
                 {
                     parameterInfos.Add(new ParameterInformation()
                     {

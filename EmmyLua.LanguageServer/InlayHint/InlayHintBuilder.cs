@@ -22,7 +22,7 @@ public class InlayHintBuilder
     public List<InlayHintType> Build(SemanticModel semanticModel, SourceRange range, InlayHintConfig config,
         CancellationToken cancellationToken)
     {
-        var syntaxTree = semanticModel.DeclarationTree.SyntaxTree;
+        var syntaxTree = semanticModel.Document.SyntaxTree;
         var hints = new List<InlayHintType>();
         var sourceBlock = syntaxTree.SyntaxRoot.Block;
         if (sourceBlock is null)
@@ -136,7 +136,7 @@ public class InlayHintBuilder
             }
 
             var parameters = perfectSignature.Parameters.Skip(skipParam).ToList();
-            var hasVarArg = parameters.LastOrDefault()?.Info is ParamInfo { IsVararg: true };
+            var hasVarArg = parameters.LastOrDefault() is LuaDeclaration { Info: ParamInfo { IsVararg: true } };
             var parameterCount = hasVarArg ? (parameters.Count - 1) : parameters.Count;
             var varCount = 0;
             for (var i = 0; i < args.Count; i++)
@@ -145,40 +145,28 @@ public class InlayHintBuilder
                 if (i < parameterCount)
                 {
                     var parameter = parameters[i];
-                    var document = semanticModel.Compilation.Workspace.GetDocument(parameter.Info.Ptr.DocumentId);
                     var nullableText = string.Empty;
-                    if (parameter.Info is ParamInfo { Nullable: true })
+                    var location = parameter.GetLocation(semanticModel.Compilation.Workspace)?.ToLspLocation();
+
+                    if (parameter is LuaDeclaration { Info: ParamInfo { Nullable: true } })
                     {
                         nullableText = "?";
                     }
 
-                    if (document is not null && parameter.Info.Ptr.ToNode(document) is { } node)
+                    hints.Add(new InlayHintType()
                     {
-                        hints.Add(new InlayHintType()
+                        Position = arg.Position.ToLspPosition(semanticModel.Document),
+                        Label = new StringOrInlayHintLabelParts(new[]
                         {
-                            Position = arg.Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts(new[]
+                            new InlayHintLabelPart()
                             {
-                                new InlayHintLabelPart()
-                                {
-                                    Value = $"{parameter.Name}{nullableText}:",
-                                    Location = node.Range.ToLspLocation(document)
-                                }
-                            }),
-                            Kind = InlayHintKind.Parameter,
-                            PaddingRight = true
-                        });
-                    }
-                    else
-                    {
-                        hints.Add(new InlayHintType()
-                        {
-                            Position = arg.Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts($"{parameter.Name}{nullableText}:"),
-                            Kind = InlayHintKind.Parameter,
-                            PaddingRight = true
-                        });
-                    }
+                                Value = $"{parameter.Name}{nullableText}:",
+                                Location = location
+                            }
+                        }),
+                        Kind = InlayHintKind.Parameter,
+                        PaddingRight = true
+                    });
                 }
                 else
                 {
@@ -226,7 +214,7 @@ public class InlayHintBuilder
             var parameterDic = new Dictionary<string, LuaType?>();
             foreach (var parameter in mainSignature.Parameters)
             {
-                parameterDic.TryAdd(parameter.Name, parameter.Info.DeclarationType);
+                parameterDic.TryAdd(parameter.Name, parameter.Type);
             }
 
             var parameters = closureExpr.ParamList?
@@ -310,7 +298,7 @@ public class InlayHintBuilder
         {
             var prefixType = semanticModel.Context.Infer(prefixExpr);
             var superMethod = semanticModel.Context.FindSuperMember(prefixType, name).FirstOrDefault();
-            if (superMethod is LuaDeclaration{Info: {} info})
+            if (superMethod is LuaDeclaration { Info: { } info })
             {
                 var document = semanticModel.Document;
                 var parentDocument = semanticModel.Compilation.Workspace.GetDocument(info.Ptr.DocumentId);

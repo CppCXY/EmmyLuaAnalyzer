@@ -49,7 +49,7 @@ public class MemberProvider : ICompleteProviderBase
             {
                 context.CreateCompletion(member.Name, member.Type)
                     .WithColon(colon)
-                    .WithData(member.RelationInfomation)
+                    .WithData(member.RelationInformation)
                     .WithDotCheckBracketLabel(indexExpr)
                     .WithCheckDeclaration(member)
                     .AddToContext();
@@ -70,7 +70,7 @@ public class MemberProvider : ICompleteProviderBase
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
                 context.CreateCompletion(member.Name, member.Type)
-                    .WithData(member.RelationInfomation)
+                    .WithData(member.RelationInformation)
                     .WithCheckDeclaration(member)
                     .AddToContext();
             }
@@ -93,14 +93,14 @@ public class MemberProvider : ICompleteProviderBase
                 {
                     var label = member.Name[1..^1];
                     context.CreateCompletion(label, member.Type)
-                        .WithData(member.RelationInfomation)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }
                 else
                 {
                     context.CreateCompletion($"\"{member.Name}\"", member.Type)
-                        .WithData(member.RelationInfomation)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }

@@ -1,23 +1,24 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-public readonly struct LuaElementPtr<TNode>(long uniqueId)
+public readonly struct LuaElementPtr<TNode>(SyntaxElementId uniqueId)
     where TNode : LuaSyntaxElement
 {
-    public static LuaElementPtr<TNode> Empty { get; } = new(0);
+    public static readonly LuaElementPtr<TNode> Empty = new LuaElementPtr<TNode>(SyntaxElementId.Empty);
 
-    public long UniqueId { get; } = uniqueId;
+    public SyntaxElementId UniqueId { get; } = uniqueId;
 
-    public LuaDocumentId DocumentId => new((int)(UniqueId >> 32));
+    public LuaDocumentId DocumentId => UniqueId.DocumentId;
 
-    public int ElementId => (int)UniqueId;
+    public int ElementId => UniqueId.ElementId;
 
     public static LuaElementPtr<TNode> From(string idString)
     {
-        return new LuaElementPtr<TNode>(long.Parse(idString));
+        return new LuaElementPtr<TNode>(SyntaxElementId.From(idString));
     }
 
     public LuaElementPtr(TNode syntaxNode) : this(syntaxNode.UniqueId)

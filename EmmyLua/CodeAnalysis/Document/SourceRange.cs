@@ -1,11 +1,8 @@
 ﻿namespace EmmyLua.CodeAnalysis.Document;
 
-public readonly struct SourceRange(int startOffset = 0, int length = 0)
+public readonly record struct SourceRange(int StartOffset = 0, int Length = 0)
 {
     public static SourceRange Empty = new();
-
-    public int StartOffset { get; init; } = startOffset;
-    public int Length { get; init; } = length;
 
     public int EndOffset => StartOffset + Length;
 

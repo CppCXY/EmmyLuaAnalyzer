@@ -23,14 +23,14 @@ public class SelfMemberProvider : ICompleteProviderBase
                 if (member.Type is LuaMethodType { ColonDefine: true })
                 {
                     context.CreateCompletion($"self:{member.Name}", member.Type)
-                        .WithData(member.RelationInfomation)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }
                 else
                 {
                     context.CreateCompletion($"self.{member.Name}", member.Type)
-                        .WithData(member.RelationInfomation)
+                        .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
                         .AddToContext();
                 }

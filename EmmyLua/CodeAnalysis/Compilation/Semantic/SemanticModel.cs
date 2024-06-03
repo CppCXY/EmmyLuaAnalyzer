@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
@@ -22,16 +22,13 @@ public class SemanticModel
 
     private References References { get; }
 
-    public LuaDeclarationTree DeclarationTree { get; }
-
-    public SemanticModel(LuaCompilation compilation, LuaDocument document, LuaDeclarationTree declarationTree)
+    public SemanticModel(LuaCompilation compilation, LuaDocument document)
     {
         Compilation = compilation;
         Document = document;
         Context = new(compilation, new SearchContextFeatures());
         RenderBuilder = new(Context);
         References = new(Context);
-        DeclarationTree = declarationTree;
     }
 
     // 渲染符号的文档和类型
@@ -45,9 +42,15 @@ public class SemanticModel
         return RenderBuilder.Render(symbol, feature);
     }
 
-    public IEnumerable<LuaReference> FindReferences(LuaSyntaxElement element)
+    public IEnumerable<ReferenceResult> FindReferences(LuaSyntaxElement element)
     {
-        return References.FindReferences(element);
+        var declaration = Context.FindDeclaration(element);
+        if (declaration is not null)
+        {
+            return References.FindReferences(declaration);
+        }
+
+        return [];
     }
 
     public IEnumerable<Diagnostic> GetDiagnostics()
@@ -62,7 +65,20 @@ public class SemanticModel
 
     public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
-        return DeclarationTree.GetDeclarationsBefore(beforeToken);
+        var result = new List<LuaDeclaration>();
+        var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
+        if (Compilation.DeclarationTrees.TryGetValue(beforeToken.DocumentId, out var tree) && token is not null)
+        {
+            var scope = tree.FindScope(token);
+            scope?.WalkUp(beforeToken.Position, 0, declaration =>
+            {
+                result.Add(declaration);
+                return ScopeFoundState.NotFounded;
+            });
+            return result;
+        }
+
+        return [];
     }
 
     public LuaType? GetExportType(LuaDocumentId documentId)

@@ -1,17 +1,18 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
-namespace EmmyLua.CodeAnalysis.IndexSystem;
+namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class WorkspaceIndex: IQueryableIndex
+public class WorkspaceIndex : IQueryableIndex
 {
     public IndexStorage<string, LuaDeclaration> TypeMembers { get; } = new();
 
-    public IndexStorage<long, string> ParentType { get; } = new();
+    public InFiledDictionary<SyntaxElementId, string> ParentType { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> Globals { get; } = new();
 
@@ -21,7 +22,7 @@ public class WorkspaceIndex: IQueryableIndex
 
     private IndexStorage<string, LuaDeclaration> NamedTypeDefinition { get; } = new();
 
-    public IndexStorage<long, LuaType> IdRelatedType { get; } = new();
+    public InFiledDictionary<SyntaxElementId, LuaType> IdRelatedType { get; } = new();
 
     private IndexStorage<string, LuaType> AliasTypes { get; } = new();
 
@@ -41,6 +42,10 @@ public class WorkspaceIndex: IQueryableIndex
 
     private IndexStorage<string, LuaMethodType> TypeOverloads { get; } = new();
 
+    private InFiledDictionary<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
+
+    private InFiledDictionary<SyntaxElementId, LuaDeclaration> InFiledDeclarations { get; } = new();
+
     public void Remove(LuaDocumentId documentId)
     {
         TypeMembers.Remove(documentId);
@@ -58,6 +63,8 @@ public class WorkspaceIndex: IQueryableIndex
         NameType.Remove(documentId);
         AliasTypes.Remove(documentId);
         TypeOverloads.Remove(documentId);
+        InFiledReferences.Remove(documentId);
+        InFiledDeclarations.Remove(documentId);
     }
 
     private static HashSet<string> NotMemberNames { get; } =
@@ -121,9 +128,9 @@ public class WorkspaceIndex: IQueryableIndex
         AliasTypes.Add(documentId, name, baseType);
     }
 
-    public void AddIdRelatedType(LuaDocumentId documentId, long id, LuaType relatedType)
+    public void AddIdRelatedType(SyntaxElementId id, LuaType relatedType)
     {
-        IdRelatedType.Add(documentId, id, relatedType);
+        IdRelatedType.Add(id.DocumentId, id, relatedType);
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
@@ -179,6 +186,22 @@ public class WorkspaceIndex: IQueryableIndex
     public void AddTypeOverload(LuaDocumentId documentId, string name, LuaMethodType methodType)
     {
         TypeOverloads.Add(documentId, name, methodType);
+    }
+
+    public void AddReference(LuaDocumentId documentId, LuaDeclaration declaration, LuaReference reference)
+    {
+        var list = InFiledReferences.Query(documentId, declaration.UniqueId);
+        if (list is null)
+        {
+            list = new();
+            InFiledReferences.Add(documentId, declaration.UniqueId, list);
+        }
+        else
+        {
+            list.Add(reference);
+        }
+
+        InFiledDeclarations.Add(documentId, reference.Ptr.UniqueId, declaration);
     }
 
     public IEnumerable<IDeclaration> QueryAllGlobal()
@@ -245,5 +268,26 @@ public class WorkspaceIndex: IQueryableIndex
     public IEnumerable<LuaMethodType> QueryTypeOverloads(string name)
     {
         return TypeOverloads.Query(name);
+    }
+
+    public IEnumerable<LuaReference> QueryLocalReferences(LuaDeclaration declaration)
+    {
+        var list = InFiledReferences.Query(declaration.Info.Ptr.DocumentId, declaration.UniqueId);
+        if (list is not null)
+        {
+            return list;
+        }
+
+        return [];
+    }
+
+    public LuaDeclaration? QueryLocalDeclaration(LuaSyntaxElement element)
+    {
+        return InFiledDeclarations.Query(element.DocumentId, element.UniqueId);
+    }
+
+    public IEnumerable<LuaDeclaration> QueryDocumentLocalDeclarations(LuaDocumentId documentId)
+    {
+        return InFiledDeclarations.QueryAll(documentId);
     }
 }

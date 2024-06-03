@@ -85,6 +85,8 @@ public class LuaDeclaration(
         return this;
     }
 
+    public SyntaxElementId UniqueId => Info.Ptr.UniqueId;
+
     public bool ValidateLuaVersion(VersionNumber version)
     {
         var canValid = false;
@@ -143,7 +145,7 @@ public class LuaDeclaration(
         return null;
     }
 
-    public string RelationInfomation => Info.Ptr.Stringify;
+    public string RelationInformation => Info.Ptr.Stringify;
 
     public override string ToString()
     {

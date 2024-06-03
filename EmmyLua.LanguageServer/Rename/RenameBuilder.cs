@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Reference;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -90,7 +90,7 @@ public class RenameBuilder
     }
 
     private void ChangeStringToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaStringToken stringToken,
-        LuaReference luaReference, string newName)
+        ReferenceResult referenceResult, string newName)
     {
         var range = stringToken.Range;
         if (range.Length < 2)
@@ -98,7 +98,7 @@ public class RenameBuilder
             return;
         }
 
-        if (luaReference.Location.Document is LuaDocument document)
+        if (referenceResult.Location.Document is LuaDocument document)
         {
             range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
             AddChange(changes, new LuaLocation(document, range), newName);
@@ -106,7 +106,7 @@ public class RenameBuilder
     }
 
     private void ChangeNameToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaNameToken nameToken,
-        LuaReference luaReference, string newName, bool notSymbolChar)
+        ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename
         if (notSymbolChar)
@@ -114,11 +114,11 @@ public class RenameBuilder
             return;
         }
 
-        AddChange(changes, luaReference.Location, newName);
+        AddChange(changes, referenceResult.Location, newName);
     }
     
     private void ChangeLocalName(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaLocalNameSyntax localNameSyntax,
-        LuaReference luaReference, string newName, bool notSymbolChar)
+        ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename
         if (notSymbolChar)
@@ -126,6 +126,6 @@ public class RenameBuilder
             return;
         }
         
-        AddChange(changes, luaReference.Location, newName);
+        AddChange(changes, referenceResult.Location, newName);
     }
 }

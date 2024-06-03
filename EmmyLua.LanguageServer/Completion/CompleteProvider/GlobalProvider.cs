@@ -22,7 +22,7 @@ public class GlobalProvider : ICompleteProviderBase
             if (!localHashSet.Contains(globalDecl.Name))
             {
                 context.CreateCompletion(globalDecl.Name, globalDecl.Type)
-                    .WithData(globalDecl.RelationInfomation)
+                    .WithData(globalDecl.RelationInformation)
                     .WithCheckDeclaration(globalDecl)
                     .AddToContext();
             }

@@ -4,8 +4,8 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 namespace EmmyLua.CodeAnalysis.Syntax.Tree.Binder;
 
 public class BinderData(
-    Dictionary<long, LuaElementPtr<LuaSyntaxElement>> commentOwners,
-    Dictionary<long, List<LuaElementPtr<LuaCommentSyntax>>> comments)
+    Dictionary<SyntaxElementId, LuaElementPtr<LuaSyntaxElement>> commentOwners,
+    Dictionary<SyntaxElementId, List<LuaElementPtr<LuaCommentSyntax>>> comments)
 {
     public LuaSyntaxElement? CommentOwner(LuaCommentSyntax comment)
     {

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -117,7 +118,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId).FirstOrDefault();
+        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId);
         return methodType ?? Builtin.Unknown;
     }
 

@@ -31,7 +31,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
 
     public LuaSyntaxNode? Parent => Tree.GetElement(ParentIndex) as LuaSyntaxNode;
 
-    public long UniqueId => ((long)DocumentId.Id << 32) | (uint)ElementId;
+    public SyntaxElementId UniqueId => new(DocumentId, ElementId);
 
     public string UniqueString => UniqueId.ToString();
 

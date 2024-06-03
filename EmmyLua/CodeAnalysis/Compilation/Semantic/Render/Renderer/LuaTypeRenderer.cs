@@ -399,10 +399,10 @@ public static class LuaTypeRenderer
 
             var parameter = mainSignature.Parameters[i];
             renderContext.Append(parameter.Name);
-            if (parameter.Info is ParamInfo { Nullable: true })
-            {
-                renderContext.Append('?');
-            }
+            // if (parameter.Info is ParamInfo { Nullable: true })
+            // {
+            //     renderContext.Append('?');
+            // }
 
             renderContext.Append(':');
             InnerRenderType(parameter.Type, renderContext, 0);

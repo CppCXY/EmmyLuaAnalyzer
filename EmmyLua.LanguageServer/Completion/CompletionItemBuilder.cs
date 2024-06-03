@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -57,7 +58,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         {
             if (luaDeclaration.RequiredVersions is not null)
             {
-                var feature = completeContext.ServerContext.LuaWorkspace.Features;
+                var feature = CompleteContext.ServerContext.LuaWorkspace.Features;
                 var languageLevel = feature.Language.LanguageLevel;
                 if (!luaDeclaration.ValidateLuaVersion(languageLevel))
                 {

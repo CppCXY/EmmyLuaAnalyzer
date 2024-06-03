@@ -1,6 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Index;
+using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -76,9 +78,9 @@ public class IndexFacade : IQueryableIndex
         return QueryableIndexes.SelectMany(it => it.QueryNamedTypeDefinitions(name));
     }
 
-    public IEnumerable<LuaType> QueryTypeFromId(long id)
+    public LuaType? QueryTypeFromId(SyntaxElementId id)
     {
-        return WorkspaceIndex.IdRelatedType.Query(id);
+        return WorkspaceIndex.IdRelatedType.Query(id.DocumentId, id);
     }
 
     public IEnumerable<LuaType> QueryAliasOriginTypes(string name)
@@ -117,7 +119,7 @@ public class IndexFacade : IQueryableIndex
 
     public IEnumerable<LuaNameExprSyntax> QueryNameExprReferences(string name)
     {
-        foreach (var ptr in  WorkspaceIndex.NameExpr.Query(name))
+        foreach (var ptr in WorkspaceIndex.NameExpr.Query(name))
         {
             var node = ptr.ToNode(Compilation.Workspace);
             if (node is not null)
@@ -150,14 +152,9 @@ public class IndexFacade : IQueryableIndex
         }
     }
 
-    public bool IsDefinedType(string name)
-    {
-        return QueryNamedTypeDefinitions(name).FirstOrDefault() is not null;
-    }
-
     public LuaNamedType? QueryParentType(LuaSyntaxNode node)
     {
-        var parentType = WorkspaceIndex.ParentType.Query(node.UniqueId).FirstOrDefault();
+        var parentType = WorkspaceIndex.ParentType.Query(node.UniqueId.DocumentId, node.UniqueId);
         if (parentType is not null)
         {
             return new LuaNamedType(parentType);
@@ -179,6 +176,21 @@ public class IndexFacade : IQueryableIndex
     public IEnumerable<LuaMethodType> QueryTypeOverloads(string name)
     {
         return QueryableIndexes.SelectMany(it => it.QueryTypeOverloads(name));
+    }
+
+    public IEnumerable<LuaReference> QueryLocalReferences(LuaDeclaration luaDeclaration)
+    {
+        return WorkspaceIndex.QueryLocalReferences(luaDeclaration);
+    }
+
+    public LuaDeclaration? QueryLocalDeclaration(LuaSyntaxElement element)
+    {
+        return WorkspaceIndex.QueryLocalDeclaration(element);
+    }
+
+    public IEnumerable<LuaDeclaration> QueryDocumentLocalDeclarations(LuaDocumentId documentId)
+    {
+        return WorkspaceIndex.QueryDocumentLocalDeclarations(documentId);
     }
 
     public void Remove(LuaDocumentId documentId)

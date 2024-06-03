@@ -5,14 +5,8 @@ namespace EmmyLua.CodeAnalysis.Document;
 /// <summary>
 /// A position in a syntax tree.
 /// </summary>
-public class LuaLocation(LuaDocument luaDocument, SourceRange range, int baseLine = 0) : ILocation
+public record LuaLocation(LuaDocument LuaDocument, SourceRange Range, int BaseLine = 0) : ILocation
 {
-    public LuaDocument LuaDocument { get; } = luaDocument;
-
-    public SourceRange Range { get; } = range;
-
-    private int BaseLine { get; } = baseLine;
-
     private string FilePath => LuaDocument.Path;
 
     public IDocument Document => LuaDocument;

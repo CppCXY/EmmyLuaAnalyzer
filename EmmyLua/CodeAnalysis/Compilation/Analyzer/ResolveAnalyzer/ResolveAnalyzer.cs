@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -15,7 +16,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             Cache = true,
             CacheUnknown = false,
-            CacheBaseMember = false
         });
 
         var resolveDependencyGraph = new ResolveDependencyGraph(Context, analyzeContext);
@@ -303,7 +303,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         Compilation.WorkspaceIndex.AddMember(documentId, typeName, member);
                     }
 
-                    Compilation.WorkspaceIndex.AddIdRelatedType(documentId, tableType.TableExprPtr.UniqueId, namedType);
+                    Compilation.WorkspaceIndex.AddIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
                 }
                 else
                 {
