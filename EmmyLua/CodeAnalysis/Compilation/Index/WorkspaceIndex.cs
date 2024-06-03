@@ -193,7 +193,7 @@ public class WorkspaceIndex : IQueryableIndex
         var list = InFiledReferences.Query(documentId, declaration.UniqueId);
         if (list is null)
         {
-            list = new();
+            list = [reference];
             InFiledReferences.Add(documentId, declaration.UniqueId, list);
         }
         else
