@@ -12,6 +12,9 @@ public readonly record struct LuaDocumentId(int Id)
 
 public sealed class LuaDocument : IDocument
 {
+    public static readonly LuaDocument Empty = new(string.Empty, LuaLanguage.Default, LuaDocumentId.VirtualDocumentId,
+        string.Empty, string.Empty);
+
     public LuaDocumentId Id { get; set; }
 
     public OpenState OpenState { get; set; } = OpenState.Closed;

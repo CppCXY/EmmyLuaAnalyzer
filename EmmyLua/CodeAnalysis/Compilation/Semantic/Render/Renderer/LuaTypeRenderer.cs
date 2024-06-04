@@ -368,7 +368,7 @@ public static class LuaTypeRenderer
         // show generic
         if (methodType is LuaGenericMethodType genericMethodType)
         {
-            var genericParameters = genericMethodType.GenericParameterDeclarations;
+            var genericParameters = genericMethodType.GenericParamDecls;
             renderContext.Append('<');
             for (var i = 0; i < genericParameters.Count; i++)
             {

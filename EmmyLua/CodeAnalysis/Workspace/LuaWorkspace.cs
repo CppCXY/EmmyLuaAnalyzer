@@ -5,7 +5,7 @@ using EmmyLua.CodeAnalysis.Workspace.Module;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
-public class LuaWorkspace : IDocumentSystem
+public class LuaWorkspace
 {
     public string MainWorkspace { get; set; } = string.Empty;
 

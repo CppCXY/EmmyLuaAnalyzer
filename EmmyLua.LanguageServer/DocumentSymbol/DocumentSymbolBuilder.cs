@@ -20,7 +20,7 @@ public class DocumentSymbolBuilder
             {
                 case LuaLocalNameSyntax localName:
                 {
-                    if (localName is { Name.RepresentText: { } name })
+                    if (localName is { Name.Text: { } name })
                     {
                         symbols.Add(new DocumentSymbolType()
                         {
@@ -52,7 +52,7 @@ public class DocumentSymbolBuilder
                 }
                 case LuaFuncStatSyntax funcStat:
                 {
-                    if (funcStat is { IsLocal: true, LocalName.Name.RepresentText: { } name })
+                    if (funcStat is { IsLocal: true, LocalName.Name.Text: { } name })
                     {
                         symbols.Add(new DocumentSymbolType()
                         {
@@ -62,7 +62,7 @@ public class DocumentSymbolBuilder
                             SelectionRange = funcStat.LocalName.Name.Range.ToLspRange(document)
                         });
                     }
-                    else if (funcStat is { IsLocal: false, NameExpr.Name.RepresentText: { } name2 })
+                    else if (funcStat is { IsLocal: false, NameExpr.Name.Text: { } name2 })
                     {
                         symbols.Add(new DocumentSymbolType()
                         {
@@ -86,7 +86,7 @@ public class DocumentSymbolBuilder
                 }
                 case LuaParamDefSyntax paramDef:
                 {
-                    if (paramDef is { Name.RepresentText: { } name })
+                    if (paramDef is { Name.Text: { } name })
                     {
                         symbols.Add(new DocumentSymbolType()
                         {

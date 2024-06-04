@@ -125,7 +125,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
                         Append('|');
                     }
 
-                    Append($"[{typeName}]({typeDeclaration.GetLocation(SearchContext.Compilation.Workspace).UriLocation})");
+                    Append($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.UriLocation})");
                 }
             }
         }

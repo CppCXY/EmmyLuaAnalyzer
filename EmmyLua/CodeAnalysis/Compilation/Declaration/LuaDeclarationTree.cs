@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
-public record LuaDeclarationTree(DeclarationScope Root, Dictionary<SyntaxElementId, DeclarationScope> Scopes)
+public record LuaDeclarationTree(Dictionary<SyntaxElementId, DeclarationScope> Scopes)
 {
     public DeclarationScope? FindScope(LuaSyntaxElement element)
     {

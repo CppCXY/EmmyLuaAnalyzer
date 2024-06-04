@@ -146,8 +146,7 @@ public class InlayHintBuilder
                 {
                     var parameter = parameters[i];
                     var nullableText = string.Empty;
-                    var location = parameter.GetLocation(semanticModel.Compilation.Workspace)?.ToLspLocation();
-
+                    var location = parameter.GetLocation(semanticModel.Context)?.ToLspLocation();
                     if (parameter is LuaDeclaration { Info: ParamInfo { Nullable: true } })
                     {
                         nullableText = "?";

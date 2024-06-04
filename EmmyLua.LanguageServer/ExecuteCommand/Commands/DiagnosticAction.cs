@@ -75,7 +75,7 @@ public class DiagnosticAction : ICommandBase
             .FirstOrDefault()?
             .DocList.OfType<LuaDocTagDiagnosticSyntax>()
             .FirstOrDefault();
-        if (tagDiagnostic is { Diagnostics.Range: { } prevRange, Action.RepresentText: "disable-next-line" })
+        if (tagDiagnostic is { Diagnostics.Range: { } prevRange, Action.Text: "disable-next-line" })
         {
             var line = document.GetLine(prevRange.EndOffset);
             var col = document.GetCol(prevRange.EndOffset);
@@ -119,7 +119,7 @@ public class DiagnosticAction : ICommandBase
             var tagDiagnostic = commentSyntax.DocList.OfType<LuaDocTagDiagnosticSyntax>().FirstOrDefault();
             if (tagDiagnostic is not null)
             {
-                if (tagDiagnostic is { Diagnostics.Range: { } prevRange, Action.RepresentText: "disable" })
+                if (tagDiagnostic is { Diagnostics.Range: { } prevRange, Action.Text: "disable" })
                 {
                     var line = document.GetLine(prevRange.EndOffset);
                     var col = document.GetCol(prevRange.EndOffset);

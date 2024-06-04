@@ -1,4 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -14,19 +16,21 @@ public class WorkspaceSymbolBuilder
         try
         {
             var luaWorkspace = context.LuaWorkspace;
+            var searchContext = new SearchContext(luaWorkspace.Compilation, new SearchContextFeatures());
             var globals = context.LuaWorkspace.Compilation.Db.QueryAllGlobal();
             foreach (var global in globals)
             {
                 if (global.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (global.GetLocation(luaWorkspace) is { } location)
+                    var location = global.GetLocation(searchContext)?.ToLspLocation();
+                    if (location is not null)
                     {
                         result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
                         {
                             Name = global.Name,
                             Kind = ToSymbolKind(global.Type),
-                            Location = location.ToLspLocation()
+                            Location = location
                         });
                     }
                 }

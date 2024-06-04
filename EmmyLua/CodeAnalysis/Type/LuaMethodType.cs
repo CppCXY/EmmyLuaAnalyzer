@@ -175,7 +175,7 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
     public LuaSignature InstantiateSignature(
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        HashSet<string> genericParameterNames,
+        Dictionary<string, LuaType> genericParams,
         bool colonDefine,
         SearchContext context)
     {
@@ -190,7 +190,7 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
         {
             case (true, false):
             {
-                return InnerInstantiate(callExpr, args, genericParameterNames, genericParameterMap, 1, 0, context);
+                return InnerInstantiate(callExpr, args, genericParams, genericParameterMap, 1, 0, context);
             }
             case (false, true):
             {
@@ -212,12 +212,12 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
                     matchedParam++;
                 }
 
-                return InnerInstantiate(callExpr, args, genericParameterNames, genericParameterMap, 0, matchedParam,
+                return InnerInstantiate(callExpr, args, genericParams, genericParameterMap, 0, matchedParam,
                     context);
             }
             default:
             {
-                return InnerInstantiate(callExpr, args, genericParameterNames, genericParameterMap, 0, 0, context);
+                return InnerInstantiate(callExpr, args, genericParams, genericParameterMap, 0, 0, context);
             }
         }
     }
@@ -225,17 +225,12 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
     private LuaSignature InnerInstantiate(
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        HashSet<string> genericParameters,
-        Dictionary<string, LuaType> genericParameterMap,
+        Dictionary<string, LuaType> genericParams,
+        Dictionary<string, LuaType> genericParamsReplace,
         int skipParam,
         int matchedParam,
         SearchContext context)
     {
-        if (skipParam > Parameters.Count || args.Count == 0)
-        {
-            return this;
-        }
-
         var newParameters = new List<IDeclaration>();
         if (skipParam == 1)
         {
@@ -243,11 +238,11 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
             {
                 var prefixType = context.Infer(callSelf);
                 var parameterType = Parameters[0].Type;
-                GenericInfer.InferInstantiateByType(parameterType, prefixType, genericParameters, genericParameterMap,
+                GenericInfer.InferInstantiateByType(parameterType, prefixType, genericParams, genericParamsReplace,
                     context);
             }
 
-            newParameters.Add(Parameters[0].Instantiate(genericParameterMap));
+            newParameters.Add(Parameters[0].Instantiate(genericParamsReplace));
         }
 
         var paramStart = skipParam;
@@ -256,7 +251,7 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
         for (var i = 0;
              i + paramStart < Parameters.Count
              && i + argStart < args.Count
-             && genericParameterMap.Count < genericParameters.Count;
+             && genericParamsReplace.Count < genericParams.Count;
              i++)
         {
             var parameter = Parameters[i + paramStart];
@@ -266,22 +261,30 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
                 })
             {
                 var varargs = args[(i + argStart)..];
-                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParameters,
-                    genericParameterMap, context);
+                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParams,
+                    genericParamsReplace, context);
             }
             else
             {
                 var arg = args[i + argStart];
                 var parameterType = parameter.Type;
-                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParameters, genericParameterMap,
+                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParams, genericParamsReplace,
                     context);
             }
         }
 
-        var newReturnType = ReturnType.Instantiate(genericParameterMap);
+        if (genericParamsReplace.Count < genericParams.Count)
+        {
+            foreach (var (name, type) in genericParams)
+            {
+                genericParamsReplace.TryAdd(name, type);
+            }
+        }
+
+        var newReturnType = ReturnType.Instantiate(genericParamsReplace);
         foreach (var parameter in Parameters)
         {
-            newParameters.Add(parameter.Instantiate(genericParameterMap));
+            newParameters.Add(parameter.Instantiate(genericParamsReplace));
         }
 
         return new LuaSignature(newReturnType, newParameters);
@@ -401,18 +404,18 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<LuaDeclaration> GenericParameterDeclarations { get; }
+    public List<LuaDeclaration> GenericParamDecls { get; }
 
-    public HashSet<string> GenericParameterNames { get; }
+    public Dictionary<string, LuaType> GenericParams { get; }
 
     public LuaGenericMethodType(
-        List<LuaDeclaration> genericParameterDeclarations,
+        List<LuaDeclaration> genericParamDecls,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)
     {
-        GenericParameterDeclarations = genericParameterDeclarations;
-        GenericParameterNames = genericParameterDeclarations.Select(declaration => declaration.Name).ToHashSet();
+        GenericParamDecls = genericParamDecls;
+        GenericParams = genericParamDecls.ToDictionary(decl => decl.Name, decl => decl.Type);
     }
 
     public List<LuaSignature> GetInstantiatedSignatures(
@@ -421,12 +424,12 @@ public class LuaGenericMethodType : LuaMethodType
         SearchContext context)
     {
         var signatures = new List<LuaSignature>
-            { MainSignature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context) };
+            { MainSignature.InstantiateSignature(callExpr, args, GenericParams, ColonDefine, context) };
 
         if (Overloads is not null)
         {
             signatures.AddRange(Overloads.Select(signature =>
-                signature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context)));
+                signature.InstantiateSignature(callExpr, args, GenericParams, ColonDefine, context)));
         }
 
         return signatures;
@@ -437,12 +440,12 @@ public class LuaGenericMethodType : LuaMethodType
     {
         var signatures = new List<LuaSignature>();
 
-        signatures.Add(MainSignature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context));
+        signatures.Add(MainSignature.InstantiateSignature(callExpr, args, GenericParams, ColonDefine, context));
 
         if (Overloads is not null)
         {
             signatures.AddRange(Overloads.Select(signature =>
-                signature.InstantiateSignature(callExpr, args, GenericParameterNames, ColonDefine, context)));
+                signature.InstantiateSignature(callExpr, args, GenericParams, ColonDefine, context)));
         }
 
         var maxMatch = SignatureMatchResult.NotMatch;

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -133,13 +134,13 @@ public class LuaDeclaration(
         return versions.Any(ValidateFrameworkVersion);
     }
 
-    public ILocation? GetLocation(IDocumentSystem documentSystem)
+    public ILocation? GetLocation(SearchContext context)
     {
-        var document = documentSystem.GetDocument(Info.Ptr.DocumentId.Id);
-        if (document is LuaDocument luaDocument)
+        var document = context.Compilation.Workspace.GetDocument(Info.Ptr.DocumentId);
+        if (document is not null)
         {
-            var range = luaDocument.SyntaxTree.GetSourceRange(Info.Ptr.ElementId);
-            return new LuaLocation(luaDocument, range);
+            var range = document.SyntaxTree.GetSourceRange(Info.Ptr.ElementId);
+            return new LuaLocation(document, range);
         }
 
         return null;

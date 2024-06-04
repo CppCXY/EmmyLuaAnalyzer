@@ -46,7 +46,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         _syntaxTree.SyntaxRoot.Accept(this);
 
-        return new LuaDeclarationTree(_topScope!, _scopeOwners);
+        return new LuaDeclarationTree(_scopeOwners);
     }
 
     public DeclarationBuilder(
@@ -1450,7 +1450,7 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         if (diagnosticSyntax is
             {
-                Action: { RepresentText: { } actionName },
+                Action: { Text: { } actionName },
                 Diagnostics: { DiagnosticNames: { } diagnosticNames }
             })
         {

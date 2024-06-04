@@ -7,6 +7,8 @@ namespace EmmyLua.CodeAnalysis.Document;
 /// </summary>
 public record LuaLocation(LuaDocument LuaDocument, SourceRange Range, int BaseLine = 0) : ILocation
 {
+    public static LuaLocation Empty { get; } = new LuaLocation(LuaDocument.Empty, SourceRange.Empty);
+
     private string FilePath => LuaDocument.Path;
 
     public IDocument Document => LuaDocument;
