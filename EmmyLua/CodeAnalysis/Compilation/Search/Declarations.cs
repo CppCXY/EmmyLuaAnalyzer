@@ -159,6 +159,11 @@ public class Declarations(SearchContext context)
 
     public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
     {
+        if (nameExpr.Name is { Text: "self" })
+        {
+            return false;
+        }
+
         var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
         if (closure is not null)
         {

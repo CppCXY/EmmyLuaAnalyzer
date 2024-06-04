@@ -223,6 +223,7 @@ public class ServerContext(ILanguageServerFacade server)
         }
 
         Monitor.OnFinishDiagnosticCheck();
+        GC.Collect();
     }
 
     private static readonly int DelayLimit = 1024 * 1024;

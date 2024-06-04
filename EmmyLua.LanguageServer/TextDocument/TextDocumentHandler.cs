@@ -14,8 +14,7 @@ namespace EmmyLua.LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class TextDocumentHandler(
-    ServerContext context,
-    ILanguageServerFacade languageServerFacade
+    ServerContext context
 ) : TextDocumentSyncHandlerBase
 {
     private TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;

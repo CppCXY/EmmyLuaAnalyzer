@@ -692,6 +692,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     ),
                     DeclarationFeature.Local
                 );
+                AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
                 AnalyzeDeclarationDoc(declaration, luaFuncStat);
                 AddDeclaration(declaration);
                 var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
@@ -1247,6 +1248,7 @@ public class DeclarationBuilder : ILuaElementWalker
             VisibilityKind.Public => DeclarationVisibility.Public,
             VisibilityKind.Protected => DeclarationVisibility.Protected,
             VisibilityKind.Private => DeclarationVisibility.Private,
+            VisibilityKind.Package => DeclarationVisibility.Package,
             _ => DeclarationVisibility.Public
         };
     }

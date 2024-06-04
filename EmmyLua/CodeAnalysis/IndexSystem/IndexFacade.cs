@@ -163,6 +163,20 @@ public class IndexFacade : IQueryableIndex
         return null;
     }
 
+    public LuaNamedType? QueryParentType(IDeclaration declaration)
+    {
+        if (declaration is LuaDeclaration luaDeclaration)
+        {
+            var parentType = WorkspaceIndex.ParentType.Query(luaDeclaration.UniqueId.DocumentId, luaDeclaration.UniqueId);
+            if (parentType is not null)
+            {
+                return new LuaNamedType(parentType);
+            }
+        }
+
+        return null;
+    }
+
     public IEnumerable<IDeclaration> QueryAllNamedTypeDefinitions()
     {
         return QueryableIndexes.SelectMany(it => it.QueryAllNamedTypeDefinitions());

@@ -34,6 +34,7 @@ public enum DeclarationVisibility
     Public,
     Protected,
     Private,
+    Package
 }
 
 public class LuaDeclaration(
@@ -70,6 +71,8 @@ public class LuaDeclaration(
     public bool IsProtected => Visibility == DeclarationVisibility.Protected;
 
     public bool IsPrivate => Visibility == DeclarationVisibility.Private;
+
+    public bool IsPackage => Visibility == DeclarationVisibility.Package;
 
     public List<RequiredVersion>? RequiredVersions { get; set; }
 
@@ -147,6 +150,8 @@ public class LuaDeclaration(
     }
 
     public string RelationInformation => Info.Ptr.Stringify;
+
+    public LuaDocumentId DocumentId => Info.Ptr.DocumentId;
 
     public override string ToString()
     {

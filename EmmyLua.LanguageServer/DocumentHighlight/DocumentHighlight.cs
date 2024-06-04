@@ -6,7 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace EmmyLua.LanguageServer.DocumentHighlight;
 
 // TODO
-public class DocumentHighlight(ServerContext context) : DocumentHighlightHandlerBase
+public class DocumentHighlight(ServerContext _) : DocumentHighlightHandlerBase
 {
     protected override DocumentHighlightRegistrationOptions CreateRegistrationOptions(DocumentHighlightCapability capability,
         ClientCapabilities clientCapabilities)

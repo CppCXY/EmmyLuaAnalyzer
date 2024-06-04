@@ -52,7 +52,7 @@ public class EnumKeyDictionaryGenerationProvider : JSchemaGenerationProvider
             return schema;
         }
 
-        return null;
+        return null!;
     }
 
     public override bool CanGenerateSchema(JSchemaTypeGenerationContext context)

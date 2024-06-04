@@ -275,6 +275,11 @@ public class Members(SearchContext context)
 
     public IEnumerable<IDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
     {
+        if (luaType.Equals(Builtin.Unknown))
+        {
+            yield break;
+        }
+
         var notFounded = true;
         if (indexExpr is { Name: { } name })
         {

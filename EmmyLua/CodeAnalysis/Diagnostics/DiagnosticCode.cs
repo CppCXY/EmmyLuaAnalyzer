@@ -30,7 +30,11 @@ public enum DiagnosticCode
     [EnumMember(Value = "deprecated")]
     Deprecated,
     [EnumMember(Value = "access-private-member")]
-    AccessPrivateMember
+    AccessPrivateMember,
+    [EnumMember(Value = "access-protected-member")]
+    AccessProtectedMember,
+    [EnumMember(Value = "access-package-member")]
+    AccessPackageMember,
 }
 // @formatter:on
 public static class DiagnosticCodeHelper
