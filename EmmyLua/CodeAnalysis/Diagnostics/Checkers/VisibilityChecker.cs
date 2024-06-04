@@ -31,6 +31,11 @@ public class VisibilityChecker(LuaCompilation compilation)
                 continue;
             }
 
+            if (declaration is LuaDeclaration { Info.Ptr.UniqueId: { } id } && id == indexExpr.UniqueId)
+            {
+                continue;
+            }
+
             var prefixExpr = indexExpr.PrefixExpr;
             if (prefixExpr is null)
             {

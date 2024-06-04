@@ -60,10 +60,10 @@ public static class KeySnippets
             Label = "fori",
             Kind = CompletionItemKind.Snippet,
             InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "for ${1:var} = ${2:start}, ${3:finish} do\n\t${0}\nend",
+            InsertText = "for ${1:i} = ${2:1}, ${3:finish} do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for var = start, finish do ... end)"
+                Detail = " (for i = 1, finish do ... end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },

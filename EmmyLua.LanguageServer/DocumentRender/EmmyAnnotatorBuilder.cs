@@ -26,7 +26,7 @@ public class EmmyAnnotatorBuilder
                 }
                 case LuaNameExprSyntax nameExpr:
                 {
-                    if (nameExpr.Name is {Text: { } name2} nameToken && name2 != "self")
+                    if (nameExpr.Name is {Text: not "self"} nameToken)
                     {
                         var declaration = context.FindDeclaration(nameExpr) as LuaDeclaration;
                         if (declaration is null || declaration.IsGlobal)
