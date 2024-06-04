@@ -347,4 +347,10 @@ public class Members(SearchContext context)
         GenericMemberCaches.Clear();
         BaseMemberCaches.Clear();
     }
+
+    public void ClearMember(string name)
+    {
+        NamedTypeMemberCaches.Remove(name);
+        BaseMemberCaches.Remove(name);
+    }
 }

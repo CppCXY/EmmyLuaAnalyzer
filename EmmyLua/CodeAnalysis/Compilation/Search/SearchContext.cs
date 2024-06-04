@@ -74,7 +74,7 @@ public class SearchContext
 
     public void ClearMemberCache(string name)
     {
-        Members.Clear();
+        Members.ClearMember(name);
     }
 
     private LuaType InferCore(LuaSyntaxElement element)
