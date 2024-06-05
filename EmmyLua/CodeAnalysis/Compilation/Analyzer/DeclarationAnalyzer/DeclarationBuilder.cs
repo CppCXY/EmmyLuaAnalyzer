@@ -618,6 +618,7 @@ public class DeclarationBuilder : ILuaElementWalker
                                     declaration.Info = info with
                                     {
                                         DeclarationType = definedType,
+                                        TypeDecl = true
                                     };
                                     unResolveDeclaration.IsTypeDeclaration = true;
                                 }

@@ -35,4 +35,5 @@ public interface IDeclaration
     public IDeclaration Instantiate(Dictionary<string, LuaType> typeDict);
 
     public LuaDocumentId DocumentId { get; }
+
 }

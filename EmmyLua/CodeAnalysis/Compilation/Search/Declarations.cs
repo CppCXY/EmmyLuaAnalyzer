@@ -169,6 +169,11 @@ public class Declarations(SearchContext context)
             return false;
         }
 
+        if (declaration.DocumentId != nameExpr.DocumentId)
+        {
+            return false;
+        }
+
         var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
         if (closure is not null)
         {

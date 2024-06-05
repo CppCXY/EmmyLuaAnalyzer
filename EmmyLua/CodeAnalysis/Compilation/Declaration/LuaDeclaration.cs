@@ -171,7 +171,8 @@ public record LocalInfo(
 
 public record GlobalInfo(
     LuaElementPtr<LuaNameExprSyntax> VarNamePtr,
-    LuaType? DeclarationType
+    LuaType? DeclarationType,
+    bool TypeDecl = false
 ) : DeclarationInfo(VarNamePtr.UpCast(), DeclarationType)
 {
     public LuaElementPtr<LuaNameExprSyntax> VarNamePtr => Ptr.Cast<LuaNameExprSyntax>();
