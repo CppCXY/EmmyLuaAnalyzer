@@ -9,6 +9,8 @@ using EmmyLua.LanguageServer.Server.Monitor;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Configuration;
 using EmmyLua.LanguageServer.Util;
+using MediatR;
+using Microsoft.Extensions.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -19,6 +21,8 @@ namespace EmmyLua.LanguageServer.Server;
 public class ServerContext(ILanguageServerFacade server)
 {
     public bool IsVscode { get; set; } = true;
+
+    private HashSet<string> Extensions { get; } = new();
 
     private string MainWorkspacePath { get; set; } = string.Empty;
 
@@ -41,20 +45,45 @@ public class ServerContext(ILanguageServerFacade server)
     private ConcurrentDictionary<LuaDocumentId, CancellationTokenSource> DocumentCancellationTokenSources { get; } =
         new();
 
-    public void StartServer(InitializeParams initializeParams)
+    public async Task StartServerAsync(InitializeParams initializeParams, ILanguageServer configServer)
+    {
+        IsVscode = string.Equals(initializeParams.ClientInfo?.Name, "Visual Studio Code",
+            StringComparison.CurrentCultureIgnoreCase);
+
+        if (IsVscode)
+        {
+            var config = await configServer.Configuration.GetConfiguration(new[]
+            {
+                new ConfigurationItem()
+                {
+                    Section = "files"
+                },
+            });
+            
+            foreach (var section in config.GetSection("files:associations").GetChildren())
+            {
+                if (section.Value == "lua")
+                {
+                    Extensions.Add(section.Key);
+                }
+            }
+        }
+
+        StartServer(initializeParams);
+    }
+
+    private void StartServer(InitializeParams initializeParams)
     {
         LockSlim.EnterWriteLock();
         try
         {
-            WorkspaceCancellationTokenSource?.Cancel();
-            IsVscode = string.Equals(initializeParams.ClientInfo?.Name, "Visual Studio Code",
-                StringComparison.CurrentCultureIgnoreCase);
             if (initializeParams.RootPath is { } rootPath)
             {
                 MainWorkspacePath = rootPath;
                 LuaWorkspace.Monitor = Monitor;
                 SettingManager.Watch(MainWorkspacePath);
                 SettingManager.OnSettingChanged += OnConfigChanged;
+                SettingManager.WorkspaceExtensions = Extensions;
                 LuaWorkspace.Features = SettingManager.GetLuaFeatures();
                 LuaWorkspace.InitStdLib();
                 if (IsVscode && initializeParams.WorkspaceFolders is { } workspaceFolders)
@@ -226,21 +255,8 @@ public class ServerContext(ILanguageServerFacade server)
         GC.Collect();
     }
 
-    private static readonly int DelayLimit = 1024 * 1024;
-
-    public async Task UpdateDocumentAsync(string uri, string text, CancellationToken cancellationToken)
+    public void UpdateDocument(string uri, string text, CancellationToken cancellationToken)
     {
-        var shouldDelay = text.Length > DelayLimit;
-        if (shouldDelay)
-        {
-            await Task.Delay(100, cancellationToken);
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-
         LuaDocumentId documentId = LuaDocumentId.VirtualDocumentId;
         ReadyWrite(() =>
         {
@@ -250,24 +266,11 @@ public class ServerContext(ILanguageServerFacade server)
 
         if (documentId != LuaDocumentId.VirtualDocumentId)
         {
-            _ = Task.Run(async () =>
-            {
-                if (DocumentCancellationTokenSources.TryGetValue(documentId, out var tokenSource))
-                {
-                    await tokenSource.CancelAsync();
-                }
-
-                tokenSource = new CancellationTokenSource();
-                DocumentCancellationTokenSources[documentId] = tokenSource;
-
-                await PushDocumentDiagnosticsAsync(documentId, shouldDelay, tokenSource.Token);
-
-                DocumentCancellationTokenSources.TryRemove(documentId, out _);
-            }, cancellationToken);
+            PushDocumentDiagnostics(documentId);
         }
     }
 
-    public async Task UpdateManyDocumentsAsync(List<FileEvent> fileEvents, CancellationToken cancellationToken)
+    public void UpdateManyDocuments(List<FileEvent> fileEvents, CancellationToken cancellationToken)
     {
         var documentIds = new List<LuaDocumentId>();
         ReadyWrite(() =>
@@ -302,29 +305,10 @@ public class ServerContext(ILanguageServerFacade server)
             });
         });
 
-        var tasks = new List<Task>();
         foreach (var documentId in documentIds)
         {
-            if (documentId != LuaDocumentId.VirtualDocumentId)
-            {
-                tasks.Add(Task.Run(async () =>
-                {
-                    if (DocumentCancellationTokenSources.TryGetValue(documentId, out var tokenSource))
-                    {
-                        await tokenSource.CancelAsync();
-                    }
-
-                    tokenSource = new CancellationTokenSource();
-                    DocumentCancellationTokenSources[documentId] = tokenSource;
-
-                    await PushDocumentDiagnosticsAsync(documentId, false, tokenSource.Token);
-
-                    DocumentCancellationTokenSources.TryRemove(documentId, out _);
-                }, cancellationToken));
-            }
+            PushDocumentDiagnostics(documentId);
         }
-
-        await Task.WhenAll(tasks);
     }
 
     public void RemoveDocument(string uri)
@@ -332,19 +316,8 @@ public class ServerContext(ILanguageServerFacade server)
         ReadyWrite(() => { LuaWorkspace.RemoveDocumentByUri(uri); });
     }
 
-    private async Task PushDocumentDiagnosticsAsync(LuaDocumentId documentId, bool shouldDelay,
-        CancellationToken cancellationToken)
+    private void PushDocumentDiagnostics(LuaDocumentId documentId)
     {
-        if (shouldDelay)
-        {
-            await Task.Delay(1000, cancellationToken);
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-
         LockSlim.EnterReadLock();
         try
         {

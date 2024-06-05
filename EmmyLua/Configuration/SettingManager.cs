@@ -32,6 +32,8 @@ public class SettingManager
 
     private System.Timers.Timer? _timer;
 
+    public HashSet<string> WorkspaceExtensions { get; set; } = new();
+
     private void OnChanged(object sender, FileSystemEventArgs e)
     {
         if (e.ChangeType is WatcherChangeTypes.Changed or WatcherChangeTypes.Created)
@@ -178,7 +180,7 @@ public class SettingManager
             }
         }
 
-        foreach (var extension in setting.Runtime.Extensions)
+        foreach (var extension in setting.Runtime.Extensions.Concat(WorkspaceExtensions))
         {
             if (extension.StartsWith('.'))
             {

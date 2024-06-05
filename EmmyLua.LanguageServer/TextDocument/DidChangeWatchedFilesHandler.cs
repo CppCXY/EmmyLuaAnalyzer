@@ -37,7 +37,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
                 {
                     var fileText = await File.ReadAllTextAsync(fileEvent.Uri.GetFileSystemPath(), cancellationToken);
                     var uri = fileEvent.Uri.ToUri().AbsoluteUri;
-                    await context.UpdateDocumentAsync(uri, fileText, cancellationToken);
+                    context.UpdateDocument(uri, fileText, cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -57,11 +57,11 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
         return Unit.Value;
     }
 
-    private async Task<Unit> UpdateManyFileEventAsync(List<FileEvent> fileEvents,
+    private Task<Unit> UpdateManyFileEventAsync(List<FileEvent> fileEvents,
         CancellationToken cancellationToken)
     {
-        await context.UpdateManyDocumentsAsync(fileEvents, cancellationToken);
-        return Unit.Value;
+        context.UpdateManyDocuments(fileEvents, cancellationToken);
+        return Unit.Task;
     }
 
     public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions(DidChangeWatchedFilesCapability capability,

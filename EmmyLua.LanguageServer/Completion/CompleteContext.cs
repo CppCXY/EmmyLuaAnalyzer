@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Configuration;
+using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion;

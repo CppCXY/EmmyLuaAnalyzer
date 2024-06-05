@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using EmmyLua.LanguageServer.CodeAction;
 using EmmyLua.LanguageServer.CodeLens;
 using EmmyLua.LanguageServer.Completion;
+using EmmyLua.LanguageServer.Configuration;
 using EmmyLua.LanguageServer.Definition;
 using EmmyLua.LanguageServer.DocumentColor;
 using EmmyLua.LanguageServer.DocumentLink;
@@ -84,6 +85,7 @@ var server = await From(options =>
         .WithHandler<TypeHierarchyHandler>()
         .WithHandler<WorkspaceSymbolHandler>()
         .WithHandler<CodeLensHandler>()
+        .WithHandler<DidChangeConfigurationHandler>()
         .WithServices(services =>
         {
             services.AddSingleton<ServerContext>(
@@ -98,11 +100,10 @@ var server = await From(options =>
             requestParams = request;
             return Task.CompletedTask;
         })
-        .OnStarted((server, _) =>
+        .OnStarted(async (server, _) =>
         {
             var context = server.GetRequiredService<ServerContext>();
-            context.StartServer(requestParams);
-            return Task.CompletedTask;
+            await context.StartServerAsync(requestParams, server);
         });
 }).ConfigureAwait(false);
 await server.WaitForExit.ConfigureAwait(false);

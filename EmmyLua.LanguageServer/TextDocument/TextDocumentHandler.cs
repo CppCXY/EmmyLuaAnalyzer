@@ -31,19 +31,19 @@ public class TextDocumentHandler(
             Save = new SaveOptions() { IncludeText = false }
         };
 
-    public override async Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
+    public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
     {
         var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        await context.UpdateDocumentAsync(uri, request.TextDocument.Text, cancellationToken);
-        return Unit.Value;
+        context.UpdateDocument(uri, request.TextDocument.Text, cancellationToken);
+        return Unit.Task;
     }
 
-    public override async Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
+    public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
     {
         var changes = request.ContentChanges.ToList();
         var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        await context.UpdateDocumentAsync(uri, changes[0].Text, cancellationToken);
-        return Unit.Value;
+        context.UpdateDocument(uri, changes[0].Text, cancellationToken);
+        return Unit.Task;
     }
 
     public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)

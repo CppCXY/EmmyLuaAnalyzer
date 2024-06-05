@@ -4,7 +4,7 @@ using EmmyLua.LanguageServer.Completion;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.Server.Resource;
 
-namespace EmmyLua.LanguageServer.Configuration;
+namespace EmmyLua.LanguageServer.Util;
 
 public static class SettingManagerExtension
 {
