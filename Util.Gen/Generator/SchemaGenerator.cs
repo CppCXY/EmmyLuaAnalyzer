@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.Serialization;
 using EmmyLua.Configuration;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 

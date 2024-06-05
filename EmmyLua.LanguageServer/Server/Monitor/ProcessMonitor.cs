@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using EmmyLua.CodeAnalysis.Workspace;
+﻿using EmmyLua.CodeAnalysis.Workspace;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace EmmyLua.LanguageServer.Server.Monitor;

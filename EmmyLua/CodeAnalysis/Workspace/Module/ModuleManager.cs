@@ -255,16 +255,7 @@ public class ModuleManager
         return null;
     }
 
-    public readonly struct ModuleInfo(string name, string uri, bool isFile, LuaDocumentId? documentId)
-    {
-        public string Name { get; } = name;
-
-        public string Uri { get; } = uri;
-
-        public bool IsFile { get; } = isFile;
-
-        public LuaDocumentId? DocumentId { get; } = documentId;
-    }
+    public readonly record struct ModuleInfo(string Name, string Uri, bool IsFile, LuaDocumentId? DocumentId);
 
     public List<ModuleInfo> GetCurrentModuleNames(string modulePath)
     {

@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Type;
+﻿using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Common;
 
