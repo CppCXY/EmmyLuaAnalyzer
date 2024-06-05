@@ -17,13 +17,18 @@ public class Declarations(SearchContext context)
             return null;
         }
 
-        if (DeclarationCaches.TryGetValue(element.UniqueId, out var declaration))
+        if (context.Features.Cache &&  DeclarationCaches.TryGetValue(element.UniqueId, out var declaration))
         {
             return declaration;
         }
 
         declaration = InnerDeclaration(element);
-        DeclarationCaches[element.UniqueId] = declaration;
+
+        if (context.Features.Cache && declaration is not null)
+        {
+            DeclarationCaches[element.UniqueId] = declaration;
+        }
+
         return declaration;
     }
 

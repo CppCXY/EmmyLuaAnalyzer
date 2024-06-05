@@ -11,37 +11,34 @@ public static class BinderAnalyzer
         Dictionary<SyntaxElementId, LuaElementPtr<LuaSyntaxElement>> commentOwners = new();
         Dictionary<SyntaxElementId, List<LuaElementPtr<LuaCommentSyntax>>> comments = new();
 
-        foreach (var nodeOrToken in root.DescendantsAndSelfWithTokens)
+        foreach (var commentSyntax in root.Descendants.OfType<LuaCommentSyntax>())
         {
-            if (nodeOrToken is LuaCommentSyntax commentSyntax)
+            var inlineNodeOrToken = GetInlineNodeOrToken(commentSyntax);
+            if (inlineNodeOrToken != null)
             {
-                var inlineNodeOrToken = GetInlineNodeOrToken(commentSyntax);
-                if (inlineNodeOrToken != null)
+                commentOwners.Add(commentSyntax.UniqueId, new(inlineNodeOrToken));
+                if (!comments.TryGetValue(inlineNodeOrToken.UniqueId, out var commentList))
                 {
-                    commentOwners.Add(commentSyntax.UniqueId, new(inlineNodeOrToken));
-                    if (!comments.TryGetValue(inlineNodeOrToken.UniqueId, out var commentList))
+                    commentList = [];
+                    comments.Add(inlineNodeOrToken.UniqueId, commentList);
+                }
+
+                commentList.Add(new(commentSyntax));
+            }
+            else
+            {
+                var attachedNodeOrToken = GetAttachedNodeOrToken(commentSyntax);
+                // ReSharper disable once InvertIf
+                if (attachedNodeOrToken != null)
+                {
+                    commentOwners.Add(commentSyntax.UniqueId, new(attachedNodeOrToken));
+                    if (!comments.TryGetValue(attachedNodeOrToken.UniqueId, out var commentList))
                     {
                         commentList = [];
-                        comments.Add(inlineNodeOrToken.UniqueId, commentList);
+                        comments.Add(attachedNodeOrToken.UniqueId, commentList);
                     }
 
                     commentList.Add(new(commentSyntax));
-                }
-                else
-                {
-                    var attachedNodeOrToken = GetAttachedNodeOrToken(commentSyntax);
-                    // ReSharper disable once InvertIf
-                    if (attachedNodeOrToken != null)
-                    {
-                        commentOwners.Add(commentSyntax.UniqueId, new(attachedNodeOrToken));
-                        if (!comments.TryGetValue(attachedNodeOrToken.UniqueId, out var commentList))
-                        {
-                            commentList = [];
-                            comments.Add(attachedNodeOrToken.UniqueId, commentList);
-                        }
-
-                        commentList.Add(new(commentSyntax));
-                    }
                 }
             }
         }
@@ -102,6 +99,10 @@ public static class BinderAnalyzer
                 case null or LuaCommentSyntax:
                 {
                     return null;
+                }
+                case LuaBlockSyntax blockSyntax:
+                {
+                    return blockSyntax.StatList.FirstOrDefault();
                 }
                 default:
                     return nextSibling;
