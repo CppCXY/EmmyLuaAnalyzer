@@ -72,7 +72,7 @@ public class LuaSyntaxTree
 
     internal LuaSyntaxElement? GetElement(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return null;
         }
@@ -82,7 +82,7 @@ public class LuaSyntaxTree
 
     internal int GetRawKind(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return 0;
         }
@@ -92,7 +92,7 @@ public class LuaSyntaxTree
 
     internal bool IsNode(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return false;
         }
@@ -102,7 +102,7 @@ public class LuaSyntaxTree
 
     internal LuaTokenKind GetTokenKind(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return LuaTokenKind.None;
         }
@@ -118,7 +118,7 @@ public class LuaSyntaxTree
 
     internal LuaSyntaxKind GetSyntaxKind(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return LuaSyntaxKind.None;
         }
@@ -134,7 +134,7 @@ public class LuaSyntaxTree
 
     internal int GetParent(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return -1;
         }
@@ -144,7 +144,7 @@ public class LuaSyntaxTree
 
     internal SourceRange GetSourceRange(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return SourceRange.Empty;
         }
@@ -154,7 +154,7 @@ public class LuaSyntaxTree
 
     internal int GetChildStart(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return -1;
         }
@@ -164,7 +164,7 @@ public class LuaSyntaxTree
 
     internal int GetChildEnd(int elementId)
     {
-        if (elementId == -1)
+        if (elementId < 0 || elementId >= RedNodes.Count)
         {
             return -1;
         }
