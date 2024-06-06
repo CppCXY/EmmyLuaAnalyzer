@@ -70,7 +70,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr) == declaration)
+            if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is not null)
             {
                 references.Add(new ReferenceResult(indexExpr.KeyElement.Location, indexExpr.KeyElement));
             }

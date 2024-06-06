@@ -19,7 +19,7 @@ public class VisibilityChecker(LuaCompilation compilation)
             .SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>();
         foreach (var indexExpr in indexExprList)
         {
-            if (indexExpr.Parent is LuaFuncStatSyntax)
+            if (indexExpr.Parent is LuaFuncStatSyntax || indexExpr.KeyElement is null)
             {
                 continue;
             }

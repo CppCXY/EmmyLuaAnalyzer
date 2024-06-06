@@ -235,16 +235,5 @@ public class LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(i
         }
     }
 
-    public LuaSyntaxElement KeyElement
-    {
-        get
-        {
-            if (DotOrColonIndexName != null)
-            {
-                return DotOrColonIndexName;
-            }
-
-            return IndexKeyExpr ?? PrefixExpr!;
-        }
-    }
+    public LuaSyntaxElement? KeyElement => DotOrColonIndexName != null ? DotOrColonIndexName : IndexKeyExpr;
 }

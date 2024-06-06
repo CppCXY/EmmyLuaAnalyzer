@@ -1418,19 +1418,6 @@ public class DeclarationBuilder : ILuaElementWalker
     {
         WorkspaceIndex.AddNameExpr(DocumentId, nameExpr);
 
-        if (nameExpr.Name is { Text: "self" })
-        {
-            var closures = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>();
-            foreach (var closure in closures)
-            {
-                var stat = closure.Parent;
-                if (stat is LuaFuncStatSyntax { IndexExpr.PrefixExpr: { } expr })
-                {
-                    // return Local(expr);
-                }
-            }
-        }
-
         var declaration = FindLocalDeclaration(nameExpr);
         if (declaration is not null)
         {
