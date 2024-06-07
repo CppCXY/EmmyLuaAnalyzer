@@ -35,19 +35,9 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
         return (int) Kind;
     }
 
-    public virtual bool SubTypeOf(LuaType? other, SearchContext context)
+    public bool SubTypeOf(LuaType? other, SearchContext context)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        if (other.Kind is TypeKind.Any or TypeKind.Unknown)
-        {
-            return true;
-        }
-
-        return Equals(other);
+        return other is not null && context.IsSubTypeOf(this, other);
     }
 
     public virtual LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -100,22 +90,6 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
         return HashCode.Combine(base.GetHashCode(), Name);
     }
 
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        if (Equals(other))
-        {
-            return true;
-        }
-
-        if (other is not LuaNamedType namedType)
-        {
-            return false;
-        }
-
-        var supers = context.Compilation.Db.QuerySupers(Name);
-        return supers.Any(super => super.SubTypeOf(namedType, context));
-    }
-
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
         return genericReplace.TryGetValue(Name, out var type) ? type : this;
@@ -158,21 +132,6 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
         return HashCode.Combine(base.GetHashCode(), UnionTypes);
     }
 
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        if (Equals(other))
-        {
-            return true;
-        }
-
-        if (other is not LuaUnionType unionType)
-        {
-            return false;
-        }
-
-        return UnionTypes.All(t => unionType.UnionTypes.Any(ut => t.SubTypeOf(ut, context)));
-    }
-
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
     {
         var newUnionTypes = UnionTypes.Select(t => t.Instantiate(genericReplace));
@@ -206,31 +165,6 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), Declarations);
-    }
-
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        if (Equals(other))
-        {
-            return true;
-        }
-
-        if (other is not LuaAggregateType aggregateType)
-        {
-            return false;
-        }
-
-        var count = Math.Min(Declarations.Count, aggregateType.Declarations.Count);
-        for (var i = 0; i < count; ++i)
-        {
-            if (!Declarations[i].Type.SubTypeOf(aggregateType.Declarations[i].Type,
-                context))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -270,27 +204,6 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), TupleDeclaration);
-    }
-
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        if (Equals(other))
-        {
-            return true;
-        }
-
-        if (other is not LuaTupleType tupleType)
-        {
-            return false;
-        }
-
-        if (TupleDeclaration.Count != tupleType.TupleDeclaration.Count)
-        {
-            return false;
-        }
-
-        return !TupleDeclaration.Where((t, i) =>
-            !t.Type.SubTypeOf(tupleType.TupleDeclaration[i].Type, context)).Any();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -343,21 +256,6 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), BaseType);
-    }
-
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        if (Equals(other))
-        {
-            return true;
-        }
-
-        if (other is not LuaArrayType arrayType)
-        {
-            return false;
-        }
-
-        return BaseType.SubTypeOf(arrayType.BaseType, context);
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -434,10 +332,6 @@ public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiter
         return HashCode.Combine(base.GetHashCode(), Content);
     }
 
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        return Equals(other);
-    }
 }
 
 public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral), IEquatable<LuaIntegerLiteralType>
@@ -465,10 +359,6 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
         return HashCode.Combine(base.GetHashCode(), Value);
     }
 
-    public override bool SubTypeOf(LuaType? other, SearchContext context)
-    {
-        return Equals(other);
-    }
 }
 
 public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)

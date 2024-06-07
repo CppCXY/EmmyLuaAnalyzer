@@ -59,7 +59,6 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         };
 
         resolveDependencyGraph.Resolve(analyzeContext.UnResolves);
-        Context.ClearCache();
         Context = null!;
     }
 

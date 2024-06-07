@@ -14,22 +14,17 @@ public class SearchContext
 
     internal SearchContextFeatures Features { get; set; }
 
-    private Dictionary<SyntaxElementId, LuaType> InferCaches { get; } = new();
-
-    private Dictionary<LuaType, Dictionary<TypeOperatorKind, List<TypeOperator>>> TypeOperatorCaches { get; } = new();
-
     private Declarations Declarations { get; }
 
     private Members Members { get; }
 
     private References References { get; }
 
-    private HashSet<SyntaxElementId> InferGuard { get; } = [];
+    private Operators Operators { get; }
 
-    private const int MaxDepth = 1000;
+    private ElementInfer ElementInfer { get; }
 
-    // 推断深度
-    private int _currentDepth;
+    private SubTypeInfer SubTypeInfer { get; }
 
     public SearchContext(LuaCompilation compilation, SearchContextFeatures features)
     {
@@ -37,122 +32,20 @@ public class SearchContext
         Declarations = new Declarations(this);
         Members = new Members(this);
         References = new References(this);
+        Operators = new Operators(this);
+        ElementInfer = new ElementInfer(this);
+        SubTypeInfer = new SubTypeInfer(this);
         Features = features;
     }
 
     public LuaType Infer(LuaSyntaxElement? element)
     {
-        if (element is null)
-        {
-            return Builtin.Unknown;
-        }
-
-        if (Features.Cache)
-        {
-            if (InferCaches.TryGetValue(element.UniqueId, out var luaType))
-            {
-                return luaType;
-            }
-
-            luaType = InferCore(element);
-            if (Features.CacheUnknown || !luaType.Equals(Builtin.Unknown))
-            {
-                InferCaches[element.UniqueId] = luaType;
-            }
-
-            return luaType;
-        }
-
-        return InferCore(element);
-    }
-
-    public void ClearCache()
-    {
-        InferCaches.Clear();
-        TypeOperatorCaches.Clear();
+        return ElementInfer.Infer(element);
     }
 
     public void ClearMemberCache(string name)
     {
         Members.ClearMember(name);
-    }
-
-    private LuaType InferCore(LuaSyntaxElement element)
-    {
-        if (_currentDepth > MaxDepth)
-        {
-            return Builtin.Unknown;
-        }
-
-        if (!InferGuard.Add(element.UniqueId))
-        {
-            return Builtin.Unknown;
-        }
-
-        try
-        {
-            _currentDepth++;
-            return element switch
-            {
-                LuaExprSyntax expr => ExpressionInfer.InferExpr(expr, this),
-                LuaLocalNameSyntax localName => DeclarationInfer.InferLocalName(localName, this),
-                LuaParamDefSyntax paramDef => DeclarationInfer.InferParam(paramDef, this),
-                LuaSourceSyntax source => DeclarationInfer.InferSource(source, this),
-                LuaDocTypeSyntax ty => TypeInfer.InferType(ty, this),
-                _ => Builtin.Unknown
-            };
-        }
-        finally
-        {
-            _currentDepth--;
-            InferGuard.Remove(element.UniqueId);
-        }
-    }
-
-    private IEnumerable<TypeOperator> GetOperators(TypeOperatorKind kind, LuaNamedType left)
-    {
-        if (left is LuaGenericType genericType)
-        {
-            if (Features.Cache)
-            {
-                if (TypeOperatorCaches.TryGetValue(genericType, out var cache))
-                {
-                    if (cache.TryGetValue(kind, out var operators))
-                    {
-                        return operators;
-                    }
-                }
-            }
-
-            var originOperators = Compilation.Db.QueryTypeOperators(left.Name)
-                .Where(it => it.Kind == kind).ToList();
-
-            var genericParams = Compilation.Db.QueryGenericParams(genericType.Name).ToList();
-            var genericArgs = genericType.GenericArgs;
-
-            var genericMap = new Dictionary<string, LuaType>();
-            for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
-            {
-                genericMap[genericParams[i].Name] = genericArgs[i];
-            }
-
-            var instanceOperators = originOperators.Select(op => op.Instantiate(genericMap)).ToList();
-            if (Features.Cache)
-            {
-                if (!TypeOperatorCaches.TryGetValue(genericType, out var cache))
-                {
-                    cache = new Dictionary<TypeOperatorKind, List<TypeOperator>>();
-                    TypeOperatorCaches.Add(genericType, cache);
-                }
-
-                cache[kind] = instanceOperators;
-            }
-
-            return instanceOperators;
-        }
-
-        return Compilation.Db.QueryTypeOperators(left.Name)
-            .Where(it => it.Kind == kind);
     }
 
     public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
@@ -162,7 +55,7 @@ public class SearchContext
             return null;
         }
 
-        var operators = GetOperators(kind, namedType);
+        var operators = Operators.GetOperators(kind, namedType);
 
         var bestMatched = operators
             .OfType<BinaryOperator>()
@@ -177,7 +70,7 @@ public class SearchContext
             return null;
         }
 
-        var operators = GetOperators(kind, namedType);
+        var operators = Operators.GetOperators(kind, namedType);
         return operators.OfType<UnaryOperator>().FirstOrDefault();
     }
 
@@ -188,7 +81,7 @@ public class SearchContext
             return null;
         }
 
-        var operators = GetOperators(TypeOperatorKind.Index, namedType);
+        var operators = Operators.GetOperators(TypeOperatorKind.Index, namedType);
         var bestMatched = operators
             .OfType<IndexOperator>()
             .FirstOrDefault(it => it.Key.Equals(key));
@@ -288,5 +181,10 @@ public class SearchContext
     public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
     {
         return Declarations.IsUpValue(nameExpr, declaration);
+    }
+
+    public bool IsSubTypeOf(LuaType left, LuaType right)
+    {
+        return SubTypeInfer.IsSubTypeOf(left, right);
     }
 }
