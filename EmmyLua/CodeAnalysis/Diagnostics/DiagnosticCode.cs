@@ -35,6 +35,8 @@ public enum DiagnosticCode
     AccessProtectedMember,
     [EnumMember(Value = "access-package-member")]
     AccessPackageMember,
+    [EnumMember(Value = "no-discard")]
+    NoDiscard,
 }
 // @formatter:on
 public static class DiagnosticCodeHelper

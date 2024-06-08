@@ -48,17 +48,20 @@ public static class DiagnosticSeverityHelper
         return code switch
         {
             DiagnosticCode.SyntaxError => DiagnosticSeverity.Error,
-            DiagnosticCode.TypeNotFound => DiagnosticSeverity.Error,
-            DiagnosticCode.MissingReturn => DiagnosticSeverity.Error,
-            DiagnosticCode.TypeNotMatch => DiagnosticSeverity.Error,
-            DiagnosticCode.MissingParameter => DiagnosticSeverity.Error,
+            DiagnosticCode.TypeNotFound => DiagnosticSeverity.Warning,
+            DiagnosticCode.MissingReturn => DiagnosticSeverity.Warning,
+            DiagnosticCode.TypeNotMatch => DiagnosticSeverity.Warning,
+            DiagnosticCode.MissingParameter => DiagnosticSeverity.Warning,
             DiagnosticCode.InjectFieldFail => DiagnosticSeverity.Error,
-            DiagnosticCode.UnreachableCode => DiagnosticSeverity.Error,
+            DiagnosticCode.UnreachableCode => DiagnosticSeverity.Hint,
             DiagnosticCode.Unused => DiagnosticSeverity.Hint,
             DiagnosticCode.UndefinedGlobal => DiagnosticSeverity.Error,
             DiagnosticCode.NeedImport => DiagnosticSeverity.Warning,
             DiagnosticCode.Deprecated => DiagnosticSeverity.Hint,
-            DiagnosticCode.AccessPrivateMember => DiagnosticSeverity.Error,
+            DiagnosticCode.AccessPrivateMember => DiagnosticSeverity.Warning,
+            DiagnosticCode.AccessPackageMember => DiagnosticSeverity.Warning,
+            DiagnosticCode.AccessProtectedMember => DiagnosticSeverity.Warning,
+            DiagnosticCode.NoDiscard => DiagnosticSeverity.Warning,
             _ => DiagnosticSeverity.Error
         };
     }

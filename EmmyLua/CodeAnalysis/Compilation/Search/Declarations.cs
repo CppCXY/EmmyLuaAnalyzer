@@ -44,6 +44,10 @@ public class Declarations(SearchContext context)
             {
                 return FindIndexDeclaration(indexExpr);
             }
+            case LuaCallExprSyntax callExpr:
+            {
+                return InnerDeclaration(callExpr.PrefixExpr);
+            }
             case LuaTableFieldSyntax tableField:
             {
                 return FindTableFieldDeclaration(tableField);

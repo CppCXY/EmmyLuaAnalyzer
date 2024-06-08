@@ -32,7 +32,7 @@ public class WorkspaceIndex : IQueryableIndex
 
     public Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
 
-    private TypeOperatorStorage TypeOperator { get; } = new();
+    private IndexStorage<string, TypeOperator> TypeOperator { get; } = new();
 
     public IndexStorage<string, LuaElementPtr<LuaNameExprSyntax>> NameExpr { get; } = new();
 
@@ -185,7 +185,7 @@ public class WorkspaceIndex : IQueryableIndex
 
     public void AddTypeOperator(LuaDocumentId documentId, TypeOperator typeOperator)
     {
-        TypeOperator.AddTypeOperator(documentId, typeOperator);
+        TypeOperator.Add(documentId, typeOperator.BelongTypeName, typeOperator);
     }
 
     public void AddTypeOverload(LuaDocumentId documentId, string name, LuaMethodType methodType)
@@ -267,7 +267,7 @@ public class WorkspaceIndex : IQueryableIndex
 
     public IEnumerable<TypeOperator> QueryTypeOperators(string name)
     {
-        return TypeOperator.GetTypeOperators(name);
+        return TypeOperator.Query(name);
     }
 
     public IEnumerable<LuaMethodType> QueryTypeOverloads(string name)
