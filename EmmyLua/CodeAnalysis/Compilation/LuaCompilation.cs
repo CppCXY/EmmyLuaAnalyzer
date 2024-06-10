@@ -25,8 +25,6 @@ public class LuaCompilation
 
     internal WorkspaceIndex WorkspaceIndex => Db.WorkspaceIndex;
 
-    internal Dictionary<LuaDocumentId, LuaDeclarationTree> DeclarationTrees { get; } = new();
-
     public IndexFacade Db { get; }
 
     private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
@@ -91,7 +89,6 @@ public class LuaCompilation
         }
 
         Db.Remove(documentId);
-        DeclarationTrees.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }
 

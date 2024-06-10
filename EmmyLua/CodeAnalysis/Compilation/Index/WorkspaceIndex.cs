@@ -46,6 +46,8 @@ public class WorkspaceIndex : IQueryableIndex
 
     private InFiledDictionary<SyntaxElementId, LuaDeclaration> InFiledDeclarations { get; } = new();
 
+    private Dictionary<LuaDocumentId, LuaDeclarationTree> DocumentDeclarationTrees { get; } = new();
+
     public void Remove(LuaDocumentId documentId)
     {
         TypeMembers.Remove(documentId);
@@ -65,6 +67,7 @@ public class WorkspaceIndex : IQueryableIndex
         TypeOverloads.Remove(documentId);
         InFiledReferences.Remove(documentId);
         InFiledDeclarations.Remove(documentId);
+        DocumentDeclarationTrees.Remove(documentId);
     }
 
     private static HashSet<string> NotMemberNames { get; } =
@@ -109,7 +112,7 @@ public class WorkspaceIndex : IQueryableIndex
 
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
     {
-        if (type is LuaNamedType {Name: {} name1 } && !string.Equals(name, name1, StringComparison.CurrentCulture))
+        if (type is LuaNamedType { Name: { } name1 } && !string.Equals(name, name1, StringComparison.CurrentCulture))
         {
             return;
         }
@@ -209,6 +212,11 @@ public class WorkspaceIndex : IQueryableIndex
         InFiledDeclarations.Add(documentId, reference.Ptr.UniqueId, declaration);
     }
 
+    public void AddDeclarationTree(LuaDocumentId documentId, LuaDeclarationTree declarationTree)
+    {
+        DocumentDeclarationTrees[documentId] = declarationTree;
+    }
+
     public IEnumerable<IDeclaration> QueryAllGlobal()
     {
         return Globals.QueryAll();
@@ -293,6 +301,12 @@ public class WorkspaceIndex : IQueryableIndex
 
     public IEnumerable<LuaDeclaration> QueryDocumentLocalDeclarations(LuaDocumentId documentId)
     {
-        return InFiledDeclarations.QueryAll(documentId);
+        var tree = DocumentDeclarationTrees.GetValueOrDefault(documentId);
+        return tree is not null ? tree.Root.Descendants : [];
+    }
+
+    public LuaDeclarationTree? QueryDeclarationTree(LuaDocumentId documentId)
+    {
+        return DocumentDeclarationTrees.GetValueOrDefault(documentId);
     }
 }

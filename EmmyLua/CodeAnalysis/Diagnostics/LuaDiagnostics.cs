@@ -14,7 +14,11 @@ public class LuaDiagnostics(LuaCompilation compilation)
         new TypeChecker(compilation),
         new DeprecatedChecker(compilation),
         new VisibilityChecker(compilation),
-        new CallChecker(compilation)
+        new CallChecker(compilation),
+        new DisableGlobalDefine(compilation),
+        new ReadOnlyChecker(compilation),
+        new TypeNotFoundChecker(compilation),
+        new UndefinedFieldChecker(compilation)
     ];
 
     public LuaCompilation Compilation { get; } = compilation;

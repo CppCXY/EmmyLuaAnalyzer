@@ -2,6 +2,7 @@
 
 public enum ReferenceKind
 {
+    Unknown,
     Read,
     Write,
     Definition,

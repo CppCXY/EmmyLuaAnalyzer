@@ -179,9 +179,10 @@ public class Declarations(SearchContext context)
         }
 
         var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
-        if (closure is not null)
+        var element = declaration.Info.Ptr.ToNode(context);
+        if (closure is not null && element is not null)
         {
-            return closure.Position > declaration.Position;
+            return closure.Position > element.Position;
         }
 
         return false;

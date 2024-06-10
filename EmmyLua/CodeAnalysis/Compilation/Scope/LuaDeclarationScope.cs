@@ -1,39 +1,39 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
+namespace EmmyLua.CodeAnalysis.Compilation.Scope;
 
-public class DeclarationNodeContainer(int position)
-    : DeclarationNode(position)
+public record DeclarationNodeBase(int Position);
+
+public record DeclarationNode(int Position, LuaDeclaration Declaration)
+    : DeclarationNodeBase(Position);
+
+public record DeclarationNodeBaseContainer(
+    int Position,
+    List<DeclarationNodeBase> Children,
+    DeclarationNodeBaseContainer? Parent = null)
+    : DeclarationNodeBase(Position)
 {
-    public DeclarationNodeContainer? Parent { get; set; }
-
-    public List<DeclarationNode> Children { get; } = [];
-
-    public void Add(DeclarationNode node)
+    public void Add(DeclarationNodeBase nodeBase)
     {
-        if (node is DeclarationNodeContainer container)
-        {
-            container.Parent = this;
-        }
-
         // 如果Children为空，直接添加
         if (Children.Count == 0)
         {
-            Children.Add(node);
+            Children.Add(nodeBase);
             return;
         }
 
         // 如果Children的最后一个节点的位置小于等于node的位置，直接添加
-        if (Children.Last().Position <= node.Position)
+        if (Children.Last().Position <= nodeBase.Position)
         {
-            Children.Add(node);
+            Children.Add(nodeBase);
         }
         else
         {
-            var index = Children.FindIndex(n => n.Position > node.Position);
+            var index = Children.FindIndex(n => n.Position > nodeBase.Position);
             // 否则，插入到找到的位置
-            Children.Insert(index, node);
+            Children.Insert(index, nodeBase);
         }
     }
 }
@@ -44,8 +44,11 @@ public enum ScopeFoundState
     NotFounded,
 }
 
-public class DeclarationScope(int pos)
-    : DeclarationNodeContainer(pos)
+public record DeclarationScope(
+    int Position,
+    List<DeclarationNodeBase> Children,
+    DeclarationNodeBaseContainer? Parent = null)
+    : DeclarationNodeBaseContainer(Position, Children, Parent)
 {
     public DeclarationScope? ParentScope => Parent as DeclarationScope;
 
@@ -57,9 +60,10 @@ public class DeclarationScope(int pos)
     public virtual void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
         var curIndex = Children.FindLastIndex(it => it.Position < position);
-        for(var i = curIndex; i >= 0; i--)
+        for (var i = curIndex; i >= 0; i--)
         {
-            if (Children[i] is LuaDeclaration declaration && process(declaration) == ScopeFoundState.Founded)
+            if (Children[i] is DeclarationNode { Declaration: { } declaration } &&
+                process(declaration) == ScopeFoundState.Founded)
             {
                 return;
             }
@@ -122,7 +126,7 @@ public class DeclarationScope(int pos)
     {
         var position = element.Position;
         var symbolNode = Children.FirstOrDefault(it => it.Position == position);
-        if (symbolNode is LuaDeclaration result)
+        if (symbolNode is DeclarationNode { Declaration: { } result })
         {
             return result;
         }
@@ -134,17 +138,17 @@ public class DeclarationScope(int pos)
     {
         get
         {
-            var stack = new Stack<DeclarationNode>();
+            var stack = new Stack<DeclarationNodeBase>();
             stack.Push(this);
             while (stack.Count > 0)
             {
                 var node = stack.Pop();
                 // ReSharper disable once InvertIf
-                if (node is LuaDeclaration declaration)
+                if (node is DeclarationNode { Declaration: { } declaration })
                 {
                     yield return declaration;
                 }
-                else if (node is DeclarationNodeContainer n)
+                else if (node is DeclarationNodeBaseContainer n)
                 {
                     foreach (var child in n.Children.AsEnumerable().Reverse())
                     {
@@ -169,8 +173,11 @@ public class DeclarationScope(int pos)
     }
 }
 
-public class LocalStatDeclarationScope(int pos)
-    : DeclarationScope(pos)
+public record LocalStatDeclarationScope(
+    int Position,
+    List<DeclarationNodeBase> Children,
+    DeclarationNodeBaseContainer? Parent = null)
+    : DeclarationScope(Position, Children, Parent)
 {
     public override ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
     {
@@ -183,8 +190,11 @@ public class LocalStatDeclarationScope(int pos)
     }
 }
 
-public class RepeatStatDeclarationScope(int pos)
-    : DeclarationScope(pos)
+public record RepeatStatDeclarationScope(
+    int Position,
+    List<DeclarationNodeBase> Children,
+    DeclarationNodeBaseContainer? Parent = null)
+    : DeclarationScope(Position, Children, Parent)
 {
     public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {
@@ -199,8 +209,11 @@ public class RepeatStatDeclarationScope(int pos)
     }
 }
 
-public class ForRangeStatDeclarationScope(int pos)
-    : DeclarationScope(pos)
+public record ForRangeStatDeclarationScope(
+    int Position,
+    List<DeclarationNodeBase> Children,
+    DeclarationNodeBaseContainer? Parent = null)
+    : DeclarationScope(Position, Children, Parent)
 {
     public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
     {

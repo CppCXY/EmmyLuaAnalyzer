@@ -89,13 +89,13 @@ public static class TypeInfer
                     type = type.Union(Builtin.Nil);
                 }
 
-                var paramDeclaration = new LuaDeclaration(name.RepresentText, typedParam.Position,
+                var paramDeclaration = new LuaDeclaration(name.RepresentText,
                     new ParamInfo(new(typedParam), type, false));
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var paramDeclaration = new LuaDeclaration("...", typedParam.Position,
+                var paramDeclaration = new LuaDeclaration("...",
                     new ParamInfo(new(typedParam), context.Infer(typedParam.Type), true));
                 typedParameters.Add(paramDeclaration);
             }
@@ -143,7 +143,7 @@ public static class TypeInfer
         var tupleMembers = tupleType.TypeList
             .Select((it, i) =>
                 // lua from 1 start
-                new LuaDeclaration($"[{i + 1}]", 0, new TupleMemberInfo(
+                new LuaDeclaration($"[{i + 1}]", new TupleMemberInfo(
                     i + 1, context.Infer(it), new(it)
                 ))
             )
@@ -170,7 +170,7 @@ public static class TypeInfer
             return new LuaVariadicType(new LuaNamedType(name.RepresentText));
         }
 
-        return new LuaVariadicType(new LuaNamedType("any"));
+        return new LuaVariadicType(Builtin.Unknown);
     }
 
     private static LuaType InferExpandType(LuaDocExpandTypeSyntax expandType, SearchContext context)
@@ -187,7 +187,7 @@ public static class TypeInfer
     {
         var declarations = aggregateType.TypeList
             .Select((it, i) =>
-                new LuaDeclaration(string.Empty, 0, new AggregateMemberInfo(
+                new LuaDeclaration(string.Empty, new AggregateMemberInfo(
                     new(it), context.Infer(it)
                 ))
             )

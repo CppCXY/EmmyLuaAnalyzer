@@ -8,7 +8,10 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         {
             var builder = new DeclarationBuilder(document.Id, document.SyntaxTree, this, analyzeContext);
             var tree = builder.Build();
-            Compilation.DeclarationTrees[document.Id] = tree;
+            if (tree is not null)
+            {
+                Compilation.WorkspaceIndex.AddDeclarationTree(document.Id, tree);
+            }
         }
     }
 }

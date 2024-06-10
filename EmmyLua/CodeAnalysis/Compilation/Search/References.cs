@@ -1,11 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
-public record ReferenceResult(ILocation Location, LuaSyntaxElement Element);
+public record ReferenceResult(ILocation Location, LuaSyntaxElement Element, ReferenceKind Kind = ReferenceKind.Unknown);
 
 public class References(SearchContext context)
 {
@@ -40,7 +41,7 @@ public class References(SearchContext context)
         {
             if (luaReference.Ptr.ToNode(context) is {} element)
             {
-                references.Add(new ReferenceResult(element.Location, element));
+                references.Add(new ReferenceResult(element.Location, element, luaReference.Kind));
             }
         }
 

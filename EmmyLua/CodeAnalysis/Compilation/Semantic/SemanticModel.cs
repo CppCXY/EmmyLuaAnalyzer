@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Diagnostics;
@@ -67,7 +68,7 @@ public class SemanticModel
     {
         var result = new List<LuaDeclaration>();
         var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
-        if (Compilation.DeclarationTrees.TryGetValue(beforeToken.DocumentId, out var tree) && token is not null)
+        if (Compilation.Db.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
         {
             var scope = tree.FindScope(token);
             scope?.WalkUp(beforeToken.Position, 0, declaration =>

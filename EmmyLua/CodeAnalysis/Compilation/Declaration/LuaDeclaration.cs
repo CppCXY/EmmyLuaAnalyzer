@@ -8,11 +8,6 @@ using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
-public class DeclarationNode(int position)
-{
-    public int Position { get; } = position;
-}
-
 public abstract record DeclarationInfo(
     LuaElementPtr<LuaSyntaxElement> Ptr,
     LuaType? DeclarationType
@@ -39,12 +34,11 @@ public enum DeclarationVisibility
 
 public class LuaDeclaration(
     string name,
-    int position,
     DeclarationInfo info,
     DeclarationFeature feature = DeclarationFeature.None,
     DeclarationVisibility visibility = DeclarationVisibility.Public
 )
-    : DeclarationNode(position), IDeclaration
+    : IDeclaration
 {
     public string Name { get; } = name;
 
@@ -77,7 +71,7 @@ public class LuaDeclaration(
     public List<RequiredVersion>? RequiredVersions { get; set; }
 
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
-        new(Name, Position, otherInfo, Feature, Visibility);
+        new(Name, otherInfo, Feature, Visibility);
 
     public IDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
     {

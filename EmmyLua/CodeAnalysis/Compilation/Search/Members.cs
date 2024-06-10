@@ -13,7 +13,7 @@ public class Members(SearchContext context)
 
     private Dictionary<string, List<IDeclaration>> BaseMemberCaches { get; } = new();
 
-     public IEnumerable<IDeclaration> GetRawMembers(string name)
+    public IEnumerable<IDeclaration> GetRawMembers(string name)
     {
         if (context.Features.Cache && NamedTypeMemberCaches.TryGetValue(name, out var members))
         {
@@ -209,12 +209,12 @@ public class Members(SearchContext context)
             if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
                 && memberName.StartsWith("["))
             {
-                return [new LuaDeclaration(memberName, 0, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
 
             if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
             {
-                return [new LuaDeclaration(memberName, 0, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
         }
 
@@ -236,7 +236,7 @@ public class Members(SearchContext context)
 
             if (keyType.SubTypeOf(firstType, context))
             {
-                return [new LuaDeclaration(string.Empty, 0, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(string.Empty, new VirtualInfo(secondType))];
             }
         }
 
@@ -266,7 +266,7 @@ public class Members(SearchContext context)
         {
             if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
             {
-                return [new LuaDeclaration(string.Empty, 0, new VirtualInfo(arrayType.BaseType))];
+                return [new LuaDeclaration(string.Empty, new VirtualInfo(arrayType.BaseType))];
             }
         }
 

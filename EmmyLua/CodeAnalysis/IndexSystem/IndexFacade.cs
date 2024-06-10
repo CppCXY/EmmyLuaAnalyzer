@@ -207,6 +207,11 @@ public class IndexFacade : IQueryableIndex
         return WorkspaceIndex.QueryDocumentLocalDeclarations(documentId);
     }
 
+    public LuaDeclarationTree? QueryDeclarationTree(LuaDocumentId documentId)
+    {
+        return WorkspaceIndex.QueryDeclarationTree(documentId);
+    }
+
     public void Remove(LuaDocumentId documentId)
     {
         WorkspaceIndex.Remove(documentId);

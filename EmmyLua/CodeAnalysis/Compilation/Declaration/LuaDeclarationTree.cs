@@ -1,8 +1,9 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node;
+﻿using EmmyLua.CodeAnalysis.Compilation.Scope;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
-public record LuaDeclarationTree(Dictionary<SyntaxElementId, DeclarationScope> Scopes)
+public record LuaDeclarationTree(Dictionary<SyntaxElementId, DeclarationScope> Scopes, DeclarationScope Root)
 {
     public DeclarationScope? FindScope(LuaSyntaxElement element)
     {
