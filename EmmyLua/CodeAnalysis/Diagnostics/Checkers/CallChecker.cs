@@ -32,12 +32,12 @@ public class CallChecker(LuaCompilation compilation)
         context.SearchContext.FindMethodsForType(declaration.Type, luaMethodType =>
         {
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
-            var perfectSignature = luaMethodType.FindPerfectMatchSignature(callExpr, args, context.SearchContext);
+            var perfectSignature = context.SearchContext.FindPerfectMatchSignature(luaMethodType, callExpr, args);
             var parameters = perfectSignature.Parameters;
             var lastToken = callExpr.ArgList?.LastToken();
             if (parameters.Count > args.Count && lastToken is not null)
             {
-                for (int i = args.Count; i < parameters.Count; i++)
+                for (var i = args.Count; i < parameters.Count; i++)
                 {
                     var parameter = parameters[i];
                     if (parameter is LuaDeclaration { Info: ParamInfo paramInfo })

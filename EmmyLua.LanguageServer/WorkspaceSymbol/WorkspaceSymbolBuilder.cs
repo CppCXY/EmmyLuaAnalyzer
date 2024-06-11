@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;

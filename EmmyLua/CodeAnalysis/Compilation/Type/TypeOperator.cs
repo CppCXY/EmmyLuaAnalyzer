@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 
-namespace EmmyLua.CodeAnalysis.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public enum TypeOperatorKind
 {

@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -192,7 +192,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
             Context.FindMethodsForType(prefixType, type =>
             {
-                var signature = type.FindPerfectMatchSignature(callExpr, callArgList, Context);
+                var signature = Context.FindPerfectMatchSignature(type, callExpr, callArgList);
                 var paramIndex = unResolvedClosureParameters.Index;
                 if (paramIndex == -1) return;
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
@@ -286,7 +286,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         {
             declaration.Info = declaration.Info with {DeclarationType = type};
         }
-        else if (unResolved.IsTypeDeclaration && TypeHelper.IsExtensionType(type))
+        else if (unResolved.IsTypeDeclaration && TypeExtension.IsExtensionType(type))
         {
             var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
             if (declarationType is LuaNamedType namedType)

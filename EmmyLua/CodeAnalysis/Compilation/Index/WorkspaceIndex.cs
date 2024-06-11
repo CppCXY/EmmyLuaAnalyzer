@@ -1,10 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 

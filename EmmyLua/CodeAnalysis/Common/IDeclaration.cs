@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Common;
 

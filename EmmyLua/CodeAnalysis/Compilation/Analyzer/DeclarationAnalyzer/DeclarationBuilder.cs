@@ -5,6 +5,7 @@ using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
@@ -12,7 +13,6 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 

@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 

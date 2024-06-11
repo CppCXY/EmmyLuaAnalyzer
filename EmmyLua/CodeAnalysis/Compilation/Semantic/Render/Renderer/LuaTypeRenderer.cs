@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 

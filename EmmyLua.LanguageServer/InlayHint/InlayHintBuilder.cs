@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using InlayHintType = OmniSharp.Extensions.LanguageServer.Protocol.Models.InlayHint;
@@ -100,7 +100,7 @@ public class InlayHintBuilder
         if (semanticModel.Context.Infer(callExpr.PrefixExpr) is LuaMethodType method)
         {
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
-            var perfectSignature = method.FindPerfectMatchSignature(callExpr, args, semanticModel.Context);
+            var perfectSignature = semanticModel.Context.FindPerfectMatchSignature(method, callExpr, args);
 
             var colonCall = false;
             if (callExpr.PrefixExpr is LuaIndexExprSyntax indexExpr)

@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Completion.CompletionData;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 

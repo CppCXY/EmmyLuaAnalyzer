@@ -1,10 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaType(TypeKind kind) : IEquatable<LuaType>
 {
@@ -572,5 +573,132 @@ public class LuaMultiReturnType : LuaType, IEquatable<LuaMultiReturnType>
     public override int GetHashCode()
     {
         return HashCode.Combine(base.GetHashCode(), RetTypes);
+    }
+}
+
+public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : IEquatable<LuaSignature>
+{
+    public LuaType ReturnType { get; set; } = returnType;
+
+    public List<IDeclaration> Parameters { get; } = parameters;
+
+    public bool Equals(LuaSignature? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is not null)
+        {
+            return ReturnType.Equals(other.ReturnType) && Parameters.SequenceEqual(other.Parameters);
+        }
+
+        return false;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaSignature);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Parameters);
+    }
+
+    public LuaSignature Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newReturnType = ReturnType.Instantiate(genericReplace);
+        var newParameters = Parameters
+            .Select(parameter => parameter.Instantiate(genericReplace))
+            .ToList();
+        return new LuaSignature(newReturnType, newParameters);
+    }
+}
+
+public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overloads, bool colonDefine)
+    : LuaType(TypeKind.Method), IEquatable<LuaMethodType>
+{
+    public LuaSignature MainSignature { get; } = mainSignature;
+
+    public List<LuaSignature>? Overloads { get; } = overloads;
+
+    public bool ColonDefine { get; } = colonDefine;
+
+    public LuaMethodType(LuaType returnType, List<IDeclaration> parameters, bool colonDefine)
+        : this(new LuaSignature(returnType, parameters), null, colonDefine)
+    {
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaMethodType);
+    }
+
+    public override bool Equals(LuaType? other)
+    {
+        return Equals(other as LuaMethodType);
+    }
+
+    public bool Equals(LuaMethodType? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is not null)
+        {
+            return MainSignature.Equals(other.MainSignature) && ColonDefine == other.ColonDefine;
+        }
+
+        return base.Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(base.GetHashCode(), MainSignature, ColonDefine);
+    }
+
+    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    {
+        var newMainSignature = MainSignature.Instantiate(genericReplace);
+        var newOverloads = Overloads?.Select(signature => signature.Instantiate(genericReplace)).ToList();
+        return new LuaMethodType(newMainSignature, newOverloads, ColonDefine);
+    }
+}
+
+public class LuaGenericMethodType : LuaMethodType
+{
+    public List<LuaDeclaration> GenericParamDecls { get; }
+
+    public Dictionary<string, LuaType> GenericParams { get; }
+
+    public LuaGenericMethodType(
+        List<LuaDeclaration> genericParamDecls,
+        LuaSignature mainSignature,
+        List<LuaSignature>? overloads,
+        bool colonDefine) : base(mainSignature, overloads, colonDefine)
+    {
+        GenericParamDecls = genericParamDecls;
+        GenericParams = genericParamDecls.ToDictionary(decl => decl.Name, decl => decl.Type);
+    }
+
+    public List<LuaSignature> GetInstantiatedSignatures(
+        LuaCallExprSyntax callExpr,
+        List<LuaExprSyntax> args,
+        SearchContext context)
+    {
+        var signatures = new List<LuaSignature>
+            { MethodInfer.InstantiateSignature(MainSignature, callExpr, args, GenericParams, ColonDefine, context) };
+
+        if (Overloads is not null)
+        {
+            signatures.AddRange(Overloads.Select(signature =>
+                MethodInfer.InstantiateSignature(signature, callExpr, args, GenericParams, ColonDefine, context)));
+        }
+
+        return signatures;
     }
 }

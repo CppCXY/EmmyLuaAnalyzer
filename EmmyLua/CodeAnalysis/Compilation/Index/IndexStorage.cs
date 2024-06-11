@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 

@@ -1,6 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Type;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public static class TypeHelper
+public static class TypeExtension
 {
     public static LuaType Union(this LuaType left, LuaType right)
     {

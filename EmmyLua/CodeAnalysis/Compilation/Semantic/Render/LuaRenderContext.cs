@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
-using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 
