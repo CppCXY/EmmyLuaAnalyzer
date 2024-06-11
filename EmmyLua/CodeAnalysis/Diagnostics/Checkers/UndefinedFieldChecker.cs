@@ -15,7 +15,7 @@ public class UndefinedFieldChecker(LuaCompilation compilation)
         foreach (var indexExpr in document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>())
         {
             var prefixType = context.SearchContext.Infer(indexExpr.PrefixExpr);
-            if (prefixType.Equals(Builtin.Unknown))
+            if (prefixType.Equals(Builtin.Unknown) || prefixType.IsAmbiguous())
             {
                 continue;
             }

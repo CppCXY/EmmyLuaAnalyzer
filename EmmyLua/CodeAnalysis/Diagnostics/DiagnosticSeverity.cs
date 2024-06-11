@@ -62,7 +62,10 @@ public static class DiagnosticSeverityHelper
             DiagnosticCode.AccessPackageMember => DiagnosticSeverity.Warning,
             DiagnosticCode.AccessProtectedMember => DiagnosticSeverity.Warning,
             DiagnosticCode.NoDiscard => DiagnosticSeverity.Warning,
-            _ => DiagnosticSeverity.Error
+            DiagnosticCode.DisableGlobalDefine => DiagnosticSeverity.Error,
+            DiagnosticCode.UndefinedField => DiagnosticSeverity.Warning,
+            DiagnosticCode.LocalConstReassign => DiagnosticSeverity.Error,
+            _ => DiagnosticSeverity.Warning
         };
     }
 }

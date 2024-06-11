@@ -95,7 +95,7 @@ public static class DiagnosticCodeHelper
             DiagnosticCode.AccessProtectedMember => true,
             DiagnosticCode.NoDiscard => true,
             DiagnosticCode.DisableGlobalDefine => false,
-            DiagnosticCode.UndefinedField => true,
+            DiagnosticCode.UndefinedField => false,
             DiagnosticCode.LocalConstReassign => true,
             _ => false
         };
