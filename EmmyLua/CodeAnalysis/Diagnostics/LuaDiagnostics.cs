@@ -64,7 +64,13 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     private bool CanCheckCode(LuaDocumentId documentId, DiagnosticCode code)
     {
-        var shouldCheck = !Config.WorkspaceDisabledCodes.Contains(code);
+        var shouldCheck = DiagnosticCodeHelper.IsCodeDefaultEnable(code) || Config.WorkspaceEnabledCodes.Contains(code);
+        if (!shouldCheck)
+        {
+            return false;
+        }
+
+        shouldCheck = !Config.WorkspaceDisabledCodes.Contains(code);
         if (Disables.TryGetValue(documentId, out var disables))
         {
             if (disables.Contains(code))

@@ -153,6 +153,7 @@ public class SettingManager
         });
         features.DiagnosticConfig.Globals.UnionWith(setting.Diagnostics.Globals);
         features.DiagnosticConfig.WorkspaceDisabledCodes.UnionWith(setting.Diagnostics.Disable);
+        features.DiagnosticConfig.WorkspaceEnabledCodes.UnionWith(setting.Diagnostics.Enables);
         foreach (var globalRegexString in setting.Diagnostics.GlobalsRegex)
         {
             try

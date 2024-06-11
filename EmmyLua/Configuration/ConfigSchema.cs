@@ -77,6 +77,9 @@ public class Diagnostics
     [JsonProperty("severity", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore),
      JsonConverter(typeof(DiagnosticSeverityConverter))]
     public Dictionary<DiagnosticCode, DiagnosticSeverity> Severity { get; set; } = [];
+
+    [JsonProperty("enables", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public List<DiagnosticCode> Enables { get; set; } = [];
 }
 
 public class DiagnosticSeverityConverter : JsonConverter<Dictionary<DiagnosticCode, DiagnosticSeverity>>

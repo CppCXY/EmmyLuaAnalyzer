@@ -12,6 +12,8 @@ public class DiagnosticConfig
     public HashSet<DiagnosticCode> WorkspaceDisabledCodes { get; } = [];
 
     public Dictionary<DiagnosticCode, DiagnosticSeverity> SeverityOverrides { get; } = new();
+
+    public HashSet<DiagnosticCode> WorkspaceEnabledCodes { get; } = [];
 }
 
 public class DisableNextLine

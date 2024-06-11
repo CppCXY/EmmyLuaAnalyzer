@@ -4,8 +4,8 @@ namespace EmmyLua.LanguageServer.Completion.CompletionData;
 
 public static class KeySnippets
 {
-    public static List<CompletionItem> Keywords { get; } = new()
-    {
+    public static List<CompletionItem> StatKeyWords { get; }=
+    [
         new CompletionItem()
         {
             Label = "if",
@@ -60,10 +60,10 @@ public static class KeySnippets
             Label = "fori",
             Kind = CompletionItemKind.Snippet,
             InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "for ${1:i} = ${2:start}, ${3:finish} do\n\t${0}\nend",
+            InsertText = "for ${1:i} = ${2:1}, ${3:finish} do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for i = start, finish do ... end)"
+                Detail = " (for i = 1, finish do ... end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -72,7 +72,7 @@ public static class KeySnippets
             Label = "forp",
             Kind = CompletionItemKind.Snippet,
             InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "for ${1:k},${2:v} in pairs(${3:table}) do\n\t${0}\nend",
+            InsertText = "for ${1:k}, ${2:v} in pairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
                 Detail = " (for k,v in pairs(table) do ... end)"
@@ -87,7 +87,7 @@ public static class KeySnippets
             InsertText = "for ${1:i},${2:v} in ipairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for i,v in ipairs(table) do ... end)"
+                Detail = " (for i, v in ipairs(table) do ... end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -165,18 +165,6 @@ public static class KeySnippets
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
-        new CompletionItem()
-        {
-            Label = "function",
-            Kind = CompletionItemKind.Snippet,
-            InsertTextMode = InsertTextMode.AdjustIndentation,
-            InsertText = "function (${1:...})\n\t${0}\nend",
-            LabelDetails = new()
-            {
-                Detail = " (function (...) ... end)"
-            },
-            InsertTextFormat = InsertTextFormat.Snippet
-        },
         new CompletionItem() { Label = "local", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem()
         {
@@ -187,6 +175,22 @@ public static class KeySnippets
             LabelDetails = new()
             {
                 Detail = " (local function name(...) ... end)"
+            },
+            InsertTextFormat = InsertTextFormat.Snippet
+        },
+    ];
+
+    public static List<CompletionItem> ExprKeywords { get; } =
+    [
+        new CompletionItem()
+        {
+            Label = "function",
+            Kind = CompletionItemKind.Snippet,
+            InsertTextMode = InsertTextMode.AdjustIndentation,
+            InsertText = "function (${1:...})\n\t${0}\nend",
+            LabelDetails = new()
+            {
+                Detail = " (function (...) ... end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -209,5 +213,5 @@ public static class KeySnippets
         new CompletionItem() { Label = "or", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "not", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
         new CompletionItem() { Label = "goto", Kind = CompletionItemKind.Keyword, Detail = "keyword" },
-    };
+    ];
 }

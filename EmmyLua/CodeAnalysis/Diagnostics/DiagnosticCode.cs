@@ -74,4 +74,30 @@ public static class DiagnosticCodeHelper
     {
         return CodeCache.GetValueOrDefault(name, DiagnosticCode.None);
     }
+
+    public static bool IsCodeDefaultEnable(DiagnosticCode code)
+    {
+        return code switch
+        {
+            DiagnosticCode.SyntaxError => true,
+            DiagnosticCode.TypeNotFound => false,
+            DiagnosticCode.MissingReturn => true,
+            DiagnosticCode.TypeNotMatch => true,
+            DiagnosticCode.MissingParameter => true,
+            DiagnosticCode.InjectFieldFail => true,
+            DiagnosticCode.UnreachableCode => true,
+            DiagnosticCode.Unused => true,
+            DiagnosticCode.UndefinedGlobal => true,
+            DiagnosticCode.NeedImport => true,
+            DiagnosticCode.Deprecated => true,
+            DiagnosticCode.AccessPrivateMember => true,
+            DiagnosticCode.AccessPackageMember => true,
+            DiagnosticCode.AccessProtectedMember => true,
+            DiagnosticCode.NoDiscard => true,
+            DiagnosticCode.DisableGlobalDefine => false,
+            DiagnosticCode.UndefinedField => true,
+            DiagnosticCode.LocalConstReassign => true,
+            _ => false
+        };
+    }
 }

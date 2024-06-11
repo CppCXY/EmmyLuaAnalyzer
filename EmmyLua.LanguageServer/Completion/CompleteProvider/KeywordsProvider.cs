@@ -15,12 +15,12 @@ public class KeywordsProvider : ICompleteProviderBase
             return;
         }
 
-        if (nameExpr.Parent?.Parent is not LuaBlockSyntax)
+        if (nameExpr.Parent?.Parent is LuaBlockSyntax)
         {
-            return;
+            context.AddRange(KeySnippets.StatKeyWords);
         }
 
-        context.AddRange(KeySnippets.Keywords);
+        context.AddRange(KeySnippets.ExprKeywords);
         ContinueCompletion(context);
     }
 
