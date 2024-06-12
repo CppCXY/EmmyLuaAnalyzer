@@ -10,7 +10,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
 {
     private CompletionBuilder Builder { get; } = new();
 
-    private CompletionDocumentResolver DocumentResolver { get; } = new(context.LuaWorkspace);
+    private CompletionDocumentResolver DocumentResolver { get; } = new();
 
     protected override CompletionRegistrationOptions CreateRegistrationOptions(CompletionCapability capability,
         ClientCapabilities clientCapabilities)
@@ -49,7 +49,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
         var item = request;
         context.ReadyRead(() =>
         {
-            item = DocumentResolver.Resolve(request);
+            item = DocumentResolver.Resolve(request, context);
         });
         
         return Task.FromResult(item);
