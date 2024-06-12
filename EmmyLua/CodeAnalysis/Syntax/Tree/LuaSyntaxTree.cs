@@ -49,9 +49,9 @@ public class LuaSyntaxTree
     {
         var parser = new LuaParser(new LuaLexer(document));
         var greenTreeBuilder = new LuaGreenTreeBuilder(parser);
-        var (root, diagnostics) = greenTreeBuilder.Build();
+        var (root, diagnostics, count) = greenTreeBuilder.Build();
         var redTreeBuilder = new LuaRedTreeBuilder();
-        var redNodes = redTreeBuilder.Build(root);
+        var redNodes = redTreeBuilder.Build(root, count);
         var syntaxTree = new LuaSyntaxTree(document, redNodes, diagnostics);
         return syntaxTree;
     }

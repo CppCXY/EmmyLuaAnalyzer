@@ -5,10 +5,10 @@ namespace EmmyLua.CodeAnalysis.Syntax.Tree.Red;
 
 public class LuaRedTreeBuilder
 {
-    public List<RedNode> Build(GreenNode greenRoot)
+    public List<RedNode> Build(GreenNode greenRoot, int totalCount)
     {
-        var redNodes = new List<RedNode>
-            { new RedNode(greenRoot.RawKind, new SourceRange(0, greenRoot.Length), -1, -1, -1) };
+        var redNodes = new List<RedNode>(totalCount) { new RedNode(greenRoot.RawKind, new SourceRange(0, greenRoot.Length), -1, -1, -1) };
+
         var parentIndex = 0;
         var queue = new Queue<(int, GreenNode)>();
         queue.Enqueue((parentIndex, greenRoot));
