@@ -112,7 +112,7 @@ public class WorkspaceIndex : IQueryableIndex
 
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
     {
-        if (type is LuaNamedType { Name: { } name1 } && !string.Equals(name, name1, StringComparison.CurrentCulture))
+        if (type is LuaNamedType { Name: { } name1 } && string.Equals(name, name1, StringComparison.CurrentCulture))
         {
             return;
         }
