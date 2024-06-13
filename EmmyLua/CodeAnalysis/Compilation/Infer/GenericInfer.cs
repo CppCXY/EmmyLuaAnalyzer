@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -35,7 +36,7 @@ public static class GenericInfer
             context);
     }
 
-    public static void InferInstantiateByExpandTypeAndTypes(
+    private static void InferInstantiateByExpandTypeAndTypes(
         LuaExpandType expandType,
         IEnumerable<LuaType> types,
         Dictionary<string, LuaType> genericParameter,
@@ -46,6 +47,20 @@ public static class GenericInfer
         if (genericParameter.ContainsKey(expandType.Name))
         {
             genericReplace.TryAdd(expandType.Name, new LuaMultiReturnType(types.ToList()));
+        }
+    }
+
+    private static void InferInstantiateByExpandTypeAndType(
+        LuaExpandType expandType,
+        LuaType type,
+        Dictionary<string, LuaType> genericParameter,
+        Dictionary<string, LuaType> genericReplace,
+        SearchContext context
+    )
+    {
+        if (genericParameter.ContainsKey(expandType.Name))
+        {
+            genericReplace.TryAdd(expandType.Name, new LuaMultiReturnType(type));
         }
     }
 
@@ -282,6 +297,25 @@ public static class GenericInfer
                 {
                     var rightElementType = tupleType2.TupleDeclaration[i].Type;
                     InferInstantiateByType(leftElementType, rightElementType, genericParameter, genericReplace, context);
+                }
+            }
+        }
+        else if (exprType is LuaArrayType arrayType)
+        {
+            var arrayElementType = arrayType.BaseType;
+            foreach (var tupleElement in tupleType.TupleDeclaration)
+            {
+                var leftElementType = tupleElement.Type;
+                if (leftElementType is LuaExpandType expandType)
+                {
+                    InferInstantiateByExpandTypeAndType(expandType, arrayElementType, genericParameter, genericReplace,
+                        context);
+                    break;
+                }
+                else
+                {
+                    InferInstantiateByType(leftElementType, arrayElementType, genericParameter, genericReplace,
+                        context);
                 }
             }
         }

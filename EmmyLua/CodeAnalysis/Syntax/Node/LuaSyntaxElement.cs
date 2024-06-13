@@ -543,11 +543,6 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
             return false;
         }
 
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
         return UniqueId == other.UniqueId;
     }
 
