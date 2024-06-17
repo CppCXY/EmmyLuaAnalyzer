@@ -165,7 +165,7 @@ public class Members(SearchContext context)
             return instanceMembers;
         }
 
-        var members = GetMembers(genericType);
+        var members = GetNormalTypeMembers(genericType);
         var genericParams = context.Compilation.Db.QueryGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 
