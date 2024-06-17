@@ -133,7 +133,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.Info.DeclarationType is null)
             {
-                declaration.Info = declaration.Info with {DeclarationType = new LuaNamedType(declaration.Info.Ptr.Stringify)};
+                declaration.Info = declaration.Info with
+                {
+                    DeclarationType = new LuaNamedType(declaration.Info.Ptr.Stringify)
+                };
             }
         }
     }
@@ -143,15 +146,12 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax {PrefixExpr: { } prefixExpr} indexExpr)
+            if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
             {
                 var documentId = indexExpr.DocumentId;
                 var ty = Context.Infer(prefixExpr);
-                if (ty is LuaNamedType namedType)
-                {
-                    Compilation.WorkspaceIndex.AddMember(documentId, namedType.Name, declaration);
-                    Context.ClearMemberCache(namedType.Name);
-                }
+                Compilation.WorkspaceIndex.AddMember(documentId, ty, declaration);
+                Context.ClearMemberCache(ty);
             }
         }
     }
@@ -207,7 +207,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         var mainParam = mainParams[i];
                         if (closureParam.Info.DeclarationType is null)
                         {
-                            closureParam.Info = closureParam.Info with {DeclarationType = mainParam.Type};
+                            closureParam.Info = closureParam.Info with { DeclarationType = mainParam.Type };
                         }
                     }
                 });
@@ -284,30 +284,36 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         if (declaration.Info.DeclarationType is null)
         {
-            declaration.Info = declaration.Info with {DeclarationType = type};
+            declaration.Info = declaration.Info with { DeclarationType = type };
         }
-        else if (unResolved.IsTypeDeclaration && TypeExtension.IsExtensionType(type))
+        else
         {
             var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
-            if (declarationType is LuaNamedType namedType)
+            if (declarationType is LuaVariableRefType variableRefType)
+            {
+                Compilation.WorkspaceIndex.AddIdRelatedType(variableRefType.Id, type);
+            }
+            else if (declarationType is GlobalNameType globalNameType)
+            {
+                Compilation.WorkspaceIndex.AddGlobalRelationType(declaration.DocumentId, globalNameType.Name, type);
+            }
+            else if (declarationType is LuaNamedType namedType)
             {
                 if (type is LuaTableLiteralType tableType)
                 {
-                    var typeName = namedType.Name;
-                    var members = Compilation.Db.QueryMembers(tableType.Name).OfType<LuaDeclaration>();
-                    var documentId = declaration.Info.Ptr.DocumentId;
+                    var members = Compilation.Db.QueryMembers(tableType).OfType<LuaDeclaration>();
+                    var documentId = declaration.DocumentId;
 
                     foreach (var member in members)
                     {
-                        Compilation.WorkspaceIndex.AddMember(documentId, typeName, member);
+                        Compilation.WorkspaceIndex.AddMember(documentId, namedType, member);
                     }
 
                     Compilation.WorkspaceIndex.AddIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
                 }
-                else
+                else if (type.IsExtensionType())
                 {
-                    var documentId = declaration.Info.Ptr.DocumentId;
-                    Compilation.WorkspaceIndex.AddSuper(documentId, namedType.Name, type);
+                    Compilation.WorkspaceIndex.AddSuper(declaration.DocumentId, namedType.Name, type);
                 }
             }
         }

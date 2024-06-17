@@ -81,18 +81,12 @@ public static class TypeExtension
         return new LuaUnionType(types);
     }
 
-    public static bool IsExtensionType(LuaType type)
+    public static bool IsExtensionType(this LuaType type)
     {
         return type is LuaNamedType namedType && namedType.Name switch
         {
             "integer" or "number" or "thread" or "void" or "unknown" or "nil" or "any" => false,
             _ => true,
         };
-    }
-
-    public static bool IsAmbiguous(this LuaType type)
-    {
-        return type is LuaNamedType namedType && namedType.Name.FirstOrDefault() is { } firstChar &&
-               char.IsDigit(firstChar);
     }
 }

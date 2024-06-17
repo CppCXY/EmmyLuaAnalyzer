@@ -1,7 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
@@ -13,6 +12,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
+using LuaVariableRefType = EmmyLua.CodeAnalysis.Compilation.Type.LuaVariableRefType;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -317,7 +317,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     name.RepresentText,
                     new LocalInfo(
                         new(localName),
-                        luaType,
+                        luaType ?? new LuaVariableRefType(localName.UniqueId),
                         localName.Attribute?.IsConst ?? false,
                         localName.Attribute?.IsClose ?? false
                     ),
@@ -388,7 +388,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     "...",
                     new ParamInfo(
                         new(param),
-                        luaType,
+                        luaType ?? new LuaVariableRefType(param.UniqueId),
                         true,
                         nullable
                     ),
@@ -440,7 +440,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     name.RepresentText,
                     new ParamInfo(
                         new(param),
-                        null,
+                        new LuaVariableRefType(param.UniqueId),
                         false
                     ),
                     DeclarationFeature.Local);
@@ -599,7 +599,7 @@ public class DeclarationBuilder : ILuaElementWalker
                                 name.RepresentText,
                                 new GlobalInfo(
                                     new(nameExpr),
-                                    luaType
+                                    luaType ?? new GlobalNameType(name.RepresentText)
                                 ),
                                 DeclarationFeature.Global
                             );
@@ -894,7 +894,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             new(field),
                             baseType
                         ));
-                    WorkspaceIndex.AddMember(DocumentId, name.RepresentText, fieldDeclaration);
+                    WorkspaceIndex.AddMember(DocumentId, luaEnum, fieldDeclaration);
                 }
             }
         }
@@ -912,7 +912,6 @@ public class DeclarationBuilder : ILuaElementWalker
                     luaInterface,
                     NamedTypeKind.Interface
                 ));
-
 
             WorkspaceIndex.AddTypeDefinition(DocumentId, name.RepresentText, declaration);
             AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
@@ -1225,7 +1224,7 @@ public class DeclarationBuilder : ILuaElementWalker
         };
     }
 
-    private void AnalyzeDocDetailField(LuaNamedType namedType, LuaDocFieldSyntax field)
+    private void AnalyzeDocDetailField(LuaType parentType, LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
         switch (field)
@@ -1241,7 +1240,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                WorkspaceIndex.AddMember(DocumentId, namedType.Name, declaration);
+                WorkspaceIndex.AddMember(DocumentId, parentType, declaration);
                 break;
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
@@ -1256,7 +1255,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                WorkspaceIndex.AddMember(DocumentId, namedType.Name, declaration);
+                WorkspaceIndex.AddMember(DocumentId, parentType, declaration);
                 break;
             }
             case { StringField: { } stringField, Type: { } type3 }:
@@ -1270,7 +1269,7 @@ public class DeclarationBuilder : ILuaElementWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                WorkspaceIndex.AddMember(DocumentId, namedType.Name, declaration);
+                WorkspaceIndex.AddMember(DocumentId, parentType, declaration);
                 break;
             }
             case { TypeField: { } typeField, Type: { } type4 }:
@@ -1284,7 +1283,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         valueType,
                         new(field)
                     ));
-                var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
+                var indexOperator = new IndexOperator(parentType, keyType, valueType, docIndexDeclaration);
                 WorkspaceIndex.AddTypeOperator(DocumentId, indexOperator);
                 break;
             }
@@ -1302,11 +1301,11 @@ public class DeclarationBuilder : ILuaElementWalker
         }
     }
 
-    private void AnalyzeDocBody(LuaNamedType namedType, LuaDocBodySyntax docBody)
+    private void AnalyzeDocBody(LuaType type, LuaDocBodySyntax docBody)
     {
         foreach (var field in docBody.FieldList)
         {
-            AnalyzeDocDetailField(namedType, field);
+            AnalyzeDocDetailField(type, field);
         }
     }
 
@@ -1340,7 +1339,7 @@ public class DeclarationBuilder : ILuaElementWalker
 
     private void AnalyzeTableExprDeclaration(LuaTableExprSyntax tableExprSyntax)
     {
-        var tableClass = tableExprSyntax.UniqueString;
+        var tableClass = new LuaTableLiteralType(tableExprSyntax);
         foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
             if (fieldSyntax is { Name: { } fieldName, Value: { } value })

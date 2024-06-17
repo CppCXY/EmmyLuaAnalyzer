@@ -7,9 +7,15 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
-public class LuaType(TypeKind kind) : IEquatable<LuaType>
+public class LuaType(LuaTypeAttribute attribute) : IEquatable<LuaType>
 {
-    public TypeKind Kind { get; } = kind;
+    public LuaTypeAttribute Attribute { get; } = attribute;
+
+    public bool HasMember => Attribute.HasFlag(LuaTypeAttribute.HasMember);
+
+    public bool CanIndex => Attribute.HasFlag(LuaTypeAttribute.CanIndex);
+
+    public bool CanCall => Attribute.HasFlag(LuaTypeAttribute.CanCall);
 
     public override bool Equals(object? obj)
     {
@@ -18,22 +24,12 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
 
     public virtual bool Equals(LuaType? other)
     {
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        if (other is null)
-        {
-            return false;
-        }
-
-        return Kind == other.Kind;
+        return ReferenceEquals(this, other);
     }
 
     public override int GetHashCode()
     {
-        return (int) Kind;
+        return (int)Attribute;
     }
 
     public bool SubTypeOf(LuaType? other, SearchContext context)
@@ -47,7 +43,10 @@ public class LuaType(TypeKind kind) : IEquatable<LuaType>
     }
 }
 
-public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : LuaType(kind), IEquatable<LuaNamedType>
+public class LuaNamedType(
+    string name,
+    LuaTypeAttribute attribute = LuaTypeAttribute.HasMember | LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex)
+    : LuaType(attribute), IEquatable<LuaNamedType>
 {
     public string Name { get; } = name;
 
@@ -68,27 +67,12 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
 
     public bool Equals(LuaNamedType? other)
     {
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        if (other is not null)
-        {
-            return Name == other.Name;
-        }
-
-        if (!base.Equals(other))
-        {
-            return false;
-        }
-
-        return string.Equals(Name, other.Name, StringComparison.CurrentCulture);
+        return string.Equals(Name, other?.Name, StringComparison.CurrentCulture);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), Name);
+        return Name.GetHashCode();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -97,18 +81,20 @@ public class LuaNamedType(string name, TypeKind kind = TypeKind.NamedType) : Lua
     }
 }
 
-public class LuaTemplateType(string templateName): LuaType(TypeKind.Template), IEquatable<LuaTemplateType>
+public class LuaTemplateType(string templateName)
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaTemplateType>
 {
     public string TemplateName { get; } = templateName;
 
     public bool Equals(LuaTemplateType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && TemplateName == other.TemplateName;
+        return TemplateName == other?.TemplateName;
     }
 }
 
-public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Union), IEquatable<LuaUnionType>
+public class LuaUnionType(IEnumerable<LuaType> unionTypes)
+    : LuaType(LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember),
+        IEquatable<LuaUnionType>
 {
     public HashSet<LuaType> UnionTypes { get; } = [..unionTypes];
 
@@ -124,13 +110,12 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
 
     public bool Equals(LuaUnionType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && UnionTypes.SetEquals(other.UnionTypes);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), UnionTypes);
+        return UnionTypes.GetHashCode();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -141,7 +126,7 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes) : LuaType(TypeKind.Un
 }
 
 public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
-    : LuaType(TypeKind.Aggregate), IEquatable<LuaAggregateType>
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaAggregateType>
 {
     public List<IDeclaration> Declarations { get; } = declarations.ToList();
 
@@ -157,7 +142,6 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
 
     public bool Equals(LuaAggregateType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && Declarations
             .Select(it => it.Type)
             .SequenceEqual(other.Declarations.Select(it => it.Type));
@@ -165,7 +149,7 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), Declarations);
+        return HashCode.Combine(Declarations);
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -176,7 +160,7 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
 }
 
 public class LuaTupleType(List<IDeclaration> tupleDeclaration)
-    : LuaType(TypeKind.Tuple), IEquatable<LuaTupleType>
+    : LuaType(LuaTypeAttribute.HasMember | LuaTypeAttribute.CanIndex), IEquatable<LuaTupleType>
 {
     public List<IDeclaration> TupleDeclaration { get; } = tupleDeclaration;
 
@@ -204,7 +188,7 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), TupleDeclaration);
+        return TupleDeclaration.GetHashCode();
     }
 
     public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
@@ -216,7 +200,7 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
         {
             var lastMember = newTupleTypes[^1];
             newTupleTypes.RemoveAt(newTupleTypes.Count - 1);
-            if (lastMember is LuaDeclaration{ Info: TupleMemberInfo info} lastMember2)
+            if (lastMember is LuaDeclaration { Info: TupleMemberInfo info } lastMember2)
             {
                 for (var i = 0; i < multiReturnType.GetElementCount(); i++)
                 {
@@ -234,7 +218,8 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
     }
 }
 
-public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatable<LuaArrayType>
+public class LuaArrayType(LuaType baseType)
+    : LuaType(LuaTypeAttribute.CanIndex), IEquatable<LuaArrayType>
 {
     public LuaType BaseType { get; } = baseType;
 
@@ -250,8 +235,7 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
 
     public bool Equals(LuaArrayType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && BaseType.Equals(other.BaseType);
+        return BaseType.Equals(other?.BaseType);
     }
 
     public override int GetHashCode()
@@ -267,7 +251,7 @@ public class LuaArrayType(LuaType baseType) : LuaType(TypeKind.Array), IEquatabl
 }
 
 public class LuaGenericType(string baseName, List<LuaType> genericArgs)
-    : LuaNamedType(baseName, TypeKind.Generic), IEquatable<LuaGenericType>
+    : LuaNamedType(baseName), IEquatable<LuaGenericType>
 {
     public List<LuaType> GenericArgs { get; } = genericArgs;
 
@@ -283,7 +267,6 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
 
     public bool Equals(LuaGenericType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
         return base.Equals(other) && GenericArgs.Equals(other.GenericArgs);
     }
 
@@ -308,7 +291,8 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
     }
 }
 
-public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiteral), IEquatable<LuaStringLiteralType>
+public class LuaStringLiteralType(string content)
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaStringLiteralType>
 {
     public string Content { get; } = content;
 
@@ -324,18 +308,17 @@ public class LuaStringLiteralType(string content) : LuaType(TypeKind.StringLiter
 
     public bool Equals(LuaStringLiteralType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && Content == other.Content;
+        return Content == other?.Content;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), Content);
+        return Content.GetHashCode();
     }
-
 }
 
-public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral), IEquatable<LuaIntegerLiteralType>
+public class LuaIntegerLiteralType(long value)
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaIntegerLiteralType>
 {
     public long Value { get; } = value;
 
@@ -351,19 +334,18 @@ public class LuaIntegerLiteralType(long value) : LuaType(TypeKind.IntegerLiteral
 
     public bool Equals(LuaIntegerLiteralType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && Value == other.Value;
+        return Value == other?.Value;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), Value);
+        return Value.GetHashCode();
     }
-
 }
 
 public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
-    : LuaNamedType(tableExpr.UniqueString, TypeKind.TableLiteral), IEquatable<LuaTableLiteralType>
+    : LuaType(LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember),
+        IEquatable<LuaTableLiteralType>
 {
     public LuaElementPtr<LuaTableExprSyntax> TableExprPtr { get; } = new(tableExpr);
 
@@ -379,18 +361,18 @@ public class LuaTableLiteralType(LuaTableExprSyntax tableExpr)
 
     public bool Equals(LuaTableLiteralType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && TableExprPtr.Equals(other.TableExprPtr);
+        return TableExprPtr.Equals(other?.TableExprPtr);
     }
 
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        return TableExprPtr.GetHashCode();
     }
 }
 
 public class LuaDocTableType(LuaDocTableTypeSyntax tableType)
-    : LuaNamedType(tableType.UniqueString, TypeKind.TableLiteral), IEquatable<LuaDocTableType>
+    : LuaType(LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember),
+        IEquatable<LuaDocTableType>
 {
     public LuaElementPtr<LuaDocTableTypeSyntax> DocTablePtr { get; } = new(tableType);
 
@@ -406,17 +388,17 @@ public class LuaDocTableType(LuaDocTableTypeSyntax tableType)
 
     public bool Equals(LuaDocTableType? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && DocTablePtr.Equals(other.DocTablePtr);
+        return DocTablePtr.Equals(other?.DocTablePtr);
     }
 
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        return DocTablePtr.GetHashCode();
     }
 }
 
-public class LuaVariadicType(LuaType baseType) : LuaType(TypeKind.Variadic), IEquatable<LuaVariadicType>
+public class LuaVariadicType(LuaType baseType)
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaVariadicType>
 {
     public LuaType BaseType { get; } = baseType;
 
@@ -448,8 +430,11 @@ public class LuaVariadicType(LuaType baseType) : LuaType(TypeKind.Variadic), IEq
     }
 }
 
-public class LuaExpandType(string baseName) : LuaNamedType(baseName), IEquatable<LuaExpandType>
+public class LuaExpandType(string baseName)
+    : LuaType(LuaTypeAttribute.None), IEquatable<LuaExpandType>
 {
+    public string Name { get; } = baseName;
+
     public override bool Equals(object? obj)
     {
         return Equals(obj as LuaExpandType);
@@ -492,13 +477,13 @@ public class LuaMultiReturnType : LuaType, IEquatable<LuaMultiReturnType>
     private LuaType? BaseType { get; }
 
     public LuaMultiReturnType(LuaType baseType)
-        : base(TypeKind.Return)
+        : base(LuaTypeAttribute.None)
     {
         BaseType = baseType;
     }
 
     public LuaMultiReturnType(List<LuaType> retTypes)
-        : base(TypeKind.Return)
+        : base(LuaTypeAttribute.None)
     {
         RetTypes = retTypes;
     }
@@ -618,7 +603,7 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
 }
 
 public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overloads, bool colonDefine)
-    : LuaType(TypeKind.Method), IEquatable<LuaMethodType>
+    : LuaType(LuaTypeAttribute.CanCall), IEquatable<LuaMethodType>
 {
     public LuaSignature MainSignature { get; } = mainSignature;
 
@@ -702,3 +687,47 @@ public class LuaGenericMethodType : LuaMethodType
         return signatures;
     }
 }
+
+public class LuaVariableRefType(SyntaxElementId id)
+    : LuaType(LuaTypeAttribute.HasMember | LuaTypeAttribute.CanIndex | LuaTypeAttribute.CanCall),
+        IEquatable<LuaVariableRefType>
+{
+    public SyntaxElementId Id { get; } = id;
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as LuaVariableRefType);
+    }
+
+    public bool Equals(LuaVariableRefType? other)
+    {
+        return Id == other?.Id;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+}
+
+public class GlobalNameType(string name)
+    : LuaType(LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember), IEquatable<GlobalNameType>
+{
+    public string Name { get; } = name;
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as GlobalNameType);
+    }
+
+    public bool Equals(GlobalNameType? other)
+    {
+        return Name == other?.Name;
+    }
+
+    public override int GetHashCode()
+    {
+        return Name.GetHashCode();
+    }
+}
+

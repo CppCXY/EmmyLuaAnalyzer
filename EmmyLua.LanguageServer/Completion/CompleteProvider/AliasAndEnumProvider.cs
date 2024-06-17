@@ -108,7 +108,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
     private void AddEnumParamCompletion(LuaNamedType namedType, CompleteContext context)
     {
         var members = context.SemanticModel.Compilation.Db
-            .QueryMembers(namedType.Name);
+            .QueryMembers(namedType);
 
         foreach (var field in members)
         {

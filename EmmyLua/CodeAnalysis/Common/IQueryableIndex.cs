@@ -6,7 +6,7 @@ public interface IQueryableIndex
 {
     IEnumerable<IDeclaration> QueryAllGlobal();
 
-    IEnumerable<IDeclaration> QueryMembers(string name);
+    IEnumerable<IDeclaration> QueryMembers(LuaType type);
 
     IEnumerable<IDeclaration> QueryGlobals(string name);
 

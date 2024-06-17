@@ -21,15 +21,12 @@ public class SemanticModel
 
     public LuaRenderBuilder RenderBuilder { get; }
 
-    private References References { get; }
-
     public SemanticModel(LuaCompilation compilation, LuaDocument document)
     {
         Compilation = compilation;
         Document = document;
         Context = new(compilation, new SearchContextFeatures());
         RenderBuilder = new(Context);
-        References = new(Context);
     }
 
     // 渲染符号的文档和类型
@@ -48,7 +45,7 @@ public class SemanticModel
         var declaration = Context.FindDeclaration(element);
         if (declaration is not null)
         {
-            return References.FindReferences(declaration);
+            return Context.FindReferences(declaration);
         }
 
         return [];

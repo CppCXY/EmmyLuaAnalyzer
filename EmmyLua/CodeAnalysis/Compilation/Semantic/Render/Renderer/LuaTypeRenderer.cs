@@ -223,6 +223,11 @@ public static class LuaTypeRenderer
             }
             case LuaStringLiteralType stringLiteralType:
             {
+                if (stringLiteralType.Content.StartsWith('\'') || stringLiteralType.Content.StartsWith('"'))
+                {
+                    renderContext.Append(stringLiteralType.Content);
+                    break;
+                }
                 renderContext.Append('"');
                 renderContext.Append(stringLiteralType.Content);
                 renderContext.Append('"');
@@ -270,12 +275,47 @@ public static class LuaTypeRenderer
                 renderContext.Append($"<{templateType.TemplateName}>");
                 break;
             }
+            case LuaVariableRefType variableRefType:
+            {
+                RenderVariableRefType(variableRefType, renderContext, level);
+                break;
+            }
+            case GlobalNameType globalNameType:
+            {
+                RenderGlobalNameType(globalNameType, renderContext, level);
+                break;
+            }
             default:
             {
                 renderContext.Append("unknown");
                 break;
             }
         }
+    }
+
+    private static void RenderVariableRefType(LuaVariableRefType variableRefType, LuaRenderContext renderContext,
+        int level)
+    {
+        var relatedType = renderContext.SearchContext.Compilation.Db.QueryRelatedType(variableRefType.Id);
+        if (relatedType is null)
+        {
+            renderContext.Append("ambiguous");
+            return;
+        }
+
+        InnerRenderType(relatedType, renderContext, level + 1);
+    }
+
+    private static void RenderGlobalNameType(GlobalNameType globalNameType, LuaRenderContext renderContext, int level)
+    {
+        var relatedType = renderContext.SearchContext.Compilation.Db.QueryRelatedGlobalType(globalNameType.Name);
+        if (relatedType is null)
+        {
+            renderContext.Append($"global {globalNameType.Name}");
+            return;
+        }
+
+        InnerRenderType(relatedType, renderContext, level + 1);
     }
 
     private static void RenderNamedType(LuaNamedType namedType, LuaRenderContext renderContext, int level)
@@ -295,15 +335,7 @@ public static class LuaTypeRenderer
             }
         }
 
-        var name = namedType.Name;
-        if (name.Length != 0 && char.IsDigit(name[0]))
-        {
-            renderContext.Append("ambiguous");
-        }
-        else
-        {
-            renderContext.Append(namedType.Name);
-        }
+        renderContext.Append(namedType.Name);
     }
 
     private static void RenderArrayType(LuaArrayType arrayType, LuaRenderContext renderContext, int level)

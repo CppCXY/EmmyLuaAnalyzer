@@ -2,18 +2,18 @@
 
 public static class Builtin
 {
-    public static LuaNamedType Unknown { get; } = new("unknown", TypeKind.Unknown);
-    public static LuaNamedType Any { get; } = new("any", TypeKind.Any);
-    public static LuaNamedType Nil { get; } = new("nil", TypeKind.Nil);
-    public static LuaNamedType Boolean { get; } = new("boolean");
-    public static LuaNamedType Number { get; } = new("number");
-    public static LuaNamedType Integer { get; } = new("integer");
-    public static LuaNamedType String { get; } = new("string");
-    public static LuaNamedType Table { get; } = new("table");
-    public static LuaNamedType Thread { get; } = new("thread");
-    public static LuaNamedType UserData { get; } = new("userdata");
+    public static LuaNamedType Unknown { get; } = new("unknown", LuaTypeAttribute.None);
+    public static LuaNamedType Any { get; } = new("any", LuaTypeAttribute.None);
+    public static LuaNamedType Nil { get; } = new("nil", LuaTypeAttribute.None);
+    public static LuaNamedType Boolean { get; } = new("boolean", LuaTypeAttribute.None);
+    public static LuaNamedType Number { get; } = new("number", LuaTypeAttribute.None);
+    public static LuaNamedType Integer { get; } = new("integer", LuaTypeAttribute.None);
+    public static LuaNamedType String { get; } = new("string", LuaTypeAttribute.HasMember | LuaTypeAttribute.CanIndex);
+    public static LuaNamedType Table { get; } = new("table", LuaTypeAttribute.None);
+    public static LuaNamedType Thread { get; } = new("thread", LuaTypeAttribute.None);
+    public static LuaNamedType UserData { get; } = new("userdata", LuaTypeAttribute.None);
 
-    public static LuaNamedType Self { get; } = new("self");
+    public static LuaNamedType Self { get; } = new("self", LuaTypeAttribute.None);
 
     public static LuaNamedType? FromName(string name)
     {

@@ -37,14 +37,9 @@ public class IndexFacade : IQueryableIndex
         QueryableIndexes.Remove(queryableIndex);
     }
 
-    public IEnumerable<IDeclaration> QueryMembers(string name)
+    public IEnumerable<IDeclaration> QueryMembers(LuaType luaType)
     {
-        if (name == "global")
-        {
-            return QueryAllGlobal();
-        }
-
-        return QueryableIndexes.SelectMany(it => it.QueryMembers(name));
+        return QueryableIndexes.SelectMany(it => it.QueryMembers(luaType));
     }
 
     public IEnumerable<LuaDeclaration> QueryAllMembers()
@@ -210,6 +205,16 @@ public class IndexFacade : IQueryableIndex
     public LuaDeclarationTree? QueryDeclarationTree(LuaDocumentId documentId)
     {
         return WorkspaceIndex.QueryDeclarationTree(documentId);
+    }
+
+    public LuaType? QueryRelatedType(SyntaxElementId id)
+    {
+        return WorkspaceIndex.IdRelatedType.Query(id.DocumentId, id);
+    }
+
+    public LuaType? QueryRelatedGlobalType(string name)
+    {
+        return WorkspaceIndex.QueryRelatedGlobalType(name);
     }
 
     public void Remove(LuaDocumentId documentId)

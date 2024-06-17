@@ -12,6 +12,10 @@ public class WorkspaceIndex : IQueryableIndex
 {
     public IndexStorage<string, LuaDeclaration> TypeMembers { get; } = new();
 
+    public IndexStorage<SyntaxElementId, LuaDeclaration> DocumentVariableMembers { get; } = new();
+
+    public IndexStorage<string, LuaDeclaration> GlobalVariableMembers { get; } = new();
+
     public InFiledDictionary<SyntaxElementId, string> ParentType { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> Globals { get; } = new();
@@ -23,6 +27,8 @@ public class WorkspaceIndex : IQueryableIndex
     private IndexStorage<string, LuaDeclaration> NamedTypeDefinition { get; } = new();
 
     public InFiledDictionary<SyntaxElementId, LuaType> IdRelatedType { get; } = new();
+
+    public IndexStorage<string, LuaType> GlobalRelationTypes { get; } = new();
 
     private IndexStorage<string, LuaType> AliasTypes { get; } = new();
 
@@ -51,6 +57,8 @@ public class WorkspaceIndex : IQueryableIndex
     public void Remove(LuaDocumentId documentId)
     {
         TypeMembers.Remove(documentId);
+        DocumentVariableMembers.Remove(documentId);
+        GlobalVariableMembers.Remove(documentId);
         ParentType.Remove(documentId);
         Globals.Remove(documentId);
         Supers.Remove(documentId);
@@ -68,41 +76,68 @@ public class WorkspaceIndex : IQueryableIndex
         InFiledReferences.Remove(documentId);
         InFiledDeclarations.Remove(documentId);
         DocumentDeclarationTrees.Remove(documentId);
+        GlobalRelationTypes.Remove(documentId);
     }
 
-    private static HashSet<string> NotMemberNames { get; } =
-    [
-        "unknown",
-        "nil",
-        "boolean",
-        "number",
-        "int",
-        "integer",
-        "function",
-        "thread",
-        "userdata",
-        "any",
-        "void",
-        "never",
-        "self",
-        "T"
-    ];
-
-    public void AddMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddMember(LuaDocumentId documentId, LuaType type, LuaDeclaration luaDeclaration)
     {
-        if (NotMemberNames.Contains(name))
+        if (!type.HasMember)
         {
             return;
         }
 
-        if (name == "global")
+        switch (type)
         {
-            AddGlobal(documentId, luaDeclaration.Name, luaDeclaration);
-            return;
-        }
+            case LuaNamedType namedType:
+            {
+                var name = namedType.Name;
+                if (name == "global")
+                {
+                    AddGlobal(documentId, luaDeclaration.Name, luaDeclaration);
+                    return;
+                }
 
+                AddNamedTypeMember(documentId, name, luaDeclaration);
+                break;
+            }
+            case GlobalNameType globalNameType:
+            {
+                var name = globalNameType.Name;
+                AddGlobalVariableMember(documentId, name, luaDeclaration);
+                break;
+            }
+            case LuaVariableRefType variableRefType:
+            {
+                AddLocalVariableMember(variableRefType.Id, luaDeclaration);
+                break;
+            }
+            case LuaDocTableType docTableType:
+            {
+                AddLocalVariableMember(docTableType.DocTablePtr.UniqueId, luaDeclaration);
+                break;
+            }
+            case LuaTableLiteralType luaTableLiteral:
+            {
+                AddLocalVariableMember(luaTableLiteral.TableExprPtr.UniqueId, luaDeclaration);
+                break;
+            }
+        }
+    }
+
+    private void AddNamedTypeMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    {
         TypeMembers.Add(documentId, name, luaDeclaration);
-        ParentType.Add(documentId, luaDeclaration.Info.Ptr.UniqueId, name);
+        ParentType.Add(documentId, luaDeclaration.UniqueId, name);
+    }
+
+    private void AddLocalVariableMember(SyntaxElementId id, LuaDeclaration luaDeclaration)
+    {
+        DocumentVariableMembers.Add(id.DocumentId, id, luaDeclaration);
+    }
+
+    private void AddGlobalVariableMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    {
+        GlobalVariableMembers.Add(documentId, name, luaDeclaration);
     }
 
     public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
@@ -139,6 +174,11 @@ public class WorkspaceIndex : IQueryableIndex
     public void AddIdRelatedType(SyntaxElementId id, LuaType relatedType)
     {
         IdRelatedType.Add(id.DocumentId, id, relatedType);
+    }
+
+    public void AddGlobalRelationType(LuaDocumentId documentId, string name, LuaType type)
+    {
+        GlobalRelationTypes.Add(documentId, name, type);
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
@@ -222,9 +262,45 @@ public class WorkspaceIndex : IQueryableIndex
         return Globals.QueryAll();
     }
 
-    public IEnumerable<IDeclaration> QueryMembers(string name)
+    public IEnumerable<IDeclaration> QueryMembers(LuaType type)
     {
-        return TypeMembers.Query(name);
+        if (!type.HasMember)
+        {
+            return [];
+        }
+
+        switch (type)
+        {
+            case LuaNamedType namedType:
+            {
+                var name = namedType.Name;
+                if (name == "global")
+                {
+                    return QueryAllGlobal();
+                }
+
+                return TypeMembers.Query(name);
+            }
+            case GlobalNameType globalNameType:
+            {
+                var name = globalNameType.Name;
+                return GlobalVariableMembers.Query(name);
+            }
+            case LuaVariableRefType variableRefType:
+            {
+                return DocumentVariableMembers.Query(variableRefType.Id);
+            }
+            case LuaDocTableType docTableType:
+            {
+                return DocumentVariableMembers.Query(docTableType.DocTablePtr.UniqueId);
+            }
+            case LuaTableLiteralType luaTableLiteral:
+            {
+                return DocumentVariableMembers.Query(luaTableLiteral.TableExprPtr.UniqueId);
+            }
+        }
+
+        return [];
     }
 
     public IEnumerable<IDeclaration> QueryGlobals(string name)
@@ -308,5 +384,22 @@ public class WorkspaceIndex : IQueryableIndex
     public LuaDeclarationTree? QueryDeclarationTree(LuaDocumentId documentId)
     {
         return DocumentDeclarationTrees.GetValueOrDefault(documentId);
+    }
+
+    public LuaType? QueryRelatedGlobalType(string name)
+    {
+        var types = GlobalRelationTypes.Query(name).ToList();
+        if (types.Count == 0)
+        {
+            return null;
+        }
+        else if (types.Count == 1)
+        {
+            return types[0];
+        }
+        else
+        {
+            return new LuaUnionType(types);
+        }
     }
 }
