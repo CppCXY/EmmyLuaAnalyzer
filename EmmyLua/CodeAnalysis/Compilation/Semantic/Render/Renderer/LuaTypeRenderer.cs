@@ -188,6 +188,12 @@ public static class LuaTypeRenderer
 
     private static void InnerRenderType(LuaType type, LuaRenderContext renderContext, int level)
     {
+        // 防止递归过深
+        if (level > 10)
+        {
+            return;
+        }
+
         renderContext.AddTypeLink(type);
         switch (type)
         {
@@ -346,6 +352,12 @@ public static class LuaTypeRenderer
 
     private static void RenderUnionType(LuaUnionType unionType, LuaRenderContext renderContext, int level)
     {
+        if (level > 3)
+        {
+            renderContext.Append("[...]");
+            return;
+        }
+
         if (unionType.UnionTypes.Count == 2 && unionType.UnionTypes.Contains(Builtin.Nil))
         {
             var newType = unionType.Remove(Builtin.Nil);

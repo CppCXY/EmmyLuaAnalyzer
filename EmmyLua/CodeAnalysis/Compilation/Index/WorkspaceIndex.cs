@@ -388,18 +388,6 @@ public class WorkspaceIndex : IQueryableIndex
 
     public LuaType? QueryRelatedGlobalType(string name)
     {
-        var types = GlobalRelationTypes.Query(name).ToList();
-        if (types.Count == 0)
-        {
-            return null;
-        }
-        else if (types.Count == 1)
-        {
-            return types[0];
-        }
-        else
-        {
-            return new LuaUnionType(types);
-        }
+        return GlobalRelationTypes.Query(name).FirstOrDefault();
     }
 }
