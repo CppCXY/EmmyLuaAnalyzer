@@ -8,15 +8,13 @@ public interface IQueryableIndex
 
     IEnumerable<IDeclaration> QueryMembers(LuaType type);
 
-    IEnumerable<IDeclaration> QueryGlobals(string name);
+    IDeclaration? QueryGlobals(string name);
 
     IEnumerable<LuaType> QuerySupers(string name);
 
     IEnumerable<string> QuerySubTypes(string name);
 
     IEnumerable<IDeclaration> QueryNamedTypeDefinitions(string name);
-
-    IEnumerable<LuaType> QueryAliasOriginTypes(string name);
 
     IEnumerable<IDeclaration> QueryGenericParams(string name);
 

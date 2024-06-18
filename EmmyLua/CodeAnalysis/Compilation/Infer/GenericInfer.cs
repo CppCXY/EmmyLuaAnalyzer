@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -14,13 +13,16 @@ public static class GenericInfer
         Dictionary<string, LuaType> genericReplace,
         SearchContext context)
     {
-        if (type is LuaTemplateType templateType && expr is LuaLiteralExprSyntax {Literal: LuaStringToken {} stringToken})
+        if (type is LuaTemplateType templateType && expr is LuaLiteralExprSyntax
+            {
+                Literal: LuaStringToken { } stringToken
+            })
         {
             TemplateTypeInstantiateByString(templateType, stringToken, genericParameter, genericReplace, context);
             return;
         }
 
-        var exprType = context.Infer(expr);
+        var exprType = context.InferAndUnwrap(expr);
         InferInstantiateByType(type, exprType, genericParameter, genericReplace, context);
     }
 
@@ -32,7 +34,7 @@ public static class GenericInfer
         SearchContext context
     )
     {
-        InferInstantiateByExpandTypeAndTypes(expandType, expr.Select(context.Infer), genericParameter, genericReplace,
+        InferInstantiateByExpandTypeAndTypes(expandType, expr.Select(context.InferAndUnwrap), genericParameter, genericReplace,
             context);
     }
 
@@ -173,7 +175,7 @@ public static class GenericInfer
                 keyType = keyType.Union(Builtin.String);
             }
 
-            var fieldValueType = context.Infer(fieldSyntax.Value);
+            var fieldValueType = context.InferAndUnwrap(fieldSyntax.Value);
             valueType = valueType.Union(fieldValueType);
         }
 
@@ -216,7 +218,7 @@ public static class GenericInfer
                 {
                     if (field.IsValue)
                     {
-                        var fieldValueType = context.Infer(field.Value);
+                        var fieldValueType = context.InferAndUnwrap(field.Value);
                         valueType = valueType.Union(fieldValueType);
                     }
                 }
@@ -296,7 +298,8 @@ public static class GenericInfer
                 else
                 {
                     var rightElementType = tupleType2.TupleDeclaration[i].Type;
-                    InferInstantiateByType(leftElementType, rightElementType, genericParameter, genericReplace, context);
+                    InferInstantiateByType(leftElementType, rightElementType, genericParameter, genericReplace,
+                        context);
                 }
             }
         }

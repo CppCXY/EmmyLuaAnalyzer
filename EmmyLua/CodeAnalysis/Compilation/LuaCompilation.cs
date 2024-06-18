@@ -2,9 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;

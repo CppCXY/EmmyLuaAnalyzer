@@ -137,7 +137,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             foreach (var type in _aliasExpand)
             {
                 var name = type.Name;
-                var originType = SearchContext.Compilation.Db.QueryAliasOriginTypes(name).FirstOrDefault();
+                var originType = SearchContext.Compilation.Db.QueryAliasOriginTypes(name);
                 if (originType is LuaAggregateType aggregateType)
                 {
                     LuaTypeRenderer.RenderAliasMember(name, aggregateType, this);

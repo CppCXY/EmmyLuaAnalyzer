@@ -41,6 +41,11 @@ public class LuaType(LuaTypeAttribute attribute) : IEquatable<LuaType>
     {
         return this;
     }
+
+    public virtual LuaType UnwrapType(SearchContext context)
+    {
+        return this;
+    }
 }
 
 public class LuaNamedType(
@@ -708,6 +713,11 @@ public class LuaVariableRefType(SyntaxElementId id)
     {
         return Id.GetHashCode();
     }
+
+    public override LuaType UnwrapType(SearchContext context)
+    {
+        return context.Compilation.Db.QueryTypeFromId(Id) ?? this;
+    }
 }
 
 public class GlobalNameType(string name)
@@ -728,6 +738,11 @@ public class GlobalNameType(string name)
     public override int GetHashCode()
     {
         return Name.GetHashCode();
+    }
+
+    public override LuaType UnwrapType(SearchContext context)
+    {
+        return context.Compilation.Db.QueryRelatedGlobalType(Name) ?? this;
     }
 }
 

@@ -18,7 +18,7 @@ public static class MethodInfer
 
     struct SignatureMatchResult
     {
-        public static readonly SignatureMatchResult NotMatch = new SignatureMatchResult
+        public static readonly SignatureMatchResult NotMatch = new()
         {
             MatchType = SignatureMatchType.DoNotMatch,
             MatchCount = 0
@@ -67,7 +67,6 @@ public static class MethodInfer
             return !(left < right);
         }
     }
-
 
     public static LuaSignature FindPerfectMatchSignature(
         LuaMethodType methodType,

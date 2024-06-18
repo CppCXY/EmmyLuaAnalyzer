@@ -43,6 +43,11 @@ public class SearchContext
         return ElementInfer.Infer(element);
     }
 
+    public LuaType InferAndUnwrap(LuaSyntaxElement? element)
+    {
+        return Infer(element).UnwrapType(this);
+    }
+
     public void ClearMemberCache(LuaType luaType)
     {
         Members.ClearMember(luaType);

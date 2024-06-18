@@ -133,7 +133,7 @@ public class Members(SearchContext context)
             var namedTypeKind = namedType.GetTypeKind(context);
             if (namedTypeKind == NamedTypeKind.Alias)
             {
-                var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name).FirstOrDefault();
+                var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
                 if (originType is not null)
                 {
                     return GetMembers(originType);

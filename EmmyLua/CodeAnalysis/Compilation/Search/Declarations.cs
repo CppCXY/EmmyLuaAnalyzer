@@ -116,7 +116,7 @@ public class Declarations(SearchContext context)
 
         if (nameExpr.Name is { } name)
         {
-            return context.Compilation.Db.QueryGlobals(name.RepresentText).FirstOrDefault();
+            return context.Compilation.Db.QueryGlobals(name.RepresentText);
         }
 
         return null;

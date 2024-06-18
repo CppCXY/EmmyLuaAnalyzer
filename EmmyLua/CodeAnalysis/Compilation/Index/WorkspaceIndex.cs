@@ -12,13 +12,13 @@ public class WorkspaceIndex : IQueryableIndex
 {
     public IndexStorage<string, LuaDeclaration> TypeMembers { get; } = new();
 
-    public IndexStorage<SyntaxElementId, LuaDeclaration> DocumentVariableMembers { get; } = new();
+    private IndexStorage<SyntaxElementId, LuaDeclaration> DocumentVariableMembers { get; } = new();
 
-    public IndexStorage<string, LuaDeclaration> GlobalVariableMembers { get; } = new();
+    private IndexStorage<string, LuaDeclaration> GlobalVariableMembers { get; } = new();
 
-    public InFiledDictionary<SyntaxElementId, string> ParentType { get; } = new();
+    public UniqueIndexStorage<SyntaxElementId, string> ParentType { get; } = new();
 
-    private IndexStorage<string, LuaDeclaration> Globals { get; } = new();
+    private UniqueIndexStorage<string, LuaDeclaration> Globals { get; } = new();
 
     private IndexStorage<string, LuaType> Supers { get; } = new();
 
@@ -26,11 +26,11 @@ public class WorkspaceIndex : IQueryableIndex
 
     private IndexStorage<string, LuaDeclaration> NamedTypeDefinition { get; } = new();
 
-    public InFiledDictionary<SyntaxElementId, LuaType> IdRelatedType { get; } = new();
+    public UniqueIndexStorage<SyntaxElementId, LuaType> IdRelatedType { get; } = new();
 
-    public IndexStorage<string, LuaType> GlobalRelationTypes { get; } = new();
+    public UniqueIndexStorage<string, LuaType> GlobalRelationTypes { get; } = new();
 
-    private IndexStorage<string, LuaType> AliasTypes { get; } = new();
+    private UniqueIndexStorage<string, LuaType> AliasTypes { get; } = new();
 
     private IndexStorage<string, LuaDeclaration> GenericParams { get; } = new();
 
@@ -93,7 +93,7 @@ public class WorkspaceIndex : IQueryableIndex
                 var name = namedType.Name;
                 if (name == "global")
                 {
-                    AddGlobal(documentId, luaDeclaration.Name, luaDeclaration);
+                    AddGlobal(documentId, false, luaDeclaration.Name, luaDeclaration);
                     return;
                 }
 
@@ -127,7 +127,7 @@ public class WorkspaceIndex : IQueryableIndex
     private void AddNamedTypeMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         TypeMembers.Add(documentId, name, luaDeclaration);
-        ParentType.Add(documentId, luaDeclaration.UniqueId, name);
+        ParentType.Update(documentId, luaDeclaration.UniqueId, name);
     }
 
     private void AddLocalVariableMember(SyntaxElementId id, LuaDeclaration luaDeclaration)
@@ -140,9 +140,20 @@ public class WorkspaceIndex : IQueryableIndex
         GlobalVariableMembers.Add(documentId, name, luaDeclaration);
     }
 
-    public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddGlobal(LuaDocumentId documentId, bool forceDefine, string name, LuaDeclaration luaDeclaration)
     {
-        Globals.Add(documentId, name, luaDeclaration);
+        if (forceDefine) // forceUpdate
+        {
+            Globals.Update(documentId, name, luaDeclaration);
+            return;
+        }
+
+        if (Globals.Query(name) is not null)
+        {
+            return;
+        }
+
+        Globals.Update(documentId, name, luaDeclaration);
     }
 
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
@@ -168,17 +179,29 @@ public class WorkspaceIndex : IQueryableIndex
         LuaDeclaration declaration)
     {
         AddTypeDefinition(documentId, name, declaration);
-        AliasTypes.Add(documentId, name, baseType);
+        AliasTypes.Update(documentId, name, baseType);
     }
 
     public void AddIdRelatedType(SyntaxElementId id, LuaType relatedType)
     {
-        IdRelatedType.Add(id.DocumentId, id, relatedType);
+        IdRelatedType.Update(id.DocumentId, id, relatedType);
     }
 
     public void AddGlobalRelationType(LuaDocumentId documentId, string name, LuaType type)
     {
-        GlobalRelationTypes.Add(documentId, name, type);
+        if (type.Equals(Builtin.Unknown))
+        {
+            return;
+        }
+
+        if (GlobalRelationTypes.Query(name) is { } oldType)
+        {
+            GlobalRelationTypes.Update(documentId, name, oldType.Union(type));
+        }
+        else
+        {
+            GlobalRelationTypes.Update(documentId, name, type);
+        }
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
@@ -303,7 +326,7 @@ public class WorkspaceIndex : IQueryableIndex
         return [];
     }
 
-    public IEnumerable<IDeclaration> QueryGlobals(string name)
+    public IDeclaration? QueryGlobals(string name)
     {
         return Globals.Query(name);
     }
@@ -323,7 +346,7 @@ public class WorkspaceIndex : IQueryableIndex
         return NamedTypeDefinition.Query(name);
     }
 
-    public IEnumerable<LuaType> QueryAliasOriginTypes(string name)
+    public LuaType? QueryAliasOriginTypes(string name)
     {
         return AliasTypes.Query(name);
     }
@@ -388,6 +411,6 @@ public class WorkspaceIndex : IQueryableIndex
 
     public LuaType? QueryRelatedGlobalType(string name)
     {
-        return GlobalRelationTypes.Query(name).FirstOrDefault();
+        return GlobalRelationTypes.Query(name);
     }
 }

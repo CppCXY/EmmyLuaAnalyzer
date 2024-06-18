@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -98,24 +97,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
                             {
                                 var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
-                                if (parameter.Info.DeclarationType is null)
+                                if (parameter.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                                 {
-                                    parameter.Info = parameter.Info with
-                                    {
-                                        DeclarationType = multiReturnType.GetElementType(i)
-                                    };
+                                    Context.Compilation.Db.WorkspaceIndex.AddIdRelatedType(luaVariableRefType.Id,
+                                        multiReturnType.GetElementType(i));
                                 }
                             }
                         }
                         else if (unResolvedForRangeParameter.ParameterLuaDeclarations.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
-                            if (firstDeclaration.Info.DeclarationType is null)
+                            if (firstDeclaration.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                             {
-                                firstDeclaration.Info = firstDeclaration.Info with
-                                {
-                                    DeclarationType = returnType
-                                };
+                                Context.Compilation.Db.WorkspaceIndex.AddIdRelatedType(luaVariableRefType.Id,
+                                    returnType);
                             }
                         }
                     }

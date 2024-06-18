@@ -25,41 +25,9 @@ public static class ExpressionInfer
         };
     }
 
-    private static LuaType UnwrapType(LuaType luaType, SearchContext context)
-    {
-        switch (luaType)
-        {
-            case LuaVariableRefType variableRefType:
-            {
-                var ty = context.Compilation.Db.QueryTypeFromId(variableRefType.Id);
-                if (ty is not null)
-                {
-                    return ty;
-                }
-
-                return variableRefType;
-            }
-            case GlobalNameType globalNameType:
-            {
-                var ty = context.Compilation.Db.QueryRelatedGlobalType(globalNameType.Name);
-                if (ty is not null)
-                {
-                    return ty;
-                }
-
-                return globalNameType;
-            }
-
-            default:
-            {
-                return luaType;
-            }
-        }
-    }
-
     private static LuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
-        var exprTy = UnwrapType(context.Infer(unaryExpr.Expression), context);
+        var exprTy = context.Infer(unaryExpr.Expression).UnwrapType(context);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(unaryExpr.Operator);
         var op = context.GetBestMatchedUnaryOperator(opKind, exprTy);
 
@@ -126,8 +94,8 @@ public static class ExpressionInfer
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
-        var leftTy = UnwrapType(context.Infer(binaryExpr.LeftExpr), context);
-        var rightTy = UnwrapType(context.Infer(binaryExpr.RightExpr), context);
+        var leftTy = context.Infer(binaryExpr.LeftExpr).UnwrapType(context);
+        var rightTy = context.Infer(binaryExpr.RightExpr).UnwrapType(context);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
         var bop = context.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
         if (bop is not null)

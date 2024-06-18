@@ -48,9 +48,9 @@ public class IndexFacade : IQueryableIndex
         return WorkspaceIndex.TypeMembers.QueryAll();
     }
 
-    public IEnumerable<IDeclaration> QueryGlobals(string name)
+    public IDeclaration? QueryGlobals(string name)
     {
-        return QueryableIndexes.SelectMany(it => it.QueryGlobals(name));
+        return QueryableIndexes.Select(index => index.QueryGlobals(name)).OfType<IDeclaration>().FirstOrDefault();
     }
 
     public IEnumerable<IDeclaration> QueryAllGlobal()
@@ -75,12 +75,12 @@ public class IndexFacade : IQueryableIndex
 
     public LuaType? QueryTypeFromId(SyntaxElementId id)
     {
-        return WorkspaceIndex.IdRelatedType.Query(id.DocumentId, id);
+        return WorkspaceIndex.IdRelatedType.Query(id);
     }
 
-    public IEnumerable<LuaType> QueryAliasOriginTypes(string name)
+    public LuaType? QueryAliasOriginTypes(string name)
     {
-        return QueryableIndexes.SelectMany(it => it.QueryAliasOriginTypes(name));
+        return WorkspaceIndex.QueryAliasOriginTypes(name);
     }
 
     public LuaType? QueryModuleType(LuaDocumentId documentId)
@@ -149,7 +149,7 @@ public class IndexFacade : IQueryableIndex
 
     public LuaNamedType? QueryParentType(LuaSyntaxNode node)
     {
-        var parentType = WorkspaceIndex.ParentType.Query(node.UniqueId.DocumentId, node.UniqueId);
+        var parentType = WorkspaceIndex.ParentType.Query(node.UniqueId);
         if (parentType is not null)
         {
             return new LuaNamedType(parentType);
@@ -162,7 +162,7 @@ public class IndexFacade : IQueryableIndex
     {
         if (declaration is LuaDeclaration luaDeclaration)
         {
-            var parentType = WorkspaceIndex.ParentType.Query(luaDeclaration.UniqueId.DocumentId, luaDeclaration.UniqueId);
+            var parentType = WorkspaceIndex.ParentType.Query(luaDeclaration.UniqueId);
             if (parentType is not null)
             {
                 return new LuaNamedType(parentType);
@@ -209,7 +209,7 @@ public class IndexFacade : IQueryableIndex
 
     public LuaType? QueryRelatedType(SyntaxElementId id)
     {
-        return WorkspaceIndex.IdRelatedType.Query(id.DocumentId, id);
+        return WorkspaceIndex.IdRelatedType.Query(id);
     }
 
     public LuaType? QueryRelatedGlobalType(string name)

@@ -85,8 +85,7 @@ public static class LuaTypeRenderer
         var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
         if (namedTypeKind == NamedTypeKind.Alias)
         {
-            var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name)
-                .FirstOrDefault();
+            var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
             if (originType is LuaAggregateType)
             {
                 renderContext.AddAliasExpand(namedType);
@@ -331,8 +330,7 @@ public static class LuaTypeRenderer
         {
             if (namedTypeKind == NamedTypeKind.Alias)
             {
-                var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name)
-                    .FirstOrDefault();
+                var originType = renderContext.SearchContext.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
                 if (originType is not null)
                 {
                     InnerRenderType(originType, renderContext, 1);

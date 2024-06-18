@@ -93,8 +93,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
     private void AddAliasParamCompletion(LuaNamedType namedType, CompleteContext context)
     {
         var originType = context.SemanticModel.Compilation.Db
-            .QueryAliasOriginTypes(namedType.Name)
-            .FirstOrDefault();
+            .QueryAliasOriginTypes(namedType.Name);
         if (originType is LuaAggregateType aggregateType)
         {
             AddAggregateTypeCompletion(aggregateType, context);

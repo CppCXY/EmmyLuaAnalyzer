@@ -605,7 +605,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             );
                             AddReference(ReferenceKind.Definition, declaration, nameExpr);
                             AnalyzeDeclarationDoc(declaration, luaAssignStat);
-                            WorkspaceIndex.AddGlobal(DocumentId, name.RepresentText, declaration);
+
                             var unResolveDeclaration =
                                 new UnResolvedDeclaration(declaration, relatedExpr, ResolveState.UnResolvedType);
                             AddUnResolved(unResolveDeclaration);
@@ -624,6 +624,8 @@ public class DeclarationBuilder : ILuaElementWalker
                                 }
                             }
 
+                            WorkspaceIndex.AddGlobal(DocumentId, unResolveDeclaration.IsTypeDeclaration,
+                                name.RepresentText, declaration);
                             AddDeclaration(nameExpr.Position, declaration);
                         }
                         else
@@ -713,7 +715,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         DeclarationFeature.Global
                     );
                     AnalyzeDeclarationDoc(declaration, luaFuncStat);
-                    WorkspaceIndex.AddGlobal(DocumentId, name2.RepresentText, declaration);
+                    WorkspaceIndex.AddGlobal(DocumentId, true, name2.RepresentText, declaration);
                     AddDeclaration(luaFuncStat.NameExpr.Position, declaration);
                     var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
