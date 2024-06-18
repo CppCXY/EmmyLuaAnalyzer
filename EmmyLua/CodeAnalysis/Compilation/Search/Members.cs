@@ -13,6 +13,8 @@ public class Members(SearchContext context)
 
     private Dictionary<LuaType, List<IDeclaration>> BaseMemberCaches { get; } = new();
 
+    private HashSet<LuaType> MemberGuard { get; } = new();
+
     public IEnumerable<IDeclaration> GetRawMembers(LuaType luaType)
     {
         if (!luaType.HasMember)
@@ -120,7 +122,7 @@ public class Members(SearchContext context)
         return distinctMembers;
     }
 
-    public IEnumerable<IDeclaration> GetMembers(LuaType luaType)
+    private IEnumerable<IDeclaration> InnerGetMembers(LuaType luaType)
     {
         if (luaType is LuaGenericType genericType)
         {
@@ -132,15 +134,9 @@ public class Members(SearchContext context)
             if (namedTypeKind == NamedTypeKind.Alias)
             {
                 var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name).FirstOrDefault();
-                // TODO 防止错误递归 ---@alias a a
-                if (originType is LuaNamedType { Name: { } originName } && originName == namedType.Name)
+                if (originType is not null)
                 {
-                    return [];
-                }
-                // 不再调用GetMembers 解构, 防止错误递归: ---@alias a b 和 ---@alias b a
-                else if (originType is not null)
-                {
-                    return GetNormalTypeMembers(originType);
+                    return GetMembers(originType);
                 }
             }
 
@@ -148,7 +144,8 @@ public class Members(SearchContext context)
         }
         else if (luaType is LuaUnionType unionType)
         {
-            return unionType.UnionTypes.SelectMany(GetMembers);
+            // 这样是为了防止错误递归 ---@alias aaa aaa | global
+            return unionType.UnionTypes.SelectMany(GetMembers).ToList();
         }
         else if (luaType is LuaTupleType tupleType)
         {
@@ -156,6 +153,23 @@ public class Members(SearchContext context)
         }
 
         return GetNormalTypeMembers(luaType);
+    }
+
+    public IEnumerable<IDeclaration> GetMembers(LuaType luaType)
+    {
+        if (MemberGuard.Add(luaType))
+        {
+            try
+            {
+                return InnerGetMembers(luaType);
+            }
+            finally
+            {
+                MemberGuard.Remove(luaType);
+            }
+        }
+
+        return [];
     }
 
     private IEnumerable<IDeclaration> GetGenericMembers(LuaGenericType genericType)

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
@@ -57,8 +58,13 @@ public static class TypeInfer
 
     private static LuaType InferUnionType(LuaDocUnionTypeSyntax unionType, SearchContext context)
     {
-        var types = unionType.UnionTypes.Select(context.Infer);
-        return new LuaUnionType(types.ToList());
+        var types = unionType.UnionTypes.Select(context.Infer).ToList();
+        if (types.Count == 1)
+        {
+            return types[0];
+        }
+
+        return new LuaUnionType(types);
     }
 
     private static LuaType InferLiteralType(LuaDocLiteralTypeSyntax literalType, SearchContext context)
@@ -76,7 +82,7 @@ public static class TypeInfer
         return Builtin.Unknown;
     }
 
-    public static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
+    private static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
         var typedParameters = new List<IDeclaration>();
         foreach (var typedParam in funcType.ParamList)
