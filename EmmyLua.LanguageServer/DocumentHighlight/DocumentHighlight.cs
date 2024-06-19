@@ -6,14 +6,13 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace EmmyLua.LanguageServer.DocumentHighlight;
 
 // TODO
-public class DocumentHighlight(ServerContext _) : DocumentHighlightHandlerBase
+// ReSharper disable once UnusedType.Global
+public class DocumentHighlight : DocumentHighlightHandlerBase
 {
     protected override DocumentHighlightRegistrationOptions CreateRegistrationOptions(DocumentHighlightCapability capability,
         ClientCapabilities clientCapabilities)
     {
-        return new()
-        {
-        };
+        return new();
     }
 
     public override Task<DocumentHighlightContainer?> Handle(DocumentHighlightParams request, CancellationToken cancellationToken)

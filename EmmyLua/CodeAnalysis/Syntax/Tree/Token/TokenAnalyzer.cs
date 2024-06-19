@@ -342,17 +342,21 @@ public static class TokenAnalyzer
                                     break;
                                 }
 
-                                var codePoint = Convert.ToInt32(unicodeHex.ToString(), 16);
-                                if (codePoint > 0x10FFFF)
+                                var codePoint = Convert.ToUInt32(unicodeHex.ToString(), 16);
+                                // lua中源码写的范围是这样的:
+                                // esccheck(ls, r <= (0x7FFFFFFFu >> 4), "UTF-8 value too large");
+                                //  0x07FFFFFF = (0x7FFFFFFFu >> 4)
+                                if (codePoint >  0x07FFFFFF)
                                 {
                                     tree.PushDiagnostic(new Diagnostic(DiagnosticSeverity.Error,
                                         DiagnosticCode.SyntaxError,
-                                        $"Invalid unicode escape sequence '{unicodeHex}', the code point is too large",
+                                        $"Invalid unicode escape sequence '{unicodeHex}', the UTF-8 value too large",
                                         new SourceRange(sourceRange.StartOffset + i - j, unicodeHex.Length)));
                                     break;
                                 }
 
-                                sb.Append(char.ConvertFromUtf32(codePoint));
+                                LuaUtf8Esc(codePoint, sb);
+                                // sb.Append(char.ConvertFromUtf32(codePoint));
                             }
                             catch (OverflowException)
                             {
@@ -414,6 +418,47 @@ public static class TokenAnalyzer
         }
 
         tree.SetStringTokenValue(index, sb.ToString());
+    }
+
+    // lua源码实现
+    // int luaO_utf8esc (char *buff, unsigned long x) {
+    //     int n = 1;  /* number of bytes put in buffer (backwards) */
+    //     lua_assert(x <= 0x7FFFFFFFu);
+    //     if (x < 0x80)  /* ascii? */
+    //         buff[UTF8BUFFSZ - 1] = cast_char(x);
+    //     else {  /* need continuation bytes */
+    //         unsigned int mfb = 0x3f;  /* maximum that fits in first byte */
+    //         do {  /* add continuation bytes */
+    //             buff[UTF8BUFFSZ - (n++)] = cast_char(0x80 | (x & 0x3f));
+    //             x >>= 6;  /* remove added bits */
+    //             mfb >>= 1;  /* now there is one less bit available in first byte */
+    //         } while (x > mfb);  /* still needs continuation byte? */
+    //         buff[UTF8BUFFSZ - n] = cast_char((~mfb << 1) | x);  /* add first byte */
+    //     }
+    //     return n;
+    // }
+    private static void LuaUtf8Esc(uint codePoint, StringBuilder sb)
+    {
+        var buff = new byte[8];
+        var n = 1;
+        if (codePoint < 0x80)
+        {
+            buff[^1] = (byte)codePoint;
+        }
+        else
+        {
+            var mfb = 0x3f;
+            do
+            {
+                buff[^n++] = (byte)(0x80 | (codePoint & 0x3f));
+                codePoint >>= 6;
+                mfb >>= 1;
+            } while (codePoint > mfb);
+
+            buff[^n] = (byte)((uint)(~mfb << 1) | codePoint);
+        }
+
+        sb.Append(Encoding.UTF8.GetString(buff[^n..]));
     }
 
     // parse [[xxxx]]
