@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.LanguageServer.Server;
+using EmmyLua.LanguageServer.Server.Render;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
@@ -34,6 +34,8 @@ public class CompleteContext
         false,
         100
     );
+    
+    public LuaRenderBuilder RenderBuilder { get; }
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public CompleteContext(SemanticModel semanticModel, Position position, CancellationToken cancellationToken,
@@ -47,6 +49,7 @@ public class CompleteContext
             semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
         CompletionConfig = context.SettingManager.GetCompletionConfig();
         ServerContext = context;
+        RenderBuilder = new LuaRenderBuilder(semanticModel.Context);
     }
 
     public void Add(CompletionItem item)

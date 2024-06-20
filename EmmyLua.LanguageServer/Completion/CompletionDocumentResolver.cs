@@ -1,7 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.LanguageServer.Server;
+using EmmyLua.LanguageServer.Server.Render;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
@@ -14,7 +14,8 @@ public class CompletionDocumentResolver
         ExpandAlias = true,
         ShowTypeLink = false,
         InHint = false,
-        MaxStringPreviewLength = 100
+        MaxStringPreviewLength = 100,
+        InHover = true
     };
     
     public CompletionItem Resolve(CompletionItem completionItem, ServerContext context)
@@ -41,12 +42,13 @@ public class CompletionDocumentResolver
             var id = new LuaDocumentId((int) completionItem.Data);
             if (context.GetSemanticModel(id) is {} semanticModel)
             {
+                var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
                 completionItem = completionItem with
                 {
                     Documentation = new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = semanticModel.RenderBuilder.RenderModule(semanticModel.Document, RenderFeature)
+                        Value = renderBuilder.RenderModule(semanticModel.Document, RenderFeature)
                     }
                 };
             }
@@ -70,12 +72,13 @@ public class CompletionDocumentResolver
                 
                 if (context.GetSemanticModel(ptr.DocumentId) is {} semanticModel)
                 {
+                    var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
                     return completionItem with
                     {
                         Documentation = new MarkupContent()
                         {
                             Kind = MarkupKind.Markdown,
-                            Value = semanticModel.RenderBuilder.Render(node, RenderFeature)
+                            Value = renderBuilder.Render(node, RenderFeature)
                         }
                     };
                 }

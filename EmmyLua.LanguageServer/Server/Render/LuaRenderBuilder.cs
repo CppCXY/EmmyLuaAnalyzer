@@ -1,17 +1,17 @@
 ﻿using System.Globalization;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Server.Render.Renderer;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+namespace EmmyLua.LanguageServer.Server.Render;
 
 public class LuaRenderBuilder(SearchContext context)
 {
-    public string Render(LuaSyntaxElement element, LuaRenderFeature feature)
+    public string Render(LuaSyntaxElement? element, LuaRenderFeature feature)
     {
         var renderContext = new LuaRenderContext(context, feature);
         switch (element)
@@ -144,7 +144,8 @@ public class LuaRenderBuilder(SearchContext context)
 
             if (paramSyntax.Description is { } description)
             {
-                renderContext.AddSeparator();
+                renderContext.AppendLine();
+                // renderContext.AddSeparator();
                 renderContext.Append(description.CommentText);
             }
         }

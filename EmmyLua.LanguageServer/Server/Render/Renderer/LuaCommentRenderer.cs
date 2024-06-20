@@ -1,11 +1,13 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
+namespace EmmyLua.LanguageServer.Server.Render.Renderer;
 
 public static class LuaCommentRenderer
 {
-    public static void RenderCommentDescription(IEnumerable<LuaCommentSyntax>? comments, LuaRenderContext renderContext)
+    private static void RenderCommentDescription(IEnumerable<LuaCommentSyntax>? comments,
+        LuaRenderContext renderContext)
     {
         if (comments is null)
         {
@@ -14,7 +16,8 @@ public static class LuaCommentRenderer
 
         foreach (var comment in comments)
         {
-            renderContext.AddSeparator();
+            // renderContext.AddSeparator();
+            renderContext.AppendLine();
             renderContext.Append(comment.CommentText);
         }
     }
@@ -48,7 +51,8 @@ public static class LuaCommentRenderer
         {
             if (tagParam.Name?.RepresentText == paramDeclaration.Name && tagParam.Description != null)
             {
-                renderContext.AddSeparator();
+                // renderContext.AddSeparator();
+                renderContext.AppendLine();
                 renderContext.Append(tagParam.Description.CommentText);
                 break;
             }
@@ -60,7 +64,8 @@ public static class LuaCommentRenderer
         var docField = fieldInfo.FieldDefPtr.ToNode(renderContext.SearchContext);
         if (docField is { Description.CommentText: { } commentText })
         {
-            renderContext.AddSeparator();
+            // renderContext.AddSeparator();
+            renderContext.AppendLine();
             renderContext.Append(commentText);
         }
     }
@@ -72,7 +77,8 @@ public static class LuaCommentRenderer
         {
             foreach (var comment in comments)
             {
-                renderContext.AddSeparator();
+                // renderContext.AddSeparator();
+                renderContext.AppendLine();
                 renderContext.Append(comment.CommentText);
             }
         }
@@ -83,7 +89,8 @@ public static class LuaCommentRenderer
         var enumFieldSyntax = enumFieldInfo.EnumFieldDefPtr.ToNode(renderContext.SearchContext);
         if (enumFieldSyntax is { Description: { CommentText: { } commentText } })
         {
-            renderContext.AddSeparator();
+            // renderContext.AddSeparator();
+            renderContext.AppendLine();
             renderContext.Append(commentText);
         }
     }
@@ -93,7 +100,8 @@ public static class LuaCommentRenderer
         var typeDefine = namedTypeInfo.TypeDefinePtr.ToNode(renderContext.SearchContext);
         if (typeDefine is { Description: { CommentText: { } commentText } })
         {
-            renderContext.AddSeparator();
+            // renderContext.AddSeparator();
+            renderContext.AppendLine();
             renderContext.Append(commentText);
         }
     }
@@ -113,52 +121,61 @@ public static class LuaCommentRenderer
                 return;
             }
 
-            renderContext.AddSeparator();
-            renderContext.WrapperLanguage("plaintext", () =>
+            var tagRenderList = new List<string>();
+            foreach (var tagParam in tagParams)
             {
-                renderContext.Append("params: ");
-                var indent = string.Empty;
-                foreach (var tagParam in tagParams)
+                if (tagParam.Description is { CommentText: {} commentText })
                 {
-                    var nameLength = 0;
-                    if (tagParam.Name is { RepresentText: {} name })
+                    // var detailList = details.ToList();
+                    // if (detailList.Count == 0)
+                    // {
+                    //     continue;
+                    // }
+                    
+                    var renderString = new StringBuilder();
+                    // var nameLength = 0;
+                    if (tagParam.Name is { RepresentText: { } name })
                     {
-                        renderContext.Append($"{indent}{name}");
-                        nameLength = name.Length;
+                        renderString.Append($"@param `{name}`");
+                        // nameLength = name.Length;
                     }
                     else if (tagParam.VarArgs is not null)
                     {
-                        renderContext.Append($"{indent}...");
-                        nameLength = 3;
+                        renderString.Append("@param `...`");
+                        // nameLength = 3;
                     }
-
-                    if (indent.Length == 0)
-                    {
-                        indent = new string(' ', 8); // 8 spaces
-                    }
-
-                    if (tagParam.Description is { Details: {} details })
-                    {
-                        var detailIndent = " - ";
-                        var detailList = details.ToList();
-                        for (var index = 0; index < detailList.Count; index++)
-                        {
-                            var detail = detailList[index];
-                            renderContext.Append($"{detailIndent}{detail.RepresentText}");
-                            if (index < detailList.Count - 1)
-                            {
-                                renderContext.AppendLine();
-                            }
-
-                            if (index == 0 && detailList.Count > 1)
-                            {
-                                detailIndent = new string(' ', 8 + nameLength + 3); // 8 spaces + nameLength + 3 spaces
-                            }
-                        }
-                    }
-                    renderContext.AppendLine();
+                    
+                    // var detailIndent = " - ";
+                    renderString.Append($" - {commentText}");
+                    // for (var index = 0; index < detailList.Count; index++)
+                    // {
+                    //     var detail = detailList[index];
+                    //     renderString.Append($"{detailIndent}{detail.RepresentText}");
+                    //     if (index < detailList.Count - 1)
+                    //     {
+                    //         renderString.Append("\n\n");
+                    //     }
+                    //
+                    //     if (index == 0 && detailList.Count > 1)
+                    //     {
+                    //         detailIndent = new string(' ', 7 + nameLength + 3); // 8 spaces + nameLength + 3 spaces
+                    //     }
+                    // }
+                    
+                    tagRenderList.Add(renderString.ToString());
                 }
-            });
+                
+            }
+            
+            if (tagRenderList.Count > 0)
+            {
+                renderContext.AppendLine();
+                foreach (var tagRender in tagRenderList)
+                {
+                    renderContext.Append(tagRender);
+                    renderContext.Append("\n\n");
+                }
+            }
         }
     }
 }

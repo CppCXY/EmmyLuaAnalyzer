@@ -44,7 +44,7 @@ public class ModuleProvider : ICompleteProviderBase
                     LabelDetails = new CompletionItemLabelDetails()
                     {
                         Detail = $" (in {module.ModulePath})",
-                        Description = context.SemanticModel.RenderBuilder.RenderType(retTy, context.RenderFeature)
+                        Description = context.RenderBuilder.RenderType(retTy, context.RenderFeature)
                     },
                     Data = module.DocumentId.Id.ToString(),
                     Command = AutoRequire.MakeCommand(

@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+﻿namespace EmmyLua.LanguageServer.Server.Render;
 
 public record LuaRenderFeature(
     // 展开alias
@@ -8,5 +8,6 @@ public record LuaRenderFeature(
     // Hint最大类型展示字数，超过则显示省略号
     bool InHint = false,
     // 字符串最大预览字数，超过则显示省略号
-    int MaxStringPreviewLength = 100
+    int MaxStringPreviewLength = 100,
+    bool InHover = false
 );

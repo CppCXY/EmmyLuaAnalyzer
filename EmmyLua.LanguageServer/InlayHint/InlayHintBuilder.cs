@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Server.Render;
 using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using InlayHintType = OmniSharp.Extensions.LanguageServer.Protocol.Models.InlayHint;
@@ -22,6 +22,7 @@ public class InlayHintBuilder
     public List<InlayHintType> Build(SemanticModel semanticModel, SourceRange range, InlayHintConfig config,
         CancellationToken cancellationToken)
     {
+        var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
         var syntaxTree = semanticModel.Document.SyntaxTree;
         var hints = new List<InlayHintType>();
         var sourceBlock = syntaxTree.SyntaxRoot.Block;
@@ -49,7 +50,7 @@ public class InlayHintBuilder
                     {
                         if (config.ParamHint)
                         {
-                            ClosureExprHint(semanticModel, hints, closureExpr, cancellationToken);
+                            ClosureExprHint(semanticModel, hints, closureExpr, renderBuilder, cancellationToken);
                         }
 
                         break;
@@ -58,7 +59,7 @@ public class InlayHintBuilder
                     {
                         if (config.IndexHint)
                         {
-                            IndexExprHint(semanticModel, hints, indexExpr, cancellationToken);
+                            IndexExprHint(semanticModel, hints, indexExpr, renderBuilder, cancellationToken);
                         }
 
                         break;
@@ -67,7 +68,7 @@ public class InlayHintBuilder
                     {
                         if (config.LocalHint)
                         {
-                            LocalNameHint(semanticModel, hints, localName, cancellationToken);
+                            LocalNameHint(semanticModel, hints, localName, renderBuilder, cancellationToken);
                         }
 
                         break;
@@ -203,6 +204,7 @@ public class InlayHintBuilder
 
     private void ClosureExprHint(SemanticModel semanticModel, List<InlayHintType> hints,
         LuaClosureExprSyntax closureExpr,
+        LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -230,7 +232,7 @@ public class InlayHintBuilder
                         {
                             Position = parameter.Range.EndOffset.ToLspPosition(semanticModel.Document),
                             Label = new StringOrInlayHintLabelParts(
-                                $":{semanticModel.RenderBuilder.RenderType(type, RenderFeature)}"),
+                                $":{renderBuilder.RenderType(type, RenderFeature)}"),
                             Kind = InlayHintKind.Parameter,
                             PaddingLeft = true
                         });
@@ -240,7 +242,11 @@ public class InlayHintBuilder
         }
     }
 
-    private void IndexExprHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaIndexExprSyntax indexExpr,
+    private void IndexExprHint(
+        SemanticModel semanticModel,
+        List<InlayHintType> hints,
+        LuaIndexExprSyntax indexExpr,
+        LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -255,7 +261,7 @@ public class InlayHintBuilder
                 {
                     Position = prefixExpr.Range.EndOffset.ToLspPosition(semanticModel.Document),
                     Label = new StringOrInlayHintLabelParts(
-                        $"// {semanticModel.RenderBuilder.RenderType(type, RenderFeature)}"),
+                        $"// {renderBuilder.RenderType(type, RenderFeature)}"),
                     Kind = InlayHintKind.Type,
                     PaddingLeft = true
                 });
@@ -263,7 +269,11 @@ public class InlayHintBuilder
         }
     }
 
-    private void LocalNameHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaLocalNameSyntax localName,
+    private void LocalNameHint(
+        SemanticModel semanticModel,
+        List<InlayHintType> hints,
+        LuaLocalNameSyntax localName,
+        LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -278,7 +288,7 @@ public class InlayHintBuilder
         {
             Position = localName.Range.EndOffset.ToLspPosition(semanticModel.Document),
             Label = new StringOrInlayHintLabelParts(
-                $":{semanticModel.RenderBuilder.RenderType(type, RenderFeature)}"),
+                $":{renderBuilder.RenderType(type, RenderFeature)}"),
             Kind = InlayHintKind.Type,
             PaddingLeft = true
         });

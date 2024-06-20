@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.LanguageServer.Server.Render.Renderer;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+namespace EmmyLua.LanguageServer.Server.Render;
 
 public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feature)
 {
@@ -106,26 +106,23 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
     {
         if (Feature.ShowTypeLink && _typeLinks.Count != 0)
         {
-            AddSeparator();
+            var gotoList = new List<string>();
             var typeList = _typeLinks.ToList();
-            for (var index = 0; index < typeList.Count; index++)
+            foreach (var typeName in typeList)
             {
-                if (index == 0)
-                {
-                    Append("Go to ");
-                }
-
-                var typeName = typeList[index];
                 var typeDeclaration = SearchContext.Compilation.Db.QueryNamedTypeDefinitions(typeName).FirstOrDefault();
                 if (typeDeclaration is not null)
                 {
-                    if (index > 0)
-                    {
-                        Append('|');
-                    }
-
-                    Append($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.UriLocation})");
+                    gotoList.Add($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.UriLocation})");
                 }
+            }
+            
+            if (gotoList.Count != 0)
+            {
+                AppendLine();
+                Append("Go to: ");
+                Append(string.Join("|", gotoList));
+                AppendLine();
             }
         }
     }

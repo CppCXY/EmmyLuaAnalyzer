@@ -147,8 +147,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         Kind = Kind,
                         LabelDetails = new CompletionItemLabelDetails()
                         {
-                            Description =
-                                CompleteContext.SemanticModel.RenderBuilder.RenderType(Type,
+                            Description = CompleteContext.RenderBuilder.RenderType(Type,
                                     CompleteContext.RenderFeature),
                         },
                         InsertText = InsertText,
@@ -263,7 +262,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             {
                 Detail = RenderSignatureParams(signature, colonDefine),
                 Description =
-                    CompleteContext.SemanticModel.RenderBuilder.RenderType(signature.ReturnType, CompleteContext.RenderFeature)
+                    CompleteContext.RenderBuilder.RenderType(signature.ReturnType, CompleteContext.RenderFeature)
             },
             Data = Data,
             Command = Command,

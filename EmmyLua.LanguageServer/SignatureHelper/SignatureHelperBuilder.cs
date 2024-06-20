@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Server.Render;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.SignatureHelper;
@@ -21,6 +21,7 @@ public class SignatureHelperBuilder
 
     public SignatureHelp? Build(SemanticModel semanticModel, LuaSyntaxToken triggerToken, SignatureHelpParams request)
     {
+        var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
         LuaCallExprSyntax callExpr = null!;
         LuaCallArgListSyntax callArgs = null!;
         if (!request.Context.IsRetrigger)
@@ -88,7 +89,8 @@ public class SignatureHelperBuilder
                 signatureInfos,
                 colonCall,
                 luaMethod.ColonDefine,
-                semanticModel
+                semanticModel,
+                renderBuilder
             );
         });
 
@@ -108,7 +110,8 @@ public class SignatureHelperBuilder
         List<SignatureInformation> signatureInfos,
         bool colonCall,
         bool colonDefine,
-        SemanticModel semanticModel
+        SemanticModel semanticModel,
+        LuaRenderBuilder renderBuilder
     )
     {
         var maxActiveParameter = 0;
@@ -147,7 +150,7 @@ public class SignatureHelperBuilder
                         Documentation = new StringOrMarkupContent(new MarkupContent()
                         {
                             Kind = MarkupKind.Markdown,
-                            Value = semanticModel.RenderSymbol(syntaxElement, RenderFeature)
+                            Value = renderBuilder.Render(syntaxElement, RenderFeature)
                         })
                     });
                 }
@@ -182,7 +185,7 @@ public class SignatureHelperBuilder
             }
 
             sb.Append(") -> ");
-            sb.Append(semanticModel.RenderBuilder.RenderType(returnType, RenderFeature with { ShowTypeLink = false }));
+            sb.Append(renderBuilder.RenderType(returnType, RenderFeature with { ShowTypeLink = false }));
 
             signatureInfos.Add(new SignatureInformation()
             {

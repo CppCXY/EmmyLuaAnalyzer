@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
-using EmmyLua.LanguageServer.Server;
+﻿using EmmyLua.LanguageServer.Server;
+using EmmyLua.LanguageServer.Server.Render;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -16,15 +16,14 @@ public class HoverHandler(
         false,
         true,
         false,
-        100
+        100,
+        true
     );
     
     protected override HoverRegistrationOptions CreateRegistrationOptions(HoverCapability capability,
         ClientCapabilities clientCapabilities)
     {
-        return new HoverRegistrationOptions()
-        {
-        };
+        return new HoverRegistrationOptions();
     }
 
     public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?> Handle(HoverParams request,
@@ -37,6 +36,7 @@ public class HoverHandler(
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
+                var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
                 var document = semanticModel.Document;
                 var pos = request.Position;
                 var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
@@ -45,7 +45,7 @@ public class HoverHandler(
                     Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
-                        Value = semanticModel.RenderSymbol(node, RenderFeature)
+                        Value = renderBuilder.Render(node, RenderFeature)
                     })
                 };
             }

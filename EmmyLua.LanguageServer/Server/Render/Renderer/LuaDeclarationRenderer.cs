@@ -2,7 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
+namespace EmmyLua.LanguageServer.Server.Render.Renderer;
 
 public static class LuaDeclarationRenderer
 {
@@ -184,8 +184,8 @@ public static class LuaDeclarationRenderer
             }
         }
 
-        LuaCommentRenderer.RenderFunctionDocComment(methodInfo, renderContext);
         LuaCommentRenderer.RenderDeclarationStatComment(declaration, renderContext);
+        LuaCommentRenderer.RenderFunctionDocComment(methodInfo, renderContext);
     }
 
     private static void RenderParamDeclaration(LuaDeclaration declaration, ParamInfo paramInfo,
@@ -239,7 +239,7 @@ public static class LuaDeclarationRenderer
                 _ => ""
             };
 
-            renderContext.Append($"{visibility}(field) {declaration.Name} : ");
+            renderContext.Append($"{visibility} {declaration.Name} : ");
             LuaTypeRenderer.RenderType(tableFieldInfo.DeclarationType, renderContext);
             if (tableFieldInfo.TableFieldPtr.ToNode(renderContext.SearchContext) is
                 { IsValue: false, Value: LuaLiteralExprSyntax expr })
@@ -305,12 +305,11 @@ public static class LuaDeclarationRenderer
         {
             var visibility = declaration.Visibility switch
             {
-                DeclarationVisibility.Public => " public",
-                DeclarationVisibility.Protected => " protected",
-                DeclarationVisibility.Private => " private",
+                DeclarationVisibility.Protected => "protected ",
+                DeclarationVisibility.Private => "private ",
                 _ => ""
             };
-            renderContext.Append($"(field){visibility} {declaration.Name} : ");
+            renderContext.Append($"{visibility}(field) {declaration.Name} : ");
             LuaTypeRenderer.RenderType(indexInfo.DeclarationType, renderContext);
             var valueExpr = indexInfo.ValueExprPtr.ToNode(renderContext.SearchContext);
             if (valueExpr is LuaLiteralExprSyntax literalExpr)

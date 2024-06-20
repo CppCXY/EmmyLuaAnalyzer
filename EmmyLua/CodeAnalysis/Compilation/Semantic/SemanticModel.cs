@@ -2,7 +2,6 @@
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
@@ -10,34 +9,13 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 
-public class SemanticModel
+public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 {
-    public LuaCompilation Compilation { get; }
+    public LuaCompilation Compilation { get; } = compilation;
 
-    public LuaDocument Document { get; }
+    public LuaDocument Document { get; } = document;
 
-    public SearchContext Context { get; }
-
-    public LuaRenderBuilder RenderBuilder { get; }
-
-    public SemanticModel(LuaCompilation compilation, LuaDocument document)
-    {
-        Compilation = compilation;
-        Document = document;
-        Context = new(compilation, new SearchContextFeatures());
-        RenderBuilder = new(Context);
-    }
-
-    // 渲染符号的文档和类型
-    public string RenderSymbol(LuaSyntaxElement? symbol, LuaRenderFeature feature)
-    {
-        if (symbol is null)
-        {
-            return string.Empty;
-        }
-
-        return RenderBuilder.Render(symbol, feature);
-    }
+    public SearchContext Context { get; } = new(compilation, new SearchContextFeatures());
 
     public IEnumerable<ReferenceResult> FindReferences(LuaSyntaxElement element)
     {

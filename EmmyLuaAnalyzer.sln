@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLua", "EmmyLua\EmmyLua.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLua.LanguageServer", "EmmyLua.LanguageServer\EmmyLua.LanguageServer.csproj", "{DDD2F974-A7AC-4D56-8958-C41CAD025136}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{D1BA6B9E-5490-482B-9DA6-E1779A029654}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Util.Gen", "Util.Gen\Util.Gen.csproj", "{26D6BE65-C8C1-4106-9F0F-63B9F881A878}"
@@ -26,10 +24,6 @@ Global
 		{DDD2F974-A7AC-4D56-8958-C41CAD025136}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDD2F974-A7AC-4D56-8958-C41CAD025136}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDD2F974-A7AC-4D56-8958-C41CAD025136}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8D616F9-6A68-41C9-B8BE-FD27EC4D86C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1BA6B9E-5490-482B-9DA6-E1779A029654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1BA6B9E-5490-482B-9DA6-E1779A029654}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1BA6B9E-5490-482B-9DA6-E1779A029654}.Release|Any CPU.ActiveCfg = Release|Any CPU

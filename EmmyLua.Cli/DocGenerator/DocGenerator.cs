@@ -87,32 +87,33 @@ public class DocGenerator(DocOptions options)
         return LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
     }
 
+    // TODO: Generate APIs
     private void GenerateApis(List<TocItem> rootTocItems)
     {
-        var luaWorkspace = LoadLuaWorkspace();
-        var tocItems = new List<TocItem>();
-        foreach (var module in luaWorkspace.ModuleManager.GetAllModules())
-        {
-            if (module.Workspace == luaWorkspace.MainWorkspace)
-            {
-                var renderer = new ModuleDoc(luaWorkspace.Compilation, module);
-                var text = renderer.Build();
-                var fileName = $"{module.ModulePath}.md";
-                tocItems.Add(new TocItem()
-                {
-                    Name = module.ModulePath,
-                    Href = fileName
-                });
-                File.WriteAllText(Path.Combine(ApisPath, fileName), text);
-            }
-        }
-
-        rootTocItems.Add(new TocItem()
-        {
-            Name = "APIs",
-            Href = "apis/"
-        });
-        GenerateToc(ApisPath, tocItems);
+        // var luaWorkspace = LoadLuaWorkspace();
+        // var tocItems = new List<TocItem>();
+        // foreach (var module in luaWorkspace.ModuleManager.GetAllModules())
+        // {
+        //     if (module.Workspace == luaWorkspace.MainWorkspace)
+        //     {
+        //         var renderer = new ModuleDoc(luaWorkspace.Compilation, module);
+        //         var text = renderer.Build();
+        //         var fileName = $"{module.ModulePath}.md";
+        //         tocItems.Add(new TocItem()
+        //         {
+        //             Name = module.ModulePath,
+        //             Href = fileName
+        //         });
+        //         File.WriteAllText(Path.Combine(ApisPath, fileName), text);
+        //     }
+        // }
+        //
+        // rootTocItems.Add(new TocItem()
+        // {
+        //     Name = "APIs",
+        //     Href = "apis/"
+        // });
+        // GenerateToc(ApisPath, tocItems);
     }
 
     private void GenerateToc(string path, List<TocItem> tocItems)

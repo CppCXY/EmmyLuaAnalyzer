@@ -2,7 +2,7 @@
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
+namespace EmmyLua.LanguageServer.Server.Render.Renderer;
 
 public static class LuaModuleRenderer
 {

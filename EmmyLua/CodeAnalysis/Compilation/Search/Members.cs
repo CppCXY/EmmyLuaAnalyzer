@@ -205,11 +205,32 @@ public class Members(SearchContext context)
 
     public IEnumerable<IDeclaration> FindMember(LuaType luaType, string memberName)
     {
-        return luaType switch
+        switch (luaType)
         {
-            LuaNamedType namedType when namedType is { Name: "table" } => FindTableMember(namedType, memberName),
-            _ => GetMembers(luaType).Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture))
-        };
+            case LuaNamedType namedType when namedType is { Name: "table" }:
+            {
+                return FindTableMember(namedType, memberName);
+            }
+            case LuaNamedType namedType when namedType.GetTypeKind(context) == NamedTypeKind.Alias:
+            {
+                var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
+                if (originType is not null)
+                {
+                    return FindMember(originType, memberName);
+                }
+
+                return [];
+            }
+            case LuaArrayType arrayType when memberName.StartsWith('['):
+            {
+                return [new LuaDeclaration(memberName, new VirtualInfo(arrayType.BaseType))];
+            }
+            default:
+            {
+                return GetMembers(luaType)
+                    .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
+            }
+        }
     }
 
     private IEnumerable<IDeclaration> FindTableMember(LuaNamedType namedType, string memberName)
@@ -310,7 +331,7 @@ public class Members(SearchContext context)
         }
         else if (indexExpr is { IndexKeyExpr: { } keyExpr })
         {
-            var keyExprType = context.Infer(keyExpr);
+            var keyExprType = context.InferAndUnwrap(keyExpr);
             foreach (var declaration in FindIndexMember(luaType, keyExprType))
             {
                 notFounded = false;
