@@ -97,7 +97,7 @@ public class Members(SearchContext context)
             var relatedType = context.Compilation.Db.QueryRelatedType(variableRefType.Id);
             if (relatedType is not null && !relatedType.Equals(luaType))
             {
-                return GetNormalTypeMembers(relatedType);
+                return GetMembers(relatedType);
             }
         }
         else if (luaType is GlobalNameType globalNameType)
@@ -105,7 +105,7 @@ public class Members(SearchContext context)
             var relatedType = context.Compilation.Db.QueryRelatedGlobalType(globalNameType.Name);
             if (relatedType is not null && !relatedType.Equals(luaType))
             {
-                return GetNormalTypeMembers(relatedType);
+                return GetMembers(relatedType);
             }
         }
 
