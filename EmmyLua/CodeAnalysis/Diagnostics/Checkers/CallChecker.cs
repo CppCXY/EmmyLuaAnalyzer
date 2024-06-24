@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
@@ -34,8 +35,32 @@ public class CallChecker(LuaCompilation compilation)
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
             var perfectSignature = context.SearchContext.FindPerfectMatchSignature(luaMethodType, callExpr, args);
             var parameters = perfectSignature.Parameters;
+            var colonDefine = luaMethodType.ColonDefine;
+            var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
+
+            switch ((colonDefine, colonCall))
+            {
+                case (true, false):
+                {
+                    var oldParameters = parameters;
+                    parameters = [new LuaDeclaration("self", new VirtualInfo(Builtin.Unknown))];
+                    parameters.AddRange(oldParameters);
+                    break;
+                }
+                case (false, true):
+                {
+                    parameters = parameters.Skip(1).ToList();
+                    break;
+                }
+            }
+
             var lastToken = callExpr.ArgList?.LastToken();
-            if (parameters.Count > args.Count && lastToken is not null)
+            if (lastToken is null)
+            {
+                return;
+            }
+
+            if (parameters.Count > args.Count)
             {
                 for (var i = args.Count; i < parameters.Count; i++)
                 {
