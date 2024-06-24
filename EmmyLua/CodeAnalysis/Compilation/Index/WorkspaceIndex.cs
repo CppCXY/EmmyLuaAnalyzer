@@ -34,6 +34,7 @@ public class WorkspaceIndex
     {
         TypeIndex.Remove(documentId);
         ModuleTypes.Remove(documentId);
+        ModuleReturns.Remove(documentId);
         NameExpr.Remove(documentId);
         MultiIndexExpr.Remove(documentId);
         NameType.Remove(documentId);
