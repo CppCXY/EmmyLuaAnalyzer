@@ -94,7 +94,7 @@ public class Members(SearchContext context)
     {
         if (luaType is LuaVariableRefType variableRefType)
         {
-            var relatedType = context.Compilation.Db.QueryRelatedType(variableRefType.Id);
+            var relatedType = context.Compilation.Db.QueryTypeFromId(variableRefType.Id);
             if (relatedType is not null && !relatedType.Equals(luaType))
             {
                 return GetMembers(relatedType);
@@ -118,8 +118,7 @@ public class Members(SearchContext context)
         var supersMembers = GetSupersMembers(luaType);
         var relatedMembers = GetRelatedMembers(luaType);
         var allMembers = selfMembers.Concat(supersMembers).Concat(relatedMembers);
-        var distinctMembers = allMembers.GroupBy(m => m.Name).Select(g => g.First());
-        return distinctMembers;
+        return allMembers;
     }
 
     private IEnumerable<IDeclaration> InnerGetMembers(LuaType luaType)

@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -12,9 +13,10 @@ public class References(SearchContext context)
 {
     public IEnumerable<ReferenceResult> FindReferences(IDeclaration declaration)
     {
+        var referencesSet = new ReferencesSet();
         if (declaration is LuaDeclaration luaDeclaration)
         {
-            return luaDeclaration.Info switch
+            var results = luaDeclaration.Info switch
             {
                 LocalInfo localInfo => LocalReferences(luaDeclaration, localInfo),
                 GlobalInfo => GlobalReferences(luaDeclaration),
@@ -28,9 +30,14 @@ public class References(SearchContext context)
                 IndexInfo indexInfo => IndexExprReferences(luaDeclaration, indexInfo),
                 _ => []
             };
+
+            foreach (var result in results)
+            {
+                referencesSet.AddReference(result);
+            }
         }
 
-        return [];
+        return referencesSet.GetReferences();
     }
 
     private IEnumerable<ReferenceResult> LocalReferences(LuaDeclaration declaration, DeclarationInfo info)
@@ -52,7 +59,7 @@ public class References(SearchContext context)
     {
         var references = new List<ReferenceResult>();
         var globalName = declaration.Name;
-        var nameExprs = context.Compilation.Db.QueryNameExprReferences(globalName);
+        var nameExprs = context.Compilation.Db.QueryNameExprReferences(globalName, context);
 
         foreach (var nameExpr in nameExprs)
         {
@@ -68,7 +75,7 @@ public class References(SearchContext context)
     private IEnumerable<ReferenceResult> FieldReferences(LuaDeclaration declaration, string fieldName)
     {
         var references = new List<ReferenceResult>();
-        var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName);
+        var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
             if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is not null)
@@ -248,7 +255,7 @@ public class References(SearchContext context)
         if (info.TypeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new ReferenceResult(typeName.Location, typeName));
-            var nameTypes = context.Compilation.Db.QueryNamedTypeReferences(name);
+            var nameTypes = context.Compilation.Db.QueryNamedTypeReferences(name, context);
             foreach (var nameType in nameTypes)
             {
                 if (context.FindDeclaration(nameType) == declaration && nameType.Name is { } name2)
@@ -314,5 +321,30 @@ public class References(SearchContext context)
         }
 
         return references;
+    }
+}
+
+class ReferencesSet
+{
+    readonly record struct Position(int Line, int Character) : IComparable<Position>
+    {
+        public int CompareTo(Position other)
+        {
+            var lineComparison = Line.CompareTo(other.Line);
+            return lineComparison != 0 ? lineComparison : Character.CompareTo(other.Character);
+        }
+    }
+
+    private SortedDictionary<Position, ReferenceResult> References { get; } = new();
+
+    public void AddReference(ReferenceResult reference)
+    {
+        var position = new Position(reference.Location.StartLine, reference.Location.StartCol);
+        References.TryAdd(position, reference);
+    }
+
+    public IEnumerable<ReferenceResult> GetReferences()
+    {
+        return References.Values;
     }
 }

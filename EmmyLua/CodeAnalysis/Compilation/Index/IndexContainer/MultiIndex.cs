@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Index;
+namespace EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
 
-public class IndexStorage<TKey, TStubElement>
+public class MultiIndex<TKey, TStubElement>
     where TKey : notnull
 {
     record struct ElementIndex(LuaDocumentId DocumentId, TStubElement Element);

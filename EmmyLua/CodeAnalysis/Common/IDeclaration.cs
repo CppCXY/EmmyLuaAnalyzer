@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Common;
 
@@ -36,4 +37,5 @@ public interface IDeclaration
 
     public LuaDocumentId DocumentId { get; }
 
+    public SyntaxElementId UniqueId { get; }
 }

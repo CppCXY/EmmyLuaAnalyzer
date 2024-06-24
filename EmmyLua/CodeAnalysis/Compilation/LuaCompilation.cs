@@ -7,7 +7,6 @@ using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.IndexSystem;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -21,9 +20,7 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    internal WorkspaceIndex WorkspaceIndex => Db.WorkspaceIndex;
-
-    public IndexFacade Db { get; }
+    public WorkspaceIndex Db { get; }
 
     private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
 
@@ -36,7 +33,7 @@ public class LuaCompilation
     public LuaCompilation(LuaWorkspace workspace)
     {
         Workspace = workspace;
-        Db = new IndexFacade(this);
+        Db = new();
         Analyzers =
         [
             new DeclarationAnalyzer(this),

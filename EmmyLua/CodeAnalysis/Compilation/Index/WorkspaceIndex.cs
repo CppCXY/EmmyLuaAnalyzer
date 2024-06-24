@@ -1,6 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -8,76 +10,39 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class WorkspaceIndex : IQueryableIndex
+public class WorkspaceIndex
 {
-    public IndexStorage<string, LuaDeclaration> TypeMembers { get; } = new();
+    private TypeIndex TypeIndex { get; } = new();
 
-    private IndexStorage<SyntaxElementId, LuaDeclaration> DocumentVariableMembers { get; } = new();
+    private Dictionary<LuaDocumentId, LuaType> ModuleTypes { get; } = new();
 
-    private IndexStorage<string, LuaDeclaration> GlobalVariableMembers { get; } = new();
+    private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
 
-    public UniqueIndexStorage<SyntaxElementId, string> ParentType { get; } = new();
+    private MultiIndex<string, LuaElementPtr<LuaNameExprSyntax>> NameExpr { get; } = new();
 
-    private UniqueIndexStorage<string, LuaDeclaration> Globals { get; } = new();
+    private MultiIndex<string, LuaElementPtr<LuaIndexExprSyntax>> MultiIndexExpr { get; } = new();
 
-    private IndexStorage<string, LuaType> Supers { get; } = new();
+    private MultiIndex<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameType { get; } = new();
 
-    private IndexStorage<string, string> SubTypes { get; } = new();
+    private InFileIndex<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
 
-    private IndexStorage<string, LuaDeclaration> NamedTypeDefinition { get; } = new();
-
-    public UniqueIndexStorage<SyntaxElementId, LuaType> IdRelatedType { get; } = new();
-
-    public UniqueIndexStorage<string, LuaType> GlobalRelationTypes { get; } = new();
-
-    private UniqueIndexStorage<string, LuaType> AliasTypes { get; } = new();
-
-    private IndexStorage<string, LuaDeclaration> GenericParams { get; } = new();
-
-    public Dictionary<LuaDocumentId, LuaType> ModuleTypes { get; } = new();
-
-    public Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
-
-    private IndexStorage<string, TypeOperator> TypeOperator { get; } = new();
-
-    public IndexStorage<string, LuaElementPtr<LuaNameExprSyntax>> NameExpr { get; } = new();
-
-    public IndexStorage<string, LuaElementPtr<LuaIndexExprSyntax>> IndexExpr { get; } = new();
-
-    public IndexStorage<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameType { get; } = new();
-
-    private IndexStorage<string, LuaMethodType> TypeOverloads { get; } = new();
-
-    private InFiledDictionary<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
-
-    private InFiledDictionary<SyntaxElementId, LuaDeclaration> InFiledDeclarations { get; } = new();
+    private InFileIndex<SyntaxElementId, LuaDeclaration> InFiledDeclarations { get; } = new();
 
     private Dictionary<LuaDocumentId, LuaDeclarationTree> DocumentDeclarationTrees { get; } = new();
 
     public void Remove(LuaDocumentId documentId)
     {
-        TypeMembers.Remove(documentId);
-        DocumentVariableMembers.Remove(documentId);
-        GlobalVariableMembers.Remove(documentId);
-        ParentType.Remove(documentId);
-        Globals.Remove(documentId);
-        Supers.Remove(documentId);
-        SubTypes.Remove(documentId);
-        NamedTypeDefinition.Remove(documentId);
-        IdRelatedType.Remove(documentId);
-        GenericParams.Remove(documentId);
+        TypeIndex.Remove(documentId);
         ModuleTypes.Remove(documentId);
-        TypeOperator.Remove(documentId);
         NameExpr.Remove(documentId);
-        IndexExpr.Remove(documentId);
+        MultiIndexExpr.Remove(documentId);
         NameType.Remove(documentId);
-        AliasTypes.Remove(documentId);
-        TypeOverloads.Remove(documentId);
         InFiledReferences.Remove(documentId);
         InFiledDeclarations.Remove(documentId);
         DocumentDeclarationTrees.Remove(documentId);
-        GlobalRelationTypes.Remove(documentId);
     }
+
+    #region Add
 
     public void AddMember(LuaDocumentId documentId, LuaType type, LuaDeclaration luaDeclaration)
     {
@@ -93,130 +58,35 @@ public class WorkspaceIndex : IQueryableIndex
                 var name = namedType.Name;
                 if (name == "global")
                 {
-                    AddGlobal(documentId, false, luaDeclaration.Name, luaDeclaration);
+                    TypeIndex.AddGlobal(documentId, false, luaDeclaration.Name, luaDeclaration);
                     return;
                 }
 
-                AddNamedTypeMember(documentId, name, luaDeclaration);
+                TypeIndex.AddNamedTypeMember(documentId, namedType, luaDeclaration);
                 break;
             }
             case GlobalNameType globalNameType:
             {
                 var name = globalNameType.Name;
-                AddGlobalVariableMember(documentId, name, luaDeclaration);
+                TypeIndex.AddGlobalVariableMember(documentId, name, luaDeclaration);
                 break;
             }
             case LuaVariableRefType variableRefType:
             {
-                AddLocalVariableMember(variableRefType.Id, luaDeclaration);
+                TypeIndex.AddLocalVariableMember(variableRefType.Id, luaDeclaration);
                 break;
             }
             case LuaDocTableType docTableType:
             {
-                AddLocalVariableMember(docTableType.DocTablePtr.UniqueId, luaDeclaration);
+                TypeIndex.AddLocalVariableMember(docTableType.DocTablePtr.UniqueId, luaDeclaration);
                 break;
             }
             case LuaTableLiteralType luaTableLiteral:
             {
-                AddLocalVariableMember(luaTableLiteral.TableExprPtr.UniqueId, luaDeclaration);
+                TypeIndex.AddLocalVariableMember(luaTableLiteral.TableExprPtr.UniqueId, luaDeclaration);
                 break;
             }
         }
-    }
-
-    private void AddNamedTypeMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
-    {
-        TypeMembers.Add(documentId, name, luaDeclaration);
-        ParentType.Update(documentId, luaDeclaration.UniqueId, name);
-    }
-
-    private void AddLocalVariableMember(SyntaxElementId id, LuaDeclaration luaDeclaration)
-    {
-        DocumentVariableMembers.Add(id.DocumentId, id, luaDeclaration);
-    }
-
-    private void AddGlobalVariableMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
-    {
-        GlobalVariableMembers.Add(documentId, name, luaDeclaration);
-    }
-
-    public void AddGlobal(LuaDocumentId documentId, bool forceDefine, string name, LuaDeclaration luaDeclaration)
-    {
-        if (forceDefine) // forceUpdate
-        {
-            Globals.Update(documentId, name, luaDeclaration);
-            return;
-        }
-
-        if (Globals.Query(name) is not null)
-        {
-            return;
-        }
-
-        Globals.Update(documentId, name, luaDeclaration);
-    }
-
-    public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
-    {
-        if (type is LuaNamedType { Name: { } name1 } && string.Equals(name, name1, StringComparison.CurrentCulture))
-        {
-            return;
-        }
-
-        Supers.Add(documentId, name, type);
-        if (type is LuaNamedType namedType)
-        {
-            SubTypes.Add(documentId, namedType.Name, name);
-        }
-    }
-
-    public void AddTypeDefinition(LuaDocumentId documentId, string name, LuaDeclaration declaration)
-    {
-        NamedTypeDefinition.Add(documentId, name, declaration);
-    }
-
-    public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType,
-        LuaDeclaration declaration)
-    {
-        AddTypeDefinition(documentId, name, declaration);
-        AliasTypes.Update(documentId, name, baseType);
-    }
-
-    public void AddIdRelatedType(SyntaxElementId id, LuaType relatedType)
-    {
-        IdRelatedType.Update(id.DocumentId, id, relatedType);
-    }
-
-    public void AddGlobalRelationType(LuaDocumentId documentId, string name, LuaType type)
-    {
-        if (type.Equals(Builtin.Unknown))
-        {
-            return;
-        }
-
-        if (GlobalRelationTypes.Query(name) is { } oldType)
-        {
-            GlobalRelationTypes.Update(documentId, name, oldType.Union(type));
-        }
-        else
-        {
-            GlobalRelationTypes.Update(documentId, name, type);
-        }
-    }
-
-    public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
-        LuaDeclaration declaration)
-    {
-        AddTypeDefinition(documentId, name, declaration);
-        if (baseType != null)
-        {
-            AddSuper(documentId, name, baseType);
-        }
-    }
-
-    public void AddGenericParam(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
-    {
-        GenericParams.Add(documentId, name, luaDeclaration);
     }
 
     public void AddModuleReturns(LuaDocumentId documentId, LuaType type, List<LuaExprSyntax> exprs)
@@ -237,7 +107,7 @@ public class WorkspaceIndex : IQueryableIndex
     {
         if (indexExpr is { Name: { } name })
         {
-            IndexExpr.Add(documentId, name, new(indexExpr));
+            MultiIndexExpr.Add(documentId, name, new(indexExpr));
         }
     }
 
@@ -251,12 +121,12 @@ public class WorkspaceIndex : IQueryableIndex
 
     public void AddTypeOperator(LuaDocumentId documentId, TypeOperator typeOperator)
     {
-        TypeOperator.Add(documentId, typeOperator.BelongTypeName, typeOperator);
+        TypeIndex.AddTypeOperator(documentId, typeOperator);
     }
 
     public void AddTypeOverload(LuaDocumentId documentId, string name, LuaMethodType methodType)
     {
-        TypeOverloads.Add(documentId, name, methodType);
+        TypeIndex.AddTypeOverload(documentId, name, methodType);
     }
 
     public void AddReference(LuaDocumentId documentId, LuaDeclaration declaration, LuaReference reference)
@@ -280,80 +150,88 @@ public class WorkspaceIndex : IQueryableIndex
         DocumentDeclarationTrees[documentId] = declarationTree;
     }
 
+    public void AddIdRelatedType(SyntaxElementId id, LuaType type)
+    {
+        TypeIndex.AddIdRelatedType(id, type);
+    }
+
+    public void AddGlobalRelationType(LuaDocumentId documentId, string name, LuaType type)
+    {
+        TypeIndex.AddGlobalRelationType(documentId, name, type);
+    }
+
+    public void AddSuper(LuaDocumentId documentId, string name, LuaType super)
+    {
+        TypeIndex.AddSuper(documentId, name, super);
+    }
+
+    public void AddGlobal(LuaDocumentId documentId, bool forceDefine, string name, LuaDeclaration declaration)
+    {
+        TypeIndex.AddGlobal(documentId, forceDefine, name, declaration);
+    }
+
+    public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType, LuaDeclaration declaration)
+    {
+        TypeIndex.AddEnum(documentId, name, baseType, declaration);
+    }
+
+    public void AddTypeDefinition(LuaDocumentId documentId, string name, LuaDeclaration declaration)
+    {
+        TypeIndex.AddTypeDefinition(documentId, name, declaration);
+    }
+
+    public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType, LuaDeclaration declaration)
+    {
+        TypeIndex.AddAlias(documentId, name, baseType, declaration);
+    }
+
+    public void AddGenericParam(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    {
+        TypeIndex.AddGenericParam(documentId, name, luaDeclaration);
+    }
+
+    #endregion
+
+    #region Query
+
     public IEnumerable<IDeclaration> QueryAllGlobal()
     {
-        return Globals.QueryAll();
+        return TypeIndex.QueryAllGlobal();
     }
 
     public IEnumerable<IDeclaration> QueryMembers(LuaType type)
     {
-        if (!type.HasMember)
-        {
-            return [];
-        }
-
-        switch (type)
-        {
-            case LuaNamedType namedType:
-            {
-                var name = namedType.Name;
-                if (name == "global")
-                {
-                    return QueryAllGlobal();
-                }
-
-                return TypeMembers.Query(name);
-            }
-            case GlobalNameType globalNameType:
-            {
-                var name = globalNameType.Name;
-                return GlobalVariableMembers.Query(name);
-            }
-            case LuaVariableRefType variableRefType:
-            {
-                return DocumentVariableMembers.Query(variableRefType.Id);
-            }
-            case LuaDocTableType docTableType:
-            {
-                return DocumentVariableMembers.Query(docTableType.DocTablePtr.UniqueId);
-            }
-            case LuaTableLiteralType luaTableLiteral:
-            {
-                return DocumentVariableMembers.Query(luaTableLiteral.TableExprPtr.UniqueId);
-            }
-        }
-
-        return [];
+        return TypeIndex.QueryMembers(type);
     }
 
     public IDeclaration? QueryGlobals(string name)
     {
-        return Globals.Query(name);
+        return TypeIndex.QueryGlobals(name);
     }
 
     public IEnumerable<LuaType> QuerySupers(string name)
     {
-        return Supers.Query(name);
+        return TypeIndex.QuerySupers(name);
     }
 
     public IEnumerable<string> QuerySubTypes(string name)
     {
-        return SubTypes.Query(name);
+        return TypeIndex.QuerySubTypes(name);
     }
 
     public IEnumerable<IDeclaration> QueryNamedTypeDefinitions(string name)
     {
-        return NamedTypeDefinition.Query(name);
+        return TypeIndex.QueryNamedTypeDefinitions(name);
     }
 
     public LuaType? QueryAliasOriginTypes(string name)
     {
-        return AliasTypes.Query(name);
+        return TypeIndex.QueryAliasOriginTypes(name);
     }
 
     public IEnumerable<IDeclaration> QueryGenericParams(string name)
     {
-        return GenericParams.Query(name);
+        return TypeIndex.QueryGenericParams(name);
     }
 
     public NamedTypeKind QueryNamedTypeKind(string name)
@@ -369,17 +247,17 @@ public class WorkspaceIndex : IQueryableIndex
 
     public IEnumerable<IDeclaration> QueryAllNamedTypeDefinitions()
     {
-        return NamedTypeDefinition.QueryAll();
+        return TypeIndex.QueryAllNamedTypeDefinitions();
     }
 
     public IEnumerable<TypeOperator> QueryTypeOperators(string name)
     {
-        return TypeOperator.Query(name);
+        return TypeIndex.QueryTypeOperators(name);
     }
 
     public IEnumerable<LuaMethodType> QueryTypeOverloads(string name)
     {
-        return TypeOverloads.Query(name);
+        return TypeIndex.QueryTypeOverloads(name);
     }
 
     public IEnumerable<LuaReference> QueryLocalReferences(LuaDeclaration declaration)
@@ -411,6 +289,70 @@ public class WorkspaceIndex : IQueryableIndex
 
     public LuaType? QueryRelatedGlobalType(string name)
     {
-        return GlobalRelationTypes.Query(name);
+        return TypeIndex.QueryRelatedGlobalType(name);
     }
+
+    public LuaType? QueryModuleType(LuaDocumentId documentId)
+    {
+        return ModuleTypes.GetValueOrDefault(documentId);
+    }
+
+    public LuaType? QueryTypeFromId(SyntaxElementId id)
+    {
+        return TypeIndex.QueryTypeFromId(id);
+    }
+
+    public LuaType? QueryParentType(LuaSyntaxNode node)
+    {
+        return TypeIndex.QueryParentType(node.UniqueId);
+    }
+
+    public LuaType? QueryParentType(SyntaxElementId id)
+    {
+        return TypeIndex.QueryParentType(id);
+    }
+
+    public IEnumerable<LuaIndexExprSyntax> QueryIndexExprReferences(string fieldName, SearchContext context)
+    {
+        foreach (var ptr in MultiIndexExpr.Query(fieldName))
+        {
+            if (ptr.ToNode(context) is {} node)
+            {
+                yield return node;
+            }
+        }
+    }
+
+    public IEnumerable<LuaNameExprSyntax> QueryNameExprReferences(string name, SearchContext context)
+    {
+        foreach (var ptr in NameExpr.Query(name))
+        {
+            if (ptr.ToNode(context) is {} node)
+            {
+                yield return node;
+            }
+        }
+    }
+
+    public IEnumerable<LuaDocNameTypeSyntax> QueryNamedTypeReferences(string name, SearchContext context)
+    {
+        foreach (var ptr in NameType.Query(name))
+        {
+            if (ptr.ToNode(context) is {} node)
+            {
+                yield return node;
+            }
+        }
+    }
+
+    public IEnumerable<LuaElementPtr<LuaExprSyntax>> QueryModuleReturns(LuaDocumentId documentId)
+    {
+        return ModuleReturns.GetValueOrDefault(documentId) ?? [];
+    }
+
+    public IEnumerable<LuaDeclaration> QueryAllMembers()
+    {
+        return TypeIndex.QueryAllMembers();
+    }
+    #endregion
 }

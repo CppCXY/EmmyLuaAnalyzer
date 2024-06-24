@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Index;
+namespace EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
 
-public class InFiledDictionary<TKey, TValue> where TKey : notnull
+public class InFileIndex<TKey, TValue> where TKey : notnull
 {
     private readonly Dictionary<LuaDocumentId, Dictionary<TKey, TValue>> _map = new();
 

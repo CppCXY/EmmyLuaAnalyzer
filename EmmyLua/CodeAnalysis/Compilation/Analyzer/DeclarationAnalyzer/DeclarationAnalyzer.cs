@@ -10,7 +10,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             var tree = builder.Build();
             if (tree is not null)
             {
-                Compilation.WorkspaceIndex.AddDeclarationTree(document.Id, tree);
+                Compilation.Db.AddDeclarationTree(document.Id, tree);
             }
         }
     }

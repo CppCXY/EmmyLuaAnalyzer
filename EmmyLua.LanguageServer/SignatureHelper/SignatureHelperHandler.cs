@@ -1,4 +1,5 @@
 ﻿using EmmyLua.LanguageServer.Server;
+using EmmyLua.LanguageServer.Util;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -36,7 +37,8 @@ public class SignatureHelperHandler(ServerContext context) : SignatureHelpHandle
                 semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
             if (triggerToken is not null)
             {
-                signatureHelp = Builder.Build(semanticModel, triggerToken, request);
+                var config = context.SettingManager.GetSignatureConfig();
+                signatureHelp = Builder.Build(semanticModel, triggerToken, request, config);
             }
         });
 

@@ -160,7 +160,7 @@ public class SearchContext
 
     public IEnumerable<IDeclaration> GetMembers(LuaType type)
     {
-        return Members.GetMembers(type);
+        return Members.GetMembers(type).GroupBy(m => m.Name).Select(g => g.First());
     }
 
     public IEnumerable<IDeclaration> FindMember(LuaType type, string name)

@@ -17,6 +17,8 @@ public class SubTypeInfer(SearchContext context)
 
     public bool IsSubTypeOf(LuaType left, LuaType right)
     {
+        left = left.UnwrapType(context);
+        right = right.UnwrapType(context);
         var key = new SubTypeKey(left, right);
         if (SubTypeCaches.TryGetValue(key, out var result))
         {

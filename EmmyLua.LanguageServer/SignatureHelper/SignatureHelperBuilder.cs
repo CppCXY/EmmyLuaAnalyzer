@@ -6,6 +6,7 @@ using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Server.Render;
+using Microsoft.Extensions.Primitives;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.SignatureHelper;
@@ -19,7 +20,8 @@ public class SignatureHelperBuilder
         100
     );
 
-    public SignatureHelp? Build(SemanticModel semanticModel, LuaSyntaxToken triggerToken, SignatureHelpParams request)
+    public SignatureHelp? Build(SemanticModel semanticModel, LuaSyntaxToken triggerToken, SignatureHelpParams request,
+        SignatureHelperConfig config)
     {
         var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
         LuaCallExprSyntax callExpr = null!;
@@ -65,6 +67,7 @@ public class SignatureHelperBuilder
         var activeSignature = 0;
         var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
 
+
         semanticModel.Context.FindMethodsForType(parentType, luaMethod =>
         {
             var signatures = new List<LuaSignature>();
@@ -90,7 +93,8 @@ public class SignatureHelperBuilder
                 colonCall,
                 luaMethod.ColonDefine,
                 semanticModel,
-                renderBuilder
+                renderBuilder,
+                config
             );
         });
 
@@ -111,7 +115,8 @@ public class SignatureHelperBuilder
         bool colonCall,
         bool colonDefine,
         SemanticModel semanticModel,
-        LuaRenderBuilder renderBuilder
+        LuaRenderBuilder renderBuilder,
+        SignatureHelperConfig config
     )
     {
         var maxActiveParameter = 0;
@@ -162,8 +167,7 @@ public class SignatureHelperBuilder
                     });
                 }
             }
-
-            var returnType = signature.ReturnType;
+            
             if (parameters.LastOrDefault() is { Name: "..." })
             {
                 if (activeParameter >= parameterInfos.Count)
@@ -173,20 +177,37 @@ public class SignatureHelperBuilder
             }
 
             var sb = new StringBuilder();
-            sb.Append('(');
-            for (var i = 0; i < parameterInfos.Count; i++)
-            {
-                sb.Append(parameterInfos[i].Label);
 
-                if (i < parameterInfos.Count - 1)
+            if (config.DetailSignatureHelp)
+            {
+                var returnType = signature.ReturnType;
+                sb.Append('(');
+                for (var i = 0; i < parameterInfos.Count; i++)
                 {
-                    sb.Append(", ");
+                    sb.Append(parameterInfos[i].Label);
+
+                    if (i < parameterInfos.Count - 1)
+                    {
+                        sb.Append(", ");
+                    }
+                }
+
+                sb.Append(") -> ");
+                sb.Append(renderBuilder.RenderType(returnType, RenderFeature));
+            }
+            else
+            {
+                for (var i = 0; i < parameterInfos.Count; i++)
+                {
+                    sb.Append(parameterInfos[i].Label);
+
+                    if (i < parameterInfos.Count - 1)
+                    {
+                        sb.Append(", ");
+                    }
                 }
             }
-
-            sb.Append(") -> ");
-            sb.Append(renderBuilder.RenderType(returnType, RenderFeature with { ShowTypeLink = false }));
-
+            
             signatureInfos.Add(new SignatureInformation()
             {
                 Label = sb.ToString(),
@@ -194,7 +215,7 @@ public class SignatureHelperBuilder
                 ActiveParameter = activeParameter
             });
 
-            if (activeParameter >= maxActiveParameter)
+            if (activeParameter > maxActiveParameter)
             {
                 maxActiveParameter = activeParameter;
                 activeSignature = sigIndex;

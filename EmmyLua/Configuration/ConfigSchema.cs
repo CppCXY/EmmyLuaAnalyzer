@@ -17,6 +17,9 @@ public class Setting
     [JsonProperty("completion", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Completion Completion { get; set; } = new();
 
+    [JsonProperty("signature", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public Signature Signature { get; set; } = new();
+
     [JsonProperty("diagnostics", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public Diagnostics Diagnostics { get; set; } = new();
 
@@ -216,4 +219,10 @@ public class Strict
 
     [JsonProperty("typeCall", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public bool TypeCall { get; set; } = true;
+}
+
+public class Signature
+{
+    [JsonProperty("detailSignatureHelper", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public bool DetailSignatureHelper { get; set; } = false;
 }

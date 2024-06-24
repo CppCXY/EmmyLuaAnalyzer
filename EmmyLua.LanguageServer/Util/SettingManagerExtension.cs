@@ -3,6 +3,7 @@ using EmmyLua.LanguageServer.CodeLens;
 using EmmyLua.LanguageServer.Completion;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.Server.Resource;
+using EmmyLua.LanguageServer.SignatureHelper;
 
 namespace EmmyLua.LanguageServer.Util;
 
@@ -23,7 +24,7 @@ public static class SettingManagerExtension
 
         return config;
     }
-    
+
     public static InlayHintConfig GetInlayHintConfig(this SettingManager settingManager)
     {
         var config = new InlayHintConfig();
@@ -40,7 +41,7 @@ public static class SettingManagerExtension
 
         return config;
     }
-    
+
     public static ResourceConfig GetResourceConfig(this SettingManager settingManager)
     {
         var config = new ResourceConfig();
@@ -54,7 +55,7 @@ public static class SettingManagerExtension
 
         return config;
     }
-    
+
     public static CodeLensConfig GetCodeLensConfig(this SettingManager settingManager)
     {
         var config = new CodeLensConfig();
@@ -66,6 +67,19 @@ public static class SettingManagerExtension
 
         config.Enable = setting.CodeLens.Enable;
 
+        return config;
+    }
+
+    public static SignatureHelperConfig GetSignatureConfig(this SettingManager settingManager)
+    {
+        var config = new SignatureHelperConfig();
+        var setting = settingManager.Setting;
+        if (setting is null)
+        {
+            return config;
+        }
+
+        config.DetailSignatureHelp = setting.Signature.DetailSignatureHelper;
         return config;
     }
 }

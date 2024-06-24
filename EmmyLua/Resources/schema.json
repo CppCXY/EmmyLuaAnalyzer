@@ -322,6 +322,17 @@
         }
       }
     },
+    "Signature": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "detailSignatureHelper": {
+          "type": "boolean"
+        }
+      }
+    },
     "Strict": {
       "type": [
         "object",
@@ -394,6 +405,9 @@
     },
     "completion": {
       "$ref": "#/definitions/Completion"
+    },
+    "signature": {
+      "$ref": "#/definitions/Signature"
     },
     "diagnostics": {
       "$ref": "#/definitions/Diagnostics"

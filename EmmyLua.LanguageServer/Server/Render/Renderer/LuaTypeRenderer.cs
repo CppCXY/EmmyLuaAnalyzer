@@ -153,37 +153,38 @@ public static class LuaTypeRenderer
         //     }
         // }
 
-        var members = renderContext.SearchContext.GetMembers(new LuaNamedType(name)).ToList();
-        if (members.Count == 0)
-        {
-            return;
-        }
-
-        // 只渲染20个
-        var count = 0;
-        renderContext.Append(" {\n");
-        foreach (var member in members)
-        {
-            if (count > 20)
-            {
-                renderContext.Append(",    \n...");
-                break;
-            }
-
-            if (count > 0)
-            {
-                renderContext.Append(",\n");
-            }
-
-            renderContext.Append("    ");
-            renderContext.Append(member.Name);
-            renderContext.Append(": ");
-            InnerRenderType(member.Type, renderContext, 1);
-
-            count++;
-        }
-
-        renderContext.Append("\n}");
+        // 似乎没有展开的意义
+        // var members = renderContext.SearchContext.GetMembers(new LuaNamedType(name)).ToList();
+        // if (members.Count == 0)
+        // {
+        //     return;
+        // }
+        //
+        // // 只渲染20个
+        // var count = 0;
+        // renderContext.Append(" {\n");
+        // foreach (var member in members)
+        // {
+        //     if (count > 20)
+        //     {
+        //         renderContext.Append(",    \n...");
+        //         break;
+        //     }
+        //
+        //     if (count > 0)
+        //     {
+        //         renderContext.Append(",\n");
+        //     }
+        //
+        //     renderContext.Append("    ");
+        //     renderContext.Append(member.Name);
+        //     renderContext.Append(": ");
+        //     InnerRenderType(member.Type, renderContext, 1);
+        //
+        //     count++;
+        // }
+        //
+        // renderContext.Append("\n}");
     }
 
     private static void InnerRenderType(LuaType type, LuaRenderContext renderContext, int level)
@@ -303,7 +304,7 @@ public static class LuaTypeRenderer
     private static void RenderVariableRefType(LuaVariableRefType variableRefType, LuaRenderContext renderContext,
         int level)
     {
-        var relatedType = renderContext.SearchContext.Compilation.Db.QueryRelatedType(variableRefType.Id);
+        var relatedType = renderContext.SearchContext.Compilation.Db.QueryTypeFromId(variableRefType.Id);
         if (relatedType is null)
         {
             renderContext.Append("ambiguous");
@@ -432,9 +433,9 @@ public static class LuaTypeRenderer
         }
 
         var mainSignature = methodType.MainSignature;
-        if (renderContext.Feature.InHover)
+        if (renderContext.Feature.InHover && !renderContext.InSignature)
         {
-            RenderSignatureForHover(mainSignature, renderContext, level);
+            renderContext.WithSignature(() => { RenderSignatureForHover(mainSignature, renderContext); });
         }
         else
         {
@@ -461,28 +462,35 @@ public static class LuaTypeRenderer
         renderContext.Append(')');
 
         renderContext.Append(" -> ");
-        InnerRenderType(signature.ReturnType, renderContext, 0);
+        if (signature.ReturnType.Equals(Builtin.Nil))
+        {
+            renderContext.Append("void");
+        }
+        else
+        {
+            InnerRenderType(signature.ReturnType, renderContext, 0);
+        }
     }
 
-    private static void RenderSignatureForHover(LuaSignature signature, LuaRenderContext renderContext, int level)
+    private static void RenderSignatureForHover(LuaSignature signature, LuaRenderContext renderContext)
     {
         renderContext.Append('(');
         var chopDown = signature.Parameters.Count > 0;
         if (!chopDown)
         {
-            for (var i = 0; i < signature.Parameters.Count; i++)
-            {
-                if (i > 0)
-                {
-                    renderContext.Append(", ");
-                }
+            // for (var i = 0; i < signature.Parameters.Count; i++)
+            // {
+            //     if (i > 0)
+            //     {
+            //         renderContext.Append(", ");
+            //     }
+            //
+            //     var parameter = signature.Parameters[i];
+            //     renderContext.Append(parameter.Name);
+            //     renderContext.Append(':');
+            //     InnerRenderType(parameter.Type, renderContext, 0);
+            // }
 
-                var parameter = signature.Parameters[i];
-                renderContext.Append(parameter.Name);
-                renderContext.Append(':');
-                InnerRenderType(parameter.Type, renderContext, 0);
-            }
-            
             renderContext.Append(')');
         }
         else
@@ -500,12 +508,19 @@ public static class LuaTypeRenderer
                 renderContext.Append(':');
                 InnerRenderType(parameter.Type, renderContext, 0);
             }
-            
+
             renderContext.Append("\n)");
         }
-        
-        renderContext.Append("\n-> ");
-        InnerRenderType(signature.ReturnType, renderContext, 0);
+
+        renderContext.Append(" -> ");
+        if (signature.ReturnType.Equals(Builtin.Nil))
+        {
+            renderContext.Append("void");
+        }
+        else
+        {
+            InnerRenderType(signature.ReturnType, renderContext, 0);
+        }
     }
 
     private static void RenderMultiReturnType(LuaMultiReturnType multiReturnType, LuaRenderContext renderContext,

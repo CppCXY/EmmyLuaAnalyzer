@@ -19,6 +19,8 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     private bool _allowExpandAlias = false;
 
+    public bool InSignature { get; set; } = false;
+
     public void Append(string text)
     {
         _sb.Append(text);
@@ -119,7 +121,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
             
             if (gotoList.Count != 0)
             {
-                AppendLine();
+                Append("\n\n");
                 Append("Go to: ");
                 Append(string.Join("|", gotoList));
                 AppendLine();
@@ -162,5 +164,12 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         {
             _aliasExpand.Add(type);
         }
+    }
+    
+    public void WithSignature(Action action)
+    {
+        InSignature = true;
+        action();
+        InSignature = false;
     }
 }

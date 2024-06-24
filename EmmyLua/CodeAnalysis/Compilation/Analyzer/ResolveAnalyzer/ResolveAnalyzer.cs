@@ -99,7 +99,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
                                 if (parameter.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                                 {
-                                    Context.Compilation.Db.WorkspaceIndex.AddIdRelatedType(luaVariableRefType.Id,
+                                    Context.Compilation.Db.AddIdRelatedType(luaVariableRefType.Id,
                                         multiReturnType.GetElementType(i));
                                 }
                             }
@@ -109,7 +109,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         {
                             if (firstDeclaration.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                             {
-                                Context.Compilation.Db.WorkspaceIndex.AddIdRelatedType(luaVariableRefType.Id,
+                                Context.Compilation.Db.AddIdRelatedType(luaVariableRefType.Id,
                                     returnType);
                             }
                         }
@@ -145,7 +145,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             {
                 var documentId = indexExpr.DocumentId;
                 var ty = Context.Infer(prefixExpr);
-                Compilation.WorkspaceIndex.AddMember(documentId, ty, declaration);
+                Compilation.Db.AddMember(documentId, ty, declaration);
                 Context.ClearMemberCache(ty);
             }
         }
@@ -174,7 +174,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 returnType = multiReturnType.GetElementType(0);
             }
 
-            Compilation.WorkspaceIndex.AddModuleReturns(unResolvedSource.DocumentId, returnType, relatedExpr);
+            Compilation.Db.AddModuleReturns(unResolvedSource.DocumentId, returnType, relatedExpr);
         }
     }
 
@@ -218,7 +218,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         var cfg = analyzeContext.GetControlFlowGraph(mainBlock);
         if (cfg is null)
         {
-            return returnType;
+            return Builtin.Nil;
         }
 
         var prevNodes = cfg.GetPredecessors(cfg.ExitNode).ToList();
@@ -286,11 +286,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
             if (declarationType is LuaVariableRefType variableRefType)
             {
-                Compilation.WorkspaceIndex.AddIdRelatedType(variableRefType.Id, type);
+                Compilation.Db.AddIdRelatedType(variableRefType.Id, type);
             }
             else if (declarationType is GlobalNameType globalNameType)
             {
-                Compilation.WorkspaceIndex.AddGlobalRelationType(declaration.DocumentId, globalNameType.Name, type);
+                Compilation.Db.AddGlobalRelationType(declaration.DocumentId, globalNameType.Name, type);
             }
             else if (declarationType is LuaNamedType namedType)
             {
@@ -301,14 +301,14 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
                     foreach (var member in members)
                     {
-                        Compilation.WorkspaceIndex.AddMember(documentId, namedType, member);
+                        Compilation.Db.AddMember(documentId, namedType, member);
                     }
 
-                    Compilation.WorkspaceIndex.AddIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
+                    Compilation.Db.AddIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
                 }
                 else if (type.IsExtensionType())
                 {
-                    Compilation.WorkspaceIndex.AddSuper(declaration.DocumentId, namedType.Name, type);
+                    Compilation.Db.AddSuper(declaration.DocumentId, namedType.Name, type);
                 }
             }
         }

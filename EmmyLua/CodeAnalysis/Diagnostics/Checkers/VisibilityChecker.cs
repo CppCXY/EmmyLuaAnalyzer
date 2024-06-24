@@ -66,7 +66,7 @@ public class VisibilityChecker(LuaCompilation compilation)
                     continue;
                 }
 
-                var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration);
+                var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration.UniqueId);
                 var parentTable = context.SearchContext.Infer(luaFuncStat.IndexExpr?.PrefixExpr);
                 if (!parentTable.Equals(parentType))
                 {
@@ -90,7 +90,7 @@ public class VisibilityChecker(LuaCompilation compilation)
                     continue;
                 }
 
-                var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration);
+                var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration.UniqueId);
                 var parentTable = context.SearchContext.Infer(luaFuncStat.IndexExpr?.PrefixExpr);
                 if (!parentTable.SubTypeOf(parentType, context.SearchContext))
                 {
