@@ -122,7 +122,7 @@ function debug.getinfo(thread, f, what) end
 ---@overload fun(f:table, var:string):table
 ---@param thread thread
 ---@param f table
----@param var string
+---@param var? string
 ---@return table
 function debug.getlocal(thread, f, var) end
 
@@ -209,8 +209,8 @@ function debug.setfenv(object, env) end
 ---@overload fun(hook:(fun():any), mask:Hookmask)
 ---@param thread thread
 ---@param hook fun():any
----@param mask Hookmask
----@param count number
+---@param mask? Hookmask
+---@param count? number
 function debug.sethook(thread, hook, mask, count) end
 
 ---
@@ -266,7 +266,7 @@ function debug.setuservalue(udata, value, n) end
 ---@overload fun():string
 ---@param thread thread
 ---@param message string
----@param level number
+---@param level? number
 ---@return string
 function debug.traceback(thread, message, level) end
 

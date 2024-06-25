@@ -30,8 +30,8 @@ string = {}
 --- Note that numerical codes are not necessarily portable across platforms.
 ---@overload fun(s:string):number
 ---@param s string
----@param i number
----@param j number
+---@param i? number
+---@param j? number
 ---@return number
 function string.byte(s, i, j) end
 
@@ -58,7 +58,7 @@ function string.char(...) end
 --- a way adequate to your needs.)
 ---@overload fun(func:fun()):string
 ---@param func fun()
----@param strip boolean
+---@param strip? boolean
 ---@return string
 function string.dump(func, strip) end
 
@@ -78,8 +78,8 @@ function string.dump(func, strip) end
 ---@overload fun(s:string, pattern:string):number, number, string
 ---@param s string
 ---@param pattern string
----@param init number
----@param plain boolean
+---@param init? number
+---@param plain? boolean
 ---@return number, number, string
 function string.find(s, pattern, init, plain) end
 
@@ -113,6 +113,7 @@ function string.find(s, pattern, init, plain) end
 --- has any modifier (flags, width, length), the string argument should not
 --- contain embedded zeros.
 ---@param formatstring string
+---@param ... any
 ---@return string
 function string.format(formatstring, ...) end
 
@@ -191,8 +192,8 @@ function string.gmatch(s, pattern) end
 ---@overload fun(s:string, pattern:string, repl:string|fun()):string, number
 ---@param s string
 ---@param pattern string
----@param repl string|fun()
----@param n number
+---@param repl string|fun(param:string)
+---@param n? number
 ---@return string, number
 function string.gsub(s, pattern, repl, n) end
 
@@ -220,7 +221,7 @@ function string.lower(s) end
 ---@overload fun(s:string, pattern:string):any
 ---@param s string
 ---@param pattern string
----@param init number
+---@param init? number
 ---@return any
 function string.match(s, pattern, init) end
 
@@ -229,7 +230,8 @@ function string.match(s, pattern, init) end
 --- is, serialized in binary form) according to the format string `fmt`.
 ---@param fmt string
 ---@param v1 string
----@param v2 string
+---@param v2? string
+---@param ... string
 ---@return string
 function string.pack(fmt, v1, v2, ...) end
 
@@ -252,7 +254,7 @@ function string.packsize(fmt) end
 ---@overload fun(s:string, n:number):string
 ---@param s string
 ---@param n number
----@param sep string
+---@param sep? string
 ---@return string
 function string.rep(s, n, sep) end
 
@@ -289,7 +291,7 @@ function string.sub(s, i, j) end
 ---@overload fun(fmt:string, s:string):string
 ---@param fmt string
 ---@param s string
----@param pos number
+---@param pos? number
 ---@return string
 function string.unpack(fmt, s, pos) end
 

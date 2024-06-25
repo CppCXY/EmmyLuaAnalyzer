@@ -93,5 +93,7 @@ public class LuaDocAggregateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTy
 
 public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
+    public LuaNameToken? PrefixName => FirstChild<LuaNameToken>();
+
     public LuaTemplateTypeToken? TemplateName => FirstChild<LuaTemplateTypeToken>();
 }

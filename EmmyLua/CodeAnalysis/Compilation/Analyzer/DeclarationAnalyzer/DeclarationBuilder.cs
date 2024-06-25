@@ -760,7 +760,6 @@ public class DeclarationBuilder : ILuaElementWalker
             var genericParams = generic.Params.ToList();
             for (var i = 0; i < genericParams.Count; i++)
             {
-                var variadic = i == genericParams.Count - 1 && generic.Variadic;
                 var param = genericParams[i];
                 if (param is { Name: { } name })
                 {
@@ -768,8 +767,7 @@ public class DeclarationBuilder : ILuaElementWalker
                         name.RepresentText,
                         new GenericParamInfo(
                             new(param),
-                            Context.Infer(param.Type),
-                            variadic
+                            Context.Infer(param.Type)
                         )
                     );
                     genericParameters.Add(declaration);

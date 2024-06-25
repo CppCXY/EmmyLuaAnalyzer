@@ -53,8 +53,8 @@ function assert(v, message) end
 --- running (i.e., not stopped).
 ---@alias collectgarbage_opt '"collect"'|'"stop"'|'"restart"'|'"count"'|'"step"'|'"setpause"'|'"incremental"'|'"generational"'|'"isrunning"'
 ---@overload fun():any
----@param opt collectgarbage_opt
----@param arg string
+---@param opt? collectgarbage_opt
+---@param arg? string
 ---@return any
 function collectgarbage(opt, arg) end
 
@@ -80,7 +80,7 @@ function dofile(filename) end
 --- addition of error position information to the message.
 ---@overload fun(message:string)
 ---@param message string
----@param level number
+---@param level? number
 function error(message, level) end
 
 ---
@@ -140,9 +140,9 @@ function ipairs(t) end
 --- binary chunks can crash the interpreter.
 ---@overload fun(chunk:fun():string):any
 ---@param chunk fun():string
----@param chunkname string
----@param mode string
----@param env any
+---@param chunkname? string
+---@param mode? string
+---@param env? any
 function load(chunk, chunkname, mode, env) end
 
 ---@version 5.1
@@ -162,8 +162,8 @@ function loadstring(text, chunkname) end
 --- standard input, if no file name is given.
 ---@overload fun()
 ---@param filename string
----@param mode string
----@param env any
+---@param mode? string
+---@param env? any
 function loadfile(filename, mode, env) end
 
 ---@version 5.1
@@ -199,7 +199,7 @@ function module(name, ...) end
 --- existing fields. In particular, you may set existing fields to nil.
 ---@overload fun(table:table):any
 ---@param table table
----@param index any
+---@param index? any
 ---@return any
 function next(table, index) end
 
@@ -225,11 +225,11 @@ function pairs(t) end
 --- boolean), which is true if the call succeeds without errors. In such case,
 --- `pcall` also returns all results from the call, after this first result. In
 --- case of any error, `pcall` returns **false** plus the error message.
----@overload fun(f:fun():any):boolean|table
----@param f fun():any
----@param arg1 table
----@return boolean|table
-function pcall(f, arg1, ...) end
+---@generic T, R
+---@param f fun(...: T...): R...
+---@param ... T...
+---@return boolean, R...
+function pcall(f, ...) end
 
 ---
 --- Receives any number of arguments, and prints their values to `stdout`,
@@ -309,7 +309,7 @@ function require(modname) end
 --- `index`. a negative number indexes from the end (-1 is the last argument).
 --- Otherwise, `index` must be the string "#", and `select` returns
 --- the total number of extra arguments it received.
----@generic T...
+---@generic T
 ---@param index number
 ---@param ... T...
 ---@return T...
@@ -379,13 +379,15 @@ _VERSION = "Lua 5.4"
 ---
 --- This function is similar to `pcall`, except that it sets a new message
 --- handler `msgh`.
----@param f fun():any
----@param msgh fun():string
----@return any
-function xpcall(f, msgh, arg1, ...) end
+---@generic T, R
+---@param f fun(...:T...): R...
+---@param msgh fun(err:string):void
+---@param ... T...
+---@return boolean, R...
+function xpcall(f, msgh, ...) end
 
 ---@version 5.1, JIT
----@generic T...
+---@generic T
 ---@param i? number
 ---@param j? number
 ---@param list [T...]

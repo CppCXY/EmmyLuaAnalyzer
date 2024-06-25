@@ -159,9 +159,9 @@ package.searchers = {}
 --- (This error message lists all file names it tried to open.)
 ---@overload fun(name:string, path:string):string
 ---@param name string
----@param path string
----@param sep string
----@param rep string
+---@param path? string
+---@param sep? string
+---@param rep? string
 ---@return string
 function package.searchpath(name, path, sep, rep) end
 

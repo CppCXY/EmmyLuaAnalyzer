@@ -33,7 +33,7 @@ public interface IDeclaration
 
     public string RelationInformation { get; }
 
-    public IDeclaration Instantiate(Dictionary<string, LuaType> typeDict);
+    public IDeclaration Instantiate(TypeSubstitution substitution);
 
     public LuaDocumentId DocumentId { get; }
 

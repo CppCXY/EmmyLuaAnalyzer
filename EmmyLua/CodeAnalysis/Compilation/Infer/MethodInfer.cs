@@ -233,7 +233,8 @@ public static class MethodInfer
         SearchContext context)
     {
         var colonCall = false;
-        var genericParameterMap = new Dictionary<string, LuaType>();
+        var typeSubstitution = new TypeSubstitution();
+        typeSubstitution.SetTemplate(genericParams);
         if (callExpr.PrefixExpr is LuaIndexExprSyntax indexExpr)
         {
             colonCall = indexExpr.IsColonIndex;
@@ -243,7 +244,7 @@ public static class MethodInfer
         {
             case (true, false):
             {
-                return InnerInstantiate(signature, callExpr, args, genericParams, genericParameterMap, 1, 0, context);
+                return InnerInstantiate(signature, callExpr, args, typeSubstitution, 1, 0, context);
             }
             case (false, true):
             {
@@ -265,12 +266,12 @@ public static class MethodInfer
                     matchedParam++;
                 }
 
-                return InnerInstantiate(signature, callExpr, args, genericParams, genericParameterMap, 0, matchedParam,
+                return InnerInstantiate(signature, callExpr, args, typeSubstitution, 0, matchedParam,
                     context);
             }
             default:
             {
-                return InnerInstantiate(signature, callExpr, args, genericParams, genericParameterMap, 0, 0, context);
+                return InnerInstantiate(signature, callExpr, args, typeSubstitution, 0, 0, context);
             }
         }
     }
@@ -279,8 +280,7 @@ public static class MethodInfer
         LuaSignature signature,
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        Dictionary<string, LuaType> genericParams,
-        Dictionary<string, LuaType> genericParamsReplace,
+        TypeSubstitution substitution,
         int skipParam,
         int matchedParam,
         SearchContext context)
@@ -292,11 +292,11 @@ public static class MethodInfer
             {
                 var prefixType = context.Infer(callSelf);
                 var parameterType = signature.Parameters[0].Type;
-                GenericInfer.InferInstantiateByType(parameterType, prefixType, genericParams, genericParamsReplace,
+                GenericInfer.InferByType(parameterType, prefixType, substitution,
                     context);
             }
 
-            newParameters.Add(signature.Parameters[0].Instantiate(genericParamsReplace));
+            newParameters.Add(signature.Parameters[0].Instantiate(substitution));
         }
 
         var paramStart = skipParam;
@@ -305,7 +305,7 @@ public static class MethodInfer
         for (var i = 0;
              i + paramStart < signature.Parameters.Count
              && i + argStart < args.Count
-             && genericParamsReplace.Count < genericParams.Count;
+             && !substitution.InferFinished;
              i++)
         {
             var parameter = signature.Parameters[i + paramStart];
@@ -315,30 +315,29 @@ public static class MethodInfer
                 })
             {
                 var varargs = args[(i + argStart)..];
-                GenericInfer.InferInstantiateByExpandTypeAndExprs(expandType, varargs, genericParams,
-                    genericParamsReplace, context);
+                GenericInfer.InferByExpandTypeAndExprs(expandType, varargs, substitution, context);
             }
             else
             {
                 var arg = args[i + argStart];
                 var parameterType = parameter.Type;
-                GenericInfer.InferInstantiateByExpr(parameterType, arg, genericParams, genericParamsReplace,
+                GenericInfer.InferByExpr(parameterType, arg, substitution,
                     context);
             }
         }
 
-        if (genericParamsReplace.Count < genericParams.Count)
-        {
-            foreach (var (name, type) in genericParams)
-            {
-                genericParamsReplace.TryAdd(name, type);
-            }
-        }
-
-        var newReturnType = signature.ReturnType.Instantiate(genericParamsReplace);
+        substitution.AnalyzeDefaultType();
+        var newReturnType = signature.ReturnType.Instantiate(substitution);
         foreach (var parameter in signature.Parameters)
         {
-            newParameters.Add(parameter.Instantiate(genericParamsReplace));
+            if (parameter.Type is LuaExpandType expandType)
+            {
+                newParameters.AddRange(substitution.GetSpreadParameters(expandType.Name));
+            }
+            else
+            {
+                newParameters.Add(parameter.Instantiate(substitution));
+            }
         }
 
         return new LuaSignature(newReturnType, newParameters);

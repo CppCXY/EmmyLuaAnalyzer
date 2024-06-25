@@ -26,7 +26,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
         }
     }
 
-    private async Task<Unit> UpdateOneFileEventAsync(FileEvent fileEvent, CancellationToken cancellationToken)
+    private Task<Unit> UpdateOneFileEventAsync(FileEvent fileEvent, CancellationToken cancellationToken)
     {
         switch (fileEvent.Type)
         {
@@ -35,7 +35,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             {
                 try
                 {
-                    var fileText = await File.ReadAllTextAsync(fileEvent.Uri.GetFileSystemPath(), cancellationToken);
+                    var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.ToUri().LocalPath);
                     var uri = fileEvent.Uri.ToUri().AbsoluteUri;
                     context.UpdateDocument(uri, fileText, cancellationToken);
                 }
@@ -54,7 +54,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             }
         }
 
-        return Unit.Value;
+        return Unit.Task;
     }
 
     private Task<Unit> UpdateManyFileEventAsync(List<FileEvent> fileEvents,

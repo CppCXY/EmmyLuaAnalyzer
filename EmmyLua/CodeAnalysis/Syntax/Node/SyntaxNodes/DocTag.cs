@@ -34,8 +34,6 @@ public class LuaDocGenericParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntax
 public class LuaDocTagGenericSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
     public IEnumerable<LuaDocGenericParamSyntax> Params => ChildrenElement<LuaDocGenericParamSyntax>();
-
-    public bool Variadic => FirstChildToken(LuaTokenKind.TkDots) != null;
 }
 
 public class LuaDocGenericDeclareListSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)

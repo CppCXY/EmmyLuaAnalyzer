@@ -63,6 +63,11 @@ public class ServerContext(ILanguageServerFacade server)
                     Extensions.Add(section.Key);
                 }
             }
+            
+            if (config.GetSection("files:encoding").Value is {} encoding)
+            {
+                SettingManager.WorkspaceEncoding = encoding;
+            }
         }
 
         StartServer(initializeParams);
@@ -77,6 +82,7 @@ public class ServerContext(ILanguageServerFacade server)
             {
                 MainWorkspacePath = rootPath;
                 LuaWorkspace.Monitor = Monitor;
+                SettingManager.SupportMultiEncoding();
                 SettingManager.Watch(MainWorkspacePath);
                 SettingManager.OnSettingChanged += OnConfigChanged;
                 SettingManager.WorkspaceExtensions = Extensions;

@@ -94,7 +94,7 @@ math.huge = nil
 --- *e* (so that the function returns the natural logarithm of `x`).
 ---@overload fun(x:number):number
 ---@param x number
----@param base number
+---@param base? number
 ---@return number
 function math.log(x, base) end
 
@@ -146,8 +146,8 @@ function math.rad(x) end
 --- in the range *[m, n]*. The call `math.random(n)` is equivalent to `math
 --- .random`(1,n).
 ---@overload fun():number
----@param m number
----@param n number
+---@param m? number
+---@param n? number
 ---@return number
 function math.random(m, n) end
 

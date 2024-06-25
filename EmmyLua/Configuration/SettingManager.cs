@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
@@ -33,6 +34,8 @@ public class SettingManager
     private System.Timers.Timer? _timer;
 
     public HashSet<string> WorkspaceExtensions { get; set; } = new();
+
+    public string WorkspaceEncoding { get; set; } = string.Empty;
 
     private void OnChanged(object sender, FileSystemEventArgs e)
     {
@@ -141,6 +144,22 @@ public class SettingManager
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
+        try
+        {
+            if (setting.Workspace.Encoding.Length > 0)
+            {
+                features.Encoding = Encoding.GetEncoding(setting.Workspace.Encoding);
+            }
+            else if (WorkspaceEncoding.Length > 0)
+            {
+                features.Encoding = Encoding.GetEncoding(WorkspaceEncoding);
+            }
+        }
+        catch (Exception)
+        {
+            // ignore
+        }
+
         features.Language = new LuaLanguage(setting.Runtime.Version switch
         {
             LuaVersion.Lua51 => LuaLanguageLevel.Lua51,
@@ -229,5 +248,10 @@ public class SettingManager
 
         var json = JsonConvert.SerializeObject(setting, SerializerSettings);
         File.WriteAllText(SettingPath, json);
+    }
+
+    public static void SupportMultiEncoding()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 }

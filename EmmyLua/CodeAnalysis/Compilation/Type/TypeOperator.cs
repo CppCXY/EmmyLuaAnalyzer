@@ -79,8 +79,8 @@ public class TypeOperator(TypeOperatorKind kind, IDeclaration declaration)
 
     public IDeclaration Declaration { get; } = declaration;
 
-    public virtual TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
-        new TypeOperator(Kind, Declaration.Instantiate(genericMap));
+    public virtual TypeOperator Instantiate(TypeSubstitution substitution) =>
+        new TypeOperator(Kind, Declaration.Instantiate(substitution));
 
     public virtual string BelongTypeName => string.Empty;
 }
@@ -126,9 +126,9 @@ public class BinaryOperator(
         _ => false,
     };
 
-    public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
-        new BinaryOperator(Kind, Left.Instantiate(genericMap), Right.Instantiate(genericMap),
-            Ret.Instantiate(genericMap), Declaration.Instantiate(genericMap));
+    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+        new BinaryOperator(Kind, Left.Instantiate(substitution), Right.Instantiate(substitution),
+            Ret.Instantiate(substitution), Declaration.Instantiate(substitution));
 
     public override string BelongTypeName
     {
@@ -159,9 +159,9 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
 
     public bool IsLen => Kind == TypeOperatorKind.Len;
 
-    public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
-        new UnaryOperator(Kind, Operand.Instantiate(genericMap), Ret.Instantiate(genericMap),
-            Declaration.Instantiate(genericMap));
+    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+        new UnaryOperator(Kind, Operand.Instantiate(substitution), Ret.Instantiate(substitution),
+            Declaration.Instantiate(substitution));
 
     public override string BelongTypeName
     {
@@ -184,9 +184,9 @@ public class IndexOperator(LuaType type, LuaType key, LuaType ret, IDeclaration 
     public LuaType Key { get; } = key;
     public LuaType Ret { get; } = ret;
 
-    public override TypeOperator Instantiate(Dictionary<string, LuaType> genericMap) =>
-        new IndexOperator(Type.Instantiate(genericMap), Key.Instantiate(genericMap),
-            Ret.Instantiate(genericMap), Declaration.Instantiate(genericMap));
+    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+        new IndexOperator(Type.Instantiate(substitution), Key.Instantiate(substitution),
+            Ret.Instantiate(substitution), Declaration.Instantiate(substitution));
 
     public override string BelongTypeName
     {

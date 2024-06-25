@@ -391,6 +391,12 @@
         },
         "preloadFileSize": {
           "type": "integer"
+        },
+        "encoding": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }

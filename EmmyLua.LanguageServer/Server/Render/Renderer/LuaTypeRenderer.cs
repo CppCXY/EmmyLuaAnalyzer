@@ -280,7 +280,7 @@ public static class LuaTypeRenderer
             }
             case LuaTemplateType templateType:
             {
-                renderContext.Append($"<{templateType.TemplateName}>");
+                renderContext.Append($"{templateType.PrefixName}<{templateType.TemplateName}>");
                 break;
             }
             case LuaVariableRefType variableRefType:
@@ -423,10 +423,6 @@ public static class LuaTypeRenderer
                 }
 
                 renderContext.Append(genericParameters[i].Name);
-                if (genericParameters[i].Info is GenericParamInfo { Variadic: true })
-                {
-                    renderContext.Append("...");
-                }
             }
 
             renderContext.Append('>');

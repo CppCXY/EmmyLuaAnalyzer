@@ -47,8 +47,8 @@ function utf8.codes(s) end
 --- sequence.
 ---@overload fun(s:string):number
 ---@param s string
----@param i number
----@param j number
+---@param i? number
+---@param j? number
 ---@return number
 function utf8.codepoint(s, i, j) end
 
@@ -59,8 +59,8 @@ function utf8.codepoint(s, i, j) end
 --- plus the position of the first invalid byte.
 ---@overload fun(s:string):number
 ---@param s string
----@param i number
----@param j number
+---@param i? number
+---@param j? number
 ---@return number
 function utf8.len(s, i, j) end
 
@@ -79,6 +79,6 @@ function utf8.len(s, i, j) end
 ---@overload fun(s:string):number
 ---@param s string
 ---@param n number
----@param i number
+---@param i? number
 ---@return number
 function utf8.offset(s, n, i) end

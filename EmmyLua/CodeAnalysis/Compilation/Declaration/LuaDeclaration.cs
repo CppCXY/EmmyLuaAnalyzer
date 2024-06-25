@@ -73,11 +73,11 @@ public class LuaDeclaration(
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
         new(Name, otherInfo, Feature, Visibility);
 
-    public IDeclaration Instantiate(Dictionary<string, LuaType> genericMap)
+    public IDeclaration Instantiate(TypeSubstitution substitution)
     {
         if (Info.DeclarationType is { } type)
         {
-            return WithInfo(Info with { DeclarationType = type.Instantiate(genericMap) });
+            return WithInfo(Info with { DeclarationType = type.Instantiate(substitution) });
         }
 
         return this;
@@ -234,8 +234,7 @@ public record EnumFieldInfo(
 
 public record GenericParamInfo(
     LuaElementPtr<LuaDocGenericParamSyntax> GenericParamDefPtr,
-    LuaType? DeclarationType,
-    bool Variadic = false
+    LuaType? DeclarationType
 ) : DeclarationInfo(GenericParamDefPtr.UpCast(), DeclarationType)
 {
     public LuaElementPtr<LuaDocGenericParamSyntax> GenericParamDefPtr => Ptr.Cast<LuaDocGenericParamSyntax>();

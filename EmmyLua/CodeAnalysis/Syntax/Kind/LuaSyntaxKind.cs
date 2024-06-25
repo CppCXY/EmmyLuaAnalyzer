@@ -92,6 +92,7 @@ public enum LuaSyntaxKind : ushort
     TypeVariadic,
     TypeExpand,
     TypeTemplate,
+    TypeMatch,
 
     // doc parameter
     TypedParameter,

@@ -182,16 +182,16 @@ public class Members(SearchContext context)
         var genericParams = context.Compilation.Db.QueryGenericParams(genericType.Name).ToList();
         var genericArgs = genericType.GenericArgs;
 
-        var genericMap = new Dictionary<string, LuaType>();
+        var substitution = new TypeSubstitution();
         for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
         {
-            genericMap[genericParams[i].Name] = genericArgs[i];
+            substitution.Add(genericParams[i].Name, genericArgs[i]);
         }
 
         instanceMembers = [];
         foreach (var member in members)
         {
-            instanceMembers.Add(member.Instantiate(genericMap));
+            instanceMembers.Add(member.Instantiate(substitution));
         }
 
         if (context.Features.Cache)

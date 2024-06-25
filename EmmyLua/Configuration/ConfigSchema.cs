@@ -198,6 +198,9 @@ public class Workspace
 
     [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
     public int PreloadFileSize { get; set; } = 1048576; // 1Mb
+
+    [JsonProperty("encoding", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    public string Encoding { get; set; } = string.Empty;
 }
 
 public class Resource

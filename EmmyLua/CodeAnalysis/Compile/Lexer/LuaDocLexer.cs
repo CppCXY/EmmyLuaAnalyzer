@@ -311,6 +311,11 @@ public class LuaDocLexer(LuaDocument document)
                     }
                 }
             }
+            case '=':
+            {
+                Reader.Bump();
+                return LuaTokenKind.TkDocMatch;
+            }
             case '#' or '@':
             {
                 Reader.EatWhen(_ => true);
@@ -359,7 +364,13 @@ public class LuaDocLexer(LuaDocument document)
 
                         return false;
                     });
-                return LuaTokenKind.TkName;
+
+
+                return Reader.CurrentSavedText switch
+                {
+                    "true" or "false" => LuaTokenKind.TkDocBoolean,
+                    _ => LuaTokenKind.TkName
+                };
             }
             default:
             {

@@ -120,4 +120,6 @@ public enum LuaTokenKind : ushort
     TkAt, // '@', invalid lua token, but for postfix completion
     TkVersionNumber, // version number
     TkTypeTemplate, // type template
+    TkDocMatch, // =
+    TkDocBoolean, // true false
 }

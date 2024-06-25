@@ -202,9 +202,10 @@ public static class TypeInfer
 
     private static LuaType InferTemplateType(LuaDocTemplateTypeSyntax templateType, SearchContext context)
     {
+        var prefixName = templateType.PrefixName?.RepresentText ?? string.Empty;
         if (templateType.TemplateName?.Name is { } name)
         {
-            return new LuaTemplateType(name);
+            return new LuaTemplateType(prefixName, name);
         }
 
         return Builtin.Unknown;

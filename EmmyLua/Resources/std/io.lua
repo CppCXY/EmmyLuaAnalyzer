@@ -75,7 +75,7 @@ function io.lines(filename, ...) end
 --- some systems to open the file in binary mode.
 ---@overload fun(filename:string):file
 ---@param filename string
----@param mode OpenMode
+---@param mode? OpenMode
 ---@return file
 function io.open(filename, mode) return end
 
@@ -94,7 +94,7 @@ function io.output(file) end
 --- or to write data to this program (if `mode` is "`w`").
 ---@overload fun(prog:string):file
 ---@param prog string
----@param mode string | '"r"' | '"w"'
+---@param mode? string | '"r"' | '"w"'
 ---@return file
 function io.popen(prog, mode) end
 

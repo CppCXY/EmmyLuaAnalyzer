@@ -37,7 +37,7 @@ public class LuaType(LuaTypeAttribute attribute) : IEquatable<LuaType>
         return other is not null && context.IsSubTypeOf(this, other);
     }
 
-    public virtual LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public virtual LuaType Instantiate(TypeSubstitution substitution)
     {
         return this;
     }
@@ -80,20 +80,22 @@ public class LuaNamedType(
         return Name.GetHashCode();
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        return genericReplace.TryGetValue(Name, out var type) ? type : this;
+        return substitution.Substitute(Name, this);
     }
 }
 
-public class LuaTemplateType(string templateName)
+public class LuaTemplateType(string prefixName, string templateName)
     : LuaType(LuaTypeAttribute.None), IEquatable<LuaTemplateType>
 {
     public string TemplateName { get; } = templateName;
 
+    public string PrefixName { get; } = prefixName;
+
     public bool Equals(LuaTemplateType? other)
     {
-        return TemplateName == other?.TemplateName;
+        return TemplateName == other?.TemplateName && PrefixName == other.PrefixName;
     }
 }
 
@@ -123,9 +125,9 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes)
         return UnionTypes.GetHashCode();
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        var newUnionTypes = UnionTypes.Select(t => t.Instantiate(genericReplace));
+        var newUnionTypes = UnionTypes.Select(t => t.Instantiate(substitution));
         return new LuaUnionType(newUnionTypes);
     }
 }
@@ -157,9 +159,9 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
         return HashCode.Combine(Declarations);
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        var newAggregateTypes = Declarations.Select(t => t.Instantiate(genericReplace));
+        var newAggregateTypes = Declarations.Select(t => t.Instantiate(substitution));
         return new LuaAggregateType(newAggregateTypes);
     }
 }
@@ -196,10 +198,10 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
         return TupleDeclaration.GetHashCode();
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
         var newTupleTypes = TupleDeclaration
-            .Select(t => t.Instantiate(genericReplace))
+            .Select(t => t.Instantiate(substitution))
             .ToList();
         if (newTupleTypes.Count != 0 && newTupleTypes[^1].Type is LuaMultiReturnType multiReturnType)
         {
@@ -248,9 +250,9 @@ public class LuaArrayType(LuaType baseType)
         return HashCode.Combine(base.GetHashCode(), BaseType);
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        var newBaseType = BaseType.Instantiate(genericReplace);
+        var newBaseType = BaseType.Instantiate(substitution);
         return new LuaArrayType(newBaseType);
     }
 }
@@ -280,18 +282,15 @@ public class LuaGenericType(string baseName, List<LuaType> genericArgs)
         return HashCode.Combine(base.GetHashCode(), GenericArgs);
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
         var newName = Name;
-        if (genericReplace.TryGetValue(Name, out var type))
+        if (substitution.Substitute(Name) is LuaNamedType namedType)
         {
-            if (type is LuaNamedType namedType)
-            {
-                newName = namedType.Name;
-            }
+            newName = namedType.Name;
         }
 
-        var newGenericArgs = GenericArgs.Select(t => t.Instantiate(genericReplace)).ToList();
+        var newGenericArgs = GenericArgs.Select(t => t.Instantiate(substitution)).ToList();
         return new LuaGenericType(newName, newGenericArgs);
     }
 }
@@ -428,9 +427,9 @@ public class LuaVariadicType(LuaType baseType)
         return base.GetHashCode();
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        var newBaseType = BaseType.Instantiate(genericReplace);
+        var newBaseType = BaseType.Instantiate(substitution);
         return new LuaVariadicType(newBaseType);
     }
 }
@@ -461,17 +460,9 @@ public class LuaExpandType(string baseName)
         return base.GetHashCode();
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        if (genericReplace.TryGetValue(Name, out var type))
-        {
-            if (type is LuaMultiReturnType returnType)
-            {
-                return returnType;
-            }
-        }
-
-        return this;
+        return substitution.Substitute(Name, this);
     }
 }
 
@@ -542,21 +533,36 @@ public class LuaMultiReturnType : LuaType, IEquatable<LuaMultiReturnType>
         return false;
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
         if (RetTypes is not null)
         {
             var returnTypes = new List<LuaType>();
             foreach (var retType in RetTypes)
             {
-                returnTypes.Add(retType.Instantiate(genericReplace));
+                var substituteType = retType.Instantiate(substitution);
+                if (substituteType is LuaMultiReturnType multiReturnType)
+                {
+                    if (multiReturnType.RetTypes is { } retTypes)
+                    {
+                        returnTypes.AddRange(retTypes);
+                    }
+                    else if (multiReturnType.BaseType is { } baseType)
+                    {
+                        returnTypes.Add(baseType);
+                    }
+                }
+                else
+                {
+                    returnTypes.Add(substituteType);
+                }
             }
 
             return new LuaMultiReturnType(returnTypes);
         }
         else
         {
-            return new LuaMultiReturnType(BaseType!.Instantiate(genericReplace));
+            return new LuaMultiReturnType(BaseType!.Instantiate(substitution));
         }
     }
 
@@ -597,11 +603,11 @@ public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : I
         return HashCode.Combine(Parameters);
     }
 
-    public LuaSignature Instantiate(Dictionary<string, LuaType> genericReplace)
+    public LuaSignature Instantiate(TypeSubstitution substitution)
     {
-        var newReturnType = ReturnType.Instantiate(genericReplace);
+        var newReturnType = ReturnType.Instantiate(substitution);
         var newParameters = Parameters
-            .Select(parameter => parameter.Instantiate(genericReplace))
+            .Select(parameter => parameter.Instantiate(substitution))
             .ToList();
         return new LuaSignature(newReturnType, newParameters);
     }
@@ -651,10 +657,10 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
         return HashCode.Combine(base.GetHashCode(), MainSignature, ColonDefine);
     }
 
-    public override LuaType Instantiate(Dictionary<string, LuaType> genericReplace)
+    public override LuaType Instantiate(TypeSubstitution substitution)
     {
-        var newMainSignature = MainSignature.Instantiate(genericReplace);
-        var newOverloads = Overloads?.Select(signature => signature.Instantiate(genericReplace)).ToList();
+        var newMainSignature = MainSignature.Instantiate(substitution);
+        var newOverloads = Overloads?.Select(signature => signature.Instantiate(substitution)).ToList();
         return new LuaMethodType(newMainSignature, newOverloads, ColonDefine);
     }
 }
@@ -672,6 +678,7 @@ public class LuaGenericMethodType : LuaMethodType
         bool colonDefine) : base(mainSignature, overloads, colonDefine)
     {
         GenericParamDecls = genericParamDecls;
+        // TODO BUG
         GenericParams = genericParamDecls.ToDictionary(decl => decl.Name, decl => decl.Type);
     }
 
@@ -721,7 +728,8 @@ public class LuaVariableRefType(SyntaxElementId id)
 }
 
 public class GlobalNameType(string name)
-    : LuaType(LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember), IEquatable<GlobalNameType>
+    : LuaType(LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex | LuaTypeAttribute.HasMember),
+        IEquatable<GlobalNameType>
 {
     public string Name { get; } = name;
 
@@ -745,4 +753,3 @@ public class GlobalNameType(string name)
         return context.Compilation.Db.QueryRelatedGlobalType(Name) ?? this;
     }
 }
-

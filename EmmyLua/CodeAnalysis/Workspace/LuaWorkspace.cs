@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Common;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace.Module;
@@ -134,7 +135,8 @@ public class LuaWorkspace
         }
 
         var documents =
-            new List<LuaDocument>(files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)));
+            new List<LuaDocument>(files.AsParallel().Select(
+                file => LuaDocument.FromPath(file, ReadFile(file), Features.Language)));
 
         foreach (var document in documents)
         {
@@ -313,5 +315,11 @@ public class LuaWorkspace
     public IDocument? GetDocument(int id)
     {
         return GetDocument(new LuaDocumentId(id));
+    }
+
+    // 通过文件路径和设置中的编码读取文件
+    public string ReadFile(string path)
+    {
+        return File.ReadAllText(path, Features.Encoding);
     }
 }

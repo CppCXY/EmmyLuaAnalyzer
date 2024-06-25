@@ -57,6 +57,40 @@ public static class TypesParser
         return cm;
     }
 
+    public static void ReturnTypeList(LuaDocParser p)
+    {
+        if (p.Current is LuaTokenKind.TkDocMatch)
+        {
+            var cm = ReturnMatchType(p);
+            while (cm.IsComplete && p.Current is LuaTokenKind.TkDocMatch)
+            {
+                p.Bump();
+                cm = ReturnMatchType(p);
+            }
+
+            return;
+        }
+
+        TypeList(p);
+    }
+
+    private static CompleteMarker ReturnMatchType(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            p.Bump();
+            p.Expect(LuaTokenKind.TkLeftParen);
+            TypeList(p);
+            p.Expect(LuaTokenKind.TkRightParen);
+            return m.Complete(p, LuaSyntaxKind.TypeMatch);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.TypeMatch, e.Message);
+        }
+    }
+
     public static CompleteMarker AliasType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -153,6 +187,18 @@ public static class TypesParser
                     pcm = m.Complete(p, LuaSyntaxKind.TypeExpand);
                     return;
                 }
+                case LuaTokenKind.TkTypeTemplate:
+                {
+                    if (pcm.Kind != LuaSyntaxKind.TypeName)
+                    {
+                        return;
+                    }
+
+                    var m = pcm.Reset(p);
+                    p.Bump();
+                    pcm = m.Complete(p, LuaSyntaxKind.TypeTemplate);
+                    return;
+                }
                 default:
                 {
                     return;
@@ -168,7 +214,7 @@ public static class TypesParser
             LuaTokenKind.TkLeftBrace => TableType(p),
             LuaTokenKind.TkLeftParen => ParenType(p),
             LuaTokenKind.TkLeftBracket => TupleType(p),
-            LuaTokenKind.TkString or LuaTokenKind.TkInt => LiteralType(p),
+            LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkDocBoolean => LiteralType(p),
             LuaTokenKind.TkName => FuncOrNameType(p),
             LuaTokenKind.TkTypeTemplate => TemplateType(p),
             LuaTokenKind.TkDots => VariadicType(p),
@@ -313,12 +359,7 @@ public static class TypesParser
 
                 if (p.Current is LuaTokenKind.TkDots)
                 {
-                    p.Bump();
-                    if (p.Current is LuaTokenKind.TkColon)
-                    {
-                        p.Bump();
-                        Type(p);
-                    }
+                    VariadicTypedParameter(p);
                 }
             }
 
@@ -355,6 +396,34 @@ public static class TypesParser
             else
             {
                 return m.Fail(p, LuaSyntaxKind.TypedParameter, "expect <name> or '...'");
+            }
+
+            if (p.Current is LuaTokenKind.TkColon)
+            {
+                p.Bump();
+                Type(p);
+            }
+
+            return m.Complete(p, LuaSyntaxKind.TypedParameter);
+        }
+        catch (UnexpectedTokenException)
+        {
+            return m.Fail(p, LuaSyntaxKind.TypedParameter, "expect typed parameter");
+        }
+    }
+
+    private static CompleteMarker VariadicTypedParameter(LuaDocParser p)
+    {
+        var m = p.Marker();
+        try
+        {
+            if (p.Current is LuaTokenKind.TkDots)
+            {
+                p.Bump();
+            }
+            else
+            {
+                return m.Fail(p, LuaSyntaxKind.TypedParameter, "expect '...'");
             }
 
             if (p.Current is LuaTokenKind.TkColon)
