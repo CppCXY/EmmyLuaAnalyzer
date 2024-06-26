@@ -5,6 +5,7 @@ using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -86,7 +87,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         InsertText = insertText;
         return this;
     }
-
+    
     public CompletionItemBuilder WithDotCheckBracketLabel(LuaIndexExprSyntax indexExpr)
     {
         if (Label.StartsWith('['))
@@ -148,7 +149,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         LabelDetails = new CompletionItemLabelDetails()
                         {
                             Description = CompleteContext.RenderBuilder.RenderType(Type,
-                                    CompleteContext.RenderFeature),
+                                CompleteContext.RenderFeature),
                         },
                         InsertText = InsertText,
                         Data = Data,
@@ -264,6 +265,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                 Description =
                     CompleteContext.RenderBuilder.RenderType(signature.ReturnType, CompleteContext.RenderFeature)
             },
+            InsertText = InsertText,
             Data = Data,
             Command = Command,
             TextEdit = TextOrReplaceEdit

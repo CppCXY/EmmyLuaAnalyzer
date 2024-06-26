@@ -1,6 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Util;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -13,6 +17,12 @@ public class MemberProvider : ICompleteProviderBase
         {
             case { Kind: LuaTokenKind.TkDot or LuaTokenKind.TkColon }:
             {
+                if (triggerToken.Parent is LuaFuncStatSyntax funcStatSyntax)
+                {
+                    AddFuncOverrideCompletion(context, funcStatSyntax);
+                    return;
+                }
+
                 AddCompletionNormal(context);
                 break;
             }
@@ -41,8 +51,14 @@ public class MemberProvider : ICompleteProviderBase
             return;
         }
 
+        if (indexExpr.Parent is LuaFuncStatSyntax funcStatSyntax)
+        {
+            AddFuncOverrideCompletion(context, funcStatSyntax);
+            return;
+        }
+
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
-        if (!prefixType.Equals(Builtin.Table))
+        if (prefixType.HasMember)
         {
             var colon = indexExpr.IsColonIndex;
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
@@ -53,6 +69,58 @@ public class MemberProvider : ICompleteProviderBase
                     .WithDotCheckBracketLabel(indexExpr)
                     .WithCheckDeclaration(member)
                     .AddToContext();
+            }
+        }
+    }
+
+    private void AddFuncOverrideCompletion(CompleteContext context, LuaFuncStatSyntax funcStatSyntax)
+    {
+        if (funcStatSyntax.IndexExpr is null)
+        {
+            return;
+        }
+
+        var indexExpr = funcStatSyntax.IndexExpr;
+        var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
+        if (prefixType.HasMember)
+        {
+            var colon = indexExpr.IsColonIndex;
+            foreach (var member in context.SemanticModel
+                         .Context.GetSuperMembers(prefixType))
+            {
+                if (member.Type is LuaMethodType methodType)
+                {
+                    var insertRange = context.TriggerToken!.Range.ToLspRange(context.SemanticModel.Document);
+                    if (context.TriggerToken is { Kind: LuaTokenKind.TkDot or LuaTokenKind.TkColon })
+                    {
+                        insertRange = insertRange with
+                        {
+                            Start = new Position(insertRange.Start.Line, insertRange.Start.Character + 1)
+                        };
+                    }
+
+                    var replaceRange = insertRange;
+                    if (funcStatSyntax.ClosureExpr?.ParamList?.FirstChildToken(LuaTokenKind.TkRightParen) is { } token)
+                    {
+                        var col = context.SemanticModel.Document.GetCol(token.Range.EndOffset);
+                        replaceRange = new Range(insertRange.Start, new Position(insertRange.End.Line, col));
+                    }
+
+                    var textOrReplaceEdit = new TextEditOrInsertReplaceEdit(new TextEdit()
+                    {
+                        NewText =
+                            $"{member.Name}{MakeSignature(methodType.MainSignature, methodType.ColonDefine, colon)}",
+                        Range = replaceRange,
+                    });
+
+                    context.CreateCompletion($"override {member.Name}", member.Type)
+                        .WithColon(colon)
+                        .WithTextEditOrReplaceEdit(textOrReplaceEdit)
+                        .WithData(member.RelationInformation)
+                        .WithDotCheckBracketLabel(indexExpr)
+                        .WithCheckDeclaration(member)
+                        .AddToContext();
+                }
             }
         }
     }
@@ -106,5 +174,43 @@ public class MemberProvider : ICompleteProviderBase
                 }
             }
         }
+    }
+
+    private string MakeSignature(LuaSignature signature, bool colonDefine, bool colonCall)
+    {
+        var sb = new StringBuilder();
+        sb.Append('(');
+        var parameters = signature.Parameters;
+        switch ((colonDefine, colon: colonCall))
+        {
+            case (true, false):
+            {
+                sb.Append("self");
+                if (parameters.Count > 0)
+                {
+                    sb.Append(", ");
+                }
+
+                break;
+            }
+            case (false, true):
+            {
+                parameters = parameters.Skip(1).ToList();
+                break;
+            }
+        }
+
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            var parameter = parameters[i];
+            sb.Append(parameter.Name);
+            if (i < parameters.Count - 1)
+            {
+                sb.Append(", ");
+            }
+        }
+
+        sb.Append(')');
+        return sb.ToString();
     }
 }

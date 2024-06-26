@@ -163,6 +163,11 @@ public class SearchContext
         return Members.GetMembers(type).GroupBy(m => m.Name).Select(g => g.First());
     }
 
+    public IEnumerable<IDeclaration> GetSuperMembers(LuaType type)
+    {
+        return Members.GetSupersMembers(type).GroupBy(m => m.Name).Select(g => g.First());
+    }
+
     public IEnumerable<IDeclaration> FindMember(LuaType type, string name)
     {
         return Members.FindMember(type, name);

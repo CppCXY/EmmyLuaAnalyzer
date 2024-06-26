@@ -253,21 +253,21 @@ public static class StatementParser
             if (suffix && cm.IsComplete && p.Current is LuaTokenKind.TkDot or LuaTokenKind.TkColon)
             {
                 kind = LuaSyntaxKind.IndexExpr;
-                var m1 = cm.Precede(p);
+                m = cm.Precede(p);
                 ExpressionParser.IndexStruct(p);
-                cm = m1.Complete(p, kind);
+                cm = m.Complete(p, kind);
                 while (cm.IsComplete && p.Current is LuaTokenKind.TkDot)
                 {
-                    var m2 = cm.Precede(p);
+                    m = cm.Precede(p);
                     ExpressionParser.IndexStruct(p);
-                    cm = m2.Complete(p, kind);
+                    cm = m.Complete(p, kind);
                 }
 
                 if (cm.IsComplete && p.Current is LuaTokenKind.TkColon)
                 {
-                    var m3 = cm.Precede(p);
+                    m = cm.Precede(p);
                     ExpressionParser.IndexStruct(p);
-                    cm = m3.Complete(p, kind);
+                    cm = m.Complete(p, kind);
                 }
             }
 
