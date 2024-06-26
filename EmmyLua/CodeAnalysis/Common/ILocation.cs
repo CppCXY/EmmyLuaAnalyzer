@@ -13,5 +13,6 @@ public interface ILocation
     public int EndCol { get; }
 
     public string UriLocation => $"{Document.Uri}#{StartLine}:{StartCol}-{EndLine}:{EndCol}";
-}
 
+    public string LspLocation => $"{Document.Uri}#{StartLine + 1}:{StartCol}";
+}

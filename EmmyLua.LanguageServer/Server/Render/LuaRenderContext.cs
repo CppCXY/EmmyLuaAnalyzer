@@ -115,7 +115,7 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
                 var typeDeclaration = SearchContext.Compilation.Db.QueryNamedTypeDefinitions(typeName).FirstOrDefault();
                 if (typeDeclaration is not null)
                 {
-                    gotoList.Add($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.UriLocation})");
+                    gotoList.Add($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.LspLocation})");
                 }
             }
             
