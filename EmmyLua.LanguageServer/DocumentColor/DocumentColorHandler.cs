@@ -13,9 +13,7 @@ public class DocumentColorHandler(ServerContext context) : DocumentColorHandlerB
     protected override DocumentColorRegistrationOptions CreateRegistrationOptions(ColorProviderCapability capability,
         ClientCapabilities clientCapabilities)
     {
-        return new()
-        {
-        };
+        return new();
     }
 
     public override Task<Container<ColorInformation>?> Handle(DocumentColorParams request, CancellationToken cancellationToken)

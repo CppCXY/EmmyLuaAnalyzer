@@ -1,17 +1,26 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.CodeLens;
 
 public class CodeLensBuilder
 {
-    public static string VscodeCommandName = "emmy.showReferences";
+    private const string VscodeCommandName = "emmy.showReferences";
+    private const string OtherCommandName = "editor.action.showReferences";
+
+    private static readonly JsonSerializer Serializer = new JsonSerializer()
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+    };
 
     public CodeLensContainer Build(SemanticModel semanticModel, ServerContext context)
     {
@@ -56,10 +65,10 @@ public class CodeLensBuilder
                         var semanticModel = context.GetSemanticModel(documentId);
                         if (semanticModel is not null)
                         {
-                            var references = semanticModel.FindReferences(element);
+                            var references = semanticModel.FindReferences(element).ToList();
                             codeLens = codeLens with
                             {
-                                Command = MakeCommand(references.Count() - 1, nameElement)
+                                Command = MakeCommand(references, nameElement, context)
                             };
                         }
                     }
@@ -73,17 +82,27 @@ public class CodeLensBuilder
 
         return codeLens;
     }
+    
+    
 
-    private static Command MakeCommand(int count, LuaSyntaxElement element)
+    private static Command MakeCommand(List<ReferenceResult> results, LuaSyntaxElement element,
+        ServerContext serverContext)
     {
         var range = element.Range;
         var line = element.Tree.Document.GetLine(range.StartOffset);
         var col = element.Tree.Document.GetCol(range.StartOffset);
+        var position = new Position(line, col);
+        var locations = results.Select(it => it.Location.ToLspLocation()).ToList();
         return new Command
         {
-            Title = $"{count} usage",
-            Name = VscodeCommandName,
-            Arguments = [element.Tree.Document.Uri, line, col]
+            Title = $"{results.Count - 1} usage",
+            Name = serverContext.IsVscode ? VscodeCommandName : OtherCommandName,
+            Arguments =
+            [
+                element.Tree.Document.Uri,
+                JToken.FromObject(position, Serializer),
+                JToken.FromObject(locations, Serializer)
+            ]
         };
     }
 }
