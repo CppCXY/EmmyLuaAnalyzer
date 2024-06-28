@@ -132,6 +132,11 @@ public static class GenericInfer
 
         foreach (var fieldSyntax in tableExpr.FieldList)
         {
+            if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
+            {
+                break;
+            }
+
             if (fieldSyntax.IsValue)
             {
                 keyType = keyType.Union(Builtin.Integer);
@@ -140,7 +145,6 @@ public static class GenericInfer
             {
                 keyType = keyType.Union(Builtin.String);
             }
-
             var fieldValueType = context.InferAndUnwrap(fieldSyntax.Value);
             valueType = valueType.Union(fieldValueType);
         }
@@ -168,6 +172,11 @@ public static class GenericInfer
 
                 foreach (var field in tableExpr.FieldList)
                 {
+                    if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
+                    {
+                        break;
+                    }
+
                     if (field.IsValue)
                     {
                         var fieldValueType = context.InferAndUnwrap(field.Value);
