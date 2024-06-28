@@ -221,7 +221,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
     private void CalcResolveParameters(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedClosureParameters { CallExprSyntax.PrefixExpr: { } prefixExpr })
+        if (unResolved is UnResolvedClosureParameters { CallExpr.PrefixExpr: { } prefixExpr })
         {
             var prefixType = context.Infer(prefixExpr);
             if (prefixType.Equals(Builtin.Unknown))

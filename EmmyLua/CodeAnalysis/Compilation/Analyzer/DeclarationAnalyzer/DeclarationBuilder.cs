@@ -337,7 +337,6 @@ public class DeclarationBuilder : ILuaElementWalker
                         {
                             DeclarationType = definedType,
                         };
-                        unResolveDeclaration.IsTypeDeclaration = true;
                     }
                 }
             }
@@ -609,7 +608,7 @@ public class DeclarationBuilder : ILuaElementWalker
                             var unResolveDeclaration =
                                 new UnResolvedDeclaration(declaration, relatedExpr, ResolveState.UnResolvedType);
                             AddUnResolved(unResolveDeclaration);
-
+                            var isTypeDeclaration = false;
                             if (i == 0)
                             {
                                 var definedType = FindFirstLocalOrAssignType(luaAssignStat);
@@ -620,11 +619,11 @@ public class DeclarationBuilder : ILuaElementWalker
                                         DeclarationType = definedType,
                                         TypeDecl = true
                                     };
-                                    unResolveDeclaration.IsTypeDeclaration = true;
+                                    isTypeDeclaration = true;
                                 }
                             }
 
-                            Db.AddGlobal(DocumentId, unResolveDeclaration.IsTypeDeclaration,
+                            Db.AddGlobal(DocumentId, isTypeDeclaration,
                                 name.RepresentText, declaration);
                             AddDeclaration(nameExpr.Position, declaration);
                         }
@@ -638,37 +637,38 @@ public class DeclarationBuilder : ILuaElementWalker
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
-                    if (indexExpr.Name is null)
+                    if (indexExpr.Name is {} name)
                     {
-                        break;
-                    }
-
-                    var valueExprPtr = relatedExpr?.RetId == 0
-                        ? new(relatedExpr.Expr)
-                        : LuaElementPtr<LuaExprSyntax>.Empty;
-                    var declaration = new LuaDeclaration(
-                        indexExpr.Name,
-                        new IndexInfo(
-                            new(indexExpr),
-                            valueExprPtr,
-                            luaType
-                        )
-                    );
-                    AnalyzeDeclarationDoc(declaration, luaAssignStat);
-                    var unResolveDeclaration = new UnResolvedDeclaration(declaration, relatedExpr,
-                        ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
-                    AddUnResolved(unResolveDeclaration);
-                    if (i == 0)
-                    {
-                        var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
-                        if (declarationType is not null && declaration.Info is IndexInfo indexInfo)
+                        var valueExprPtr = relatedExpr?.RetId == 0
+                            ? new(relatedExpr.Expr)
+                            : LuaElementPtr<LuaExprSyntax>.Empty;
+                        var declaration = new LuaDeclaration(
+                            name,
+                            new IndexInfo(
+                                new(indexExpr),
+                                valueExprPtr,
+                                luaType
+                            )
+                        );
+                        AnalyzeDeclarationDoc(declaration, luaAssignStat);
+                        var unResolveDeclaration = new UnResolvedDeclaration(declaration, relatedExpr,
+                            ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
+                        AddUnResolved(unResolveDeclaration);
+                        if (i == 0)
                         {
-                            declaration.Info = indexInfo with
+                            var declarationType = FindFirstLocalOrAssignType(luaAssignStat);
+                            if (declarationType is not null && declaration.Info is IndexInfo indexInfo)
                             {
-                                DeclarationType = declarationType,
-                            };
-                            unResolveDeclaration.IsTypeDeclaration = true;
+                                declaration.Info = indexInfo with
+                                {
+                                    DeclarationType = declarationType,
+                                };
+                            }
                         }
+                    }
+                    else if (indexExpr is { IndexKeyExpr: { } indexKeyExpr })
+                    {
+
                     }
 
                     break;

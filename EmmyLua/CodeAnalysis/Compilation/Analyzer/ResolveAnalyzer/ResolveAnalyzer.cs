@@ -94,9 +94,9 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         var returnType = methodType.MainSignature.ReturnType;
                         if (returnType is LuaMultiReturnType multiReturnType)
                         {
-                            for (var i = 0; i < unResolvedForRangeParameter.ParameterLuaDeclarations.Count; i++)
+                            for (var i = 0; i < unResolvedForRangeParameter.Parameters.Count; i++)
                             {
-                                var parameter = unResolvedForRangeParameter.ParameterLuaDeclarations[i];
+                                var parameter = unResolvedForRangeParameter.Parameters[i];
                                 if (parameter.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                                 {
                                     Context.Compilation.Db.AddIdRelatedType(luaVariableRefType.Id,
@@ -104,7 +104,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 }
                             }
                         }
-                        else if (unResolvedForRangeParameter.ParameterLuaDeclarations.FirstOrDefault() is
+                        else if (unResolvedForRangeParameter.Parameters.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
                             if (firstDeclaration.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
@@ -182,7 +182,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (unResolved is UnResolvedClosureParameters unResolvedClosureParameters)
         {
-            var callExpr = unResolvedClosureParameters.CallExprSyntax;
+            var callExpr = unResolvedClosureParameters.CallExpr;
             var prefixType = Context.Infer(callExpr.PrefixExpr);
             var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
             Context.FindMethodsForType(prefixType, type =>
@@ -192,7 +192,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 if (paramIndex == -1) return;
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
                 if (paramDeclaration is null) return;
-                var closureParams = unResolvedClosureParameters.ParameterLuaDeclarations;
+                var closureParams = unResolvedClosureParameters.Parameters;
                 Context.FindMethodsForType(paramDeclaration.Type, methodType =>
                 {
                     var mainParams = methodType.MainSignature.Parameters;

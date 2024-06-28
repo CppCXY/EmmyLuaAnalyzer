@@ -88,7 +88,7 @@ function table.maxn(table) end
 --- removes the last element of list `l`.
 ---@generic V
 ---@param list table<number, V> | V[]
----@param pos number
+---@param pos? integer
 ---@return V
 function table.remove(list, pos) end
 
@@ -128,8 +128,9 @@ function table.unpack(list, i, j) end
 ---
 ---Returns a new table with all arguments stored into keys `1`, `2`, etc. and with a field `"n"` with the total number of arguments.
 ---
----
----@return table
+---@generic T
+---@param ... T...
+---@return [T...]
 ---@nodiscard
 function table.pack(...) end
 

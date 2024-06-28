@@ -23,55 +23,29 @@ public enum ResolveState
     UnResolvedParameters = 0x008,
 }
 
-public class UnResolved(ResolveState state)
-{
-    public ResolveState ResolvedState { get; set; } = state;
-}
+public record UnResolved(ResolveState ResolvedState);
 
-public class UnResolvedDeclaration(LuaDeclaration luaDeclaration, LuaExprRef? exprRef, ResolveState state)
-    : UnResolved(state)
-{
-    public LuaDeclaration LuaDeclaration { get; } = luaDeclaration;
+public record UnResolvedDeclaration(
+    LuaDeclaration LuaDeclaration,
+    LuaExprRef? ExprRef,
+    ResolveState ResolvedState)
+    : UnResolved(ResolvedState);
 
-    public LuaExprRef? ExprRef { get; } = exprRef;
+public record UnResolvedMethod(LuaMethodType MethodType, LuaBlockSyntax Block, ResolveState ResolvedState)
+    : UnResolved(ResolvedState);
 
-    public bool IsTypeDeclaration { get; set; } = false;
-}
+public record UnResolvedSource(LuaDocumentId DocumentId, LuaBlockSyntax Block, ResolveState ResolvedState)
+    : UnResolved(ResolvedState);
 
-public class UnResolvedMethod(LuaMethodType methodType, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
-{
-    public LuaMethodType MethodType { get; } = methodType;
+public record UnResolvedForRangeParameter(
+    List<LuaDeclaration> Parameters,
+    List<LuaExprSyntax> ExprList)
+    : UnResolved(ResolveState.UnResolvedType);
 
-    public LuaBlockSyntax Block { get; } = block;
-}
-
-public class UnResolvedSource(LuaDocumentId documentId, LuaBlockSyntax block, ResolveState state) : UnResolved(state)
-{
-    public LuaDocumentId DocumentId { get; } = documentId;
-
-    public LuaBlockSyntax Block { get; } = block;
-}
-
-public class UnResolvedForRangeParameter(
-    List<LuaDeclaration> parameterLuaDeclarations,
-    List<LuaExprSyntax> exprList) : UnResolved(ResolveState.UnResolvedType)
-{
-    public List<LuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
-
-    public List<LuaExprSyntax> ExprList { get; } = exprList;
-}
-
-public class UnResolvedClosureParameters(
-    List<LuaDeclaration> parameterLuaDeclarations,
-    LuaCallExprSyntax callExprSyntax,
-    int index) : UnResolved(ResolveState.UnResolvedParameters)
-{
-    public List<LuaDeclaration> ParameterLuaDeclarations { get; } = parameterLuaDeclarations;
-
-    public LuaCallExprSyntax CallExprSyntax { get; } = callExprSyntax;
-
-    public int Index { get; } = index;
-}
+public record UnResolvedClosureParameters(
+    List<LuaDeclaration> Parameters,
+    LuaCallExprSyntax CallExpr,
+    int Index) : UnResolved(ResolveState.UnResolvedParameters);
 
 public class AnalyzeContext(List<LuaDocument> documents)
 {
