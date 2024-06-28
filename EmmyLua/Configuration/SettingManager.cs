@@ -16,7 +16,7 @@ public class SettingManager
 
     private string SettingPath => Path.Combine(Workspace, ConfigName);
 
-    public Setting? Setting { get; private set; }
+    public Setting Setting { get; private set; } = new();
 
     public delegate void SettingChanged(SettingManager settingManager);
 
@@ -134,11 +134,6 @@ public class SettingManager
     public LuaFeatures GetLuaFeatures()
     {
         var features = new LuaFeatures();
-        if (Setting is null)
-        {
-            return features;
-        }
-
         var setting = Setting;
         features.ExcludeFolders.UnionWith(setting.Workspace.IgnoreDir);
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
