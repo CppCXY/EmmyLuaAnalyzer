@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
