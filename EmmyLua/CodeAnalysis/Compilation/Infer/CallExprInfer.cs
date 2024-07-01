@@ -28,14 +28,15 @@ public static class CallExprInfer
             }
         });
 
-        if (returnType.Equals(Builtin.Unknown) && prefixExpr is LuaIndexExprSyntax indexExpr)
-        {
-            var fnName = indexExpr.Name;
-            if (fnName is not null && string.Equals(fnName, "new", StringComparison.CurrentCultureIgnoreCase))
-            {
-                returnType = context.Infer(indexExpr.PrefixExpr);
-            }
-        }
+        // TODO: use config enable this feature
+        // if (returnType.Equals(Builtin.Unknown) && prefixExpr is LuaIndexExprSyntax indexExpr)
+        // {
+        //     var fnName = indexExpr.Name;
+        //     if (fnName is not null && string.Equals(fnName, "new", StringComparison.CurrentCultureIgnoreCase))
+        //     {
+        //         returnType = context.Infer(indexExpr.PrefixExpr);
+        //     }
+        // }
 
         return UnwrapReturn(callExpr, context, returnType, 0);
     }

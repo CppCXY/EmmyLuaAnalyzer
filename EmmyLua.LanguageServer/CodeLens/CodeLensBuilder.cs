@@ -83,8 +83,6 @@ public class CodeLensBuilder
         return codeLens;
     }
     
-    
-
     private static Command MakeCommand(List<ReferenceResult> results, LuaSyntaxElement element,
         ServerContext serverContext)
     {

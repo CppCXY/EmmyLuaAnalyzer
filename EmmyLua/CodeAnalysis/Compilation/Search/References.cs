@@ -78,9 +78,9 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is not null)
+            if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is {} keyElement)
             {
-                references.Add(new ReferenceResult(indexExpr.KeyElement.Location, indexExpr.KeyElement));
+                references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
         }
 
