@@ -137,7 +137,7 @@ public class LuaRenderBuilder(SearchContext context)
                 renderContext.Append($"(parameter) {name} : ");
                 if (paramSyntax.Type is { } type)
                 {
-                    var luaType = searchContext.Infer(type);
+                    var luaType = searchContext.InferAndUnwrap(type);
                     LuaTypeRenderer.RenderType(luaType, renderContext);
                 }
             });

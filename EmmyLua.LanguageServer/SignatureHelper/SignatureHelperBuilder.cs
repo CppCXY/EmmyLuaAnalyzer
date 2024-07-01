@@ -59,7 +59,7 @@ public class SignatureHelperBuilder
             callArgs = callArgs2;
         }
 
-        var parentType = semanticModel.Context.Infer(callExpr.PrefixExpr);
+        var parentType = semanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
         var signatureInfos = new List<SignatureInformation>();
         var activeParameter = callArgs.ChildTokens(LuaTokenKind.TkComma)
             .Count(comma => comma.Position <= triggerToken.Position);

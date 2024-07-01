@@ -36,9 +36,9 @@ public class TypeSubstitution
         }
     }
 
-    public void Add(string name, LuaType type)
+    public void Add(string name, LuaType type, bool force = false)
     {
-        if (Template.ContainsKey(name))
+        if (Template.ContainsKey(name) || force)
         {
             TypeMap[name] = type;
         }

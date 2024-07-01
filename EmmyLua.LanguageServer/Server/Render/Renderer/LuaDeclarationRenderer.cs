@@ -60,7 +60,7 @@ public static class LuaDeclarationRenderer
 
     private static void RenderInClass(LuaIndexExprSyntax indexExpr, LuaRenderContext renderContext)
     {
-        var prefixType = renderContext.SearchContext.Infer(indexExpr.PrefixExpr);
+        var prefixType = renderContext.SearchContext.InferAndUnwrap(indexExpr.PrefixExpr);
         if (!prefixType.Equals(Builtin.Unknown))
         {
             RenderBelongType(prefixType, renderContext);

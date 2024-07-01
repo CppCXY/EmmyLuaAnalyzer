@@ -43,7 +43,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         var activeParam = callArgList.ChildTokens(LuaTokenKind.TkComma)
             .Count(comma => comma.Position <= trigger.Position);
 
-        var prefixType = context.SemanticModel.Context.Infer(callExpr.PrefixExpr);
+        var prefixType = context.SemanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
         context.SemanticModel.Context.FindMethodsForType(prefixType, methodType =>
         {
             var colonDefine = methodType.ColonDefine;

@@ -16,7 +16,7 @@ public static class CallExprInfer
             return InferRequire(callExpr, context);
         }
 
-        var luaType = context.Infer(prefixExpr);
+        var luaType = context.InferAndUnwrap(prefixExpr);
         var args = callExpr.ArgList?.ArgList.ToList() ?? [];
         context.FindMethodsForType(luaType, luaMethod =>
         {

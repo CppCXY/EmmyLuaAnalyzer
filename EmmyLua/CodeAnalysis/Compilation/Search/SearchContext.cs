@@ -110,6 +110,7 @@ public class SearchContext
 
     public void FindMethodsForType(LuaType type, Action<LuaMethodType> action)
     {
+        type = type.UnwrapType(this);
         switch (type)
         {
             case LuaUnionType unionType:

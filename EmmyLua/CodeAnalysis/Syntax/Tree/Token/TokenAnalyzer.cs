@@ -551,6 +551,7 @@ public static class TokenAnalyzer
                 "Invalid template type",
                 sourceRange));
             tree.SetStringTokenValue(index, string.Empty);
+            return;
         }
 
         var value = text[1..^1].ToString();

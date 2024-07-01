@@ -43,6 +43,18 @@ public class DocumentColorBuilder
 
                 if (length is 6 or 8)
                 {
+                    // 判断是否为单词边界
+                    if (start > 0 && char.IsLetterOrDigit(text[start - 1]))
+                    {
+                        continue;
+                    }
+
+                    if (start + length < text.Length && char.IsLetterOrDigit(text[start + length]))
+                    {
+                        continue;
+                    }
+
+
                     var range = new SourceRange()
                     {
                         StartOffset = token.Range.StartOffset + start,
@@ -106,14 +118,14 @@ public class DocumentColorBuilder
         {
             rangeLength = end.Character - start.Character;
         }
-        
+
         var color = info.Color;
         var colorPresentations = new List<ColorPresentation>();
         var r = (int)(color.Red * 255);
         var g = (int)(color.Green * 255);
         var b = (int)(color.Blue * 255);
         var a = (int)(color.Alpha * 255);
-        
+
         var newText = rangeLength == 6 ? $"{r:X2}{g:X2}{b:X2}" : $"{r:X2}{g:X2}{b:X2}{a:X2}";
         var colorPresentation = new ColorPresentation()
         {

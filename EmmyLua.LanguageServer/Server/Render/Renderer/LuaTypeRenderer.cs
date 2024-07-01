@@ -431,7 +431,7 @@ public static class LuaTypeRenderer
         var mainSignature = methodType.MainSignature;
         if (renderContext.Feature.InHover && !renderContext.InSignature)
         {
-            renderContext.WithSignature(() => { RenderSignatureForHover(mainSignature, renderContext); });
+            renderContext.WithSignature(() => { RenderSignatureForHover(mainSignature, renderContext, level); });
         }
         else
         {
@@ -452,7 +452,7 @@ public static class LuaTypeRenderer
             var parameter = signature.Parameters[i];
             renderContext.Append(parameter.Name);
             renderContext.Append(':');
-            InnerRenderType(parameter.Type, renderContext, 0);
+            InnerRenderType(parameter.Type, renderContext, level + 1);
         }
 
         renderContext.Append(')');
@@ -464,29 +464,16 @@ public static class LuaTypeRenderer
         }
         else
         {
-            InnerRenderType(signature.ReturnType, renderContext, 0);
+            InnerRenderType(signature.ReturnType, renderContext, level + 1);
         }
     }
 
-    private static void RenderSignatureForHover(LuaSignature signature, LuaRenderContext renderContext)
+    private static void RenderSignatureForHover(LuaSignature signature, LuaRenderContext renderContext, int level)
     {
         renderContext.Append('(');
         var chopDown = signature.Parameters.Count > 0;
         if (!chopDown)
         {
-            // for (var i = 0; i < signature.Parameters.Count; i++)
-            // {
-            //     if (i > 0)
-            //     {
-            //         renderContext.Append(", ");
-            //     }
-            //
-            //     var parameter = signature.Parameters[i];
-            //     renderContext.Append(parameter.Name);
-            //     renderContext.Append(':');
-            //     InnerRenderType(parameter.Type, renderContext, 0);
-            // }
-
             renderContext.Append(')');
         }
         else
@@ -502,7 +489,7 @@ public static class LuaTypeRenderer
                 var parameter = signature.Parameters[i];
                 renderContext.Append($"    {parameter.Name}");
                 renderContext.Append(':');
-                InnerRenderType(parameter.Type, renderContext, 0);
+                InnerRenderType(parameter.Type, renderContext, level + 1);
             }
 
             renderContext.Append("\n)");
@@ -515,7 +502,7 @@ public static class LuaTypeRenderer
         }
         else
         {
-            InnerRenderType(signature.ReturnType, renderContext, 0);
+            InnerRenderType(signature.ReturnType, renderContext, level + 1);
         }
     }
 
@@ -584,21 +571,21 @@ public static class LuaTypeRenderer
                 {
                     case { NameField: { } nameField, Type: { } type1 }:
                     {
-                        var type = renderContext.SearchContext.Infer(type1);
+                        var type = renderContext.SearchContext.InferAndUnwrap(type1);
                         renderContext.Append($"{nameField.RepresentText}:");
                         RenderType(type, renderContext);
                         break;
                     }
                     case { IntegerField: { } integerField, Type: { } type2 }:
                     {
-                        var type = renderContext.SearchContext.Infer(type2);
+                        var type = renderContext.SearchContext.InferAndUnwrap(type2);
                         renderContext.Append($"[{integerField.Value}]:");
                         RenderType(type, renderContext);
                         break;
                     }
                     case { StringField: { } stringField, Type: { } type3 }:
                     {
-                        var type = renderContext.SearchContext.Infer(type3);
+                        var type = renderContext.SearchContext.InferAndUnwrap(type3);
                         renderContext.Append($"[{stringField.Value}]:");
                         RenderType(type, renderContext);
                         break;

@@ -94,8 +94,8 @@ public static class ExpressionInfer
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
-        var leftTy = context.Infer(binaryExpr.LeftExpr).UnwrapType(context);
-        var rightTy = context.Infer(binaryExpr.RightExpr).UnwrapType(context);
+        var leftTy = context.InferAndUnwrap(binaryExpr.LeftExpr);
+        var rightTy = context.InferAndUnwrap(binaryExpr.RightExpr);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
         var bop = context.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
         if (bop is not null)

@@ -30,7 +30,7 @@ public class Operators(SearchContext context)
             var substitution = new TypeSubstitution();
             for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
             {
-                substitution.Add(genericParams[i].Name , genericArgs[i]);
+                substitution.Add(genericParams[i].Name , genericArgs[i], true);
             }
 
             var instanceOperators = originOperators.Select(op => op.Instantiate(substitution)).ToList();
