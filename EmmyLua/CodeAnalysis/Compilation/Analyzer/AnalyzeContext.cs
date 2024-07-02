@@ -14,6 +14,7 @@ public class AnalyzeContext(List<LuaDocument> documents)
 
     public List<UnResolved> UnResolves { get; } = [];
 
+    // TODO
     public List<InferenceUsage> UseInfers { get; } = [];
 
     public Dictionary<SyntaxElementId, ControlFlowGraph> ControlFlowGraphs { get; } = new();
