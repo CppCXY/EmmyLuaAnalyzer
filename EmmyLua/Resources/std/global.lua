@@ -13,6 +13,8 @@
 -- License for the specific language governing permissions and limitations under
 -- the License.
 
+---@module no-require
+
 ---
 --- Calls error if the value of its argument `v` is false (i.e., **nil** or
 --- **false**); otherwise, returns all its arguments. In case of error,

@@ -171,6 +171,17 @@ public partial class DeclarationWalker
         if (moduleSyntax.Module is { Value: { } moduleName })
         {
             Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
+        } else {
+            if (moduleSyntax.Parent!=null)
+            {
+                var childs = moduleSyntax.Parent.ChildrenWithTokens.OfType<LuaNameToken>();
+                foreach (var child in childs)
+                {
+                    if (child.RepresentText == "no-require") {
+                        Compilation.Workspace.ModuleManager.RemoveDocument(DocumentId);
+                    }
+                }
+            }
         }
     }
 

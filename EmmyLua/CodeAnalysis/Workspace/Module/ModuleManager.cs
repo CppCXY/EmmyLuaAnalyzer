@@ -124,6 +124,15 @@ public class ModuleManager
         AddDocument(root, workspace, document);
     }
 
+    public void RemoveDocument(LuaDocumentId documentId)
+    {
+        var document = Workspace.GetDocument(documentId);
+        if (document != null)
+        {
+            RemoveDocument(document);
+        }
+    }
+
     public void RemoveDocument(LuaDocument document)
     {
         if (!DocumentIndex.TryGetValue(document.Id, out var moduleIndex))
