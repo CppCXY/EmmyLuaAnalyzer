@@ -200,7 +200,7 @@ public class DeclarationContext(
 
     public void SetElementRelatedClosure(LuaSyntaxElement element, LuaClosureExprSyntax closureExprSyntax)
     {
-        _elementRelatedClosure.Add(element.UniqueId, new(closureExprSyntax));
+        _elementRelatedClosure.TryAdd(element.UniqueId, new(closureExprSyntax));
     }
 
     public LuaClosureExprSyntax? GetElementRelatedClosure(LuaSyntaxElement element)
