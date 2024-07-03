@@ -77,7 +77,7 @@ public class AttachDeclarationAnalyzer(
             if (nameTypeDefine is { Name.RepresentText: { } name } &&
                 declarations.FirstOrDefault() is { } firstDeclaration)
             {
-                firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = new LuaNamedType(name) };
+                firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = LuaNamedType.Create(name) };
                 return;
             }
 

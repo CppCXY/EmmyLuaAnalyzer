@@ -1,4 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Common;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -12,17 +14,40 @@ public static class GenericInfer
         TypeSubstitution substitution,
         SearchContext context)
     {
-        if (type is LuaTemplateType templateType && expr is LuaLiteralExprSyntax
-            {
-                Literal: LuaStringToken { } stringToken
-            })
+        if (SpecialInferByExpr(type, expr, substitution, context))
         {
-            substitution.Add(templateType.TemplateName, new LuaNamedType(templateType.PrefixName + stringToken.Value));
             return;
         }
 
         var exprType = context.InferAndUnwrap(expr);
         InferByType(type, exprType, substitution, context);
+    }
+
+    private static bool SpecialInferByExpr(
+        LuaType type,
+        LuaExprSyntax expr,
+        TypeSubstitution substitution,
+        SearchContext context)
+    {
+        if (type is LuaTemplateType templateType && expr is LuaLiteralExprSyntax
+            {
+                Literal: LuaStringToken { } stringToken1
+            })
+        {
+            substitution.Add(templateType.TemplateName, new LuaNamedType(templateType.PrefixName + stringToken1.Value));
+            return true;
+        }
+
+        if (type is LuaGenericType { Name: "strFmt" } genericType && expr is LuaLiteralExprSyntax
+            {
+                Literal: LuaStringToken { } stringToken2
+            })
+        {
+            StrFmtInstantiateByString(genericType, stringToken2.Value, substitution, context);
+            return true;
+        }
+
+        return false;
     }
 
     public static void InferByExpandTypeAndExprs(
@@ -319,5 +344,71 @@ public static class GenericInfer
                 }
             }
         }
+    }
+
+    private static void StrFmtInstantiateByString(
+        LuaGenericType genericType,
+        string fmt,
+        TypeSubstitution substitution,
+        SearchContext context)
+    {
+        var firstTemp = genericType.GenericArgs.FirstOrDefault();
+        if (firstTemp is not LuaNamedType templateName)
+        {
+            return;
+        }
+
+        var spreadParameter = new List<IDeclaration>();
+        for(var i = 0; i < fmt.Length; i++)
+        {
+            var ch = fmt[i];
+            if (fmt[i] == '%')
+            {
+                if (i + 1 < fmt.Length)
+                {
+                    var nextCh = fmt[i + 1];
+                    if (nextCh == '%')
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        var index = i + 1;
+                        while (index < fmt.Length && char.IsDigit(fmt[index]))
+                        {
+                            index++;
+                        }
+
+                        if (index < fmt.Length)
+                        {
+                            var type = fmt[index];
+                            if (type is 's' or 'q')
+                            {
+                                spreadParameter.Add(new LuaDeclaration(
+                                    $"%{type}",
+                                    new VirtualInfo(Builtin.Any)
+                                    ));
+                            }
+                            else if (type is 'c' or 'd' or 'i' or 'u' or 'x' or 'X' or 'o')
+                            {
+                                spreadParameter.Add(new LuaDeclaration(
+                                    $"%{type}",
+                                    new VirtualInfo(Builtin.Integer)
+                                    ));
+                            }
+                            else if (type is 'A' or 'a' or 'E' or 'e' or 'f' or 'G' or 'g')
+                            {
+                                spreadParameter.Add(new LuaDeclaration(
+                                    $"%{type}",
+                                    new VirtualInfo(Builtin.Number)
+                                    ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        substitution.AddSpreadParameter(templateName.Name, spreadParameter);
     }
 }

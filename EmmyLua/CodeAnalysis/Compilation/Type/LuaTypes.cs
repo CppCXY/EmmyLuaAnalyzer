@@ -53,6 +53,17 @@ public class LuaNamedType(
     LuaTypeAttribute attribute = LuaTypeAttribute.HasMember | LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex)
     : LuaType(attribute), IEquatable<LuaNamedType>
 {
+    public static LuaNamedType Create(string name, LuaTypeAttribute attribute = LuaTypeAttribute.HasMember | LuaTypeAttribute.CanCall | LuaTypeAttribute.CanIndex)
+    {
+        var buildType = Builtin.FromName(name);
+        if (buildType is not null)
+        {
+            return buildType;
+        }
+
+        return new LuaNamedType(name, attribute);
+    }
+
     public string Name { get; } = name;
 
     public NamedTypeKind GetTypeKind(SearchContext context)
