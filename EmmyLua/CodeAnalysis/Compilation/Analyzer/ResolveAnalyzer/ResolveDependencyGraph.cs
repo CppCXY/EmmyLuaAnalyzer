@@ -202,15 +202,19 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
     {
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
-            var methodType = unResolvedMethod.MethodType;
-            if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+            var id = unResolvedMethod.Id;
+            var idType = context.Compilation.Db.QueryTypeFromId(id);
+            if (idType is LuaMethodType methodType)
             {
-                OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
-                return;
-            }
+                if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+                {
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
+                    return;
+                }
 
-            var block = unResolvedMethod.Block;
-            AnalyzeBlockReturns(block, unResolved);
+                var block = unResolvedMethod.Block;
+                AnalyzeBlockReturns(block, unResolved);
+            }
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {

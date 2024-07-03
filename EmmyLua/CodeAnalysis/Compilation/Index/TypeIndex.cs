@@ -147,7 +147,7 @@ public class TypeIndex
         AliasTypes.Update(documentId, name, baseType);
     }
 
-    public void AddIdRelatedType(SyntaxElementId id, LuaType relatedType)
+    public void UpdateIdRelatedType(SyntaxElementId id, LuaType relatedType)
     {
         AssociatedType.Update(id.DocumentId, id, relatedType);
     }

@@ -678,8 +678,11 @@ public class LuaGenericMethodType : LuaMethodType
         bool colonDefine) : base(mainSignature, overloads, colonDefine)
     {
         GenericParamDecls = genericParamDecls;
-        // TODO BUG
-        GenericParams = genericParamDecls.ToDictionary(decl => decl.Name, decl => decl.Type);
+        GenericParams = new Dictionary<string, LuaType>();
+        foreach (var decl in GenericParamDecls)
+        {
+            GenericParams[decl.Name] = decl.Type;
+        }
     }
 
     public List<LuaSignature> GetInstantiatedSignatures(

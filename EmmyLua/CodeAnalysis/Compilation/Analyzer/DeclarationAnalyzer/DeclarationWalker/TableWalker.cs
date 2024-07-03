@@ -7,47 +7,27 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private LuaType? FindTableFieldType(LuaTableFieldSyntax fieldSyntax)
-    {
-        foreach (var comment in fieldSyntax.Comments)
-        {
-            foreach (var tagSyntax in comment.DocList)
-            {
-                if (tagSyntax is LuaDocTagTypeSyntax { TypeList: { } typeList })
-                {
-                    return searchContext.Infer(typeList.FirstOrDefault());
-                }
-                else if (tagSyntax is LuaDocTagNamedTypeSyntax { Name: { } name })
-                {
-                    return new LuaNamedType(name.RepresentText);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private void AnalyzeTableExprDeclaration(LuaTableExprSyntax tableExprSyntax)
+    private void AnalyzeTableExpr(LuaTableExprSyntax tableExprSyntax)
     {
         var tableClass = new LuaTableLiteralType(tableExprSyntax);
         foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
             if (fieldSyntax is { Name: { } fieldName, Value: { } value })
             {
-                var type = FindTableFieldType(fieldSyntax);
                 var declaration = new LuaDeclaration(
                     fieldName,
                     new TableFieldInfo(
                         new(fieldSyntax),
-                        type
+                        null
                     ));
+                declarationContext.AddAttachedDeclaration(fieldSyntax, declaration);
                 declarationContext.Db.AddMember(DocumentId, tableClass, declaration);
-                if (type == null)
-                {
-                    var unResolveDeclaration =
-                        new UnResolvedDeclaration(declaration, new LuaExprRef(value), ResolveState.UnResolvedType);
-                    declarationContext.AddUnResolved(unResolveDeclaration);
-                }
+                var unResolveDeclaration = new UnResolvedDeclaration(
+                    declaration,
+                    new LuaExprRef(value),
+                    ResolveState.UnResolvedType
+                );
+                declarationContext.AddUnResolved(unResolveDeclaration);
             }
         }
     }

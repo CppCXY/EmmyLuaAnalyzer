@@ -1,6 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -8,115 +7,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private void AnalyzeDiagnostic(LuaDocTagDiagnosticSyntax diagnosticSyntax)
-    {
-        if (diagnosticSyntax is
-            {
-                Action: { Text: { } actionName },
-                Diagnostics: { DiagnosticNames: { } diagnosticNames }
-            })
-        {
-            switch (actionName)
-            {
-                case "disable-next-line":
-                {
-                    if (diagnosticSyntax.Parent is LuaCommentSyntax { Owner.Range: { } range })
-                    {
-                        foreach (var diagnosticName in diagnosticNames)
-                        {
-                            if (diagnosticName is { RepresentText: { } name })
-                            {
-                                Compilation.Diagnostics.AddDiagnosticDisableNextLine(DocumentId, range, name);
-                            }
-                        }
-                    }
-
-                    break;
-                }
-                case "disable":
-                {
-                    foreach (var diagnosticName in diagnosticNames)
-                    {
-                        if (diagnosticName is { RepresentText: { } name })
-                        {
-                            Compilation.Diagnostics.AddDiagnosticDisable(DocumentId, name);
-                        }
-                    }
-
-                    break;
-                }
-                case "enable":
-                {
-                    foreach (var diagnosticName in diagnosticNames)
-                    {
-                        if (diagnosticName is { RepresentText: { } name })
-                        {
-                            Compilation.Diagnostics.AddDiagnosticEnable(DocumentId, name);
-                        }
-                    }
-
-                    break;
-                }
-            }
-        }
-    }
-
-    private void AnalyzeModule(LuaDocTagModuleSyntax moduleSyntax)
-    {
-        if (moduleSyntax.Module is { Value: { } moduleName })
-        {
-            Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
-        }
-    }
-
-    private void AnalyzeDeclarationDoc(LuaDeclaration declaration, LuaStatSyntax statSyntax)
-    {
-        var comment = statSyntax.Comments.FirstOrDefault();
-        if (comment?.DocList is { } docList)
-        {
-            foreach (var tagSyntax in docList)
-            {
-                switch (tagSyntax)
-                {
-                    case LuaDocTagDeprecatedSyntax:
-                    {
-                        declaration.Feature |= DeclarationFeature.Deprecated;
-                        break;
-                    }
-                    case LuaDocTagVisibilitySyntax visibilitySyntax:
-                    {
-                        declaration.Visibility = GetVisibility(visibilitySyntax.Visibility);
-                        break;
-                    }
-                    case LuaDocTagVersionSyntax versionSyntax:
-                    {
-                        var requiredVersions = new List<RequiredVersion>();
-                        foreach (var version in versionSyntax.Versions)
-                        {
-                            var action = version.Action;
-                            var framework = version.Version?.RepresentText ?? string.Empty;
-                            var versionNumber = version.VersionNumber?.Version ?? new VersionNumber(0, 0, 0, 0);
-                            requiredVersions.Add(new RequiredVersion(action, framework, versionNumber));
-                        }
-
-                        declaration.RequiredVersions = requiredVersions;
-                        break;
-                    }
-                    case LuaDocTagNodiscardSyntax:
-                    {
-                        declaration.Feature |= DeclarationFeature.NoDiscard;
-                        break;
-                    }
-                    case LuaDocTagAsyncSyntax:
-                    {
-                        declaration.Feature |= DeclarationFeature.Async;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
      private void AnalyzeDocDetailField(LuaType parentType, LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
@@ -211,7 +101,12 @@ public partial class DeclarationWalker
         }
     }
 
-    private static DeclarationVisibility GetVisibility(VisibilityKind visibility)
+    private void AnalyzeMeta()
+    {
+        Compilation.Diagnostics.AddMeta(DocumentId);
+    }
+
+    public static DeclarationVisibility GetVisibility(VisibilityKind visibility)
     {
         return visibility switch
         {

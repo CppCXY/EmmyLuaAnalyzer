@@ -6,10 +6,10 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        var searchContext = new SearchContext(compilation, new SearchContextFeatures() { Cache = false });
+        var searchContext = new SearchContext(Compilation, new SearchContextFeatures() { Cache = false });
         foreach (var document in analyzeContext.LuaDocuments)
         {
-            var declarationContext = new DeclarationContext(document.Id, this, analyzeContext);
+            var declarationContext = new DeclarationContext(document, this, analyzeContext);
             var walker = new DeclarationWalker.DeclarationWalker(declarationContext, searchContext);
             document.SyntaxTree.SyntaxRoot.Accept(walker);
 
@@ -18,6 +18,9 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             {
                 Compilation.Db.AddDeclarationTree(document.Id, tree);
             }
+
+            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(document, declarationContext, searchContext);
+            attachDeclarationAnalyzer.Analyze();
         }
     }
 }

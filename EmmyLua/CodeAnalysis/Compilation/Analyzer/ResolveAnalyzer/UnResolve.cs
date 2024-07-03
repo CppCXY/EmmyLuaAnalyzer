@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
@@ -25,7 +25,7 @@ public record UnResolvedDeclaration(
     ResolveState ResolvedState)
     : UnResolved(ResolvedState);
 
-public record UnResolvedMethod(LuaMethodType MethodType, LuaBlockSyntax Block, ResolveState ResolvedState)
+public record UnResolvedMethod(SyntaxElementId Id, LuaBlockSyntax Block, ResolveState ResolvedState)
     : UnResolved(ResolvedState);
 
 public record UnResolvedSource(LuaDocumentId DocumentId, LuaBlockSyntax Block, ResolveState ResolvedState)

@@ -24,22 +24,22 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
         {
             case LuaLocalStatSyntax localStatSyntax:
             {
-                AnalyzeLocalStatDeclaration(localStatSyntax);
+                AnalyzeLocalStat(localStatSyntax);
                 break;
             }
             case LuaForRangeStatSyntax forRangeStatSyntax:
             {
-                AnalyzeForRangeStatDeclaration(forRangeStatSyntax);
+                AnalyzeForRangeStat(forRangeStatSyntax);
                 break;
             }
             case LuaForStatSyntax forStatSyntax:
             {
-                AnalyzeForStatDeclaration(forStatSyntax);
+                AnalyzeForStat(forStatSyntax);
                 break;
             }
             case LuaFuncStatSyntax funcStatSyntax:
             {
-                AnalyzeMethodDeclaration(funcStatSyntax);
+                AnalyzeMethod(funcStatSyntax);
                 break;
             }
             case LuaClosureExprSyntax closureExprSyntax:
@@ -49,32 +49,37 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
             }
             case LuaAssignStatSyntax assignStatSyntax:
             {
-                AnalyzeAssignStatDeclaration(assignStatSyntax);
+                AnalyzeAssignStat(assignStatSyntax);
                 break;
             }
             case LuaDocTagClassSyntax tagClassSyntax:
             {
-                AnalyzeClassTagDeclaration(tagClassSyntax);
+                AnalyzeTagClass(tagClassSyntax);
                 break;
             }
             case LuaDocTagAliasSyntax tagAliasSyntax:
             {
-                AnalyzeAliasTagDeclaration(tagAliasSyntax);
+                AnalyzeTagAlias(tagAliasSyntax);
                 break;
             }
             case LuaDocTagEnumSyntax tagEnumSyntax:
             {
-                AnalyzeEnumTagDeclaration(tagEnumSyntax);
+                AnalyzeTagEnum(tagEnumSyntax);
                 break;
             }
             case LuaDocTagInterfaceSyntax tagInterfaceSyntax:
             {
-                AnalyzeInterfaceTagDeclaration(tagInterfaceSyntax);
+                AnalyzeTagInterface(tagInterfaceSyntax);
+                break;
+            }
+            case LuaDocTagTypeSyntax typeSyntax:
+            {
+                AnalyzeTagType(typeSyntax);
                 break;
             }
             case LuaTableExprSyntax tableSyntax:
             {
-                AnalyzeTableExprDeclaration(tableSyntax);
+                AnalyzeTableExpr(tableSyntax);
                 break;
             }
             case LuaDocTableTypeSyntax tableTypeSyntax:
@@ -104,17 +109,67 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
             }
             case LuaDocTagMetaSyntax:
             {
-                Compilation.Diagnostics.AddMeta(DocumentId);
+                AnalyzeMeta();
                 break;
             }
             case LuaDocTagDiagnosticSyntax diagnosticSyntax:
             {
-                AnalyzeDiagnostic(diagnosticSyntax);
+                AnalyzeTagDiagnostic(diagnosticSyntax);
                 break;
             }
             case LuaDocTagModuleSyntax moduleSyntax:
             {
-                AnalyzeModule(moduleSyntax);
+                AnalyzeTagModule(moduleSyntax);
+                break;
+            }
+            case LuaDocTagDeprecatedSyntax deprecatedSyntax:
+            {
+                AnalyzeSimpleTag(deprecatedSyntax);
+                break;
+            }
+            case LuaDocTagAsyncSyntax asyncSyntax:
+            {
+                AnalyzeSimpleTag(asyncSyntax);
+                break;
+            }
+            case LuaDocTagGenericSyntax genericSyntax:
+            {
+                AnalyzeSimpleTag(genericSyntax);
+                break;
+            }
+            case LuaDocTagParamSyntax paramSyntax:
+            {
+                AnalyzeSimpleTag(paramSyntax);
+                break;
+            }
+            case LuaDocTagReturnSyntax returnSyntax:
+            {
+                AnalyzeSimpleTag(returnSyntax);
+                break;
+            }
+            case LuaDocTagSeeSyntax seeSyntax:
+            {
+                AnalyzeSimpleTag(seeSyntax);
+                break;
+            }
+            case LuaDocTagAsSyntax asSyntax:
+            {
+                AnalyzeSimpleTag(asSyntax);
+                break;
+            }
+            case LuaDocTagVisibilitySyntax visibilitySyntax:
+            {
+                AnalyzeSimpleTag(visibilitySyntax);
+                break;
+            }
+            case LuaDocTagVersionSyntax versionSyntax:
+            {
+                AnalyzeSimpleTag(versionSyntax);
+                break;
+            }
+            case LuaDocTagOverloadSyntax overloadSyntax:
+            {
+                AnalyzeSimpleTag(overloadSyntax);
                 break;
             }
         }

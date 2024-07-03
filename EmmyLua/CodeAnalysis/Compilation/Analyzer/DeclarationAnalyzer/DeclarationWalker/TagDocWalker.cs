@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private void AnalyzeClassTagDeclaration(LuaDocTagClassSyntax tagClassSyntax)
+    private void AnalyzeTagClass(LuaDocTagClassSyntax tagClassSyntax)
     {
         if (tagClassSyntax is { Name: { } name })
         {
@@ -40,9 +40,11 @@ public partial class DeclarationWalker
                 AnalyzeTypeGenericParam(genericDeclareList, luaClass);
             }
         }
+
+        declarationContext.AttachDoc(tagClassSyntax);
     }
 
-    private void AnalyzeAliasTagDeclaration(LuaDocTagAliasSyntax tagAliasSyntax)
+    private void AnalyzeTagAlias(LuaDocTagAliasSyntax tagAliasSyntax)
     {
         if (tagAliasSyntax is { Name: { } name, Type: { } type })
         {
@@ -57,9 +59,11 @@ public partial class DeclarationWalker
                 ));
             declarationContext.Db.AddAlias(DocumentId, name.RepresentText, baseTy, declaration);
         }
+
+        declarationContext.AttachDoc(tagAliasSyntax);
     }
 
-    private void AnalyzeEnumTagDeclaration(LuaDocTagEnumSyntax tagEnumSyntax)
+    private void AnalyzeTagEnum(LuaDocTagEnumSyntax tagEnumSyntax)
     {
         if (tagEnumSyntax is { Name: { } name })
         {
@@ -90,9 +94,11 @@ public partial class DeclarationWalker
                 }
             }
         }
+
+        declarationContext.AttachDoc(tagEnumSyntax);
     }
 
-    private void AnalyzeInterfaceTagDeclaration(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
+    private void AnalyzeTagInterface(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
     {
         if (tagInterfaceSyntax is { Name: { } name })
         {
@@ -123,6 +129,13 @@ public partial class DeclarationWalker
                 AnalyzeTypeGenericParam(genericDeclareList, luaInterface);
             }
         }
+
+        declarationContext.AttachDoc(tagInterfaceSyntax);
+    }
+
+    private void AnalyzeTagType(LuaDocTagTypeSyntax tagTypeSyntax)
+    {
+        declarationContext.AttachDoc(tagTypeSyntax);
     }
 
     private void AnalyzeTypeSupers(IEnumerable<LuaDocTypeSyntax> extendList, LuaNamedType namedType)
@@ -151,5 +164,71 @@ public partial class DeclarationWalker
                 declarationContext.Db.AddGenericParam(DocumentId, namedType.Name, declaration);
             }
         }
+    }
+
+    private void AnalyzeTagModule(LuaDocTagModuleSyntax moduleSyntax)
+    {
+        if (moduleSyntax.Module is { Value: { } moduleName })
+        {
+            Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
+        }
+    }
+
+    private void AnalyzeTagDiagnostic(LuaDocTagDiagnosticSyntax diagnosticSyntax)
+    {
+        if (diagnosticSyntax is
+            {
+                Action: { Text: { } actionName },
+                Diagnostics: { DiagnosticNames: { } diagnosticNames }
+            })
+        {
+            switch (actionName)
+            {
+                case "disable-next-line":
+                {
+                    if (diagnosticSyntax.Parent is LuaCommentSyntax { Owner.Range: { } range })
+                    {
+                        foreach (var diagnosticName in diagnosticNames)
+                        {
+                            if (diagnosticName is { RepresentText: { } name })
+                            {
+                                Compilation.Diagnostics.AddDiagnosticDisableNextLine(DocumentId, range, name);
+                            }
+                        }
+                    }
+
+                    break;
+                }
+                case "disable":
+                {
+                    foreach (var diagnosticName in diagnosticNames)
+                    {
+                        if (diagnosticName is { RepresentText: { } name })
+                        {
+                            Compilation.Diagnostics.AddDiagnosticDisable(DocumentId, name);
+                        }
+                    }
+
+                    break;
+                }
+                case "enable":
+                {
+                    foreach (var diagnosticName in diagnosticNames)
+                    {
+                        if (diagnosticName is { RepresentText: { } name })
+                        {
+                            Compilation.Diagnostics.AddDiagnosticEnable(DocumentId, name);
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private void AnalyzeSimpleTag(LuaDocTagSyntax tagSyntax)
+    {
+        declarationContext.AttachDoc(tagSyntax);
     }
 }

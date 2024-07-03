@@ -10,7 +10,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationContext(
-    LuaDocumentId documentId,
+    LuaDocument document,
     DeclarationAnalyzer analyzer,
     AnalyzeContext analyzeContext)
 {
@@ -22,7 +22,13 @@ public class DeclarationContext(
 
     private Dictionary<SyntaxElementId, DeclarationScope> _scopeOwners = new();
 
+    private Dictionary<SyntaxElementId, List<LuaElementPtr<LuaDocTagSyntax>>> _attachedDocs = new();
+
     private HashSet<SyntaxElementId> _uniqueReferences = new();
+
+    private Dictionary<SyntaxElementId, LuaDeclaration> _declarations = new();
+
+    private Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> _elementRelatedClosure = new();
 
     private DeclarationAnalyzer Analyzer { get; } = analyzer;
 
@@ -32,7 +38,9 @@ public class DeclarationContext(
 
     private AnalyzeContext AnalyzeContext { get; } = analyzeContext;
 
-    public LuaDocumentId DocumentId { get; } = documentId;
+    public LuaDocument Document { get; } = document;
+
+    public LuaDocumentId DocumentId => Document.Id;
 
     public LuaDeclarationTree? GetDeclarationTree()
     {
@@ -65,9 +73,15 @@ public class DeclarationContext(
         return null;
     }
 
-    public void AddDeclaration(int position, LuaDeclaration luaDeclaration)
+    public void AddLocalDeclaration(LuaSyntaxElement element, LuaDeclaration luaDeclaration)
     {
-        _curScope?.Add(new DeclarationNode(position, luaDeclaration));
+        _curScope?.Add(new DeclarationNode(element.Position, luaDeclaration));
+        AddAttachedDeclaration(element, luaDeclaration);
+    }
+
+    public void AddAttachedDeclaration(LuaSyntaxElement element, LuaDeclaration luaDeclaration)
+    {
+        _declarations.Add(element.UniqueId, luaDeclaration);
     }
 
     public void AddReference(ReferenceKind kind, LuaDeclaration declaration, LuaSyntaxElement nameElement)
@@ -121,7 +135,7 @@ public class DeclarationContext(
         }
     }
 
-    public void SetScope(DeclarationScope scope, LuaSyntaxElement element)
+    private void SetScope(DeclarationScope scope, LuaSyntaxElement element)
     {
         _scopeStack.Push(scope);
         _topScope ??= scope;
@@ -140,4 +154,57 @@ public class DeclarationContext(
         _curScope = _scopeStack.Count != 0 ? _scopeStack.Peek() : _topScope;
     }
 
+    public void AttachDoc(LuaDocTagSyntax docTagSyntax)
+    {
+        var comment = docTagSyntax.Parent;
+        if (comment is LuaCommentSyntax)
+        {
+            if (_attachedDocs.TryGetValue(comment.UniqueId, out var list))
+            {
+                list.Add(new LuaElementPtr<LuaDocTagSyntax>(docTagSyntax));
+            }
+            else
+            {
+                _attachedDocs.Add(comment.UniqueId, [new(docTagSyntax)]);
+            }
+        }
+    }
+
+    public IEnumerable<(LuaSyntaxElement, List<LuaDocTagSyntax>)> GetAttachedDocs()
+    {
+        foreach (var (commentId, docTags) in _attachedDocs)
+        {
+            var ptr = new LuaElementPtr<LuaCommentSyntax>(commentId);
+            var comment = ptr.ToNode(Document);
+            if (comment is { Owner: { } owner })
+            {
+                var docList = new List<LuaDocTagSyntax>();
+                foreach (var elementPtr in docTags)
+                {
+                    var docTag = elementPtr.ToNode(Document);
+                    if (docTag is not null)
+                    {
+                        docList.Add(docTag);
+                    }
+                }
+
+                yield return (owner, docList);
+            }
+        }
+    }
+
+    public LuaDeclaration? GetAttachedDeclaration(LuaSyntaxElement element)
+    {
+        return _declarations.GetValueOrDefault(element.UniqueId);
+    }
+
+    public void SetElementRelatedClosure(LuaSyntaxElement element, LuaClosureExprSyntax closureExprSyntax)
+    {
+        _elementRelatedClosure.Add(element.UniqueId, new(closureExprSyntax));
+    }
+
+    public LuaClosureExprSyntax? GetElementRelatedClosure(LuaSyntaxElement element)
+    {
+        return _elementRelatedClosure.GetValueOrDefault(element.UniqueId).ToNode(Document);
+    }
 }

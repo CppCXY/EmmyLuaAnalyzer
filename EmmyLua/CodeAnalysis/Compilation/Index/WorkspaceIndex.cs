@@ -151,9 +151,9 @@ public class WorkspaceIndex
         DocumentDeclarationTrees[documentId] = declarationTree;
     }
 
-    public void AddIdRelatedType(SyntaxElementId id, LuaType type)
+    public void UpdateIdRelatedType(SyntaxElementId id, LuaType type)
     {
-        TypeIndex.AddIdRelatedType(id, type);
+        TypeIndex.UpdateIdRelatedType(id, type);
     }
 
     public void AddGlobalRelationType(LuaDocumentId documentId, string name, LuaType type)

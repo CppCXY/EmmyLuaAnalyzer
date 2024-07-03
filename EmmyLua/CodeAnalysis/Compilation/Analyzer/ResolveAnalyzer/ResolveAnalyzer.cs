@@ -99,7 +99,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 var parameter = unResolvedForRangeParameter.Parameters[i];
                                 if (parameter.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                                 {
-                                    Context.Compilation.Db.AddIdRelatedType(luaVariableRefType.Id,
+                                    Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
                                         multiReturnType.GetElementType(i));
                                 }
                             }
@@ -109,7 +109,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         {
                             if (firstDeclaration.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
                             {
-                                Context.Compilation.Db.AddIdRelatedType(luaVariableRefType.Id,
+                                Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
                                     returnType);
                             }
                         }
@@ -155,15 +155,19 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
-            var methodType = unResolvedMethod.MethodType;
-            if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+            var id = unResolvedMethod.Id;
+            var idType = Context.Compilation.Db.QueryTypeFromId(id);
+            if (idType is LuaMethodType methodType)
             {
-                return;
-            }
+                if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+                {
+                    return;
+                }
 
-            var block = unResolvedMethod.Block;
-            var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
-            methodType.MainSignature.ReturnType = returnType;
+                var block = unResolvedMethod.Block;
+                var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
+                methodType.MainSignature.ReturnType = returnType;
+            }
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
         {
@@ -286,7 +290,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
             if (declarationType is LuaVariableRefType variableRefType)
             {
-                Compilation.Db.AddIdRelatedType(variableRefType.Id, type);
+                Compilation.Db.UpdateIdRelatedType(variableRefType.Id, type);
             }
             else if (declarationType is GlobalNameType globalNameType)
             {
@@ -304,7 +308,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         Compilation.Db.AddMember(documentId, namedType, member);
                     }
 
-                    Compilation.Db.AddIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
+                    Compilation.Db.UpdateIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
                 }
                 else if (type.IsExtensionType())
                 {

@@ -32,7 +32,7 @@ public class Declarations(SearchContext context)
         return declaration;
     }
 
-    public IDeclaration? InnerDeclaration(LuaSyntaxElement? element)
+    private IDeclaration? InnerDeclaration(LuaSyntaxElement? element)
     {
         switch (element)
         {
