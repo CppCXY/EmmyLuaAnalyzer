@@ -19,7 +19,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                 Compilation.Db.AddDeclarationTree(document.Id, tree);
             }
 
-            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(document, declarationContext, searchContext);
+            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
             attachDeclarationAnalyzer.Analyze();
         }
     }

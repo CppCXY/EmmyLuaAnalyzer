@@ -7,7 +7,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-     private void AnalyzeDocDetailField(LuaType parentType, LuaDocFieldSyntax field)
+    private void AnalyzeDocDetailField(LuaType parentType, LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
         switch (field)

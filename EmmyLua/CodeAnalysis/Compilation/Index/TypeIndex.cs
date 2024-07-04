@@ -37,8 +37,6 @@ public class TypeIndex
 
     #endregion
 
-    private UniqueIndex<string, LuaDeclaration> Globals { get; } = new();
-
     #region TypeInfo
     private MultiIndex<string, LuaType> Supers { get; } = new();
 
@@ -72,9 +70,6 @@ public class TypeIndex
         AssociatedType.Remove(documentId);
         GlobalAssociatedType.Remove(documentId);
 
-        // globals
-        Globals.Remove(documentId);
-
         // typeInfo
         Supers.Remove(documentId);
         SubTypes.Remove(documentId);
@@ -103,22 +98,9 @@ public class TypeIndex
         ParentGlobalType.Update(documentId, luaDeclaration.UniqueId, name);
     }
 
-    public void AddGlobal(LuaDocumentId documentId, bool forceDefine, string name, LuaDeclaration luaDeclaration)
+    public void AddParentNamedType(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
-        if (forceDefine) // forceUpdate
-        {
-            Globals.Update(documentId, name, luaDeclaration);
-            ParentNamedType.Update(documentId, luaDeclaration.UniqueId, "global");
-            return;
-        }
-
-        if (Globals.Query(name) is not null)
-        {
-            return;
-        }
-
-        Globals.Update(documentId, name, luaDeclaration);
-        ParentNamedType.Update(documentId, luaDeclaration.UniqueId, "global");
+        ParentNamedType.Update(documentId, luaDeclaration.UniqueId, name);
     }
 
     public void AddSuper(LuaDocumentId documentId, string name, LuaType type)
@@ -194,11 +176,6 @@ public class TypeIndex
         TypeOverloads.Add(documentId, name, methodType);
     }
 
-    public IEnumerable<IDeclaration> QueryAllGlobal()
-    {
-        return Globals.QueryAll();
-    }
-
     public IEnumerable<IDeclaration> QueryMembers(LuaType type)
     {
         if (!type.HasMember)
@@ -211,11 +188,6 @@ public class TypeIndex
             case LuaNamedType namedType:
             {
                 var name = namedType.Name;
-                if (name == "global")
-                {
-                    return QueryAllGlobal();
-                }
-
                 return TypeMembers.Query(name);
             }
             case GlobalNameType globalNameType:
@@ -238,11 +210,6 @@ public class TypeIndex
         }
 
         return [];
-    }
-
-    public IDeclaration? QueryGlobals(string name)
-    {
-        return Globals.Query(name);
     }
 
     public IEnumerable<LuaType> QuerySupers(string name)
@@ -311,6 +278,7 @@ public class TypeIndex
         {
             return new LuaVariableRefType(parentId);
         }
+
         return null;
     }
 

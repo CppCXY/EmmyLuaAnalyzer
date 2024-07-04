@@ -154,8 +154,7 @@ public partial class DeclarationWalker
                                 ResolveState.UnResolvedType
                                 );
                             declarationContext.AddUnResolved(unResolveDeclaration);
-                            declarationContext.Db.AddGlobal(DocumentId, false,
-                                name.RepresentText, declaration);
+                            declarationContext.Db.AddGlobal(DocumentId, name.RepresentText, declaration, false);
                         }
                         else
                         {

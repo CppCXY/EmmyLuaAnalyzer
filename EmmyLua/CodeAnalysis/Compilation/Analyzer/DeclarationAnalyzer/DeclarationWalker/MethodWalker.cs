@@ -9,8 +9,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-
-
     private void AnalyzeMethod(LuaFuncStatSyntax luaFuncStat)
     {
         switch (luaFuncStat)
@@ -49,7 +47,7 @@ public partial class DeclarationWalker
                     );
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                    declarationContext.Db.AddGlobal(DocumentId, true, name2.RepresentText, declaration);
+                    declarationContext.Db.AddGlobal(DocumentId, name2.RepresentText, declaration, true);
                     var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
