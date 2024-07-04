@@ -1,4 +1,5 @@
 ---@meta
+---@module no-require
 -- Copyright (c) 2018. tangzx(love.tangzx@qq.com)
 --
 -- Licensed under the Apache License, Version 2.0 (the "License"); you may not

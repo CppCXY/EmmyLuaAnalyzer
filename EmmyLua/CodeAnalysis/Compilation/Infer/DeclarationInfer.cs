@@ -6,7 +6,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
 public static class DeclarationInfer
 {
-
     public static LuaType InferLocalName(LuaLocalNameSyntax localName, SearchContext context)
     {
         var symbol = context.FindDeclaration(localName);

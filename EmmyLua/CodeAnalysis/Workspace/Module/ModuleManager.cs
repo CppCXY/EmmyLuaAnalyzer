@@ -13,7 +13,9 @@ public class ModuleManager
 
     public Dictionary<string, List<LuaDocumentId>> ModuleNameToDocumentId { get; } = new();
 
-    public HashSet<LuaDocumentId> VirtualDocumentIds { get; } = [];
+    private HashSet<LuaDocumentId> VirtualDocumentIds { get; } = [];
+
+    private HashSet<LuaDocumentId> DisableRequires { get; } = [];
 
     private List<Regex> Pattern { get; } = [];
 
@@ -215,7 +217,7 @@ public class ModuleManager
         {
             var documentId = moduleNode.Value.FindModule(modulePath);
 
-            if (documentId.HasValue)
+            if (documentId.HasValue && !IsDisableRequire(documentId.Value))
             {
                 return Workspace.GetDocument(documentId.Value);
             }
@@ -244,7 +246,7 @@ public class ModuleManager
             {
                 if (DocumentIndex.TryGetValue(documentId, out var moduleIndex))
                 {
-                    if (moduleIndex.ModulePath.EndsWith(modulePath))
+                    if (moduleIndex.ModulePath.EndsWith(modulePath) && !IsDisableRequire(documentId))
                     {
                         return Workspace.GetDocument(documentId);
                     }
@@ -271,6 +273,11 @@ public class ModuleManager
                     var uri = string.Empty;
                     if (child.Value.DocumentId.HasValue)
                     {
+                        if (IsDisableRequire(child.Value.DocumentId.Value))
+                        {
+                            continue;
+                        }
+
                         var document = Workspace.GetDocument(child.Value.DocumentId.Value);
                         uri = document?.Uri ?? string.Empty;
                     }
@@ -338,5 +345,20 @@ public class ModuleManager
     {
         DocumentIndex.TryGetValue(documentId, out var moduleInfo);
         return moduleInfo;
+    }
+
+    public bool AddDisableRequire(LuaDocumentId documentId)
+    {
+        if (DisableRequires.Add(documentId))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool IsDisableRequire(LuaDocumentId documentId)
+    {
+        return DisableRequires.Contains(documentId);
     }
 }

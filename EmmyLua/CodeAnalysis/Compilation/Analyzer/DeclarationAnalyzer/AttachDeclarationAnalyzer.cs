@@ -65,6 +65,15 @@ public class AttachDeclarationAnalyzer(
                         declaration.Feature |= DeclarationFeature.Async;
                         break;
                     }
+                    case LuaDocTagMappingSyntax mappingSyntax:
+                    {
+                        if (mappingSyntax.Name is { RepresentText: { } name })
+                        {
+                            declaration.Name = name;
+                        }
+
+                        break;
+                    }
                 }
             }
         }
@@ -147,9 +156,9 @@ public class AttachDeclarationAnalyzer(
             {
                 switch (funcStatSyntax)
                 {
-                    case { IsLocal: true, LocalName.Name: { } name }:
+                    case { IsLocal: true, LocalName: { } name }:
                     {
-                        if (declarationContext.GetAttachedDeclaration(funcStatSyntax.LocalName) is { } luaDeclaration)
+                        if (declarationContext.GetAttachedDeclaration(name) is { } luaDeclaration)
                         {
                             yield return luaDeclaration;
                         }

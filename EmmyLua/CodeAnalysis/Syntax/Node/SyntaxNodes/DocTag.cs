@@ -161,6 +161,13 @@ public class LuaDocTagMetaSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSynta
 public class LuaDocTagModuleSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
     public LuaStringToken? Module => FirstChild<LuaStringToken>();
+
+    public LuaNameToken? Action => FirstChild<LuaNameToken>();
+}
+
+public class LuaDocTagMappingSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
 public class LuaDocAttributeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)

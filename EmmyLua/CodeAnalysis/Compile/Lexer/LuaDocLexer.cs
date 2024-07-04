@@ -48,14 +48,14 @@ public class LuaDocLexer(LuaDocument document)
             "async" => LuaTokenKind.TkTagAsync,
             "cast" => LuaTokenKind.TkTagCast,
             "deprecated" => LuaTokenKind.TkTagDeprecated,
-            "private" or "protected" or "public" or "package" => LuaTokenKind.TkTagVisibility,
-            // TODO internal
+            "private" or "protected" or "public" or "package" or "internal" => LuaTokenKind.TkTagVisibility,
             "diagnostic" => LuaTokenKind.TkTagDiagnostic,
             "meta" => LuaTokenKind.TkTagMeta,
             "version" => LuaTokenKind.TkTagVersion,
             "as" => LuaTokenKind.TkTagAs,
             "nodiscard" => LuaTokenKind.TkTagNodiscard,
             "operator" => LuaTokenKind.TkTagOperator,
+            "mapping" => LuaTokenKind.TkTagMapping,
             _ => LuaTokenKind.TkTagOther
         };
     }
@@ -64,7 +64,7 @@ public class LuaDocLexer(LuaDocument document)
     {
         return text switch
         {
-            "private" or "protected" or "public" or "package" => LuaTokenKind.TkDocVisibility,
+            "private" or "protected" or "public" or "package" or "internal" => LuaTokenKind.TkDocVisibility,
             _ => LuaTokenKind.TkName
         };
     }

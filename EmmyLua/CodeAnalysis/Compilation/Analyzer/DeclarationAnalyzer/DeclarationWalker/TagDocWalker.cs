@@ -172,6 +172,10 @@ public partial class DeclarationWalker
         {
             Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
         }
+        else if (moduleSyntax.Action is { Text: "no-require" })
+        {
+            Compilation.Workspace.ModuleManager.AddDisableRequire(DocumentId);
+        }
     }
 
     private void AnalyzeTagDiagnostic(LuaDocTagDiagnosticSyntax diagnosticSyntax)

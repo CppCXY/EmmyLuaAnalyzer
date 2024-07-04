@@ -11,7 +11,7 @@ public static class TokenAnalyzer
 {
     public static void Analyze(int redCount, LuaSyntaxTree tree)
     {
-        for (int index = 0; index < redCount; index++)
+        for (var index = 0; index < redCount; index++)
         {
             switch (tree.GetTokenKind(index))
             {

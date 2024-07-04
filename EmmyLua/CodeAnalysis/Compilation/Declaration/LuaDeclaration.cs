@@ -40,7 +40,7 @@ public class LuaDeclaration(
 )
     : IDeclaration
 {
-    public string Name { get; } = name;
+    public string Name { get; internal set; } = name;
 
     public LuaType Type => Info.DeclarationType ?? Builtin.Unknown;
 

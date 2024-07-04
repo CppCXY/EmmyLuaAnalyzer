@@ -95,6 +95,10 @@ public static class TagParser
             {
                 return TagModule(p);
             }
+            case LuaTokenKind.TkTagMapping:
+            {
+                return TagMapping(p);
+            }
             case LuaTokenKind.TkTagMeta:
             {
                 return SimpleTag(p, LuaSyntaxKind.DocMeta);
@@ -709,13 +713,42 @@ public static class TagParser
         p.Bump();
         try
         {
-            p.Expect(LuaTokenKind.TkString);
+            if (p.Current is LuaTokenKind.TkString)
+            {
+                p.Bump();
+            }
+            else if (p.Current is LuaTokenKind.TkName)
+            {
+                p.Bump();
+            }
+            else
+            {
+                throw new UnexpectedTokenException("expected <name> or <string>", p.Current);
+            }
+
             DescriptionParser.Description(p);
             return m.Complete(p, LuaSyntaxKind.DocModule);
         }
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocModule, e.Message);
+        }
+    }
+
+    private static CompleteMarker TagMapping(LuaDocParser p)
+    {
+        p.SetState(LuaDocLexerState.Normal);
+        var m = p.Marker();
+        p.Bump();
+        try
+        {
+            p.Expect(LuaTokenKind.TkName);
+            DescriptionParser.Description(p);
+            return m.Complete(p, LuaSyntaxKind.DocMapping);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DocMapping, e.Message);
         }
     }
 

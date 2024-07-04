@@ -178,6 +178,11 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
                 AnalyzeSimpleTag(overloadSyntax);
                 break;
             }
+            case LuaDocTagMappingSyntax mappingSyntax:
+            {
+                AnalyzeSimpleTag(mappingSyntax);
+                break;
+            }
         }
     }
 
