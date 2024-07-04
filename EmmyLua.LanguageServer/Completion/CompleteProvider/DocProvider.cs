@@ -12,7 +12,7 @@ public class DocProvider : ICompleteProviderBase
     [
         "class", "enum", "interface", "alias", "module", "field", "param", "return", "see", "deprecated",
         "type", "overload", "generic", "async", "cast", "private", "protected", "public", "operator",
-        "meta", "version", "as", "nodiscard", "diagnostic", // "package",
+        "meta", "version", "as", "nodiscard", "diagnostic", "mapping",// "package",
     ];
 
     private List<string> Actions { get; } = ["disable-next-line", "disable", "enable"];

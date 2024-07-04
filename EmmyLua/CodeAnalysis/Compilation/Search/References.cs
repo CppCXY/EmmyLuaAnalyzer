@@ -45,7 +45,7 @@ public class References(SearchContext context)
         var luaReferences = context.Compilation.Db.QueryLocalReferences(declaration);
         foreach (var luaReference in luaReferences)
         {
-            if (luaReference.Ptr.ToNode(context) is {} element)
+            if (luaReference.Ptr.ToNode(context) is { } element)
             {
                 references.Add(new ReferenceResult(element.Location, element, luaReference.Kind));
             }
@@ -77,7 +77,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is {} keyElement)
+            if (context.FindDeclaration(indexExpr) == declaration && indexExpr.KeyElement is { } keyElement)
             {
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
@@ -100,12 +100,19 @@ public class References(SearchContext context)
             }
             default:
             {
-                if (methodInfo.IndexPtr.ToNode(context) is { Name: { } name })
+                var results = new List<ReferenceResult>();
+                var mappingName = context.Compilation.Db.QueryMapping(methodInfo.IndexPtr.UniqueId);
+                if (mappingName is not null)
                 {
-                    return FieldReferences(declaration, name);
+                    results.AddRange(FieldReferences(declaration, mappingName));
                 }
 
-                break;
+                if (methodInfo.IndexPtr.ToNode(context) is { Name: { } name })
+                {
+                    results.AddRange(FieldReferences(declaration, name));
+                }
+
+                return results;
             }
         }
 

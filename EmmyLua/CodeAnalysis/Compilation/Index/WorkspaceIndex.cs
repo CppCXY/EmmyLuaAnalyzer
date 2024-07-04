@@ -32,6 +32,8 @@ public class WorkspaceIndex
 
     private Dictionary<LuaDocumentId, LuaDeclarationTree> DocumentDeclarationTrees { get; } = new();
 
+    private UniqueIndex<SyntaxElementId, string> MappingName { get; } = new();
+
     public void Remove(LuaDocumentId documentId)
     {
         TypeIndex.Remove(documentId);
@@ -194,6 +196,11 @@ public class WorkspaceIndex
     public void AddGenericParam(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
     {
         TypeIndex.AddGenericParam(documentId, name, luaDeclaration);
+    }
+
+    public void AddMapping(SyntaxElementId id, string name)
+    {
+        MappingName.Update(id.DocumentId, id, name);
     }
 
     #endregion
@@ -364,6 +371,11 @@ public class WorkspaceIndex
     public IEnumerable<LuaDeclaration> QueryAllMembers()
     {
         return TypeIndex.QueryAllMembers();
+    }
+
+    public string? QueryMapping(SyntaxElementId id)
+    {
+        return MappingName.Query(id);
     }
 
     #endregion

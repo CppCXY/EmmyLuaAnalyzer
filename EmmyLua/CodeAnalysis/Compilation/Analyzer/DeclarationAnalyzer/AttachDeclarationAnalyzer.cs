@@ -70,6 +70,7 @@ public class AttachDeclarationAnalyzer(
                         if (mappingSyntax.Name is { RepresentText: { } name })
                         {
                             declaration.Name = name;
+                            declarationContext.Db.AddMapping(declaration.UniqueId, name);
                         }
 
                         break;

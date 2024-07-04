@@ -215,12 +215,12 @@ public static class LuaDeclarationRenderer
         {
             var visibility = declaration.Visibility switch
             {
-                DeclarationVisibility.Public => " public",
-                DeclarationVisibility.Protected => " protected",
-                DeclarationVisibility.Private => " private",
+                DeclarationVisibility.Public => "",
+                DeclarationVisibility.Protected => "protected ",
+                DeclarationVisibility.Private => "private ",
                 _ => ""
             };
-            renderContext.Append($"(field){visibility} {declaration.Name} : ");
+            renderContext.Append($"{visibility}(field) {declaration.Name} : ");
             LuaTypeRenderer.RenderType(docFieldInfo.DeclarationType, renderContext);
         });
         LuaCommentRenderer.RenderDocFieldComment(docFieldInfo, renderContext);
@@ -233,13 +233,13 @@ public static class LuaDeclarationRenderer
         {
             var visibility = declaration.Visibility switch
             {
-                DeclarationVisibility.Public => "public ",
+                DeclarationVisibility.Public => "",
                 DeclarationVisibility.Protected => "protected ",
                 DeclarationVisibility.Private => "private ",
                 _ => ""
             };
 
-            renderContext.Append($"{visibility} {declaration.Name} : ");
+            renderContext.Append($"{visibility}{declaration.Name} : ");
             LuaTypeRenderer.RenderType(tableFieldInfo.DeclarationType, renderContext);
             if (tableFieldInfo.TableFieldPtr.ToNode(renderContext.SearchContext) is
                 { IsValue: false, Value: LuaLiteralExprSyntax expr })

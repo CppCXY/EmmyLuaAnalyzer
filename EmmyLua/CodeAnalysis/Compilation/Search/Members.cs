@@ -320,7 +320,16 @@ public class Members(SearchContext context)
         }
 
         var notFounded = true;
-        if (indexExpr is { Name: { } name })
+        var mappingName = context.Compilation.Db.QueryMapping(indexExpr.UniqueId);
+        if (mappingName is not null)
+        {
+            foreach (var declaration in FindMember(luaType, mappingName))
+            {
+                notFounded = false;
+                yield return declaration;
+            }
+        }
+        else if (indexExpr is { Name: { } name })
         {
             foreach (var declaration in FindMember(luaType, name))
             {
