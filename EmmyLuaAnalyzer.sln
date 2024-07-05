@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Util.Gen", "Util.Gen\Util.G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmmyLua.Cli", "EmmyLua.Cli\EmmyLua.Cli.csproj", "{46AAE706-30E8-4604-B1E0-EEF8219BC4DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.Framework", "LanguageServer.Framework\LanguageServer.Framework.csproj", "{EF642ABB-4298-4002-BE4B-537A5E0173E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.Test", "LanguageServer.Test\LanguageServer.Test.csproj", "{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +40,14 @@ Global
 		{46AAE706-30E8-4604-B1E0-EEF8219BC4DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46AAE706-30E8-4604-B1E0-EEF8219BC4DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46AAE706-30E8-4604-B1E0-EEF8219BC4DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF642ABB-4298-4002-BE4B-537A5E0173E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF642ABB-4298-4002-BE4B-537A5E0173E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF642ABB-4298-4002-BE4B-537A5E0173E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF642ABB-4298-4002-BE4B-537A5E0173E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

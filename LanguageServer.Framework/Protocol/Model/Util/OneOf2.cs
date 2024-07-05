@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
 
 public class OneOf2<T1, T2>
 {

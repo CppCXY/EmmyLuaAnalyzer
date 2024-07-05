@@ -1,6 +1,18 @@
-﻿namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
+﻿using System.Text.Json.Serialization;
 
-public class DiagnosticRelatedInformation
+namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
+
+public record struct DiagnosticRelatedInformation(Location Location, string Message)
 {
-    
+    /**
+     * The location of this related diagnostic information.
+     */
+    [JsonPropertyName("location")]
+    public Location Location { get; } = Location;
+
+    /**
+     * The message of this related diagnostic information.
+     */
+    [JsonPropertyName("message")]
+    public string Message { get; } = Message;
 }

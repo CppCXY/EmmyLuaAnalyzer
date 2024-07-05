@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
+﻿namespace EmmyLua.LanguageServer.Framework.Protocol.Model.WorkspaceEdit;
 
 public record WorkspaceEdit
 {
