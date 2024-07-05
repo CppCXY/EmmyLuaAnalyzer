@@ -8,21 +8,19 @@ namespace EmmyLua.LanguageServer.Framework.Server.Reader;
 public class JsonProtocolReader(Stream inputStream)
 {
     private StreamReader Reader { get; } = new(inputStream, Encoding.UTF8);
-    
+
     public async Task<Message> ReadAsync()
     {
         // Read the header part
         var headers = await ReadHeadersAsync();
-        if (!headers.TryGetValue("Content-Length", out var contentLengthStr) || !int.TryParse(contentLengthStr, out var contentLength))
+        if (!headers.TryGetValue("Content-Length", out var contentLengthStr) ||
+            !int.TryParse(contentLengthStr, out var contentLength))
         {
             throw new InvalidOperationException("Invalid LSP header: Content-Length is missing or invalid.");
         }
 
         // Read the JSON-RPC message part
-        var jsonRpcMessage = await ReadJsonRpcMessageAsync(contentLength);
-
-        // Deserialize the JSON-RPC message
-        return JsonSerializer.Deserialize<Message>(jsonRpcMessage)!;
+        return await ReadJsonRpcMessageAsync(contentLength);
     }
 
     private async Task<Dictionary<string, string>> ReadHeadersAsync()
@@ -38,10 +36,11 @@ public class JsonProtocolReader(Stream inputStream)
                 headers[parts[0]] = parts[1];
             }
         }
+
         return headers;
     }
 
-    private async Task<string> ReadJsonRpcMessageAsync(int contentLength)
+    private async Task<Message> ReadJsonRpcMessageAsync(int contentLength)
     {
         byte[] buffer = ArrayPool<byte>.Shared.Rent(contentLength);
         try
@@ -54,11 +53,11 @@ public class JsonProtocolReader(Stream inputStream)
                 bytesRead += read;
             }
 
-            return Encoding.UTF8.GetString(buffer, 0, contentLength);
+            return JsonSerializer.Deserialize<Message>(buffer.AsSpan(0, contentLength))!;
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);   
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 }

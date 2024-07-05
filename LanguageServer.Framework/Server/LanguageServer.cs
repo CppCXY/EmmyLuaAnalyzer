@@ -18,9 +18,9 @@ public class LanguageServer(Stream input, Stream output)
 
     public void SendNotification(NotificationMessage notification)
     {
-        var json = JsonSerializer.Serialize(notification);
-        var bytes = Encoding.UTF8.GetBytes(json);
-        Output.Write(bytes);
+        // var json = JsonSerializer.Serialize(notification);
+        // var bytes = Encoding.UTF8.GetBytes(json);
+        // Output.Write(bytes);
     }
 
     public async Task Run()
