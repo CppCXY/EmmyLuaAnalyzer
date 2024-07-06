@@ -13,6 +13,7 @@ namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
  *
  * @since 3.18.0
  */
+[method: JsonConstructor]
 public record struct StringValue(string Kind, string Value)
 {
      /**

@@ -1,9 +1,13 @@
-﻿using System.Text.Json.Serialization;
-using EmmyLua.LanguageServer.Framework.Protocol.Client;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
+using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
 
+[JsonRpc("initialize")]
 public class InitializeParams
 {
     /**
@@ -57,7 +61,7 @@ public class InitializeParams
      * User provided initialization options.
      */
     [JsonPropertyName("initializationOptions")]
-    public object? InitializationOptions { get; set; }
+    public JsonDocument? InitializationOptions { get; set; }
 
     /**
      * The capabilities provided by the client (editor or tool)

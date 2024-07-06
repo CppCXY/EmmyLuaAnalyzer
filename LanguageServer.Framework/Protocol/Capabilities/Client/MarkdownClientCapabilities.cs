@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Client;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
 
 public class MarkdownClientCapabilities(string parser)
 {

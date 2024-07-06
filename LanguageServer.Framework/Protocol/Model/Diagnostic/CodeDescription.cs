@@ -2,6 +2,7 @@
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 
+[method: JsonConstructor]
 public readonly record struct CodeDescription(Uri Href)
 {
     /**

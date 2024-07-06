@@ -4,4 +4,6 @@ LSP specification: https://microsoft.github.io/language-server-protocol/specific
 
 LSP version: 3.18
 
+Support AOT
+
 Under Development ...

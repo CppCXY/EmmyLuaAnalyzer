@@ -2,6 +2,7 @@
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
 
+[method: JsonConstructor]
 public record struct Range(Position Start, Position End)
 {
     /**

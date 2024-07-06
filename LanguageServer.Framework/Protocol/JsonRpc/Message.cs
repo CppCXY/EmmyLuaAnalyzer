@@ -8,16 +8,22 @@ public record Message(string JsonRpc)
     [JsonPropertyName("jsonrpc")] public string JsonRpc { get; } = JsonRpc;
 }
 
+[JsonConverter(typeof(MethodMessageConverter))]
+public record MethodMessage(
+    string Method
+) : Message("2.0")
+{
+    [JsonPropertyName("method")] public string Method { get; } = Method;
+}
+
 public record RequestMessage(
     OneOf2<int, string> Id,
     string Method,
     object? Params
-) : Message("2.0")
+) : MethodMessage(Method)
 {
     [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
     public OneOf2<int, string> Id { get; } = Id;
-
-    [JsonPropertyName("method")] public string Method { get; } = Method;
 
     [JsonPropertyName("params")] public object? Params { get; } = Params;
 }
@@ -72,9 +78,7 @@ public record ResponseMessage(
 public record NotificationMessage(
     string Method,
     object? Params
-) : Message("2.0")
+) : MethodMessage(Method)
 {
-    [JsonPropertyName("method")] public string Method { get; } = Method;
-
     [JsonPropertyName("params")] public object? Params { get; } = Params;
 }

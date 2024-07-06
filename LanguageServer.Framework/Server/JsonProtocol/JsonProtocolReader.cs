@@ -1,14 +1,15 @@
 ﻿using System.Buffers;
 using System.Text;
 using System.Text.Json;
+using EmmyLua.LanguageServer.Framework.Protocol;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 
-namespace EmmyLua.LanguageServer.Framework.Server.Reader;
+namespace EmmyLua.LanguageServer.Framework.Server.JsonProtocol;
 
-public class JsonProtocolReader(Stream inputStream)
+public class JsonProtocolReader(Stream inputStream, JsonSerializerOptions jsonSerializerOptions)
 {
     private StreamReader Reader { get; } = new(inputStream, Encoding.UTF8);
-
+    
     public async Task<Message> ReadAsync()
     {
         // Read the header part
@@ -42,22 +43,23 @@ public class JsonProtocolReader(Stream inputStream)
 
     private async Task<Message> ReadJsonRpcMessageAsync(int contentLength)
     {
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(contentLength);
+        var buffer = ArrayPool<char>.Shared.Rent(contentLength);
         try
         {
             var bytesRead = 0;
             while (bytesRead < contentLength)
             {
-                var read = await inputStream.ReadAsync(buffer.AsMemory(bytesRead, contentLength - bytesRead));
+                var bufferSpan = buffer.AsMemory(bytesRead, contentLength - bytesRead);
+                var read = await Reader.ReadAsync(bufferSpan);
                 if (read == 0) throw new InvalidOperationException("Stream closed before all data could be read.");
                 bytesRead += read;
             }
 
-            return JsonSerializer.Deserialize<Message>(buffer.AsSpan(0, contentLength))!;
+            return JsonSerializer.Deserialize<MethodMessage>(buffer.AsSpan(0, contentLength), jsonSerializerOptions)!;
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            ArrayPool<char>.Shared.Return(buffer);
         }
     }
 }

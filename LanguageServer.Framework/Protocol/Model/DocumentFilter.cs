@@ -2,6 +2,7 @@
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
 
+[method: JsonConstructor]
 public record struct DocumentFilter(string Language, string? Scheme, string? Pattern)
 {
     /**

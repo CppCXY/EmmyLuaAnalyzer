@@ -2,13 +2,16 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LanguageServer.Framework\LanguageServer.Framework.csproj" />
+        <ProjectReference Include="..\LanguageServer.Framework\LanguageServer.Framework.csproj"/>
+        <TrimmerRootAssembly Include="LanguageServer.Framework" />
+        <TrimmerRootAssembly Include="System.Text.Json" />
     </ItemGroup>
 
 </Project>

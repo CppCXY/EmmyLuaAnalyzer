@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
-using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Server;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Server.Notification;
 
+[JsonRpc("$/cancelRequest")]
 public record CancelParams(OneOf2<int, string> Id)
 {
     [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
