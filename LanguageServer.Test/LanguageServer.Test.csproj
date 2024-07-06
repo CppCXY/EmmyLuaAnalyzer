@@ -11,7 +11,6 @@
     <ItemGroup>
         <ProjectReference Include="..\LanguageServer.Framework\LanguageServer.Framework.csproj"/>
         <TrimmerRootAssembly Include="LanguageServer.Framework" />
-        <TrimmerRootAssembly Include="System.Text.Json" />
     </ItemGroup>
 
 </Project>
