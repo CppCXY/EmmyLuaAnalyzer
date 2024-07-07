@@ -3,7 +3,7 @@
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 // ReSharper disable once InconsistentNaming
-public record Command(string Title, string? ToolTip, string Command_, List<Object>? Arguments) 
+public record Command(string Title, string? ToolTip, string Name, List<object>? Arguments) 
 {
     /**
      * Title of the command, like `save`.
@@ -22,12 +22,12 @@ public record Command(string Title, string? ToolTip, string Command_, List<Objec
      */
     [JsonPropertyName("command")]
     // ReSharper disable once InconsistentNaming
-    public string Command_ { get; } = Command_;
+    public string Name { get; } = Name;
     
     /**
      * Arguments that the command handler should be
      * invoked with.
      */
     [JsonPropertyName("arguments")]
-    public List<Object>? Arguments { get; } = Arguments;
+    public List<object>? Arguments { get; } = Arguments;
 }

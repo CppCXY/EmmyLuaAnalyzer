@@ -1,4 +1,5 @@
 ﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 
 namespace EmmyLua.LanguageServer.Framework.Server.Handler.Base;
 

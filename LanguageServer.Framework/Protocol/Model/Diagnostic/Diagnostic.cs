@@ -3,7 +3,7 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 
-public class Diagnostic(Range range, OneOf2<string, MarkupContent> message)
+public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
 {
     /**
      * The range at which the message applies.
@@ -21,7 +21,7 @@ public class Diagnostic(Range range, OneOf2<string, MarkupContent> message)
      * The diagnostic's code, which might appear in the user interface.
      */
     [JsonPropertyName("code"), JsonConverter(typeof(OneOf2JsonConverter<string, int>))]
-    public OneOf2<string, int>? Code { get; set; }
+    public OneOf<string, int>? Code { get; set; }
 
     /**
      * An optional property to describe the error code.
@@ -42,7 +42,7 @@ public class Diagnostic(Range range, OneOf2<string, MarkupContent> message)
      * The diagnostic's message.
      */
     [JsonPropertyName("message"), JsonConverter(typeof(OneOf2JsonConverter<string, MarkupContent>))]
-    public OneOf2<string, MarkupContent> Message { get; set; } = message;
+    public OneOf<string, MarkupContent> Message { get; set; } = message;
 
     /**
      * An array of related diagnostic information, e.g. when symbol-names within

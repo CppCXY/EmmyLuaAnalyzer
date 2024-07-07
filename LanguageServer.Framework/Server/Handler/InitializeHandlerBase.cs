@@ -4,12 +4,12 @@ using EmmyLua.LanguageServer.Framework.Server.Handler.Base;
 
 namespace EmmyLua.LanguageServer.Framework.Server.Handler;
 
-public class InitializeHandlerBase : IJsonRpcRequestHandler<InitializeParams, InitializeResponse>
+public class InitializeHandlerBase : IJsonRpcRequestHandler<InitializeParams, InitializeResult>
 {
     [JsonRpc("initialize")]
-    public virtual Task<InitializeResponse> Handle(InitializeParams request, CancellationToken cancellationToken)
+    public virtual Task<InitializeResult> Handle(InitializeParams request, CancellationToken cancellationToken)
     {
         Console.Error.Write("hello world");
-        return Task.FromResult(new InitializeResponse());
+        return Task.FromResult(new InitializeResult());
     }
 }

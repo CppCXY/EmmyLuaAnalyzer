@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 

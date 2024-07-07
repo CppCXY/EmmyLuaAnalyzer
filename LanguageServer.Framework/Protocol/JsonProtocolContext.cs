@@ -1,8 +1,12 @@
 ﻿using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.TextDocumentClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.WorkspaceEditClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
-using EmmyLua.LanguageServer.Framework.Protocol.Model.WorkspaceEdit;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.File;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.WorkDoneProgress;
 using EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
 using Range = System.Range;
 
@@ -22,7 +26,7 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(RequestMessage))]
 [JsonSerializable(typeof(ResponseError))]
 [JsonSerializable(typeof(InitializeParams))]
-[JsonSerializable(typeof(InitializeResponse))]
+[JsonSerializable(typeof(InitializeResult))]
 [JsonSerializable(typeof(ClientInfo))]
 [JsonSerializable(typeof(ClientInfo))]
 [JsonSerializable(typeof(DocumentUri))]
@@ -47,5 +51,26 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(DiagnosticSeverity))]
 [JsonSerializable(typeof(DiagnosticTag))]
 [JsonSerializable(typeof(DiagnosticRelatedInformation))]
+[JsonSerializable(typeof(CreateFile))]
+[JsonSerializable(typeof(CreateFileOptions))]
+[JsonSerializable(typeof(RenameFile))]
+[JsonSerializable(typeof(RenameFileOptions))]
+[JsonSerializable(typeof(DeleteFile))]
+[JsonSerializable(typeof(DeleteFileOptions))]
+[JsonSerializable(typeof(ChangeAnnotationIdentifier))]
+[JsonSerializable(typeof(WorkDoneProgressBegin))]
+[JsonSerializable(typeof(WorkDoneProgressReport))]
+[JsonSerializable(typeof(WorkDoneProgressEnd))]
+[JsonSerializable(typeof(CodeActionKind))]
+[JsonSerializable(typeof(CompletionItemKind))]
+[JsonSerializable(typeof(FoldingRangeKind))]
+[JsonSerializable(typeof(InsertTextMode))]
+[JsonSerializable(typeof(MessageType))]
+[JsonSerializable(typeof(PositionEncodingKind))]
+[JsonSerializable(typeof(ResourceOperationKind))]
+[JsonSerializable(typeof(PrepareSupportDefaultBehavior))]
+[JsonSerializable(typeof(SymbolKind))]
+[JsonSerializable(typeof(SymbolTag))]
+[JsonSerializable(typeof(TokenFormat))]
 // ReSharper disable once ClassNeverInstantiated.Global
 internal partial class JsonProtocolContext: JsonSerializerContext;

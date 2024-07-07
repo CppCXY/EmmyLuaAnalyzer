@@ -17,13 +17,13 @@ public record MethodMessage(
 }
 
 public record RequestMessage(
-    OneOf2<int, string> Id,
+    OneOf<int, string> Id,
     string Method,
     object? Params
 ) : MethodMessage(Method)
 {
     [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
-    public OneOf2<int, string> Id { get; } = Id;
+    public OneOf<int, string> Id { get; } = Id;
 
     [JsonPropertyName("params")] public object? Params { get; } = Params;
 }
@@ -62,13 +62,13 @@ public record ResponseError(
 }
 
 public record ResponseMessage(
-    OneOf2<int, string> Id,
+    OneOf<int, string> Id,
     object? Result,
     ResponseError? Error
 ) : Message("2.0")
 {
     [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
-    public OneOf2<int, string> Id { get; } = Id;
+    public OneOf<int, string> Id { get; } = Id;
 
     [JsonPropertyName("result")] public object? Result { get; } = Result;
 
