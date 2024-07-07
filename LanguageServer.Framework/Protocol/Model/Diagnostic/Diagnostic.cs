@@ -1,15 +1,15 @@
 ﻿using System.Text.Json.Serialization;
-using EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 
-public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
+public class Diagnostic
 {
     /**
      * The range at which the message applies.
      */
     [JsonPropertyName("range")]
-    public Range Range { get; set; } = range;
+    public Range Range { get; set; }
 
     /**
      * The diagnostic's severity.
@@ -20,8 +20,8 @@ public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
     /**
      * The diagnostic's code, which might appear in the user interface.
      */
-    [JsonPropertyName("code"), JsonConverter(typeof(OneOf2JsonConverter<string, int>))]
-    public OneOf<string, int>? Code { get; set; }
+    [JsonPropertyName("code")]
+    public StringOrInt? Code { get; set; }
 
     /**
      * An optional property to describe the error code.
@@ -41,8 +41,8 @@ public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
     /**
      * The diagnostic's message.
      */
-    [JsonPropertyName("message"), JsonConverter(typeof(OneOf2JsonConverter<string, MarkupContent>))]
-    public OneOf<string, MarkupContent> Message { get; set; } = message;
+    [JsonPropertyName("message")]
+    public StringOrMarkupContent Message { get; set; }
 
     /**
      * An array of related diagnostic information, e.g. when symbol-names within
@@ -50,14 +50,14 @@ public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
      */
     [JsonPropertyName("tags")]
     public List<DiagnosticTag>? Tags { get; set; }
-    
+
     /**
      * An array of related diagnostic information, e.g. when symbol-names within
      * a scope collide all definitions can be marked via this property.
      */
     [JsonPropertyName("relatedInformation")]
     public List<DiagnosticRelatedInformation>? RelatedInformation { get; set; }
-    
+
     /**
      * A data entry field that is preserved between a
      * `textDocument/publishDiagnostics` notification and
@@ -66,5 +66,5 @@ public class Diagnostic(Range range, OneOf<string, MarkupContent> message)
      * @since 3.16.0
      */
     [JsonPropertyName("data")]
-    public Object? Data { get; set; }
+    public object? Data { get; set; }
 }

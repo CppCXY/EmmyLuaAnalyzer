@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 
@@ -17,13 +17,13 @@ public record MethodMessage(
 }
 
 public record RequestMessage(
-    OneOf<int, string> Id,
+    StringOrInt Id,
     string Method,
     object? Params
 ) : MethodMessage(Method)
 {
-    [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
-    public OneOf<int, string> Id { get; } = Id;
+    [JsonPropertyName("id")]
+    public StringOrInt Id { get; } = Id;
 
     [JsonPropertyName("params")] public object? Params { get; } = Params;
 }
@@ -62,13 +62,13 @@ public record ResponseError(
 }
 
 public record ResponseMessage(
-    OneOf<int, string> Id,
+    StringOrInt Id,
     object? Result,
     ResponseError? Error
 ) : Message("2.0")
 {
-    [JsonPropertyName("id"), JsonConverter(typeof(OneOf2JsonConverter<int, string>))]
-    public OneOf<int, string> Id { get; } = Id;
+    [JsonPropertyName("id")]
+    public StringOrInt Id { get; } = Id;
 
     [JsonPropertyName("result")] public object? Result { get; } = Result;
 

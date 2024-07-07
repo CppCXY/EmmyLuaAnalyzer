@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using EmmyLua.LanguageServer.Framework.Protocol.Model.File;
-using EmmyLua.LanguageServer.Framework.Protocol.Model.Util;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model;
 
@@ -27,11 +26,8 @@ public record WorkspaceEdit
     * `workspace.workspaceEdit.resourceOperations` then only plain `TextEdit`s
     * using the `changes` property are supported.
     */
-    [JsonPropertyName("documentChanges"),
-     JsonConverter(typeof(AnyOfJsonConverter4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>))
-    ]
-    public List<AnyOf<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>
-        ? DocumentChanges { get; init; }
+    [JsonPropertyName("documentChanges")]
+    public WorkspaceEditDocumentChanges? DocumentChanges { get; init; }
 
     /**
      * A map of change annotations that can be referenced in
