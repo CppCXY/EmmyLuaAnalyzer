@@ -2,4 +2,8 @@
 
 public class SingleThreadScheduler : IScheduler
 {
+    public void Schedule(Func<Task> action)
+    {
+        action().Wait();
+    }
 }

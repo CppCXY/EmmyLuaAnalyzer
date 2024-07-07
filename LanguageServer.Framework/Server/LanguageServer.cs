@@ -17,11 +17,11 @@ public class LanguageServer
     {
         TypeInfoResolver = JsonProtocolContext.Default
     };
-    
+
     private JsonProtocolReader Reader { get; }
 
     private JsonProtocolWriter Writer { get; }
-    
+
     private bool IsInitialized { get; set; }
 
     private bool IsRunning { get; set; }
@@ -45,7 +45,7 @@ public class LanguageServer
         Reader = new JsonProtocolReader(input, JsonSerializerOptions);
         Writer = new JsonProtocolWriter(output, JsonSerializerOptions);
     }
-    
+
     public static LanguageServer From(Stream input, Stream output)
     {
         return new LanguageServer(input, output);
@@ -56,7 +56,7 @@ public class LanguageServer
         Scheduler = new MultiThreadScheduler();
         return this;
     }
-    
+
     public void AddJsonSerializeContext(JsonSerializerContext serializerContext)
     {
         JsonSerializerOptions.TypeInfoResolverChain.Add(serializerContext);
@@ -74,9 +74,10 @@ public class LanguageServer
         return this;
     }
 
-    public async Task SendNotification(NotificationMessage notification)
+    public Task SendNotification(NotificationMessage notification)
     {
-        await Writer.WriteAsync(notification, typeof(NotificationMessage));
+        Writer.Write(notification, typeof(NotificationMessage));
+        return Task.CompletedTask;
     }
 
     private void InitServices()
@@ -130,50 +131,53 @@ public class LanguageServer
             while (!IsRunning)
             {
                 var message = await Reader.ReadAsync();
-                switch (message)
+                Scheduler.Schedule(async () =>
                 {
-                    case RequestMessage request:
+                    switch (message)
                     {
-                        if (RequestHandlers.TryGetValue(request.Method, out var handler))
+                        case RequestMessage request:
                         {
-                            var result = handler.Method.Invoke(handler.Instance,
-                                [request.Params, CancellationToken.None]);
-                            if (result is Task task)
+                            if (RequestHandlers.TryGetValue(request.Method, out var handler))
                             {
-                                await task.ConfigureAwait(false);
-                                if (task.GetType().IsGenericType)
+                                var result = handler.Method.Invoke(handler.Instance,
+                                    [request.Params, CancellationToken.None]);
+                                if (result is Task task)
                                 {
-                                    result = task.GetType().GetProperty("Result")?.GetValue(task);
-                                    await Writer.WriteAsync(result, handler.ReturnType);
-                                }
-                                else
-                                {
-                                    await Writer.WriteAsync(result, handler.ReturnType);
+                                    await task.ConfigureAwait(false);
+                                    if (task.GetType().IsGenericType)
+                                    {
+                                        result = task.GetType().GetProperty("Result")?.GetValue(task);
+                                        Writer.Write(result, handler.ReturnType);
+                                    }
+                                    else
+                                    {
+                                        Writer.Write(result, handler.ReturnType);
+                                    }
                                 }
                             }
-                        }
 
-                        break;
-                    }
-                    case NotificationMessage notification:
-                    {
-                        if (notification.Method == "shutdown")
-                        {
-                            IsRunning = true;
+                            break;
                         }
-                        
-                        if (NotificationHandlers.TryGetValue(notification.Method, out var handler))
+                        case NotificationMessage notification:
                         {
-                            var result = handler.Method.Invoke(handler.Instance, [notification.Params]);
-                            if (result is Task task)
+                            if (notification.Method == "shutdown")
                             {
-                                await task.ConfigureAwait(false);
+                                IsRunning = true;
                             }
-                        }
 
-                        break;
+                            if (NotificationHandlers.TryGetValue(notification.Method, out var handler))
+                            {
+                                var result = handler.Method.Invoke(handler.Instance, [notification.Params]);
+                                if (result is Task task)
+                                {
+                                    await task.ConfigureAwait(false);
+                                }
+                            }
+
+                            break;
+                        }
                     }
-                }
+                });
             }
         }
         catch (Exception e)

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.NotebookDocumentClientCapabilities;
 
 public class NotebookDocumentSyncClientCapabilities
 {

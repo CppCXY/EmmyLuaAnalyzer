@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 
 public class InitializeResult
 {

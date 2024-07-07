@@ -7,7 +7,7 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.File;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.WorkDoneProgress;
-using EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
+using EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 using Range = System.Range;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol;

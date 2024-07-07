@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 
 public class ServerInfo
 {

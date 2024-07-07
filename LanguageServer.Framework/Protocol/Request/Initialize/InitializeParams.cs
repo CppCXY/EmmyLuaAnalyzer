@@ -1,12 +1,10 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using EmmyLua.LanguageServer.Framework.Protocol.Capabilities;
-using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Server.Request.Initialize;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 
 [JsonRpc("initialize")]
 public class InitializeParams
@@ -19,7 +17,7 @@ public class InitializeParams
     */
     [JsonPropertyName("processId")]
     public int? ProcessId { get; set; }
-    
+
     /**
      * Information about the client
      *
@@ -27,7 +25,7 @@ public class InitializeParams
      */
     [JsonPropertyName("clientInfo")]
     public ClientInfo? ClientInfo { get; set; }
-    
+
     /**
      * The locale the client is currently showing the user interface
      * in. This must not necessarily be the locale of the operating
@@ -40,7 +38,7 @@ public class InitializeParams
      */
     [JsonPropertyName("locale")]
     public string? Locale { get; set; }
-    
+
     /**
      * The rootPath of the workspace. Is null
      * if no folder is open.
@@ -49,7 +47,7 @@ public class InitializeParams
      */
     [JsonPropertyName("rootPath"), Obsolete("Use `rootUri` instead.")]
     public string? RootPath { get; set; }
-    
+
     /**
      * The rootUri of the workspace. Is null if no
      * folder is open. If both `rootPath` and `rootUri` are set
@@ -57,7 +55,7 @@ public class InitializeParams
      */
     [JsonPropertyName("rootUri")]
     public DocumentUri? RootUri { get; set; }
-    
+
     /**
      * User provided initialization options.
      */
@@ -75,7 +73,7 @@ public class InitializeParams
      */
     [JsonPropertyName("trace")]
     public TraceValue? Trace { get; set; }
-    
+
     /**
      * The workspace folders configured in the client when the server starts.
      * This property is only available if the client supports workspace folders.

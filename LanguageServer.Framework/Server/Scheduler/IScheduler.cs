@@ -2,5 +2,5 @@
 
 public interface IScheduler
 {
-    
+    public void Schedule(Func<Task> action);
 }
