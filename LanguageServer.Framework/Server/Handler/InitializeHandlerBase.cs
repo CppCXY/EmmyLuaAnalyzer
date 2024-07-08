@@ -1,4 +1,5 @@
-﻿using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Notification;
 using EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 using EmmyLua.LanguageServer.Framework.Server.Handler.Base;
@@ -11,7 +12,15 @@ public class InitializeHandlerBase : IJsonRpcRequestHandler<InitializeParams, In
     public virtual Task<InitializeResult> Handle(InitializeParams request, CancellationToken cancellationToken)
     {
         Console.Error.Write("hello world");
-        return Task.FromResult(new InitializeResult());
+        var result = new InitializeResult
+        {
+            ServerInfo = new ServerInfo()
+            {
+                Name = "EmmyLua",
+            },
+            Capabilities = new ServerCapabilities()
+        };
+        return Task.FromResult(result);
     }
 
     [JsonRpc("initialized")]

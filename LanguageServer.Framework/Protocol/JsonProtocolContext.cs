@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.TextDocumentClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.WorkspaceEditClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
@@ -25,6 +26,8 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(Message))]
 [JsonSerializable(typeof(MethodMessage))]
 [JsonSerializable(typeof(RequestMessage))]
+[JsonSerializable(typeof(ResponseMessage))]
+[JsonSerializable(typeof(NotificationMessage))]
 [JsonSerializable(typeof(ResponseError))]
 [JsonSerializable(typeof(InitializeParams))]
 [JsonSerializable(typeof(InitializeResult))]
@@ -76,5 +79,6 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(StringOrInt))]
 [JsonSerializable(typeof(StringOrMarkupContent))]
 [JsonSerializable(typeof(WorkspaceEditDocumentChanges))]
+[JsonSerializable(typeof(ServerCapabilities))]
 // ReSharper disable once ClassNeverInstantiated.Global
 internal partial class JsonProtocolContext: JsonSerializerContext;

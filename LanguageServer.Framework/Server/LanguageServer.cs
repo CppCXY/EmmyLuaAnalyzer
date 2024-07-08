@@ -15,7 +15,8 @@ public class LanguageServer
 {
     private JsonSerializerOptions JsonSerializerOptions { get; } = new()
     {
-        TypeInfoResolver = JsonProtocolContext.Default
+        TypeInfoResolver = JsonProtocolContext.Default,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     private JsonProtocolReader Reader { get; }
@@ -76,7 +77,7 @@ public class LanguageServer
 
     public Task SendNotification(NotificationMessage notification)
     {
-        Writer.Write(notification, typeof(NotificationMessage));
+        Writer.WriteNotification(notification, typeof(NotificationMessage));
         return Task.CompletedTask;
     }
 
@@ -147,11 +148,11 @@ public class LanguageServer
                                     if (task.GetType().IsGenericType)
                                     {
                                         result = task.GetType().GetProperty("Result")?.GetValue(task);
-                                        Writer.Write(result, handler.ReturnType);
+                                        Writer.WriteResponse(request.Id, result, handler.ReturnType);
                                     }
                                     else
                                     {
-                                        Writer.Write(result, handler.ReturnType);
+                                        Writer.WriteResponse(request.Id, result, handler.ReturnType);
                                     }
                                 }
                             }

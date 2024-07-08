@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Common;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
@@ -97,16 +98,8 @@ public class SemanticTokensClientCapabilitiesRequests
      * The client will send the `textDocument/semanticTokens/full` request if
      * the server provides a corresponding server capability.
      */
-    [JsonPropertyName("full"), JsonConverter(typeof(BooleanOrConverter<SemanticTokensClientCapabilitiesRequestsFull>))]
-    public BooleanOr<SemanticTokensClientCapabilitiesRequestsFull>? Full { get; init; }
+    [JsonPropertyName("full"), JsonConverter(typeof(BooleanOrConverter<SemanticTokensCapabilitiesFull>))]
+    public BooleanOr<SemanticTokensCapabilitiesFull>? Full { get; init; }
 }
 
-public class SemanticTokensClientCapabilitiesRequestsFull
-{
-    /**
-     * The client will send the `textDocument/semanticTokens/full/delta` request if
-     * the server provides a corresponding server capability.
-     */
-    [JsonPropertyName("delta")]
-    public bool? Delta { get; init; }
-}
+

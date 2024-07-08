@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
@@ -63,14 +64,14 @@ public record ResponseError(
 
 public record ResponseMessage(
     StringOrInt Id,
-    object? Result,
+    JsonDocument? Result,
     ResponseError? Error
 ) : Message("2.0")
 {
     [JsonPropertyName("id")]
     public StringOrInt Id { get; } = Id;
 
-    [JsonPropertyName("result")] public object? Result { get; } = Result;
+    [JsonPropertyName("result")] public JsonDocument? Result { get; } = Result;
 
     [JsonPropertyName("error")] public ResponseError? Error { get; } = Error;
 }

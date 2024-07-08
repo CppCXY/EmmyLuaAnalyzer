@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
 
-namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
 
 public class TextDocumentSyncOptions
 {
