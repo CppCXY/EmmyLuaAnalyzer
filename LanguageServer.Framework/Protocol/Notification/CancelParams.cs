@@ -8,5 +8,5 @@ namespace EmmyLua.LanguageServer.Framework.Protocol.Notification;
 public class CancelParams
 {
     [JsonPropertyName("id")]
-    public StringOrInt Id { get; } = null!;
+    public StringOrInt Id { get; } = 0;
 }

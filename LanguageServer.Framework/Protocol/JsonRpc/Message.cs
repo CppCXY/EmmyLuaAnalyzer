@@ -9,7 +9,7 @@ public record Message(string JsonRpc)
     [JsonPropertyName("jsonrpc")] public string JsonRpc { get; } = JsonRpc;
 }
 
-[JsonConverter(typeof(MethodMessageConverter))]
+[JsonConverter(typeof(Generated.JsonRpcMethodMessageConverter))]
 public record MethodMessage(
     string Method
 ) : Message("2.0")

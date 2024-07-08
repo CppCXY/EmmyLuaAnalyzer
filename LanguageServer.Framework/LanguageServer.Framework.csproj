@@ -12,4 +12,11 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-preview.5.24306.7" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LanguageServer.SourceGenerator\LanguageServer.SourceGenerator.csproj"
+                        OutputItemType="Analyzer"
+                        ReferenceOutputAssembly="false"
+      />
+    </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\zc\.nuget\packages\newtonsoft.json\13.0.3\lib\net6.0\Newtonsoft.Json.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\zc\.nuget\packages\docfx.build\2.76.0\lib\net8.0\Docfx.Build.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\zc\Desktop\github\LuaLanguageServer\LanguageServer.SourceGenerator\bin\Debug\netstandard2.0\LanguageServer.SourceGenerator.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=bfb40515_002D6ac2_002D47b9_002D8d54_002D691333358a60/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Test1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;

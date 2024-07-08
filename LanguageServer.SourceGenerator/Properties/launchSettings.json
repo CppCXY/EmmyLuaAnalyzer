@@ -1,0 +1,8 @@
+﻿{
+   "profiles": {
+        "LanguageServer.SourceGenerator": {
+             "commandName": "DebugRoslynComponent",
+             "targetProject": "../LanguageServer.Test/LanguageServer.Test.csproj"
+        }
+   }
+}

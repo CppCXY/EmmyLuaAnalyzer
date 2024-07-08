@@ -6,3 +6,4 @@ riderModule.iml
 Build/win32
 Build/linux
 Build/macosx
+.vs
