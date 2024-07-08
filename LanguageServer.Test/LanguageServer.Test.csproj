@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\LanguageServer.Framework\LanguageServer.Framework.csproj"/>
-        <TrimmerRootAssembly Include="LanguageServer.Framework" />
     </ItemGroup>
 
 </Project>

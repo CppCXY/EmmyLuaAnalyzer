@@ -9,6 +9,7 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model.File;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.WorkDoneProgress;
+using EmmyLua.LanguageServer.Framework.Protocol.Notification;
 using EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 using Range = System.Range;
 
@@ -80,5 +81,7 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(StringOrMarkupContent))]
 [JsonSerializable(typeof(WorkspaceEditDocumentChanges))]
 [JsonSerializable(typeof(ServerCapabilities))]
+[JsonSerializable(typeof(InitializeResult))]
+[JsonSerializable(typeof(InitializedParams))]
 // ReSharper disable once ClassNeverInstantiated.Global
 internal partial class JsonProtocolContext: JsonSerializerContext;

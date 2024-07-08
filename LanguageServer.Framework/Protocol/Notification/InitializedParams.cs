@@ -2,7 +2,6 @@
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Notification;
 
-[JsonRpc("initialized")]
 public class InitializedParams
 {
 }

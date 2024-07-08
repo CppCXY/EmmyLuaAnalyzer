@@ -8,10 +8,9 @@ namespace EmmyLua.LanguageServer.Framework.Server.JsonProtocol;
 
 public class JsonProtocolWriter(Stream output, JsonSerializerOptions jsonSerializerOptions)
 {
-    public void WriteResponse(StringOrInt id, object? message, Type messageType)
+    public void WriteResponse(StringOrInt id, JsonDocument element)
     {
-        var result = JsonSerializer.SerializeToDocument(message, messageType, jsonSerializerOptions);
-        var response = new ResponseMessage(id, result, null);
+        var response = new ResponseMessage(id, element, null);
         var json = JsonSerializer.Serialize(response, jsonSerializerOptions);
         var contentLength = Encoding.UTF8.GetByteCount(json);
         var writeContent = $"Content-Length:{contentLength}\r\n\r\n{json}";
@@ -19,9 +18,9 @@ public class JsonProtocolWriter(Stream output, JsonSerializerOptions jsonSeriali
         output.Write(writeContentBytes);
     }
 
-    public void WriteNotification(NotificationMessage message, Type messageType)
+    public void WriteNotification(NotificationMessage message)
     {
-        var json = JsonSerializer.Serialize(message, messageType, jsonSerializerOptions);
+        var json = JsonSerializer.Serialize(message, jsonSerializerOptions);
         var contentLength = Encoding.UTF8.GetByteCount(json);
         var writeContent = $"Content-Length:{contentLength}\r\n\r\n{json}";
         var writeContentBytes = Encoding.UTF8.GetBytes(writeContent);

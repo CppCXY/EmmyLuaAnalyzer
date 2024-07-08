@@ -6,7 +6,6 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 
-[JsonRpc("initialize")]
 public class InitializeParams
 {
     /**

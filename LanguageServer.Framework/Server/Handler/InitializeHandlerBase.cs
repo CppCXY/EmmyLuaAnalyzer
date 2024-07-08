@@ -1,14 +1,14 @@
-﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
-using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
+﻿using System.Text.Json;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.Notification;
 using EmmyLua.LanguageServer.Framework.Protocol.Request.Initialize;
 using EmmyLua.LanguageServer.Framework.Server.Handler.Base;
 
 namespace EmmyLua.LanguageServer.Framework.Server.Handler;
 
-public class InitializeHandlerBase : IJsonRpcRequestHandler<InitializeParams, InitializeResult>
+public class InitializeHandlerBase : IJsonHandler
 {
-    [JsonRpc("initialize")]
     public virtual Task<InitializeResult> Handle(InitializeParams request, CancellationToken cancellationToken)
     {
         Console.Error.Write("hello world");
@@ -23,10 +23,29 @@ public class InitializeHandlerBase : IJsonRpcRequestHandler<InitializeParams, In
         return Task.FromResult(result);
     }
 
-    [JsonRpc("initialized")]
     public virtual Task Handle(InitializedParams request, CancellationToken cancellationToken)
     {
         Console.Error.Write("hello world2");
         return Task.CompletedTask;
+    }
+
+    public void RegisterHandler(LanguageServer server)
+    {
+        server.AddRequestHandler("initialize", async (message, cancelToken) =>
+        {
+            var request = message.Params?.Deserialize<InitializeParams>(server.JsonSerializerOptions)!;
+            var r = await Handle(request, cancelToken);
+            return JsonSerializer.SerializeToDocument(r, server.JsonSerializerOptions);
+        });
+        server.AddNotificationHandler("initialized", (message, cancelToken) =>
+        {
+            var request = message.Params?.Deserialize<InitializedParams>(server.JsonSerializerOptions)!;
+            Handle(request, cancelToken);
+        });
+    }
+
+    public void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
+    {
+        return;
     }
 }

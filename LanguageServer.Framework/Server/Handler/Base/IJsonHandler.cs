@@ -1,3 +1,11 @@
-﻿namespace EmmyLua.LanguageServer.Framework.Server.Handler.Base;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 
-public interface IJsonHandler;
+namespace EmmyLua.LanguageServer.Framework.Server.Handler.Base;
+
+public interface IJsonHandler
+{
+    public void RegisterHandler(LanguageServer server);
+
+    public void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities);
+}

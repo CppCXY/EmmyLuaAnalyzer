@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.Framework", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.Test", "LanguageServer.Test\LanguageServer.Test.csproj", "{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.SourceGenerator", "LanguageServer.SourceGenerator\LanguageServer.SourceGenerator.csproj", "{1EC8175F-B47C-4959-8849-0035D4101B9A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,10 +48,6 @@ Global
 		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A270A95D-E1F4-4DB4-85D3-FB5DBBDFA41D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EC8175F-B47C-4959-8849-0035D4101B9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EC8175F-B47C-4959-8849-0035D4101B9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EC8175F-B47C-4959-8849-0035D4101B9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EC8175F-B47C-4959-8849-0035D4101B9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

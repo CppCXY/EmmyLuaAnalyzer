@@ -26,7 +26,7 @@ else
     output = Console.OpenStandardOutput();
 }
 
-var ls = LanguageServer.From(input, output)
-    .WithHandler<InitializeHandlerBase>();
+var ls = LanguageServer.From(input, output);
+ls.AddHandler(new InitializeHandlerBase());
 
 await ls.Run();

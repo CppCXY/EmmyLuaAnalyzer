@@ -4,7 +4,6 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Notification;
 
-[JsonRpc("$/cancelRequest")]
 public class CancelParams
 {
     [JsonPropertyName("id")]

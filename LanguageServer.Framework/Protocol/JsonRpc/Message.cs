@@ -9,7 +9,7 @@ public record Message(string JsonRpc)
     [JsonPropertyName("jsonrpc")] public string JsonRpc { get; } = JsonRpc;
 }
 
-[JsonConverter(typeof(Generated.JsonRpcMethodMessageConverter))]
+[JsonConverter(typeof(MethodMessageConverter))]
 public record MethodMessage(
     string Method
 ) : Message("2.0")
@@ -20,13 +20,13 @@ public record MethodMessage(
 public record RequestMessage(
     StringOrInt Id,
     string Method,
-    object? Params
+    JsonDocument? Params
 ) : MethodMessage(Method)
 {
     [JsonPropertyName("id")]
     public StringOrInt Id { get; } = Id;
 
-    [JsonPropertyName("params")] public object? Params { get; } = Params;
+    [JsonPropertyName("params")] public JsonDocument? Params { get; } = Params;
 }
 
 public static class ErrorCodes
@@ -78,8 +78,8 @@ public record ResponseMessage(
 
 public record NotificationMessage(
     string Method,
-    object? Params
+    JsonDocument? Params
 ) : MethodMessage(Method)
 {
-    [JsonPropertyName("params")] public object? Params { get; } = Params;
+    [JsonPropertyName("params")] public JsonDocument? Params { get; } = Params;
 }
