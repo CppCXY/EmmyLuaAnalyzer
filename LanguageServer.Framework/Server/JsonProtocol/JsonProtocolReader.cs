@@ -8,58 +8,110 @@ namespace EmmyLua.LanguageServer.Framework.Server.JsonProtocol;
 
 public class JsonProtocolReader(Stream inputStream, JsonSerializerOptions jsonSerializerOptions)
 {
-    private StreamReader Reader { get; } = new(inputStream, Encoding.UTF8);
-    
-    public async Task<Message> ReadAsync()
+    private int _startIndex = 0;
+
+    private byte[] SmallBuffer { get; } = new byte[1024];
+
+    public async Task<MethodMessage> ReadAsync()
     {
         // Read the header part
-        var headers = await ReadHeadersAsync();
-        if (!headers.TryGetValue("Content-Length", out var contentLengthStr) ||
-            !int.TryParse(contentLengthStr, out var contentLength))
-        {
-            throw new InvalidOperationException("Invalid LSP header: Content-Length is missing or invalid.");
-        }
+        var (totalLength, contentStart, readContentLength) = await ReadHeadersAsync();
 
-        // Read the JSON-RPC message part
-        return await ReadJsonRpcMessageAsync(contentLength);
+        if (totalLength + contentStart <= SmallBuffer.Length)
+        {
+            return await ReadSmallJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
+        }
+        else
+        {
+            return await ReadLargeJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
+        }
     }
 
-    private async Task<Dictionary<string, string>> ReadHeadersAsync()
+    // FIX me
+    private async Task<(int, int, int)> ReadHeadersAsync()
     {
-        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        while (await Reader.ReadLineAsync() is { } line)
-        {
-            if (line == "") break; // Empty line indicates end of headers
+        var totalLength = 0;
+        var contentStart = 0;
+        var readContentLength = 0;
 
-            var parts = line.Split(new[] { ": " }, 2, StringSplitOptions.None);
-            if (parts.Length == 2)
-            {
-                headers[parts[0]] = parts[1];
-            }
+        var parseStart = 0;
+        var readLength = 0;
+        while (true)
+        {
+            var read = await inputStream.ReadAsync(SmallBuffer.AsMemory());
+            if (read == 0) throw new InvalidOperationException("Stream closed before all data could be read.");
+
+            readLength += read;
+
+            var lineEnd = Array.IndexOf(SmallBuffer, (byte)'\n', 0, readLength);
         }
 
-        return headers;
-    }
+        // if (headerEnd >= 0)
+        // {
+        //     var header = Encoding.UTF8.GetString(SmallBuffer, 0, headerEnd);
+        //     if (header.StartsWith("Content-Length:"))
+        //     {
+        //         if (!int.TryParse(header["Content-Length:".Length..].Trim(), out totalLength))
+        //         {
+        //             throw new InvalidOperationException("Invalid Content-Length header.");
+        //         }
+        //     }
+        //
+        //     if (headerEnd + 1 < readContentLength)
+        //     {
+        //         contentStart = headerEnd + 1;
+        //         break;
+        //     }
+        // }
 
-    private async Task<Message> ReadJsonRpcMessageAsync(int contentLength)
+        return (totalLength, contentStart, readContentLength);
+    }
+    private async Task<MethodMessage> ReadSmallJsonRpcMessageAsync(int totalContentLength, int contentStart, int readContentLength)
     {
-        var buffer = ArrayPool<char>.Shared.Rent(contentLength);
         try
         {
-            var bytesRead = 0;
-            while (bytesRead < contentLength)
+            var bytesRead = contentStart + readContentLength;
+            while (bytesRead < totalContentLength)
             {
-                var bufferSpan = buffer.AsMemory(bytesRead, contentLength - bytesRead);
-                var read = await Reader.ReadAsync(bufferSpan);
+                var bufferSpan = SmallBuffer.AsMemory(bytesRead, totalContentLength - bytesRead);
+                var read = await inputStream.ReadAsync(bufferSpan);
                 if (read == 0) throw new InvalidOperationException("Stream closed before all data could be read.");
                 bytesRead += read;
             }
 
-            return JsonSerializer.Deserialize<MethodMessage>(buffer.AsSpan(0, contentLength), jsonSerializerOptions)!;
+            return JsonSerializer.Deserialize<MethodMessage>(SmallBuffer.AsSpan(contentStart, totalContentLength), jsonSerializerOptions)!;
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException("Invalid JSON-RPC message.", ex);
+        }
+    }
+
+    private async Task<MethodMessage> ReadLargeJsonRpcMessageAsync(int totalContentLength, int contentStart, int readContentLength)
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent(totalContentLength);
+        // 将smallbuffer中的数据拷贝到buffer中
+        SmallBuffer.AsSpan(contentStart, readContentLength).CopyTo(buffer);
+        try
+        {
+            var bytesRead = readContentLength;
+            while (bytesRead < totalContentLength)
+            {
+                var bufferSpan = buffer.AsMemory(bytesRead, totalContentLength - bytesRead);
+                var read = await inputStream.ReadAsync(bufferSpan);
+                if (read == 0) throw new InvalidOperationException("Stream closed before all data could be read.");
+                bytesRead += read;
+            }
+
+            return JsonSerializer.Deserialize<MethodMessage>(buffer.AsSpan(0, totalContentLength), jsonSerializerOptions)!;
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException("Invalid JSON-RPC message.", ex);
         }
         finally
         {
-            ArrayPool<char>.Shared.Return(buffer);
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 }

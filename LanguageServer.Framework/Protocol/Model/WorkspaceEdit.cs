@@ -9,7 +9,7 @@ public record WorkspaceEdit
      * Holds changes to existing resources.
      */
     [JsonPropertyName("changes")]
-    public IDictionary<DocumentUri, List<TextEdit>>? Changes { get; init; }
+    public IDictionary<DocumentUri, List<TextEdit.TextEdit>>? Changes { get; init; }
 
     /**
     * Depending on the client capability

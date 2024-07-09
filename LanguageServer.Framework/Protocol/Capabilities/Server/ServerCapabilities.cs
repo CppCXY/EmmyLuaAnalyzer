@@ -7,6 +7,9 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 
+/// <summary>
+/// If the definitions here do not meet your requirements, you can inherit from this class
+/// </summary>
 public class ServerCapabilities
 {
     /**
@@ -21,7 +24,7 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("positionEncoding")]
-    public PositionEncodingKind? PositionEncoding { get; init; }
+    public PositionEncodingKind? PositionEncoding { get; set; }
 
     /**
      * Defines how text documents are synced. Is either a detailed structure
@@ -30,7 +33,7 @@ public class ServerCapabilities
      * `TextDocumentSyncKind.None`.
      */
     [JsonPropertyName("textDocumentSync")]
-    public TextDocumentSyncOptionsOrKind? TextDocumentSync { get; init; }
+    public TextDocumentSyncOptionsOrKind? TextDocumentSync { get; set; }
 
     /**
      * Defines how notebook documents are synced.
@@ -38,25 +41,25 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("notebookDocumentSync")]
-    public NotebookDocumentSyncOptions? NotebookDocumentSync { get; init; }
+    public NotebookDocumentSyncOptions? NotebookDocumentSync { get; set; }
 
     /**
      * The server provides completion support.
      */
     [JsonPropertyName("completionProvider")]
-    public CompletionOptions? CompletionProvider { get; init; }
+    public CompletionOptions? CompletionProvider { get; set; }
 
     /**
      * The server provides hover support.
      */
     [JsonPropertyName("hoverProvider")]
-    public BooleanOr<HoverOptions>? HoverProvider { get; init; }
+    public BooleanOr<HoverOptions>? HoverProvider { get; set; }
 
     /**
      * The server provides signature help support.
      */
     [JsonPropertyName("signatureHelpProvider")]
-    public SignatureHelpOptions? SignatureHelpProvider { get; init; }
+    public SignatureHelpOptions? SignatureHelpProvider { get; set; }
 
     /**
      * The server provides go to declaration support.
@@ -64,13 +67,13 @@ public class ServerCapabilities
      * @since 3.14.0
      */
     [JsonPropertyName("declarationProvider")]
-    public BooleanOr<DeclarationOptions>? DeclarationProvider { get; init; }
+    public BooleanOr<DeclarationOptions>? DeclarationProvider { get; set; }
 
     /**
      * The server provides goto definition support.
      */
     [JsonPropertyName("definitionProvider")]
-    public BooleanOr<DefinitionOptions>? DefinitionProvider { get; init; }
+    public BooleanOr<DefinitionOptions>? DefinitionProvider { get; set; }
 
     /**
      * The server provides goto type definition support.
@@ -78,7 +81,7 @@ public class ServerCapabilities
      * @since 3.6.0
      */
     [JsonPropertyName("typeDefinitionProvider")]
-    public BooleanOr<TypeDefinitionOptions>? TypeDefinitionProvider { get; init; }
+    public BooleanOr<TypeDefinitionOptions>? TypeDefinitionProvider { get; set; }
 
     /**
      * The server provides goto implementation support.
@@ -86,25 +89,25 @@ public class ServerCapabilities
      * @since 3.6.0
      */
     [JsonPropertyName("implementationProvider")]
-    public BooleanOr<ImplementationOptions>? ImplementationProvider { get; init; }
+    public BooleanOr<ImplementationOptions>? ImplementationProvider { get; set; }
 
     /**
      * The server provides find references support.
      */
     [JsonPropertyName("referencesProvider")]
-    public BooleanOr<ReferencesOptions>? ReferencesProvider { get; init; }
+    public BooleanOr<ReferencesOptions>? ReferencesProvider { get; set; }
 
     /**
      * The server provides document highlight support.
      */
     [JsonPropertyName("documentHighlightProvider")]
-    public BooleanOr<DocumentHighlightOptions>? DocumentHighlightProvider { get; init; }
+    public BooleanOr<DocumentHighlightOptions>? DocumentHighlightProvider { get; set; }
 
     /**
      * The server provides document symbol support.
      */
     [JsonPropertyName("documentSymbolProvider")]
-    public BooleanOr<DocumentSymbolOptions>? DocumentSymbolProvider { get; init; }
+    public BooleanOr<DocumentSymbolOptions>? DocumentSymbolProvider { get; set; }
 
     /**
      * The server provides code actions. The `CodeActionOptions` return type is
@@ -112,19 +115,19 @@ public class ServerCapabilities
      * property `textDocument.codeAction.codeActionLiteralSupport`.
      */
     [JsonPropertyName("codeActionProvider")]
-    public BooleanOr<CodeActionOptions>? CodeActionProvider { get; init; }
+    public BooleanOr<CodeActionOptions>? CodeActionProvider { get; set; }
 
     /**
      * The server provides code lens.
      */
     [JsonPropertyName("codeLensProvider")]
-    public CodeLensOptions? CodeLensProvider { get; init; }
+    public CodeLensOptions? CodeLensProvider { get; set; }
 
     /**
      * The server provides document link support.
      */
     [JsonPropertyName("documentLinkProvider")]
-    public DocumentLinkOptions? DocumentLinkProvider { get; init; }
+    public DocumentLinkOptions? DocumentLinkProvider { get; set; }
 
     /**
      * The server provides color provider support.
@@ -132,31 +135,31 @@ public class ServerCapabilities
      * @since 3.6.0
      */
     [JsonPropertyName("colorProvider")]
-    public BooleanOr<DocumentColorOptions>? ColorProvider { get; init; }
+    public BooleanOr<DocumentColorOptions>? ColorProvider { get; set; }
 
     /**
      * The server provides document formatting.
      */
     [JsonPropertyName("documentFormattingProvider")]
-    public BooleanOr<DocumentFormattingOptions>? DocumentFormattingProvider { get; init; }
+    public BooleanOr<DocumentFormattingOptions>? DocumentFormattingProvider { get; set; }
 
     /**
      * The server provides document range formatting.
      */
     [JsonPropertyName("documentRangeFormattingProvider")]
-    public BooleanOr<DocumentRangeFormattingOptions>? DocumentRangeFormattingProvider { get; init; }
+    public BooleanOr<DocumentRangeFormattingOptions>? DocumentRangeFormattingProvider { get; set; }
 
     /**
      * The server provides document formatting on typing.
      */
     [JsonPropertyName("documentOnTypeFormattingProvider")]
-    public DocumentOnTypeFormattingOptions? DocumentOnTypeFormattingProvider { get; init; }
+    public DocumentOnTypeFormattingOptions? DocumentOnTypeFormattingProvider { get; set; }
 
     /**
      * The server provides execute command support.
      */
     [JsonPropertyName("executeCommandProvider")]
-    public ExecuteCommandOptions? ExecuteCommandProvider { get; init; }
+    public ExecuteCommandOptions? ExecuteCommandProvider { get; set; }
 
     /**
      * The server provides selection range support.
@@ -164,7 +167,7 @@ public class ServerCapabilities
      * @since 3.15.0
      */
     [JsonPropertyName("selectionRangeProvider")]
-    public BooleanOr<SelectionRangeOptions>? SelectionRangeProvider { get; init; }
+    public BooleanOr<SelectionRangeOptions>? SelectionRangeProvider { get; set; }
 
     /**
      * The server provides linked editing range support.
@@ -172,7 +175,7 @@ public class ServerCapabilities
      * @since 3.16.0
      */
     [JsonPropertyName("linkedEditingRangeProvider")]
-    public BooleanOr<LinkedEditingRangeOptions>? LinkedEditingRangeProvider { get; init; }
+    public BooleanOr<LinkedEditingRangeOptions>? LinkedEditingRangeProvider { get; set; }
 
     /**
      * The server provides call hierarchy support.
@@ -180,7 +183,7 @@ public class ServerCapabilities
      * @since 3.16.0
      */
     [JsonPropertyName("callHierarchyProvider")]
-    public BooleanOr<CallHierarchyOptions>? CallHierarchyProvider { get; init; }
+    public BooleanOr<CallHierarchyOptions>? CallHierarchyProvider { get; set; }
 
     /**
      * The server provides semantic tokens support.
@@ -188,7 +191,7 @@ public class ServerCapabilities
      * @since 3.16.0
      */
     [JsonPropertyName("semanticTokensProvider")]
-    public SemanticTokensOptions? SemanticTokensProvider { get; init; }
+    public SemanticTokensOptions? SemanticTokensProvider { get; set; }
 
     /**
      * Whether server provides moniker support.
@@ -196,7 +199,7 @@ public class ServerCapabilities
      * @since 3.16.0
      */
     [JsonPropertyName("monikerProvider")]
-    public BooleanOr<MonikerOptions>? MonikerProvider { get; init; }
+    public BooleanOr<MonikerOptions>? MonikerProvider { get; set; }
 
     /**
      * The server provides type hierarchy support.
@@ -204,7 +207,7 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("typeHierarchyProvider")]
-    public BooleanOr<TypeHierarchyOptions>? TypeHierarchyProvider { get; init; }
+    public BooleanOr<TypeHierarchyOptions>? TypeHierarchyProvider { get; set; }
 
     /**
      * The server provides inline values.
@@ -212,7 +215,7 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("inlineValuesProvider")]
-    public BooleanOr<InlineValuesOptions>? InlineValuesProvider { get; init; }
+    public BooleanOr<InlineValuesOptions>? InlineValuesProvider { get; set; }
 
     /**
      * The server provides inlay hints.
@@ -220,7 +223,7 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("inlayHintsProvider")]
-    public BooleanOr<InlayHintsOptions>? InlayHintsProvider { get; init; }
+    public BooleanOr<InlayHintsOptions>? InlayHintsProvider { get; set; }
 
     /**
      * The server has support for pull model diagnostics.
@@ -228,13 +231,13 @@ public class ServerCapabilities
      * @since 3.17.0
      */
     [JsonPropertyName("diagnosticProvider")]
-    public DiagnosticOptions? DiagnosticProvider { get; init; }
+    public DiagnosticOptions? DiagnosticProvider { get; set; }
 
     /**
      * The server provides workspace symbol support.
      */
     [JsonPropertyName("workspaceSymbolProvider")]
-    public BooleanOr<WorkspaceSymbolOptions>? WorkspaceSymbolProvider { get; init; }
+    public BooleanOr<WorkspaceSymbolOptions>? WorkspaceSymbolProvider { get; set; }
 
     /**
      * The server provides inline completions.
@@ -242,7 +245,7 @@ public class ServerCapabilities
      * @since 3.18.0
      */
     [JsonPropertyName("inlineCompletionsProvider")]
-    public BooleanOr<InlineCompletionsOptions>? InlineCompletionsProvider { get; init; }
+    public BooleanOr<InlineCompletionsOptions>? InlineCompletionsProvider { get; set; }
 
     /**
      * Text document specific server capabilities.
@@ -250,18 +253,18 @@ public class ServerCapabilities
      * @since 3.18.0
      */
     [JsonPropertyName("textDocument")]
-    public TextDocumentServerCapabilities? TextDocument { get; init; }
+    public TextDocumentServerCapabilities? TextDocument { get; set; }
 
     /**
      * Workspace specific server capabilities
      */
     [JsonPropertyName("workspace")]
-    public WorkspaceServerCapabilities.WorkspaceServerCapabilities? Workspace { get; init; }
+    public WorkspaceServerCapabilities.WorkspaceServerCapabilities? Workspace { get; set; }
 
     /**
      * Experimental server capabilities.
      */
     [JsonPropertyName("experimental")]
-    public JsonDocument? Experimental { get; init; }
+    public JsonDocument? Experimental { get; set; }
 }
 

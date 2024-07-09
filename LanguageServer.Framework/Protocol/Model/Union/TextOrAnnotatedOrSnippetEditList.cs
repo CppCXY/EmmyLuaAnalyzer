@@ -1,18 +1,19 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 [JsonConverter(typeof(TextOrAnnotatedOrSnippetEditListConverter))]
 public class TextOrAnnotatedOrSnippetEditList
 {
-    public List<TextEdit>? TextEditList { get; }
+    public List<TextEdit.TextEdit>? TextEditList { get; }
 
     public List<AnnotatedTextEdit>? AnnotatedTextEditList { get; }
 
     public List<SnippetTextEdit>? SnippetTextEditList { get; }
 
-    public TextOrAnnotatedOrSnippetEditList(List<TextEdit> textEditList)
+    public TextOrAnnotatedOrSnippetEditList(List<TextEdit.TextEdit> textEditList)
     {
         TextEditList = textEditList;
     }
@@ -27,7 +28,7 @@ public class TextOrAnnotatedOrSnippetEditList
         SnippetTextEditList = snippetTextEditList;
     }
 
-    public static implicit operator TextOrAnnotatedOrSnippetEditList(List<TextEdit> item1) => new(item1);
+    public static implicit operator TextOrAnnotatedOrSnippetEditList(List<TextEdit.TextEdit> item1) => new(item1);
 
     public static implicit operator TextOrAnnotatedOrSnippetEditList(List<AnnotatedTextEdit> item2) => new(item2);
 
@@ -41,7 +42,7 @@ public class TextOrAnnotatedOrSnippetEditListConverter : JsonConverter<TextOrAnn
     {
         if (reader.TokenType == JsonTokenType.StartArray)
         {
-            var textEditList = JsonSerializer.Deserialize<List<TextEdit>>(ref reader, options);
+            var textEditList = JsonSerializer.Deserialize<List<TextEdit.TextEdit>>(ref reader, options);
             return new TextOrAnnotatedOrSnippetEditList(textEditList!);
         }
 

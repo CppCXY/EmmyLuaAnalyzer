@@ -1,7 +1,8 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using EmmyLua.LanguageServer.Framework.Handler;
 using EmmyLua.LanguageServer.Framework.Server;
-using EmmyLua.LanguageServer.Framework.Server.Handler;
+
 
 Stream? input = null;
 Stream? output = null;
@@ -27,6 +28,14 @@ else
 }
 
 var ls = LanguageServer.From(input, output);
-ls.AddHandler(new InitializeHandlerBase());
+ls.OnInitialize((c, s) =>
+{
+    s.Name = "EmmyLua.Test";
+    s.Version = "1.0.0";
+    Console.Error.WriteLine("initialize");
+});
+ls.OnInitialized((c) => { Console.Error.WriteLine("initialized"); });
+ls.AddHandler(new TextDocumentHandler());
+
 
 await ls.Run();

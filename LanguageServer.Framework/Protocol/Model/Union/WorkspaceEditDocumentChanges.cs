@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
