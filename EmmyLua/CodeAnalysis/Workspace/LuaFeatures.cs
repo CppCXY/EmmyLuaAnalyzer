@@ -29,6 +29,8 @@ public class LuaFeatures
         ".p4",
     ];
 
+    public HashSet<string> ExcludeFiles { get; set; } = [];
+
     public List<string> RequirePattern { get; set; } =
     [
         "?/init.lua",

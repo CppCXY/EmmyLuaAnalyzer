@@ -107,10 +107,12 @@ public class LuaWorkspace
             .Select(it => Path.Combine(directory, it.Trim('\\', '/')))
             .Select(Path.GetFullPath)
             .ToList();
+        var excludeFiles = Features.ExcludeFiles.ToList();
         return Features.Extensions
             .SelectMany(it => Directory.GetFiles(directory, it, SearchOption.AllDirectories))
             .Select(Path.GetFullPath)
-            .Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)));
+            .Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
+            .Where(file => !excludeFiles.Contains(Path.GetFileName(file), StringComparer.OrdinalIgnoreCase));
     }
 
     /// this will load all third libraries and workspace files

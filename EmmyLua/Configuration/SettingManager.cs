@@ -146,6 +146,7 @@ public class SettingManager
         var features = new LuaFeatures();
         var setting = Setting;
         features.ExcludeFolders.UnionWith(setting.Workspace.IgnoreDir);
+        features.ExcludeFiles.UnionWith(setting.Workspace.IgnoreFiles);
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);

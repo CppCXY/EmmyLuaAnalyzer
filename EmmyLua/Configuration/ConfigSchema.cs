@@ -216,6 +216,10 @@ public class Workspace
         ".vscode"
     ];
 
+    [JsonProperty("ignoreFiles", Required = Required.Default,
+        NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> IgnoreFiles { get; set; } = [];
+
     [JsonPropertyName("library")]
     public List<string> Library { get; set; } = [];
 
