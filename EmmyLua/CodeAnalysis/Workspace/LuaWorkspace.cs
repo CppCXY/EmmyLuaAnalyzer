@@ -93,26 +93,31 @@ public class LuaWorkspace
     public void InitStdLib()
     {
         var stdLib = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "std");
-        LoadWorkspace(stdLib);
+        LoadWorkspace(stdLib, false);
     }
 
-    private IEnumerable<string> CollectFiles(string directory)
+    private IEnumerable<string> CollectFiles(string directory, bool useIgnore = true)
     {
         if (!Directory.Exists(directory))
         {
             return Array.Empty<string>();
         }
 
-        var excludeFolders = Features.ExcludeFolders
-            .Select(it => Path.Combine(directory, it.Trim('\\', '/')))
-            .Select(Path.GetFullPath)
-            .ToList();
-        var excludeFiles = Features.ExcludeFiles.ToList();
-        return Features.Extensions
+        var files = Features.Extensions
             .SelectMany(it => Directory.GetFiles(directory, it, SearchOption.AllDirectories))
-            .Select(Path.GetFullPath)
-            .Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
-            .Where(file => !excludeFiles.Contains(Path.GetFileName(file), StringComparer.OrdinalIgnoreCase));
+            .Select(Path.GetFullPath);
+
+        if (useIgnore)
+        {
+            var excludeFolders = Features.ExcludeFolders
+                .Select(it => Path.Combine(directory, it.Trim('\\', '/')))
+                .Select(Path.GetFullPath)
+                .ToList();
+            var excludeFiles = Features.ExcludeFiles.ToList();
+            files = files.Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
+                .Where(file => !excludeFiles.Contains(Path.GetFileName(file), StringComparer.OrdinalIgnoreCase));
+        }
+        return files;
     }
 
     /// this will load all third libraries and workspace files
@@ -167,10 +172,10 @@ public class LuaWorkspace
         Monitor?.OnFinishLoadWorkspace();
     }
 
-    public void LoadWorkspace(string workspace)
+    public void LoadWorkspace(string workspace, bool externalWorkspace = true)
     {
         Monitor?.OnStartLoadWorkspace();
-        var files = CollectFiles(workspace).ToList();
+        var files = CollectFiles(workspace, externalWorkspace).ToList();
         var documents =
             files.AsParallel().Select(file => LuaDocument.OpenDocument(file, Features.Language)).ToList();
         ModuleManager.AddPackageRoot(workspace);
