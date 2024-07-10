@@ -18,7 +18,7 @@ public abstract class TextDocumentHandlerBase : IJsonHandler
 
     protected abstract Task<List<TextEdit>?> HandleRequest(WillSaveTextDocumentParams request, CancellationToken token);
 
-    public void RegisterHandler(LanguageServer server)
+    public virtual void RegisterHandler(LanguageServer server)
     {
         server.AddNotificationHandler("textDocument/didOpen",
             (notificationMessage, token) =>

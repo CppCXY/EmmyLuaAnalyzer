@@ -36,6 +36,10 @@ ls.OnInitialize((c, s) =>
 });
 ls.OnInitialized((c) => { Console.Error.WriteLine("initialized"); });
 ls.AddHandler(new TextDocumentHandler());
-
+ls.AddHandler(new DeclarationHandler());
+ls.AddHandler(new DefinitionHandler());
+ls.AddHandler(new ImplementationHandler());
+ls.AddHandler(new TypeDefinitionHandler());
+ls.AddHandler(new CallHierarchyHandler());
 
 await ls.Run();

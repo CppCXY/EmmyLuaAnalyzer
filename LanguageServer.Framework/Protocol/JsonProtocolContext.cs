@@ -4,9 +4,16 @@ using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
 using EmmyLua.LanguageServer.Framework.Protocol.JsonRpc;
 using EmmyLua.LanguageServer.Framework.Protocol.Message;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.CallHierarchy;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Declaration;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Definition;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Implementation;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.NotebookDocument;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Reference;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Registration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.TextDocument;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.TypeDefinition;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.File;
@@ -38,13 +45,16 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(InitializeParams))]
 [JsonSerializable(typeof(InitializeResult))]
 [JsonSerializable(typeof(ClientInfo))]
-[JsonSerializable(typeof(ClientInfo))]
 [JsonSerializable(typeof(DocumentUri))]
 [JsonSerializable(typeof(DocumentFilter))]
 [JsonSerializable(typeof(Range))]
+[JsonSerializable(typeof(List<Range>))]
 [JsonSerializable(typeof(Position))]
+[JsonSerializable(typeof(List<Position>))]
 [JsonSerializable(typeof(Location))]
+[JsonSerializable(typeof(List<Location>))]
 [JsonSerializable(typeof(LocationLink))]
+[JsonSerializable(typeof(List<LocationLink>))]
 [JsonSerializable(typeof(TextDocumentIdentifier))]
 [JsonSerializable(typeof(TextDocumentItem))]
 [JsonSerializable(typeof(VersionedTextDocumentIdentifier))]
@@ -54,6 +64,7 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(Command))]
 [JsonSerializable(typeof(SnippetTextEdit))]
 [JsonSerializable(typeof(TextEdit))]
+[JsonSerializable(typeof(List<TextEdit>))]
 [JsonSerializable(typeof(WorkspaceEdit))]
 [JsonSerializable(typeof(TraceValue))]
 [JsonSerializable(typeof(ChangeAnnotation))]
@@ -95,6 +106,31 @@ namespace EmmyLua.LanguageServer.Framework.Protocol;
 [JsonSerializable(typeof(DidOpenTextDocumentParams))]
 [JsonSerializable(typeof(DidChangeTextDocumentParams))]
 [JsonSerializable(typeof(DidCloseTextDocumentParams))]
+[JsonSerializable(typeof(DidSaveTextDocumentParams))]
 [JsonSerializable(typeof(WillSaveTextDocumentParams))]
+[JsonSerializable(typeof(DidOpenNotebookDocumentParams))]
+[JsonSerializable(typeof(DidChangeNotebookDocumentParams))]
+[JsonSerializable(typeof(DidCloseNotebookDocumentParams))]
+[JsonSerializable(typeof(DidSaveNotebookDocumentParams))]
+[JsonSerializable(typeof(DeclarationParams))]
+[JsonSerializable(typeof(DeclarationResponse))]
+[JsonSerializable(typeof(DefinitionParams))]
+[JsonSerializable(typeof(DefinitionResponse))]
+[JsonSerializable(typeof(TypeDefinitionParams))]
+[JsonSerializable(typeof(TypeDefinitionResponse))]
+[JsonSerializable(typeof(ImplementationParams))]
+[JsonSerializable(typeof(ImplementationResponse))]
+[JsonSerializable(typeof(ReferenceParams))]
+[JsonSerializable(typeof(ReferenceResponse))]
+[JsonSerializable(typeof(CallHierarchyItem))]
+[JsonSerializable(typeof(List<CallHierarchyItem>))]
+[JsonSerializable(typeof(CallHierarchyPrepareParams))]
+[JsonSerializable(typeof(CallHierarchyPrepareResponse))]
+[JsonSerializable(typeof(CallHierarchyIncomingCallsParams))]
+[JsonSerializable(typeof(CallHierarchyIncomingCallsResponse))]
+[JsonSerializable(typeof(CallHierarchyIncomingCall))]
+[JsonSerializable(typeof(CallHierarchyOutgoingCallsParams))]
+[JsonSerializable(typeof(CallHierarchyOutgoingCallsResponse))]
+[JsonSerializable(typeof(CallHierarchyOutgoingCall))]
 // ReSharper disable once ClassNeverInstantiated.Global
 internal partial class JsonProtocolContext: JsonSerializerContext;

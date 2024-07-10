@@ -18,19 +18,19 @@ public class JsonProtocolReader(Stream inputStream, JsonSerializerOptions jsonSe
         var readContentLength = _currentValidLength - contentStart;
         if (readContentLength > totalLength)
         {
-             readContentLength = totalLength;
+            readContentLength = totalLength;
         }
 
         try
         {
-            if (totalLength + contentStart <= SmallBuffer.Length)
-            {
-                return await ReadSmallJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
-            }
-            else
-            {
-                return await ReadLargeJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
-            }
+            // if (totalLength + contentStart <= SmallBuffer.Length)
+            // {
+            //     return await ReadSmallJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
+            // }
+            // else
+            // {
+            return await ReadLargeJsonRpcMessageAsync(totalLength, contentStart, readContentLength);
+            // }
         }
         finally
         {
@@ -76,8 +76,10 @@ public class JsonProtocolReader(Stream inputStream, JsonSerializerOptions jsonSe
                         }
                     }
                 }
+
                 startIndex = i + 2;
-                if (startIndex + 1 < _currentValidLength && SmallBuffer[startIndex] == '\r' && SmallBuffer[startIndex + 1] == '\n')
+                if (startIndex + 1 < _currentValidLength && SmallBuffer[startIndex] == '\r' &&
+                    SmallBuffer[startIndex + 1] == '\n')
                 {
                     contentStart = startIndex + 2;
                     return true;
@@ -99,12 +101,14 @@ public class JsonProtocolReader(Stream inputStream, JsonSerializerOptions jsonSe
             {
                 break;
             }
+
             await ReadHeaderToBufferAsync();
         }
 
         return (totalLength, contentStart);
     }
 
+    // Fix me
     private async Task<MethodMessage> ReadSmallJsonRpcMessageAsync(int totalContentLength, int contentStart,
         int readContentLength)
     {

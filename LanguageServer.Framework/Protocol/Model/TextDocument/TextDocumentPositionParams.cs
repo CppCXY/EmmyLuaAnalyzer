@@ -2,17 +2,17 @@
 
 namespace EmmyLua.LanguageServer.Framework.Protocol.Model.TextDocument;
 
-[method: JsonConstructor]
-public record struct TextDocumentPositionParams(TextDocumentIdentifier TextDocument, Position Position)
+public class TextDocumentPositionParams
 {
     /**
      * The text document.
      */
     [JsonPropertyName("textDocument")]
-    public TextDocumentIdentifier TextDocument { get; } = TextDocument;
+    public TextDocumentIdentifier TextDocument { get; set; } = null!;
 
     /**
      * The position inside the text document.
      */
-    [JsonPropertyName("position")] public Position Position { get; } = Position;
+    [JsonPropertyName("position")]
+    public Position Position { get; set; }
 }

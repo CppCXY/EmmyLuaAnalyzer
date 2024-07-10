@@ -181,6 +181,14 @@ public class LanguageServer
                         RequestTokenManager.ClearToken(request.Id);
                     }
                 }
+                else
+                {
+                    await Console.Error.WriteLineAsync($"Method {request.Method} not found");
+                    Writer.WriteResponse(request.Id, null, new ResponseError(
+                        ErrorCodes.MethodNotFound,
+                        $"Method {request.Method} not found",
+                        null));
+                }
 
                 break;
             }
