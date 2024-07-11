@@ -5,4 +5,4 @@ if (Test-Path $outputPath) {
 }
 New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
 
-dotnet publish ../EmmyLua.LanguageServer -c Release --output $outputPath -r win-x64 --sc
+dotnet publish ../LanguageServer.Test -c Release --output $outputPath -r win-x64 --sc
