@@ -1,9 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Markup;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Server.Render;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -37,10 +38,10 @@ public class CompletionDocumentResolver
 
     private CompletionItem ModuleResolve(CompletionItem completionItem, ServerContext context)
     {
-        if (completionItem.Data is not null && completionItem.Data.Type == JTokenType.String)
+        if (completionItem.Data?.Value is int intId)
         {
-            var id = new LuaDocumentId((int) completionItem.Data);
-            if (context.GetSemanticModel(id) is {} semanticModel)
+            var documentId = new LuaDocumentId(intId);
+            if (context.GetSemanticModel(documentId) is {} semanticModel)
             {
                 var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
                 completionItem = completionItem with
@@ -61,7 +62,7 @@ public class CompletionDocumentResolver
     {
         if (completionItem.Data is not null)
         {
-            if (completionItem.Data.Type == JTokenType.String && (string?) completionItem.Data is { } strPtr)
+            if (completionItem.Data?.Value is string strPtr)
             {
                 var ptr = LuaElementPtr<LuaSyntaxNode>.From(strPtr);
                 var node = ptr.ToNode(context.LuaWorkspace);

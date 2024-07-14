@@ -1,5 +1,5 @@
 ﻿using EmmyLua.LanguageServer.Completion.CompleteProvider;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
 
 namespace EmmyLua.LanguageServer.Completion;
 

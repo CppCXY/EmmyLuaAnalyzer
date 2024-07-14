@@ -7,11 +7,11 @@ namespace EmmyLua.LanguageServer.DocumentLink;
 
 public class DocumentLinkBuilder
 {
-    public List<OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentLink> Build(
+    public List<Framework.Protocol.Message.DocumentLink.DocumentLink> Build(
         LuaDocument document,
         ResourceManager resourceManager)
     {
-        var links = new List<OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentLink>();
+        var links = new List<Framework.Protocol.Message.DocumentLink.DocumentLink>();
         var stringTokens = document.SyntaxTree.SyntaxRoot.DescendantsWithToken.OfType<LuaStringToken>();
         foreach (var stringToken in stringTokens)
         {
@@ -21,7 +21,7 @@ public class DocumentLinkBuilder
                 var targetPath = resourceManager.ResolvePath(path);
                 if (targetPath is not null)
                 {
-                    var link = new OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentLink
+                    var link = new Framework.Protocol.Message.DocumentLink.DocumentLink
                     {
                         Range = stringToken.Range.ToLspRange(document),
                         Target = targetPath

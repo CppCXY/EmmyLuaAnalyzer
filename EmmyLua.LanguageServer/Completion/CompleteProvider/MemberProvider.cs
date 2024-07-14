@@ -2,9 +2,12 @@
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using Range = System.Range;
+
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -103,7 +106,7 @@ public class MemberProvider : ICompleteProviderBase
                     if (funcStatSyntax.ClosureExpr?.ParamList?.FirstChildToken(LuaTokenKind.TkRightParen) is { } token)
                     {
                         var col = context.SemanticModel.Document.GetCol(token.Range.EndOffset);
-                        replaceRange = new Range(insertRange.Start, new Position(insertRange.End.Line, col));
+                        replaceRange = new (insertRange.Start, new Position(insertRange.End.Line, col));
                     }
 
                     var textOrReplaceEdit = new TextEditOrInsertReplaceEdit(new TextEdit()

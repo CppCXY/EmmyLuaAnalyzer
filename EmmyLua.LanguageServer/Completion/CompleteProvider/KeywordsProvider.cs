@@ -1,8 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Completion.CompletionData;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -43,7 +45,7 @@ public class KeywordsProvider : ICompleteProviderBase
                     InsertTextMode = InsertTextMode.AdjustIndentation,
                     InsertText = "goto continue",
                     AdditionalTextEdits = GetContinueLabelTextEdit(stat) is { } textEdit
-                        ? new TextEditContainer(textEdit)
+                        ? [textEdit]
                         : null
                 });
                 break;
@@ -51,7 +53,7 @@ public class KeywordsProvider : ICompleteProviderBase
         }
     }
 
-    private TextEdit? GetContinueLabelTextEdit(LuaStatSyntax loopStat)
+    private AnnotatedTextEdit? GetContinueLabelTextEdit(LuaStatSyntax loopStat)
     {
         var endToken = loopStat.FirstChildToken(LuaTokenKind.TkEnd);
         if (endToken is not null)
@@ -85,7 +87,7 @@ public class KeywordsProvider : ICompleteProviderBase
             }
 
             var newText = $"{blockIndentText}::continue::\n{endIndentText}end";
-            return new TextEdit()
+            return new()
             {
                 Range = endToken.Range.ToLspRange(document),
                 NewText = newText

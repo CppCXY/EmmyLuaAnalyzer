@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace EmmyLua.LanguageServer.Server.Monitor;
 
 public class ProgressReport
 {
-    [JsonProperty("text")] public string Text { get; set; } = string.Empty;
+    [JsonPropertyName("text")] public string Text { get; set; } = string.Empty;
 
-    [JsonProperty("percent")] public double Percent { get; set; } = 0;
+    [JsonPropertyName("percent")] public double Percent { get; set; } = 0;
 }
 
 public class ServerStatusParams
 {
-    [JsonProperty("health")] public string Health { get; set; } = string.Empty;
+    [JsonPropertyName("health")] public string Health { get; set; } = string.Empty;
 
-    [JsonProperty("message")] public string? Message { get; set; } = null;
+    [JsonPropertyName("message")] public string? Message { get; set; } = null;
 
-    [JsonProperty("loading")] public bool? Loading { get; set; } = null;
+    [JsonPropertyName("loading")] public bool? Loading { get; set; } = null;
 }

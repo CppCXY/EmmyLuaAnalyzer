@@ -2,10 +2,8 @@
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
-using MediatR;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 
 namespace EmmyLua.LanguageServer.ExecuteCommand.Commands;
 
@@ -15,21 +13,21 @@ public class AutoRequire : ICommandBase
 
     public string Name { get; } = CommandName;
 
-    public async Task<Unit> ExecuteAsync(JArray? parameters, CommandExecutor executor)
+    public async Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor)
     {
         if (parameters is not { Count: 3 })
         {
-            return await Unit.Task;
+            return;
         }
 
         var uri = string.Empty;
-        var range = new Range(0, 0, 0, 0);
+        var range = new DocumentRange();
         var requiredText = string.Empty;
         executor.Context.ReadyRead(() =>
         {
-            var currentId = new LuaDocumentId(parameters[0].Value<int>());
-            var needRequireId = new LuaDocumentId(parameters[1].Value<int>());
-            var position = parameters[2].Value<int>();
+            var currentId = new LuaDocumentId(parameters[0].Value is int { } intId ? intId : 0);
+            var needRequireId = new LuaDocumentId(parameters[1].Value is int { } intId2 ? intId2 : 0);
+            var position = parameters[2].Value is int { } intPosition ? intPosition : 0;
             var currentDocument = executor.Context.LuaWorkspace.GetDocument(currentId);
             if (currentDocument is null) return;
             var sourceBlock = currentDocument.SyntaxTree.SyntaxRoot.Block;
@@ -51,31 +49,29 @@ public class AutoRequire : ICommandBase
             if (lastRequireStat != null)
             {
                 var line = currentDocument.GetLine(lastRequireStat.Range.EndOffset) + 1;
-                range = new Range(line, 0, line, 0);
+                range = new DocumentRange(new(line, 0), new(line, 0));
             }
 
             var module = executor.Context.LuaWorkspace.ModuleManager.GetModuleInfo(needRequireId);
             if (module is null) return;
             var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireFilenameConvention
-                    ?? FilenameConvention.SnakeCase;
+                             ?? FilenameConvention.SnakeCase;
             var id = FilenameConverter.ConvertToIdentifier(module.Name, convention);
             var requireFunction = executor.Context.SettingManager
-                .Setting?.Completion.AutoRequireFunction
-                ?? "require";
+                                      .Setting?.Completion.AutoRequireFunction
+                                  ?? "require";
             requiredText = $"local {id} = {requireFunction}(\"{module.ModulePath}\")\n";
             uri = currentDocument.Uri;
         });
 
         if (requiredText.Length != 0)
         {
-            return await executor.ApplyEditAsync(uri, new TextEdit()
+            await executor.ApplyEditAsync(uri, new TextEdit()
             {
                 NewText = requiredText,
                 Range = range
             });
         }
-
-        return await Unit.Task;
     }
 
     public static Command MakeCommand(string title, LuaDocumentId currentId, LuaDocumentId needRequireId, int position)
@@ -84,12 +80,12 @@ public class AutoRequire : ICommandBase
         {
             Title = title,
             Name = CommandName,
-            Arguments = new JArray()
-            {
+            Arguments =
+            [
                 currentId.Id.ToString(),
                 needRequireId.Id.ToString(),
                 position.ToString()
-            }
+            ]
         };
     }
 

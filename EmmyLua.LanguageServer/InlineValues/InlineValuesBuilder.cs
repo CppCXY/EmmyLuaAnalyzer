@@ -1,37 +1,17 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.InlineValue;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace EmmyLua.LanguageServer.InlineValues;
 
 public class InlineValuesBuilder
 {
-    public List<InlineValueBase> Build(SemanticModel semanticModel, Range range, InlineValueContext context,
-        CancellationToken cancellationToken)
+    public List<InlineValue> Build(SemanticModel semanticModel, DocumentRange range)
     {
-        var result = new List<InlineValueBase>();
-        var stopRange = context.StoppedLocation;
-        var token = semanticModel.Document.SyntaxTree.SyntaxRoot.TokenAt(stopRange.End.Line, stopRange.End.Character);
-        if (token is null)
-        {
-            return result;
-        }
-
-        var baseRange = token.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault()?.Range ??
-                        range.ToSourceRange(semanticModel.Document);
-        var stopOffset = semanticModel.Document.GetOffset(stopRange.End.Line, stopRange.End.Character);
-        if (baseRange.StartOffset < stopOffset)
-        {
-            baseRange = baseRange with { Length = stopOffset - baseRange.StartOffset };
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return result;
-        }
-
+        var result = new List<InlineValue>();
+        var baseRange = range.ToSourceRange(semanticModel.Document);
         foreach (var node in semanticModel.Document.SyntaxTree.SyntaxRoot.DescendantsInRange(baseRange))
         {
             switch (node)

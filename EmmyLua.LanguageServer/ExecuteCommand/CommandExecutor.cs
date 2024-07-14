@@ -1,21 +1,13 @@
 ﻿using EmmyLua.LanguageServer.ExecuteCommand.Commands;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.ApplyWorkspaceEdit;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Server;
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 
 namespace EmmyLua.LanguageServer.ExecuteCommand;
 
-public class CommandExecutor(
-    ServerContext context,
-    ILogger<ExecuteCommandHandler> logger)
+public class CommandExecutor(ServerContext context)
 {
-    private ILanguageServerFacade Facade { get; } = context.Server;
-
     public ServerContext Context { get; } = context;
     
     private List<ICommandBase> Commands { get; } =
@@ -30,37 +22,31 @@ public class CommandExecutor(
         return Commands.Select(c => c.Name).ToList();
     }
 
-    public async Task<Unit> ExecuteAsync(string command, JArray? arguments)
+    public async Task ExecuteAsync(string command, List<LSPAny>? arguments)
     {
         var cmd = Commands.FirstOrDefault(c => c.Name == command);
         if (cmd is not null)
         {
             await cmd.ExecuteAsync(arguments, this);
         }
-        
-        return await Unit.Task;
     }
 
-    public async Task<Unit> ApplyEditAsync(string uri, TextEdit textEdit)
+    public async Task ApplyEditAsync(string uri, TextEdit textEdit)
     {
-        var response = await Facade.Workspace.ApplyWorkspaceEdit(new ApplyWorkspaceEditParams()
+        var response = await Context.Server.Client.ApplyEdit(new ApplyWorkspaceEditParams()
         {
             Edit = new WorkspaceEdit()
             {
-                Changes = new Dictionary<DocumentUri, IEnumerable<TextEdit>>()
+                Changes =  new ()
                 {
-                    {
-                        uri, new TextEditContainer(textEdit)
-                    }
+                    { new DocumentUri(new Uri(uri)), new List<TextEdit> { textEdit } }
                 }
             }
-        });
+        }, CancellationToken.None);
 
         if (!response.Applied)
         {
-            logger.LogError(response.FailureReason);
+            await Console.Error.WriteLineAsync(response.FailureReason);
         }
-
-        return await Unit.Task;
     }
 }

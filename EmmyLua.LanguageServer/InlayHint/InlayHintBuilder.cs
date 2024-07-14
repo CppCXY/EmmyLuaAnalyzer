@@ -3,10 +3,10 @@ using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.InlayHint;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Server.Render;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using InlayHintType = OmniSharp.Extensions.LanguageServer.Protocol.Models.InlayHint;
 
 namespace EmmyLua.LanguageServer.InlayHint;
 
@@ -19,12 +19,13 @@ public class InlayHintBuilder
         100
     );
 
-    public List<InlayHintType> Build(SemanticModel semanticModel, SourceRange range, InlayHintConfig config,
+    public List<Framework.Protocol.Message.InlayHint.InlayHint> Build(SemanticModel semanticModel, SourceRange range,
+        InlayHintConfig config,
         CancellationToken cancellationToken)
     {
         var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
         var syntaxTree = semanticModel.Document.SyntaxTree;
-        var hints = new List<InlayHintType>();
+        var hints = new List<Framework.Protocol.Message.InlayHint.InlayHint>();
         var sourceBlock = syntaxTree.SyntaxRoot.Block;
         if (sourceBlock is null)
         {
@@ -93,7 +94,8 @@ public class InlayHintBuilder
         return hints;
     }
 
-    private void CallExprHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaCallExprSyntax callExpr,
+    private void CallExprHint(SemanticModel semanticModel, List<Framework.Protocol.Message.InlayHint.InlayHint> hints,
+        LuaCallExprSyntax callExpr,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -122,10 +124,10 @@ public class InlayHintBuilder
                 {
                     if (args.Count >= 1)
                     {
-                        hints.Add(new InlayHintType()
+                        hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {
                             Position = args[0].Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts("self:"),
+                            Label = "self:",
                             Kind = InlayHintKind.Parameter,
                             PaddingRight = true
                         });
@@ -153,17 +155,16 @@ public class InlayHintBuilder
                         nullableText = "?";
                     }
 
-                    hints.Add(new InlayHintType()
+                    hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                     {
                         Position = arg.Position.ToLspPosition(semanticModel.Document),
-                        Label = new StringOrInlayHintLabelParts(new[]
-                        {
+                        Label = new([
                             new InlayHintLabelPart()
                             {
                                 Value = $"{parameter.Name}{nullableText}:",
                                 Location = location
                             }
-                        }),
+                        ]),
                         Kind = InlayHintKind.Parameter,
                         PaddingRight = true
                     });
@@ -172,10 +173,10 @@ public class InlayHintBuilder
                 {
                     if (hasVarArg)
                     {
-                        hints.Add(new InlayHintType()
+                        hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {
                             Position = arg.Position.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts($"var{varCount}:"),
+                            Label = $"var{varCount}:",
                             Kind = InlayHintKind.Parameter,
                             PaddingLeft = true
                         });
@@ -191,10 +192,10 @@ public class InlayHintBuilder
             var luaDeclaration = semanticModel.Context.FindDeclaration(prefixExpr);
             if (luaDeclaration is { IsAsync: true })
             {
-                hints.Add(new InlayHintType()
+                hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                 {
                     Position = callExpr.Range.StartOffset.ToLspPosition(semanticModel.Document),
-                    Label = new StringOrInlayHintLabelParts("await "),
+                    Label = "await ",
                     Kind = InlayHintKind.Type,
                     PaddingRight = true
                 });
@@ -202,7 +203,8 @@ public class InlayHintBuilder
         }
     }
 
-    private void ClosureExprHint(SemanticModel semanticModel, List<InlayHintType> hints,
+    private void ClosureExprHint(SemanticModel semanticModel,
+        List<Framework.Protocol.Message.InlayHint.InlayHint> hints,
         LuaClosureExprSyntax closureExpr,
         LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
@@ -228,11 +230,10 @@ public class InlayHintBuilder
                     var type = parameterDic.GetValueOrDefault(name);
                     if (type is not null && !type.Equals(Builtin.Unknown))
                     {
-                        hints.Add(new InlayHintType()
+                        hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {
                             Position = parameter.Range.EndOffset.ToLspPosition(semanticModel.Document),
-                            Label = new StringOrInlayHintLabelParts(
-                                $":{renderBuilder.RenderType(type, RenderFeature)}"),
+                            Label = $":{renderBuilder.RenderType(type, RenderFeature)}",
                             Kind = InlayHintKind.Parameter,
                             PaddingLeft = true
                         });
@@ -244,7 +245,7 @@ public class InlayHintBuilder
 
     private void IndexExprHint(
         SemanticModel semanticModel,
-        List<InlayHintType> hints,
+        List<Framework.Protocol.Message.InlayHint.InlayHint> hints,
         LuaIndexExprSyntax indexExpr,
         LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
@@ -257,11 +258,10 @@ public class InlayHintBuilder
             if (document.GetLine(prefixExpr.Range.EndOffset) != document.GetLine(keyElement.Range.StartOffset))
             {
                 var type = semanticModel.Context.InferAndUnwrap(prefixExpr);
-                hints.Add(new InlayHintType()
+                hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                 {
                     Position = prefixExpr.Range.EndOffset.ToLspPosition(semanticModel.Document),
-                    Label = new StringOrInlayHintLabelParts(
-                        $"// {renderBuilder.RenderType(type, RenderFeature)}"),
+                    Label = $"// {renderBuilder.RenderType(type, RenderFeature)}",
                     Kind = InlayHintKind.Type,
                     PaddingLeft = true
                 });
@@ -271,7 +271,7 @@ public class InlayHintBuilder
 
     private void LocalNameHint(
         SemanticModel semanticModel,
-        List<InlayHintType> hints,
+        List<Framework.Protocol.Message.InlayHint.InlayHint> hints,
         LuaLocalNameSyntax localName,
         LuaRenderBuilder renderBuilder,
         CancellationToken cancellationToken)
@@ -284,17 +284,17 @@ public class InlayHintBuilder
         }
 
         var type = semanticModel.Context.InferAndUnwrap(localName);
-        hints.Add(new InlayHintType()
+        hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
         {
             Position = localName.Range.EndOffset.ToLspPosition(semanticModel.Document),
-            Label = new StringOrInlayHintLabelParts(
-                $":{renderBuilder.RenderType(type, RenderFeature)}"),
+            Label = $":{renderBuilder.RenderType(type, RenderFeature)}",
             Kind = InlayHintKind.Type,
             PaddingLeft = true
         });
     }
 
-    private void OverrideHint(SemanticModel semanticModel, List<InlayHintType> hints, LuaFuncStatSyntax funcStat,
+    private void OverrideHint(SemanticModel semanticModel, List<Framework.Protocol.Message.InlayHint.InlayHint> hints,
+        LuaFuncStatSyntax funcStat,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -321,17 +321,16 @@ public class InlayHintBuilder
                     }
                 }
 
-                hints.Add(new InlayHintType()
+                hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                 {
                     Position = paramList.Range.EndOffset.ToLspPosition(document),
-                    Label = new StringOrInlayHintLabelParts(new[]
-                    {
+                    Label = new([
                         new InlayHintLabelPart()
                         {
                             Value = "override",
                             Location = location
                         }
-                    }),
+                    ]),
                     Kind = InlayHintKind.Parameter,
                     PaddingLeft = true,
                 });

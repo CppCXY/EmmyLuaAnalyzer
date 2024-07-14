@@ -1,26 +1,19 @@
-﻿using EmmyLua.LanguageServer.Server;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Reference;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.References;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
+public class ReferencesHandler(ServerContext context) : ReferenceHandlerBase
 {
-    protected override ReferenceRegistrationOptions CreateRegistrationOptions(ReferenceCapability capability,
-        ClientCapabilities clientCapabilities)
+    protected override Task<ReferenceResponse?> Handle(ReferenceParams request, CancellationToken cancellationToken)
     {
-        return new ReferenceRegistrationOptions()
-        {
-        };
-    }
-
-    public override Task<LocationContainer?> Handle(ReferenceParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        LocationContainer? locationContainer = null;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        ReferenceResponse? locationContainer = null;
         context.ReadyRead(() =>
         {
             var semanticModel = context.GetSemanticModel(uri);
@@ -32,13 +25,18 @@ public class ReferencesHandler(ServerContext context) : ReferencesHandlerBase
                 if (node is not null)
                 {
                     var references = semanticModel.FindReferences(node);
-                    locationContainer = LocationContainer.From(
-                        references.Select(it => it.Location.ToLspLocation())
+                    locationContainer = new ReferenceResponse(
+                        references.Select(it => it.Location.ToLspLocation()).ToList()
                     );
                 }
             }
         });
+        
+        return Task.FromResult(locationContainer);
+    }
 
-        return Task.FromResult<LocationContainer?>(locationContainer);
+    public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.ReferencesProvider = true;
     }
 }

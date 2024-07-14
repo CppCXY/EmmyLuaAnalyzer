@@ -1,8 +1,10 @@
-﻿using EmmyLua.LanguageServer.Server;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Hover;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Markup;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Server.Render;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 
 namespace EmmyLua.LanguageServer.Hover;
@@ -19,18 +21,11 @@ public class HoverHandler(
         100,
         true
     );
-    
-    protected override HoverRegistrationOptions CreateRegistrationOptions(HoverCapability capability,
-        ClientCapabilities clientCapabilities)
-    {
-        return new HoverRegistrationOptions();
-    }
 
-    public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover?> Handle(HoverParams request,
-        CancellationToken cancellationToken)
+    protected override Task<HoverResponse> Handle(HoverParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover? hover = null;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        HoverResponse? hover = null;
         context.ReadyRead(() =>
         {
             var semanticModel = context.GetSemanticModel(uri);
@@ -40,17 +35,23 @@ public class HoverHandler(
                 var document = semanticModel.Document;
                 var pos = request.Position;
                 var node = document.SyntaxTree.SyntaxRoot.NodeAt(pos.Line, pos.Character);
-                hover = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover()
+                hover = new HoverResponse()
                 {
-                    Contents = new MarkedStringsOrMarkupContent(new MarkupContent()
+                    Contents = new MarkupContent()
                     {
                         Kind = MarkupKind.Markdown,
                         Value = renderBuilder.Render(node, RenderFeature)
-                    })
+                    }
                 };
             }
         });
 
-        return Task.FromResult(hover);
+        return Task.FromResult(hover)!;
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.HoverProvider = true;
     }
 }

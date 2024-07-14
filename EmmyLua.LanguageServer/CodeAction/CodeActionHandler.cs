@@ -1,7 +1,10 @@
-﻿using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.CodeAction;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
+
 
 namespace EmmyLua.LanguageServer.CodeAction;
 
@@ -10,33 +13,29 @@ public class CodeActionHandler(ServerContext context) : CodeActionHandlerBase
 {
     private CodeActionBuilder Builder { get; } = new();
     
-    protected override CodeActionRegistrationOptions CreateRegistrationOptions(CodeActionCapability capability,
-        ClientCapabilities clientCapabilities)
-    {
-        return new CodeActionRegistrationOptions()
-        {
-            ResolveProvider = true,
-            CodeActionKinds = new Container<CodeActionKind>(CodeActionKind.QuickFix)
-        };
-    }
-
-    public override Task<CommandOrCodeActionContainer?> Handle(CodeActionParams request,
-        CancellationToken cancellationToken)
+    protected override Task<CodeActionResponse> Handle(CodeActionParams request, CancellationToken token)
     {
         var result = new List<CommandOrCodeAction>();
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
         var diagnostics = request.Context.Diagnostics;
         context.ReadyRead(() =>
         {
             result = Builder.Build(diagnostics, uri, context);
         });
         
-        return Task.FromResult<CommandOrCodeActionContainer?>(result);
+        return Task.FromResult<CodeActionResponse?>(new CodeActionResponse(result))!;
     }
 
-    public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeAction> Handle(
-        OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeAction request, CancellationToken cancellationToken)
+    protected override Task<Framework.Protocol.Message.CodeAction.CodeAction> Resolve(Framework.Protocol.Message.CodeAction.CodeAction request, CancellationToken token)
     {
         return Task.FromResult(request);
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.CodeActionProvider = new CodeActionOptions()
+        {
+            CodeActionKinds = [CodeActionKind.QuickFix],
+        };
     }
 }

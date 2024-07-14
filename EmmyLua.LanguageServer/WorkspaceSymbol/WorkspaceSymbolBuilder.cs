@@ -1,17 +1,17 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentSymbol;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.WorkspaceSymbol;
 
 public class WorkspaceSymbolBuilder
 {
-    public List<OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol> Build(string query,
+    public List<Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol> Build(string query,
         ServerContext context, CancellationToken cancellationToken)
     {
-        var result = new List<OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol>();
+        var result = new List<Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol>();
         try
         {
             var luaWorkspace = context.LuaWorkspace;
@@ -25,7 +25,7 @@ public class WorkspaceSymbolBuilder
                     var location = global.GetLocation(searchContext)?.ToLspLocation();
                     if (location is not null)
                     {
-                        result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
+                        result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
                         {
                             Name = global.Name,
                             Kind = ToSymbolKind(global.Type),
@@ -44,7 +44,7 @@ public class WorkspaceSymbolBuilder
                     var document = luaWorkspace.GetDocument(member.Info.Ptr.DocumentId);
                     if (document is not null && member.Info.Ptr.ToNode(document) is { } node)
                     {
-                        result.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol()
+                        result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
                         {
                             Name = member.Name,
                             Kind = ToSymbolKind(member.Info.DeclarationType),

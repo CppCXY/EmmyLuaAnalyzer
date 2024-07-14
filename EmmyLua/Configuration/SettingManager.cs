@@ -1,9 +1,11 @@
 ﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
-using Newtonsoft.Json;
 
 
 namespace EmmyLua.Configuration;
@@ -24,9 +26,11 @@ public class SettingManager
 
     private bool _firstLoad = true;
 
-    private JsonSerializerSettings SerializerSettings { get; } = new()
+    private JsonSerializerOptions SerializerSettings { get; } = new()
     {
-        Formatting = Formatting.Indented
+        TypeInfoResolver = SettingGenerateContext.Default,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     private FileSystemWatcher? Watcher { get; set; }
@@ -81,7 +85,7 @@ public class SettingManager
 
             var fileText = File.ReadAllText(settingPath);
             // ReSharper disable once IdentifierTypo
-            var setting = JsonConvert.DeserializeObject<Setting>(fileText, SerializerSettings);
+            var setting = JsonSerializer.Deserialize<Setting>(fileText, SerializerSettings);
             if (setting is not null)
             {
                 Setting = setting;
@@ -241,7 +245,7 @@ public class SettingManager
             setting.Schema = (new Uri(path)).AbsoluteUri;
         }
 
-        var json = JsonConvert.SerializeObject(setting, SerializerSettings);
+        var json = JsonSerializer.Serialize(setting, SerializerSettings);
         File.WriteAllText(SettingPath, json);
     }
 

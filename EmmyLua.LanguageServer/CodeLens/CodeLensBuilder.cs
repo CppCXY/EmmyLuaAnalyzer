@@ -1,14 +1,13 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using System.Text.Json;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+
 
 namespace EmmyLua.LanguageServer.CodeLens;
 
@@ -17,14 +16,9 @@ public class CodeLensBuilder
     private const string VscodeCommandName = "emmy.showReferences";
     private const string OtherCommandName = "editor.action.showReferences";
 
-    private static readonly JsonSerializer Serializer = new JsonSerializer()
+    public List<Framework.Protocol.Message.CodeLens.CodeLens> Build(SemanticModel semanticModel, ServerContext context)
     {
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-    };
-
-    public CodeLensContainer Build(SemanticModel semanticModel, ServerContext context)
-    {
-        var codeLens = new List<OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens>();
+        var codeLens = new List<Framework.Protocol.Message.CodeLens.CodeLens>();
         var funcStats = semanticModel.Document
             .SyntaxTree
             .SyntaxRoot
@@ -36,7 +30,7 @@ public class CodeLensBuilder
         {
             if (funcStat.FirstChildToken(LuaTokenKind.TkFunction) is { } funcToken)
             {
-                codeLens.Add(new OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens()
+                codeLens.Add(new Framework.Protocol.Message.CodeLens.CodeLens()
                 {
                     Range = funcToken.Range.ToLspRange(document),
                     Data = funcStat.UniqueId.ToString()
@@ -44,13 +38,13 @@ public class CodeLensBuilder
             }
         }
 
-        return new CodeLensContainer(codeLens);
+        return codeLens;
     }
 
-    public OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens Resolve(
-        OmniSharp.Extensions.LanguageServer.Protocol.Models.CodeLens codeLens, ServerContext context)
+    public Framework.Protocol.Message.CodeLens.CodeLens Resolve(
+        Framework.Protocol.Message.CodeLens.CodeLens codeLens, ServerContext context)
     {
-        if (codeLens.Data?.Type == JTokenType.String && codeLens.Data.Value<string>() is { } uniqueIdString)
+        if (codeLens.Data?.Value is string uniqueIdString)
         {
             try
             {
@@ -66,8 +60,9 @@ public class CodeLensBuilder
                         if (semanticModel is not null)
                         {
                             var references = semanticModel.FindReferences(element).ToList();
-                            codeLens = codeLens with
+                            codeLens = new Framework.Protocol.Message.CodeLens.CodeLens()
                             {
+                                Range = codeLens.Range,
                                 Command = MakeCommand(references, nameElement, context)
                             };
                         }
@@ -82,7 +77,7 @@ public class CodeLensBuilder
 
         return codeLens;
     }
-    
+
     private static Command MakeCommand(List<ReferenceResult> results, LuaSyntaxElement element,
         ServerContext serverContext)
     {
@@ -98,8 +93,8 @@ public class CodeLensBuilder
             Arguments =
             [
                 element.Tree.Document.Uri,
-                JToken.FromObject(position, Serializer),
-                JToken.FromObject(locations, Serializer)
+                new LSPAny(position),
+                new LSPAny(locations)
             ]
         };
     }

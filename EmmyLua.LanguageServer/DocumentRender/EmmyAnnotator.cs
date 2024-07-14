@@ -1,18 +1,17 @@
-﻿using MediatR;
-using Newtonsoft.Json;
-using OmniSharp.Extensions.JsonRpc;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 namespace EmmyLua.LanguageServer.DocumentRender;
 
-[Parallel, Method("emmy/annotator")]
-public class EmmyAnnotatorRequestParams : IRequest<List<EmmyAnnotatorResponse>>
+public class EmmyAnnotatorRequestParams
 {
-    [JsonProperty("uri", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public string Uri { get; set; } = string.Empty;
+    [JsonPropertyName("uri")]
+    public DocumentUri Uri { get; set; }
 }
 
 // TODO fix proto, 这里只是为了兼容老版本的emmylua的渲染
+[JsonConverter(typeof(EmmyAnnotatorTypeJsonConverter))]
 public enum EmmyAnnotatorType
 {
     Param = 0,
@@ -20,20 +19,33 @@ public enum EmmyAnnotatorType
     Upvalue = 3
 }
 
-public class RenderRange(Range range)
+public class EmmyAnnotatorTypeJsonConverter : JsonConverter<EmmyAnnotatorType>
 {
-    [JsonProperty("range", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public Range Range = range;
+    public override EmmyAnnotatorType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return (EmmyAnnotatorType)reader.GetInt32();
+    }
+
+    public override void Write(Utf8JsonWriter writer, EmmyAnnotatorType value, JsonSerializerOptions options)
+    {
+        writer.WriteNumberValue((int)value);
+    }
+}
+
+public class RenderRange(DocumentRange range)
+{
+    [JsonPropertyName("range")]
+    public DocumentRange Range { get; set; } = range;
 }
 
 public class EmmyAnnotatorResponse(string uri, EmmyAnnotatorType type)
 {
-    [JsonProperty("uri", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public string Uri = uri;
-
-    [JsonProperty("ranges", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public List<RenderRange> Ranges = [];
+    [JsonPropertyName("uri")]
+    public DocumentUri Uri { get; set; } = uri;
     
-    [JsonProperty("type", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    public EmmyAnnotatorType Type = type;
+    [JsonPropertyName("ranges")]
+    public List<RenderRange> Ranges { get; set; } = [];
+
+    [JsonPropertyName("type")]
+    public EmmyAnnotatorType Type { get; set; } = type;
 }

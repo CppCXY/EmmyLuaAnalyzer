@@ -1,37 +1,35 @@
-﻿using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.InlineValue;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.InlineValues;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class InlineValuesHandler(ServerContext context): InlineValuesHandlerBase
+public class InlineValuesHandler(ServerContext context): InlineValueHandlerBase
 {
     private InlineValuesBuilder Builder { get; } = new();
     
-    protected override InlineValueRegistrationOptions CreateRegistrationOptions(InlineValueClientCapabilities capability,
-        ClientCapabilities clientCapabilities)
+    protected override Task<InlineValueResponse> Handle(InlineValueParams inlineValueParams, CancellationToken cancellationToken)
     {
-        return new InlineValueRegistrationOptions
-        {
-        };
-    }
-
-    public override Task<Container<InlineValueBase>?> Handle(InlineValueParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        Container<InlineValueBase>? container = null;
+        var uri = inlineValueParams.TextDocument.Uri.Uri.AbsoluteUri;
+        InlineValueResponse? container = null;
         context.ReadyRead(() =>
         {
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var result =  Builder.Build(semanticModel, request.Range, request.Context, cancellationToken);
-                container = new Container<InlineValueBase>(result);
+                var result =  Builder.Build(semanticModel, inlineValueParams.Range);
+                container = new InlineValueResponse(result);
             }
         });
         
-        return Task.FromResult(container);
+        return Task.FromResult(container)!;
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.InlineValuesProvider = true;
     }
 }

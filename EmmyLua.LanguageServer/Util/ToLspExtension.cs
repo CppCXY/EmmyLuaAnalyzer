@@ -2,12 +2,14 @@
 using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Diagnostic = OmniSharp.Extensions.LanguageServer.Protocol.Models.Diagnostic;
-using DiagnosticSeverity = OmniSharp.Extensions.LanguageServer.Protocol.Models.DiagnosticSeverity;
-using DiagnosticTag = OmniSharp.Extensions.LanguageServer.Protocol.Models.DiagnosticTag;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using LuaDiagnostic = EmmyLua.CodeAnalysis.Diagnostics.Diagnostic;
+using Diagnostic = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
+using DiagnosticTag = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic.DiagnosticTag;
+using LuaDiagnosticTag = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag;
+using DiagnosticSeverity = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic.DiagnosticSeverity;
+using LuaDiagnosticServerity = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity;
 
 namespace EmmyLua.LanguageServer.Util;
 
@@ -34,7 +36,7 @@ public static class LspExtension
         };
     }
 
-    public static Diagnostic ToLspDiagnostic(this LuaDiagnostic diagnostic, LuaDocument document)
+    public static Diagnostic.Diagnostic ToLspDiagnostic(this LuaDiagnostic diagnostic, LuaDocument document)
     {
         return new()
         {
@@ -42,19 +44,19 @@ public static class LspExtension
             Message = diagnostic.Message,
             Tags = diagnostic.Tag switch
             {
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Unnecessary =>
+                LuaDiagnosticTag.Unnecessary =>
                     [DiagnosticTag.Unnecessary],
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag.Deprecated => new[] { DiagnosticTag.Deprecated },
+                LuaDiagnosticTag.Deprecated => [ DiagnosticTag.Deprecated ],
                 _ => []
             },
             Range = diagnostic.Range.ToLspRange(document),
             Severity = diagnostic.Severity switch
             {
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Error => DiagnosticSeverity.Error,
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Warning => DiagnosticSeverity.Warning,
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Information =>
+                LuaDiagnosticServerity.Error => DiagnosticSeverity.Error,
+                LuaDiagnosticServerity.Warning => DiagnosticSeverity.Warning,
+                LuaDiagnosticServerity.Information =>
                     DiagnosticSeverity.Information,
-                EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
+                LuaDiagnosticServerity.Hint => DiagnosticSeverity.Hint,
                 _ => throw new UnreachableException()
             },
             Data = diagnostic.Data,
@@ -62,7 +64,7 @@ public static class LspExtension
         };
     }
 
-    public static Range ToLspRange(this SourceRange range, LuaDocument document)
+    public static DocumentRange ToLspRange(this SourceRange range, LuaDocument document)
     {
         return new()
         {
@@ -78,8 +80,8 @@ public static class LspExtension
             }
         };
     }
-    
-    public static Range ToLspRange(this ILocation location)
+
+    public static DocumentRange ToLspRange(this ILocation location)
     {
         return new()
         {
@@ -116,7 +118,7 @@ public static class LspExtension
             });
     }
 
-    public static SourceRange ToSourceRange(this Range range, LuaDocument document)
+    public static SourceRange ToSourceRange(this DocumentRange range, LuaDocument document)
     {
         var start = document.GetOffset(range.Start.Line, range.Start.Character);
         var length = document.GetOffset(range.End.Line, range.End.Character) - start;

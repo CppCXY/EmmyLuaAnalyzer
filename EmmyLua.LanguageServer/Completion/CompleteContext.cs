@@ -1,10 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Server.Render;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -25,16 +26,16 @@ public class CompleteContext
     private CancellationToken CancellationToken { get; }
 
     public CompletionConfig CompletionConfig { get; }
-    
+
     public ServerContext ServerContext { get; }
-    
+
     public LuaRenderFeature RenderFeature { get; } = new(
         true,
         false,
         false,
         100
     );
-    
+
     public LuaRenderBuilder RenderBuilder { get; }
 
     // ReSharper disable once ConvertToPrimaryConstructor
@@ -46,7 +47,7 @@ public class CompleteContext
         Continue = true;
         CancellationToken = cancellationToken;
         TriggerToken =
-            semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
+            semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt((int)position.Line, (int)position.Character);
         CompletionConfig = context.SettingManager.GetCompletionConfig();
         ServerContext = context;
         RenderBuilder = new LuaRenderBuilder(semanticModel.Context);
@@ -73,7 +74,7 @@ public class CompleteContext
     {
         return new CompletionItemBuilder(label, type ?? Builtin.Any, this);
     }
-    
+
     public SnippetBuilder CreateSnippet(string label)
     {
         return new SnippetBuilder(label, this);

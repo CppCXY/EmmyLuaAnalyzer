@@ -1,9 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using MediatR;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 
 namespace EmmyLua.LanguageServer.ExecuteCommand.Commands;
 
@@ -13,29 +11,29 @@ public class DiagnosticAction : ICommandBase
 
     public string Name { get; } = CommandName;
 
-    public async Task<Unit> ExecuteAsync(JArray? parameters, CommandExecutor executor)
+    public async Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor)
     {
         if (parameters is null or { Count: < 3 })
         {
-            return await Unit.Task;
+            return;
         }
 
-        var codeName = parameters.Value<string>(0);
-        var action = parameters.Value<string>(1);
+        var codeName = parameters[0].Value is string name ? name : string.Empty;
+        var action = parameters[1].Value is string actionName ? actionName : string.Empty;
         var documentId = LuaDocumentId.VirtualDocumentId;
-        if (parameters.Value<string>(2) is { } id && int.TryParse(id, out var idInt))
+        if (parameters[2].Value is int id)
         {
-            documentId = new LuaDocumentId(idInt);
+            documentId = new LuaDocumentId(id);
         }
 
         var document = executor.Context.LuaWorkspace.GetDocument(documentId);
         if (document is null)
         {
-            return await Unit.Task;
+            return;
         }
 
         var offset = 0;
-        if (parameters.Value<string>(3) is { } pos)
+        if (parameters[3].Value is string pos)
         {
             var parts = pos.Split('_').Select(int.Parse).ToList();
             offset = document.GetOffset(parts[0], parts[1]);
@@ -47,7 +45,7 @@ public class DiagnosticAction : ICommandBase
             {
                 var token = document.SyntaxTree.SyntaxRoot.TokenAt(offset);
                 var stat = token?.Ancestors.OfType<LuaStatSyntax>().FirstOrDefault();
-                if (stat is not null && codeName is not null)
+                if (stat is not null && codeName.Length > 0)
                 {
                     await ApplyStatDisableAsync(document, stat, codeName, executor);
                 }
@@ -56,7 +54,7 @@ public class DiagnosticAction : ICommandBase
             }
             case "disable":
             {
-                if (codeName is not null)
+                if (codeName.Length > 0)
                 {
                     await ApplyDisableFileAsync(document, codeName, executor);
                 }
@@ -64,8 +62,6 @@ public class DiagnosticAction : ICommandBase
                 break;
             }
         }
-
-        return await Unit.Task;
     }
 
     private async Task ApplyStatDisableAsync(LuaDocument document, LuaStatSyntax stat, string codeName,
@@ -82,7 +78,7 @@ public class DiagnosticAction : ICommandBase
             await executor.ApplyEditAsync(document.Uri, new TextEdit()
             {
                 NewText = $", {codeName}",
-                Range = new Range()
+                Range = new ()
                 {
                     Start = new Position() { Line = line, Character = col },
                     End = new Position() { Line = line, Character = col }
@@ -92,17 +88,17 @@ public class DiagnosticAction : ICommandBase
         else
         {
             var indentText = string.Empty;
-            if (stat.GetPrevToken() is LuaWhitespaceToken { RepresentText: {} indentText2 })
+            if (stat.GetPrevToken() is LuaWhitespaceToken { RepresentText: { } indentText2 })
             {
                 indentText = indentText2;
             }
-            
+
             var line = document.GetLine(stat.Range.StartOffset);
             var col = document.GetCol(stat.Range.StartOffset);
             await executor.ApplyEditAsync(document.Uri, new TextEdit()
             {
                 NewText = $"---@diagnostic disable-next-line: {codeName}\n{indentText}",
-                Range = new Range()
+                Range = new ()
                 {
                     Start = new Position() { Line = line, Character = col },
                     End = new Position() { Line = line, Character = col }
@@ -126,7 +122,7 @@ public class DiagnosticAction : ICommandBase
                     await executor.ApplyEditAsync(document.Uri, new TextEdit()
                     {
                         NewText = $", {codeName}",
-                        Range = new Range()
+                        Range = new ()
                         {
                             Start = new Position() { Line = line, Character = col },
                             End = new Position() { Line = line, Character = col }
@@ -136,21 +132,20 @@ public class DiagnosticAction : ICommandBase
                 }
             }
         }
-        
+
         await executor.ApplyEditAsync(document.Uri, new TextEdit()
         {
             NewText = $"---@diagnostic disable: {codeName}\n",
-            Range = new Range()
+            Range = new ()
             {
                 Start = new Position() { Line = 0, Character = 0 },
                 End = new Position() { Line = 0, Character = 0 }
             }
         });
-        
     }
 
     public static Command MakeCommand(string title, string codeName, string action, LuaDocumentId documentId,
-        Range range)
+        DocumentRange range)
     {
         return new Command()
         {

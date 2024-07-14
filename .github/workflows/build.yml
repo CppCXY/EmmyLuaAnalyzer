@@ -27,7 +27,7 @@ jobs:
         dotnet-version: 9.0.x
         pre-release: true
     - name: Build
-      run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc
+      run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
     - name: Upload
       uses: actions/upload-artifact@v3
       with: 

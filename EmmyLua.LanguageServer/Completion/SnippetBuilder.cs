@@ -1,4 +1,7 @@
-﻿using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -14,7 +17,7 @@ public class SnippetBuilder(string label, CompleteContext completeContext)
 
     private TextEditOrInsertReplaceEdit? TextEdit { get; set; }
 
-    private TextEditContainer? AdditionalTextEdit { get; set; }
+    private List<AnnotatedTextEdit>? AdditionalTextEdit { get; set; }
 
     public SnippetBuilder WithDetail(string detail)
     {
@@ -40,9 +43,9 @@ public class SnippetBuilder(string label, CompleteContext completeContext)
         return this;
     }
 
-    public SnippetBuilder WithAdditionalTextEdit(TextEdit textEdit)
+    public SnippetBuilder WithAdditionalTextEdit(AnnotatedTextEdit textEdit)
     {
-        AdditionalTextEdit = new TextEditContainer(textEdit);
+        AdditionalTextEdit = [textEdit];
         return this;
     }
 

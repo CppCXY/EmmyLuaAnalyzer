@@ -1,25 +1,20 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Definition;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Definition;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
 {
-    protected override DefinitionRegistrationOptions CreateRegistrationOptions(DefinitionCapability capability,
-        ClientCapabilities clientCapabilities)
+    protected override Task<DefinitionResponse?> Handle(DefinitionParams request, CancellationToken cancellationToken)
     {
-        return new DefinitionRegistrationOptions();
-    }
-
-    public override Task<LocationOrLocationLinks?> Handle(DefinitionParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        LocationOrLocationLinks? locationLinks = null;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        DefinitionResponse? locationLinks = null;
         context.ReadyRead(() =>
         {
             var workspace = context.LuaWorkspace;
@@ -28,7 +23,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
             {
                 var document = semanticModel.Document;
                 var pos = request.Position;
-                var token = document.SyntaxTree.SyntaxRoot.TokenAt(pos.Line, pos.Character);
+                var token = document.SyntaxTree.SyntaxRoot.TokenAt((int)pos.Line, (int)pos.Character);
                 if (token is LuaStringToken module
                     && token.Parent?.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
                     && workspace.Features.RequireLikeFunction.Contains(funcName))
@@ -36,20 +31,20 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                     var moduleDocument = workspace.ModuleManager.FindModule(module.Value);
                     if (moduleDocument is not null)
                     {
-                        locationLinks = LocationOrLocationLinks.From(
+                        locationLinks = new DefinitionResponse(
                             moduleDocument.SyntaxTree.SyntaxRoot.Location.ToLspLocation()
                         );
                         return;
                     }
                 }
 
-                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt((int)pos.Line, (int)pos.Character);
                 if (node is not null)
                 {
                     var declaration = semanticModel.Context.FindDeclaration(node);
                     if (declaration?.GetLocation(semanticModel.Context) is { } location)
                     {
-                        locationLinks = LocationOrLocationLinks.From(
+                        locationLinks = new DefinitionResponse(
                             location.ToLspLocation()
                         );
                     }
@@ -57,6 +52,12 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
             }
         });
 
-        return Task.FromResult<LocationOrLocationLinks?>(locationLinks);
+        return Task.FromResult(locationLinks);
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.DefinitionProvider = true;
     }
 }

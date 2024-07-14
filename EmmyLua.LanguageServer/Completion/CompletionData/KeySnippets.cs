@@ -1,10 +1,11 @@
-﻿using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
 
 namespace EmmyLua.LanguageServer.Completion.CompletionData;
 
 public static class KeySnippets
 {
-    public static List<CompletionItem> StatKeyWords { get; }=
+    public static List<CompletionItem> StatKeyWords { get; } =
     [
         new CompletionItem()
         {

@@ -1,8 +1,8 @@
 using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace EmmyLua.Configuration;
 
@@ -11,153 +11,148 @@ namespace EmmyLua.Configuration;
 /// </summary>
 public class Setting
 {
-    [JsonProperty("$schema", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("$schema")]
     public string? Schema { get; set; } = null;
 
-    [JsonProperty("completion", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("completion")]
     public Completion Completion { get; set; } = new();
 
-    [JsonProperty("signature", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("signature")]
     public Signature Signature { get; set; } = new();
 
-    [JsonProperty("diagnostics", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("diagnostics")]
     public Diagnostics Diagnostics { get; set; } = new();
 
-    [JsonProperty("hint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("hint")]
     public Hint Hint { get; set; } = new();
 
-    [JsonProperty("runtime", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("runtime")]
     public Runtime Runtime { get; set; } = new();
 
-    [JsonProperty("workspace", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("workspace")]
     public Workspace Workspace { get; set; } = new();
 
-    [JsonProperty("resource", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("resource")]
     public Resource Resource { get; set; } = new();
 
-    [JsonProperty("codeLens", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("codeLens")]
     public CodeLens CodeLens { get; set; } = new();
 
-    [JsonProperty("strict", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("strict")]
     public Strict Strict { get; set; } = new();
 }
 
 public class Completion
 {
-    [JsonProperty("autoRequire", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("autoRequire")]
     public bool AutoRequire { get; set; } = true;
 
-    [JsonProperty("autoRequireFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("autoRequireFunction")]
     public string AutoRequireFunction { get; set; } = "require";
 
-    [JsonProperty("autoRequireNamingConvention", Required = Required.Default,
-        NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonPropertyName("autoRequireNamingConvention")]
     public FilenameConvention AutoRequireFilenameConvention { get; set; } = FilenameConvention.SnakeCase;
 
-    [JsonProperty("callSnippet", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("callSnippet")]
     public bool CallSnippet { get; set; } = false;
 
-    [JsonProperty("postfix", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("postfix")]
     public string Postfix { get; set; } = "@";
 }
 
 public class Diagnostics
 {
-    [JsonProperty("disable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore,
-        ItemConverterType = typeof(StringEnumConverter))]
+    [JsonPropertyName("disable")]
     public List<DiagnosticCode> Disable { get; set; } = [];
 
-    [JsonProperty("enable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("enable")]
     public bool? Enable { get; set; }
 
-    [JsonProperty("globals", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("globals")]
     public List<string> Globals { get; set; } = [];
 
-    [JsonProperty("globalsRegex", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("globalsRegex")]
     public List<string> GlobalsRegex { get; set; } = [];
 
-    [JsonProperty("severity", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore),
-     JsonConverter(typeof(DiagnosticSeverityConverter))]
+    [JsonPropertyName("severity")]
     public Dictionary<DiagnosticCode, DiagnosticSeverity> Severity { get; set; } = [];
 
-    [JsonProperty("enables", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("enables")]
     public List<DiagnosticCode> Enables { get; set; } = [];
 }
 
-public class DiagnosticSeverityConverter : JsonConverter<Dictionary<DiagnosticCode, DiagnosticSeverity>>
-{
-    public override void WriteJson(JsonWriter writer, Dictionary<DiagnosticCode, DiagnosticSeverity>? value,
-        JsonSerializer serializer)
-    {
-        writer.WriteStartObject();
-        if (value is not null)
-        {
-            foreach (var (key, val) in value)
-            {
-                writer.WritePropertyName(key.ToString());
-                writer.WriteValue(val.ToString());
-            }
-        }
-
-        writer.WriteEndObject();
-    }
-
-    public override Dictionary<DiagnosticCode, DiagnosticSeverity> ReadJson(
-        JsonReader reader, Type objectType,
-        Dictionary<DiagnosticCode, DiagnosticSeverity>? existingValue, bool hasExistingValue,
-        JsonSerializer serializer)
-    {
-        var dictionary = new Dictionary<DiagnosticCode, DiagnosticSeverity>();
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonToken.PropertyName)
-            {
-                var key = DiagnosticCodeHelper.GetCode(reader.Value?.ToString() ?? string.Empty);
-                if (!reader.Read()) throw new JsonSerializationException("Unexpected end when reading dictionary.");
-                var value = DiagnosticSeverityHelper.GetSeverity(reader.Value?.ToString() ?? string.Empty);
-                dictionary[key] = value;
-            }
-            else if (reader.TokenType == JsonToken.EndObject)
-            {
-                return dictionary;
-            }
-        }
-        throw new JsonSerializationException("Unexpected end when reading dictionary.");
-    }
-}
+// public class DiagnosticSeverityConverter : System.Text.Json.Serialization.JsonConverter<Dictionary<DiagnosticCode, DiagnosticSeverity>>
+// {
+//     public override void WriteJson(Utf8JsonWriter writer, Dictionary<DiagnosticCode, DiagnosticSeverity>? value,
+//         JsonSerializer serializer)
+//     {
+//         writer.WriteStartObject();
+//         if (value is not null)
+//         {
+//             foreach (var (key, val) in value)
+//             {
+//                 writer.WritePropertyName(key.ToString());
+//                 writer.WriteValue(val.ToString());
+//             }
+//         }
+//
+//         writer.WriteEndObject();
+//     }
+//
+//     public override Dictionary<DiagnosticCode, DiagnosticSeverity> ReadJson(
+//         JsonReader reader, Type objectType,
+//         Dictionary<DiagnosticCode, DiagnosticSeverity>? existingValue, bool hasExistingValue,
+//         JsonSerializer serializer)
+//     {
+//         var dictionary = new Dictionary<DiagnosticCode, DiagnosticSeverity>();
+//         while (reader.Read())
+//         {
+//             if (reader.TokenType == JsonToken.PropertyName)
+//             {
+//                 var key = DiagnosticCodeHelper.GetCode(reader.Value?.ToString() ?? string.Empty);
+//                 if (!reader.Read()) throw new JsonSerializationException("Unexpected end when reading dictionary.");
+//                 var value = DiagnosticSeverityHelper.GetSeverity(reader.Value?.ToString() ?? string.Empty);
+//                 dictionary[key] = value;
+//             }
+//             else if (reader.TokenType == JsonToken.EndObject)
+//             {
+//                 return dictionary;
+//             }
+//         }
+//         throw new JsonSerializationException("Unexpected end when reading dictionary.");
+//     }
+// }
 
 public class Hint
 {
-    [JsonProperty("paramHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("paramHint")]
     public bool ParamHint { get; set; } = true;
 
-    [JsonProperty("indexHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("indexHint")]
     public bool IndexHint { get; set; } = true;
 
-    [JsonProperty("localHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("localHint")]
     public bool LocalHint { get; set; } = false;
 
-    [JsonProperty("overrideHint", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("overrideHint")]
     public bool OverrideHint { get; set; } = true;
 }
 
 public class Runtime
 {
-    [JsonProperty("version", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonPropertyName("version")]
     public LuaVersion Version { get; set; } = LuaVersion.LuaLatest;
 
-    [JsonProperty("requireLikeFunction", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("requireLikeFunction")]
     public List<string> RequireLikeFunction { get; set; } = [];
 
-    [JsonProperty("frameworkVersions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("frameworkVersions")]
     public List<string> FrameworkVersions { get; set; } = [];
 
-    [JsonProperty("extensions", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("extensions")]
     public List<string> Extensions { get; set; } = [];
 
-    [JsonProperty("requirePattern", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("requirePattern")]
     public List<string> RequirePattern { get; set; } = [];
 }
 
@@ -180,8 +175,7 @@ public enum LuaVersion
 
 public class Workspace
 {
-    [JsonProperty("ignoreDir", Required = Required.Default,
-        NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("ignoreDir")]
     public List<string> IgnoreDir { get; set; } =
     [
         ".idea",
@@ -189,43 +183,42 @@ public class Workspace
         ".vscode"
     ];
 
-    [JsonProperty("library", Required = Required.Default,
-        NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("library")]
     public List<string> Library { get; set; } = [];
 
-    [JsonProperty("workspaceRoots", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("workspaceRoots")]
     public List<string> WorkspaceRoots { get; set; } = [];
 
-    [JsonProperty("preloadFileSize", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("preloadFileSize")]
     public int PreloadFileSize { get; set; } = 1048576; // 1Mb
 
-    [JsonProperty("encoding", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("encoding")]
     public string Encoding { get; set; } = string.Empty;
 }
 
 public class Resource
 {
-    [JsonProperty("paths", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("paths")]
     public List<string> Paths { get; set; } = [];
 }
 
 public class CodeLens
 {
-    [JsonProperty("enable", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("enable")]
     public bool Enable { get; set; } = true;
 }
 
 public class Strict
 {
-    [JsonProperty("requirePath", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("requirePath")]
     public bool RequirePath { get; set; } = true;
 
-    [JsonProperty("typeCall", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("typeCall")]
     public bool TypeCall { get; set; } = true;
 }
 
 public class Signature
 {
-    [JsonProperty("detailSignatureHelper", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+    [JsonPropertyName("detailSignatureHelper")]
     public bool DetailSignatureHelper { get; set; } = false;
 }

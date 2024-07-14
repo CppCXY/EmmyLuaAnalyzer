@@ -1,8 +1,10 @@
-﻿using EmmyLua.LanguageServer.Server;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.SignatureHelp;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.SignatureHelper;
 
@@ -11,18 +13,9 @@ public class SignatureHelperHandler(ServerContext context) : SignatureHelpHandle
 {
     private SignatureHelperBuilder Builder { get; } = new();
 
-    protected override SignatureHelpRegistrationOptions CreateRegistrationOptions(SignatureHelpCapability capability,
-        ClientCapabilities clientCapabilities)
+    protected override Task<SignatureHelp> Handle(SignatureHelpParams request, CancellationToken token)
     {
-        return new()
-        {
-            TriggerCharacters = new[] { "(", "," },
-        };
-    }
-
-    public override Task<SignatureHelp?> Handle(SignatureHelpParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
         SignatureHelp? signatureHelp = null;
         context.ReadyRead(() =>
         {
@@ -31,7 +24,7 @@ public class SignatureHelperHandler(ServerContext context) : SignatureHelpHandle
             {
                 return;
             }
-
+        
             var position = request.Position;
             var triggerToken =
                 semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
@@ -41,7 +34,16 @@ public class SignatureHelperHandler(ServerContext context) : SignatureHelpHandle
                 signatureHelp = Builder.Build(semanticModel, triggerToken, request, config);
             }
         });
+        
+        return Task.FromResult(signatureHelp)!;
+    }
 
-        return Task.FromResult<SignatureHelp?>(signatureHelp);
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.SignatureHelpProvider = new SignatureHelpOptions()
+        {
+            TriggerCharacters = ["(", ","],
+        };
     }
 }

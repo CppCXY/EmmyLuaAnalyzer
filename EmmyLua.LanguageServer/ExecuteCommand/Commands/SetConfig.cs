@@ -1,8 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.Configuration;
-using MediatR;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using DiagnosticCode = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticCode;
 
 namespace EmmyLua.LanguageServer.ExecuteCommand.Commands;
@@ -12,12 +10,15 @@ public enum SetConfigAction
     None,
     Add,
     Set,
+
     // TODO
     Remove
 }
 
-static class SetConfigActionHelper {
-    public static string ToConfigString(this SetConfigAction action) {
+static class SetConfigActionHelper
+{
+    public static string ToConfigString(this SetConfigAction action)
+    {
         return action switch
         {
             SetConfigAction.Add => "add",
@@ -26,8 +27,9 @@ static class SetConfigActionHelper {
             _ => "none"
         };
     }
-     
-    public static SetConfigAction FromConfigString(string action) {
+
+    public static SetConfigAction FromConfigString(string action)
+    {
         return action switch
         {
             "add" => SetConfigAction.Add,
@@ -44,16 +46,19 @@ public class SetConfig : ICommandBase
 
     public string Name => CommandName;
 
-    public async Task<Unit> ExecuteAsync(JArray? parameters, CommandExecutor executor)
+    public async Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor)
     {
         if (parameters is not { Count: 3 })
         {
-            return await Unit.Task;
+            return;
         }
-        
-        var action = SetConfigActionHelper.FromConfigString(parameters[0].Value<string>() ?? string.Empty);
-        var path = parameters[1].Value<string>() ?? string.Empty;
-        var value = parameters[2].Value<string>() ?? string.Empty;
+
+        var action =
+            SetConfigActionHelper.FromConfigString(parameters[0].Value is string actionName
+                ? actionName
+                : string.Empty);
+        var path = parameters[1].Value is string pathValue ? pathValue : string.Empty;
+        var value = parameters[2].Value is string strValue ? strValue : string.Empty;
         executor.Context.ReadyWrite(() =>
         {
             var config = executor.Context.SettingManager.Setting ?? new Setting();
@@ -77,15 +82,12 @@ public class SetConfig : ICommandBase
                 }
                 case SetConfigAction.Set:
                 {
-
                     break;
                 }
             }
         });
-        
-        return await Unit.Task;
     }
-    
+
     private object? GetPropertyByName(Setting setting, string propertyName)
     {
         var parts = propertyName.Split('.');
@@ -103,8 +105,6 @@ public class SetConfig : ICommandBase
 
         return obj;
     }
-    
-    
 
     public static Command MakeCommand(string title, SetConfigAction action, string path, string value)
     {
@@ -112,7 +112,7 @@ public class SetConfig : ICommandBase
         {
             Title = title,
             Name = CommandName,
-            Arguments = new JArray() { action.ToConfigString(), path, value }
+            Arguments = [action.ToConfigString(), path, value]
         };
     }
 }

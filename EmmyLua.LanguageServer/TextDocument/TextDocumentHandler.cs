@@ -1,61 +1,62 @@
-﻿using EmmyLua.LanguageServer.Server;
-using MediatR;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
-
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Union;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.TextDocument;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class TextDocumentHandler(
     ServerContext context
-) : TextDocumentSyncHandlerBase
+) : TextDocumentHandlerBase
 {
-    private TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;
-
-    public override TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
-        => new(uri, "lua");
-
-    protected override TextDocumentSyncRegistrationOptions CreateRegistrationOptions(
-        TextSynchronizationCapability capability,
-        ClientCapabilities clientCapabilities)
-        => new()
-        {
-            Change = Change,
-            Save = new SaveOptions() { IncludeText = false }
-        };
-
-    public override Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
+    protected override Task Handle(DidOpenTextDocumentParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        context.UpdateDocument(uri, request.TextDocument.Text, cancellationToken);
-        return Unit.Task;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        context.UpdateDocument(uri, request.TextDocument.Text, token);
+        return Task.CompletedTask;
     }
 
-    public override Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
+    protected override Task Handle(DidChangeTextDocumentParams request, CancellationToken token)
     {
         var changes = request.ContentChanges.ToList();
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        context.UpdateDocument(uri, changes[0].Text, cancellationToken);
-        return Unit.Task;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        context.UpdateDocument(uri, changes[0].Text, token);
+        return Task.CompletedTask;
     }
 
-    public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
+    protected override Task Handle(DidCloseTextDocumentParams request, CancellationToken token)
     {
-        return Unit.Task;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        context.ReadyWrite(() => { context.LuaWorkspace.CloseDocument(uri); });
+        return Task.CompletedTask;
     }
 
-    public override Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
+    protected override Task Handle(WillSaveTextDocumentParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        context.ReadyWrite(() =>
+        return Task.CompletedTask;
+    }
+
+    protected override Task<List<TextEdit>?> HandleRequest(WillSaveTextDocumentParams request, CancellationToken token)
+    {
+        return Task.FromResult<List<TextEdit>?>(null);
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.TextDocumentSync = new TextDocumentSyncOptions()
         {
-            context.LuaWorkspace.CloseDocument(uri);
-        });
-        
-        return Unit.Task;
+            Change = TextDocumentSyncKind.Full,
+            Save = new SaveOptions()
+            {
+                IncludeText = false
+            }
+        };
     }
 }

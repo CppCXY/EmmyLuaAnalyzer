@@ -4,7 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 using EmmyLua.LanguageServer.ExecuteCommand.Commands;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 

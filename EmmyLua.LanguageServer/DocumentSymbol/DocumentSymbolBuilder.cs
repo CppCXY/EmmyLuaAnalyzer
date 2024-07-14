@@ -1,18 +1,17 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentSymbol;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using DocumentSymbolType = OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentSymbol;
 
 namespace EmmyLua.LanguageServer.DocumentSymbol;
 
 // Simple implementation of DocumentSymbolBuilder
 public class DocumentSymbolBuilder
 {
-    public List<DocumentSymbolType> Build(SemanticModel semanticModel)
+    public List<Framework.Protocol.Message.DocumentSymbol.DocumentSymbol> Build(SemanticModel semanticModel)
     {
         var document = semanticModel.Document;
-        var symbols = new List<DocumentSymbolType>();
+        var symbols = new List<Framework.Protocol.Message.DocumentSymbol.DocumentSymbol>();
         var source = document.SyntaxTree.SyntaxRoot;
         foreach (var node in source.Descendants)
         {
@@ -22,7 +21,7 @@ public class DocumentSymbolBuilder
                 {
                     if (localName is { Name.Text: { } name })
                     {
-                        symbols.Add(new DocumentSymbolType()
+                        symbols.Add(new ()
                         {
                             Name = $"local {name}",
                             Kind = SymbolKind.Variable,
@@ -39,7 +38,7 @@ public class DocumentSymbolBuilder
                     {
                         if (expr is LuaNameExprSyntax { Name.RepresentText: {} name }nameExpr)
                         {
-                            symbols.Add(new DocumentSymbolType()
+                            symbols.Add(new ()
                             {
                                 Name = name,
                                 Kind = SymbolKind.Variable,
@@ -54,7 +53,7 @@ public class DocumentSymbolBuilder
                 {
                     if (funcStat is { IsLocal: true, LocalName.Name.Text: { } name })
                     {
-                        symbols.Add(new DocumentSymbolType()
+                        symbols.Add(new ()
                         {
                             Name = $"local function {name}",
                             Kind = SymbolKind.Function,
@@ -64,7 +63,7 @@ public class DocumentSymbolBuilder
                     }
                     else if (funcStat is { IsLocal: false, NameExpr.Name.Text: { } name2 })
                     {
-                        symbols.Add(new DocumentSymbolType()
+                        symbols.Add(new ()
                         {
                             Name = $"function {name2}",
                             Kind = SymbolKind.Function,
@@ -74,7 +73,7 @@ public class DocumentSymbolBuilder
                     }
                     else if (funcStat is {IsMethod: true, IndexExpr.Name: {} name3})
                     {
-                        symbols.Add(new DocumentSymbolType()
+                        symbols.Add(new ()
                         {
                             Name = $"method {name3}",
                             Kind = SymbolKind.Method,
@@ -88,7 +87,7 @@ public class DocumentSymbolBuilder
                 {
                     if (paramDef is { Name.Text: { } name })
                     {
-                        symbols.Add(new DocumentSymbolType()
+                        symbols.Add(new ()
                         {
                             Name = $"param {name}",
                             Kind = SymbolKind.Variable,

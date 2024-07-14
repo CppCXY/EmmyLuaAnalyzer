@@ -5,15 +5,15 @@ using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Rename;
 
 public class RenameBuilder
 {
-    public Dictionary<DocumentUri, IEnumerable<TextEdit>> Build(SemanticModel semanticModel, LuaSyntaxElement element,
+    public Dictionary<DocumentUri, List<TextEdit>> Build(SemanticModel semanticModel, LuaSyntaxElement element,
         string newName)
     {
         if (newName.Length == 0)
@@ -29,7 +29,7 @@ public class RenameBuilder
             notSymbolChar = newName.Skip(1).Any(it => !LuaLexer.IsNameContinue(it));
         }
 
-        var changes = new Dictionary<DocumentUri, IEnumerable<TextEdit>>();
+        var changes = new Dictionary<DocumentUri, List<TextEdit>>();
         foreach (var reference in references)
         {
             switch (reference.Element)
@@ -72,7 +72,7 @@ public class RenameBuilder
         return changes;
     }
 
-    private void AddChange(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, ILocation location, string newName)
+    private void AddChange(Dictionary<DocumentUri, List<TextEdit>> changes, ILocation location, string newName)
     {
         var uri = location.Document.Uri;
         if (!changes.TryGetValue(uri, out var edits))
@@ -86,10 +86,10 @@ public class RenameBuilder
             Range = location.ToLspRange(),
             NewText = newName
         };
-        ((List<TextEdit>)edits).Add(edit);
+        edits.Add(edit);
     }
 
-    private void ChangeStringToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaStringToken stringToken,
+    private void ChangeStringToken(Dictionary<DocumentUri, List<TextEdit>> changes, LuaStringToken stringToken,
         ReferenceResult referenceResult, string newName)
     {
         var range = stringToken.Range;
@@ -100,12 +100,12 @@ public class RenameBuilder
 
         if (referenceResult.Location.Document is LuaDocument document)
         {
-            range = range with { StartOffset = range.StartOffset + 1, Length = range.Length - 2 };
+            range = new SourceRange(StartOffset: range.StartOffset + 1, Length: range.Length - 2);
             AddChange(changes, new LuaLocation(document, range), newName);
         }
     }
 
-    private void ChangeNameToken(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaNameToken nameToken,
+    private void ChangeNameToken(Dictionary<DocumentUri, List<TextEdit>> changes, LuaNameToken nameToken,
         ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename
@@ -117,7 +117,7 @@ public class RenameBuilder
         AddChange(changes, referenceResult.Location, newName);
     }
     
-    private void ChangeLocalName(Dictionary<DocumentUri, IEnumerable<TextEdit>> changes, LuaLocalNameSyntax localNameSyntax,
+    private void ChangeLocalName(Dictionary<DocumentUri, List<TextEdit>> changes, LuaLocalNameSyntax localNameSyntax,
         ReferenceResult referenceResult, string newName, bool notSymbolChar)
     {
         // give up rename

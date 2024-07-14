@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -38,7 +39,7 @@ public class RequireProvider : ICompleteProviderBase
                     Detail = moduleInfo.Uri,
                     FilterText = filterText,
                     InsertText = filterText,
-                    Data = moduleInfo.DocumentId?.Id.ToString()
+                    Data = new LSPAny(moduleInfo.DocumentId?.Id.ToString())
                 });
             }
             context.StopHere();

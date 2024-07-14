@@ -1,32 +1,18 @@
-﻿using EmmyLua.LanguageServer.Server;
-using MediatR;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
-using Serilog;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.Registration;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.TextDocument;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DidChangeWatchedFilesHandler(ServerContext context)
-    : IDidChangeWatchedFilesHandler
+    : DidChangeWatchedFilesHandlerBase
 {
-    public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions() => new();
-
-    public async Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken)
-    {
-        var changes = request.Changes.ToList();
-        if (changes.Count == 1)
-        {
-            return await UpdateOneFileEventAsync(changes[0], cancellationToken);
-        }
-        else
-        {
-            return await UpdateManyFileEventAsync(changes, cancellationToken);
-        }
-    }
-
-    private Task<Unit> UpdateOneFileEventAsync(FileEvent fileEvent, CancellationToken cancellationToken)
+    private Task UpdateOneFileEventAsync(FileEvent fileEvent, CancellationToken cancellationToken)
     {
         switch (fileEvent.Type)
         {
@@ -35,35 +21,79 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             {
                 try
                 {
-                    var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.ToUri().LocalPath);
-                    var uri = fileEvent.Uri.ToUri().AbsoluteUri;
+                    var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.Uri.AbsolutePath);
+                    var uri = fileEvent.Uri.Uri.AbsoluteUri;
                     context.UpdateDocument(uri, fileText, cancellationToken);
                 }
                 catch (Exception e)
                 {
-                    Log.Logger.Error(e.Message);
+                    Console.Error.WriteLine(e.Message);
                 }
 
                 break;
             }
             case FileChangeType.Deleted:
             {
-                var uri = fileEvent.Uri.ToUri().AbsoluteUri;
+                var uri = fileEvent.Uri.Uri.AbsoluteUri;
                 context.RemoveDocument(uri);
                 break;
             }
         }
 
-        return Unit.Task;
+        return Task.CompletedTask;
     }
 
-    private Task<Unit> UpdateManyFileEventAsync(List<FileEvent> fileEvents,
+    private Task UpdateManyFileEventAsync(List<FileEvent> fileEvents,
         CancellationToken cancellationToken)
     {
         context.UpdateManyDocuments(fileEvents, cancellationToken);
-        return Unit.Task;
+        return Task.CompletedTask;
     }
 
-    public DidChangeWatchedFilesRegistrationOptions GetRegistrationOptions(DidChangeWatchedFilesCapability capability,
-        ClientCapabilities clientCapabilities) => new();
+    protected override async Task Handle(DidChangeWatchedFilesParams request, CancellationToken token)
+    {
+        var changes = request.Changes.ToList();
+        if (changes.Count == 1)
+        {
+            await UpdateOneFileEventAsync(changes[0], token);
+        }
+        else
+        {
+            await UpdateManyFileEventAsync(changes, token);
+        }
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+    }
+
+    public override void RegisterDynamicCapability(Framework.Server.LanguageServer server,
+        ClientCapabilities clientCapabilities)
+    {
+        var dynamicRegistration = new DidChangeWatchedFilesRegistrationOptions()
+        {
+            Watchers =
+            [
+                new()
+                {
+                    GlobalPattern = "**/*.lua",
+                    Kind = WatchKind.Create | WatchKind.Change | WatchKind.Delete
+                }
+            ]
+        };
+
+        server.Client.DynamicRegisterCapability(new RegistrationParams()
+        {
+            Registrations =
+            [
+                new Registration()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Method = "workspace/didChangeWatchedFiles",
+                    RegisterOptions = dynamicRegistration
+                }
+            ]
+        });
+    }
 }

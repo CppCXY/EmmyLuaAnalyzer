@@ -4,17 +4,16 @@ using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.PublishDiagnostics;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
 using EmmyLua.LanguageServer.Server.Monitor;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-
 
 namespace EmmyLua.LanguageServer.Server;
 
-public class ServerContext(ILanguageServerFacade server)
+public class ServerContext(Framework.Server.LanguageServer server)
 {
     public bool IsVscode { get; set; } = true;
 
@@ -30,7 +29,7 @@ public class ServerContext(ILanguageServerFacade server)
 
     public SettingManager SettingManager { get; } = new();
 
-    public ILanguageServerFacade Server { get; } = server;
+    public Framework.Server.LanguageServer Server { get; } = server;
 
     private ProcessMonitor Monitor { get; } = new(server);
 
@@ -41,33 +40,33 @@ public class ServerContext(ILanguageServerFacade server)
     private ConcurrentDictionary<LuaDocumentId, CancellationTokenSource> DocumentCancellationTokenSources { get; } =
         new();
 
-    public async Task StartServerAsync(InitializeParams initializeParams, ILanguageServer configServer)
+    public async Task StartServerAsync(InitializeParams initializeParams)
     {
         IsVscode = string.Equals(initializeParams.ClientInfo?.Name, "Visual Studio Code",
             StringComparison.CurrentCultureIgnoreCase);
 
         if (IsVscode)
         {
-            var config = await configServer.Configuration.GetConfiguration(new[]
-            {
-                new ConfigurationItem()
-                {
-                    Section = "files"
-                },
-            });
-            
-            foreach (var section in config.GetSection("files:associations").GetChildren())
-            {
-                if (section.Value == "lua")
-                {
-                    Extensions.Add(section.Key);
-                }
-            }
-            
-            if (config.GetSection("files:encoding").Value is {} encoding)
-            {
-                SettingManager.WorkspaceEncoding = encoding;
-            }
+            // var config = await configServer.Configuration.GetConfiguration(new[]
+            // {
+            //     new ConfigurationItem()
+            //     {
+            //         Section = "files"
+            //     },
+            // });
+            //
+            // foreach (var section in config.GetSection("files:associations").GetChildren())
+            // {
+            //     if (section.Value == "lua")
+            //     {
+            //         Extensions.Add(section.Key);
+            //     }
+            // }
+            //
+            // if (config.GetSection("files:encoding").Value is {} encoding)
+            // {
+            //     SettingManager.WorkspaceEncoding = encoding;
+            // }
         }
 
         StartServer(initializeParams);
@@ -92,7 +91,7 @@ public class ServerContext(ILanguageServerFacade server)
                 {
                     foreach (var workspaceFolder in workspaceFolders)
                     {
-                        var path = workspaceFolder.Uri.ToUri().LocalPath;
+                        var path = workspaceFolder.Uri.Uri.LocalPath;
                         if (path != MainWorkspacePath)
                         {
                             ExternalWorkspacePaths.Add(path);
@@ -233,9 +232,9 @@ public class ServerContext(ILanguageServerFacade server)
                     {
                         // ReSharper disable once AccessToDisposedClosure
                         var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
-                        Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+                        Server.Client.PushDiagnostics(new PublishDiagnosticsParams()
                         {
-                            Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                            Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),
                             Uri = document.Uri,
                         });
                     }
@@ -286,8 +285,8 @@ public class ServerContext(ILanguageServerFacade server)
                         case { Type: FileChangeType.Created }:
                         case { Type: FileChangeType.Changed }:
                         {
-                            var uri = fileEvent.Uri.ToUri().AbsoluteUri;
-                            var fileText = File.ReadAllText(fileEvent.Uri.GetFileSystemPath());
+                            var uri = fileEvent.Uri.Uri.AbsoluteUri;
+                            var fileText = File.ReadAllText(fileEvent.Uri.Uri.AbsolutePath);
                             LuaWorkspace.UpdateDocumentByUri(uri, fileText);
                             var documentId = LuaWorkspace.GetDocumentIdByUri(uri);
                             if (documentId.HasValue)
@@ -299,7 +298,7 @@ public class ServerContext(ILanguageServerFacade server)
                         }
                         case { Type: FileChangeType.Deleted }:
                         {
-                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.ToUri().AbsoluteUri);
+                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.Uri.AbsoluteUri);
                             break;
                         }
                     }
@@ -331,9 +330,9 @@ public class ServerContext(ILanguageServerFacade server)
 
             var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
             var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
-            Server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
+            Server.Client.PushDiagnostics(new PublishDiagnosticsParams()
             {
-                Diagnostics = Container.From(diagnostics.Select(it => it.ToLspDiagnostic(document))),
+                Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),
                 Uri = document.Uri,
             });
         }

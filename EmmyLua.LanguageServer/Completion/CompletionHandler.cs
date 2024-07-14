@@ -1,7 +1,9 @@
-﻿using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -11,47 +13,46 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
     private CompletionBuilder Builder { get; } = new();
 
     private CompletionDocumentResolver DocumentResolver { get; } = new();
-
-    protected override CompletionRegistrationOptions CreateRegistrationOptions(CompletionCapability capability,
-        ClientCapabilities clientCapabilities)
+    
+    protected override Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
     {
-        return new()
-        {
-            ResolveProvider = true,
-            TriggerCharacters = new List<string> { ".", ":", "(", "[", "\"", "\'", ",", "@", "\\", "/" },
-            CompletionItem = new()
-            {
-                LabelDetailsSupport = true
-            }
-        };
-    }
-
-    public override Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        CompletionList container = new();
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        CompletionResponse? response = null;
         context.ReadyRead(() =>
         {
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var completeContext = new CompleteContext(semanticModel, request.Position, cancellationToken, context);
+                var completeContext = new CompleteContext(semanticModel, request.Position, token, context);
                 var completions = Builder.Build(completeContext);
-                container = CompletionList.From(completions);
+                response = new CompletionResponse(completions);
             }
         });
-
-        return Task.FromResult(container);
+        
+        return Task.FromResult(response)!;
     }
 
-    public override Task<CompletionItem> Handle(CompletionItem request, CancellationToken cancellationToken)
+    protected override Task<CompletionItem> Resolve(CompletionItem item, CancellationToken token)
     {
-        var item = request;
         context.ReadyRead(() =>
         {
-            item = DocumentResolver.Resolve(request, context);
+            item = DocumentResolver.Resolve(item, context);
         });
         
         return Task.FromResult(item);
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.CompletionProvider = new CompletionOptions()
+        {
+            ResolveProvider = true,
+            TriggerCharacters = [".", ":", "(", "[", "\"", "\'", ",", "@", "\\", "/"],
+            CompletionItem = new()
+            {
+                LabelDetailsSupport = true
+            }
+        };
     }
 }

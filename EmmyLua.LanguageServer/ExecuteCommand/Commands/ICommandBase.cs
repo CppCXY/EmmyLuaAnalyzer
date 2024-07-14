@@ -1,5 +1,4 @@
-﻿using MediatR;
-using Newtonsoft.Json.Linq;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Model;
 
 namespace EmmyLua.LanguageServer.ExecuteCommand.Commands;
 
@@ -7,5 +6,5 @@ public interface ICommandBase
 {
     public string Name { get; }
     
-    public Task<Unit> ExecuteAsync(JArray? parameters, CommandExecutor executor);
+    public Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor);
 }

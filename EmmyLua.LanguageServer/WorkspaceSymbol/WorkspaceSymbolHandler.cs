@@ -1,32 +1,37 @@
-﻿using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceSymbol;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
+
 
 namespace EmmyLua.LanguageServer.WorkspaceSymbol;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class WorkspaceSymbolHandler(ServerContext context) : WorkspaceSymbolsHandlerBase
+public class WorkspaceSymbolHandler(ServerContext context) : WorkspaceSymbolHandlerBase
 {
     private WorkspaceSymbolBuilder Builder { get; } = new();
-    
-    protected override WorkspaceSymbolRegistrationOptions CreateRegistrationOptions(WorkspaceSymbolCapability capability,
-        ClientCapabilities clientCapabilities)
-    {
-        return new WorkspaceSymbolRegistrationOptions()
-        {
-            ResolveProvider = false
-        };
-    }
 
-    public override Task<Container<OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol>?> Handle(WorkspaceSymbolParams request, CancellationToken cancellationToken)
+    protected override Task<WorkspaceSymbolResponse> Handle(WorkspaceSymbolParams request, CancellationToken token)
     {
-        Container<OmniSharp.Extensions.LanguageServer.Protocol.Models.WorkspaceSymbol>? workspaceSymbols = null;
+        WorkspaceSymbolResponse? workspaceSymbols = null;
         context.ReadyRead(() =>
         {
-            workspaceSymbols = Builder.Build(request.Query, context, cancellationToken);
+            workspaceSymbols = new WorkspaceSymbolResponse(Builder.Build(request.Query, context, token));
         });
 
-        return Task.FromResult(workspaceSymbols);
+        return Task.FromResult(workspaceSymbols)!;
+    }
+
+    protected override Task<Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol> Resolve(
+        Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol request, CancellationToken token)
+    {
+        return Task.FromResult(request)!;
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities,
+        ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.WorkspaceSymbolProvider = true;
     }
 }

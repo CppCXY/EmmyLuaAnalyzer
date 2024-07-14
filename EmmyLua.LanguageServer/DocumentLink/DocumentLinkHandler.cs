@@ -1,7 +1,9 @@
-﻿using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentLink;
+using EmmyLua.LanguageServer.Framework.Server.Handler;
+using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.DocumentLink;
 
@@ -9,20 +11,11 @@ namespace EmmyLua.LanguageServer.DocumentLink;
 public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBase
 {
     private DocumentLinkBuilder Builder { get; } = new();
-
-    protected override DocumentLinkRegistrationOptions CreateRegistrationOptions(DocumentLinkCapability capability,
-        ClientCapabilities clientCapabilities)
+    
+    protected override Task<DocumentLinkResponse> Handle(DocumentLinkParams request, CancellationToken token)
     {
-        return new DocumentLinkRegistrationOptions
-        {
-            ResolveProvider = false
-        };
-    }
-
-    public override Task<DocumentLinkContainer?> Handle(DocumentLinkParams request, CancellationToken cancellationToken)
-    {
-        var uri = request.TextDocument.Uri.ToUri().AbsoluteUri;
-        DocumentLinkContainer? container = null;
+        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        DocumentLinkResponse? container = null;
         context.ReadyRead(() =>
         {
             var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
@@ -30,16 +23,23 @@ public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBas
             {
                 var document = semanticModel.Document;
                 var links = Builder.Build(document, context.ResourceManager);
-                container = new DocumentLinkContainer(links);
+                container = new DocumentLinkResponse(links);
             }
         });
-
-        return Task.FromResult(container);
+        
+        return Task.FromResult(container)!;
     }
 
-    public override Task<OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentLink> Handle(
-        OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentLink request, CancellationToken cancellationToken)
+    protected override Task<Framework.Protocol.Message.DocumentLink.DocumentLink> Resolve(Framework.Protocol.Message.DocumentLink.DocumentLink request, CancellationToken token)
     {
         throw new NotImplementedException();
+    }
+
+    public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
+    {
+        serverCapabilities.DocumentLinkProvider = new DocumentLinkOptions()
+        {
+            ResolveProvider = false
+        };
     }
 }

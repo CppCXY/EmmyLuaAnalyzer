@@ -3,13 +3,14 @@ using System.Net.Sockets;
 using EmmyLua.LanguageServer.CodeAction;
 using EmmyLua.LanguageServer.CodeLens;
 using EmmyLua.LanguageServer.Completion;
-using EmmyLua.LanguageServer.Configuration;
 using EmmyLua.LanguageServer.Definition;
 using EmmyLua.LanguageServer.DocumentColor;
 using EmmyLua.LanguageServer.DocumentLink;
 using EmmyLua.LanguageServer.DocumentRender;
 using EmmyLua.LanguageServer.DocumentSymbol;
 using EmmyLua.LanguageServer.ExecuteCommand;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
+using EmmyLua.LanguageServer.Framework.Server;
 using EmmyLua.LanguageServer.Hover;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.InlineValues;
@@ -21,89 +22,62 @@ using EmmyLua.LanguageServer.SignatureHelper;
 using EmmyLua.LanguageServer.TextDocument;
 using EmmyLua.LanguageServer.TypeHierarchy;
 using EmmyLua.LanguageServer.WorkspaceSymbol;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using OmniSharp.Extensions.LanguageServer.Server;
-using Serilog;
-using Serilog.Events;
-using static OmniSharp.Extensions.LanguageServer.Server.LanguageServer;
 
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console(standardErrorFromLevel: LogEventLevel.Verbose)
-    .MinimumLevel.Verbose()
-    .CreateLogger();
+Stream? input = null;
+Stream? output = null;
 
-var server = await From(options =>
+if (args.Length > 0)
 {
-    if (args.Length == 0)
-    {
-        options.WithOutput(Console.OpenStandardOutput()).WithInput(Console.OpenStandardInput());
-    }
-    else
-    {
-        var port = int.Parse(args[0]);
-        var tcpServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        var ipAddress = new IPAddress(new byte[] { 127, 0, 0, 1 });
-        EndPoint endPoint = new IPEndPoint(ipAddress, port);
-        tcpServer.Bind(endPoint);
-        tcpServer.Listen(1);
+    var port = int.Parse(args[0]);
+    var tcpServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    var ipAddress = new IPAddress(new byte[] { 127, 0, 0, 1 });
+    EndPoint endPoint = new IPEndPoint(ipAddress, port);
+    tcpServer.Bind(endPoint);
+    tcpServer.Listen(1);
 
-        var languageClientSocket = tcpServer.Accept();
+    var languageClientSocket = tcpServer.Accept();
+    var networkStream = new NetworkStream(languageClientSocket);
+    input = networkStream;
+    output = networkStream;
+}
+else
+{
+    input = Console.OpenStandardInput();
+    output = Console.OpenStandardOutput();
+}
 
-        var networkStream = new NetworkStream(languageClientSocket);
-        options.WithOutput(networkStream).WithInput(networkStream);
-    }
+InitializeParams initializeParams = null!;
+var ls = LanguageServer.From(input, output);
+ls.AddJsonSerializeContext(EmmyLuaJsonGenerateContext.Default);
+var serverContext = new ServerContext(ls);
+ls.OnInitialize((c, s) =>
+{
+    s.Name = "EmmyLua.LanguageServer";
+    s.Version = "1.0.0";
+    initializeParams = c;
+});
+ls.OnInitialized((c) =>
+{
+    serverContext.StartServerAsync(initializeParams).Wait();
+});
+ls.AddHandler(new TextDocumentHandler(serverContext));
+ls.AddHandler(new DefinitionHandler(serverContext));
+ls.AddHandler(new CompletionHandler(serverContext));
+ls.AddHandler(new HoverHandler(serverContext));
+ls.AddHandler(new DocumentSymbolHandler(serverContext));
+ls.AddHandler(new CodeActionHandler(serverContext));
+ls.AddHandler(new CodeLensHandler(serverContext));
+ls.AddHandler(new DocumentLinkHandler(serverContext));
+ls.AddHandler(new DocumentColorHandler(serverContext));
+ls.AddHandler(new RenameHandler(serverContext));
+ls.AddHandler(new ExecuteCommandHandler(serverContext));
+ls.AddHandler(new DidChangeWatchedFilesHandler(serverContext));
+ls.AddHandler(new WorkspaceSymbolHandler(serverContext));
+ls.AddHandler(new EmmyAnnotatorHandler(serverContext));
+ls.AddHandler(new InlayHintHandler(serverContext));
+ls.AddHandler(new InlineValuesHandler(serverContext));
+ls.AddHandler(new ReferencesHandler(serverContext));
+ls.AddHandler(new SignatureHelperHandler(serverContext));
 
-    InitializeParams requestParams = null!;
-    options
-        .ConfigureLogging(
-            x => x
-                .AddLanguageProtocolLogging()
-                .SetMinimumLevel(LogLevel.Debug)
-        )
-        .WithHandler<TextDocumentHandler>()
-        .WithHandler<DidChangeWatchedFilesHandler>()
-        .WithHandler<HoverHandler>()
-        .WithHandler<DefinitionHandler>()
-        .WithHandler<ReferencesHandler>()
-        .WithHandler<RenameHandler>()
-        .WithHandler<InlayHintHandler>()
-        .WithHandler<DocumentSymbolHandler>()
-        .WithHandler<DocumentColorHandler>()
-        .WithHandler<ColorPresentationHandler>()
-        .WithHandler<SemanticTokenHandler>()
-        .WithHandler<CompletionHandler>()
-        .WithHandler<CodeActionHandler>()
-        .WithHandler<ExecuteCommandHandler>()
-        .WithHandler<SignatureHelperHandler>()
-        .WithHandler<EmmyAnnotatorHandler>()
-        .WithHandler<InlineValuesHandler>()
-        .WithHandler<DocumentLinkHandler>()
-        .WithHandler<TypeHierarchyHandler>()
-        .WithHandler<WorkspaceSymbolHandler>()
-        .WithHandler<CodeLensHandler>()
-        .WithHandler<DidChangeConfigurationHandler>()
-        .WithServices(services =>
-        {
-            services.AddSingleton<ServerContext>(
-                server => new ServerContext(
-                    server.GetRequiredService<ILanguageServerFacade>()
-                )
-            );
-            services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
-        })
-        .OnInitialize((server, request, token) =>
-        {
-            requestParams = request;
-            return Task.CompletedTask;
-        })
-        .OnStarted(async (server, _) =>
-        {
-            var context = server.GetRequiredService<ServerContext>();
-            await context.StartServerAsync(requestParams, server);
-        });
-}).ConfigureAwait(false);
-await server.WaitForExit.ConfigureAwait(false);
+
+await ls.Run();

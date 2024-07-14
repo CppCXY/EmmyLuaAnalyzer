@@ -2,12 +2,11 @@
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.LanguageServer.CodeAction.CodeActions;
 using EmmyLua.LanguageServer.ExecuteCommand.Commands;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.CodeAction;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Diagnostic = OmniSharp.Extensions.LanguageServer.Protocol.Models.Diagnostic;
+using Diagnostic = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic.Diagnostic;
 using DiagnosticCode = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticCode;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
-
 
 namespace EmmyLua.LanguageServer.CodeAction;
 
@@ -40,14 +39,14 @@ public class CodeActionBuilder
 
         foreach (var diagnostic in diagnostics)
         {
-            if (diagnostic is { Source: "EmmyLua", Code.String: { } codeString })
+            if (diagnostic is { Source: "EmmyLua", Code.StringValue: { } codeString })
             {
                 var code = DiagnosticCodeHelper.GetCode(codeString);
                 if (CodeActionMap.TryGetValue(code, out var codeAction)
-                    && diagnostic.Data?.ToObject<string>() is { } data)
+                    && diagnostic.Data?.Value is string data)
                 {
                     result.AddRange(codeAction.GetCodeActions(data, currentDocumentId.Value, context)
-                        .Select(CommandOrCodeAction.From));
+                        .Select(it => new CommandOrCodeAction(it)));
                 }
 
                 if (code != DiagnosticCode.None)
@@ -61,14 +60,14 @@ public class CodeActionBuilder
     }
 
     private void AddDisableActions(List<CommandOrCodeAction> result, string codeString, LuaDocumentId documentId,
-        Range range)
+        DocumentRange range)
     {
         if (codeString == "syntax-error")
         {
             return;
         }
 
-        result.Add(CommandOrCodeAction.From(
+        result.Add(new CommandOrCodeAction(
             DiagnosticAction.MakeCommand(
                 $"Disable current line diagnostic ({codeString})",
                 codeString,
@@ -77,8 +76,8 @@ public class CodeActionBuilder
                 range
             )
         ));
-        
-        result.Add(CommandOrCodeAction.From(
+
+        result.Add(new CommandOrCodeAction(
             DiagnosticAction.MakeCommand(
                 $"Disable current file diagnostic ({codeString})",
                 codeString,
@@ -87,8 +86,8 @@ public class CodeActionBuilder
                 range
             )
         ));
-        
-        result.Add(CommandOrCodeAction.From(
+
+        result.Add(new CommandOrCodeAction(
             SetConfig.MakeCommand(
                 $"Disable workspace diagnostic ({codeString})",
                 SetConfigAction.Add,

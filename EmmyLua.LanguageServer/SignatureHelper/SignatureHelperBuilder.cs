@@ -5,9 +5,10 @@ using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.SignatureHelp;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Markup;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 using EmmyLua.LanguageServer.Server.Render;
-using Microsoft.Extensions.Primitives;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.SignatureHelper;
 
@@ -26,7 +27,7 @@ public class SignatureHelperBuilder
         var renderBuilder = new LuaRenderBuilder(semanticModel.Context);
         LuaCallExprSyntax callExpr = null!;
         LuaCallArgListSyntax callArgs = null!;
-        if (!request.Context.IsRetrigger)
+        if (!request.Context!.IsRetrigger)
         {
             if (triggerToken.Parent is not LuaCallArgListSyntax callArgs1)
             {
@@ -101,8 +102,8 @@ public class SignatureHelperBuilder
 
         return new SignatureHelp()
         {
-            ActiveParameter = activeParameter,
-            ActiveSignature = activeSignature,
+            ActiveParameter = (uint)activeParameter,
+            ActiveSignature = (uint)activeSignature,
             Signatures = signatureInfos
         };
     }
@@ -212,7 +213,7 @@ public class SignatureHelperBuilder
             {
                 Label = sb.ToString(),
                 Parameters = parameterInfos,
-                ActiveParameter = activeParameter
+                ActiveParameter = (uint)activeParameter
             });
 
             if (activeParameter > maxActiveParameter)

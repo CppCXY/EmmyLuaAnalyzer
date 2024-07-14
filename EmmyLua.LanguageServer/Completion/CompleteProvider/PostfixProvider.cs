@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -32,7 +32,7 @@ public class PostfixProvider : ICompleteProviderBase
         {
             context.CreateSnippet(label)
                 .WithInsertText(text)
-                .WithAdditionalTextEdit(new TextEdit()
+                .WithAdditionalTextEdit(new AnnotatedTextEdit()
                 {
                     NewText = string.Empty,
                     Range = replaceRange,

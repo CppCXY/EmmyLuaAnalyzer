@@ -4,8 +4,10 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
+using EmmyLua.LanguageServer.Framework.Protocol.Model;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Completion;
 
@@ -160,7 +162,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                     {
                         completionItem = completionItem with
                         {
-                            Tags = new Container<CompletionItemTag>(CompletionItemTag.Deprecated)
+                            Tags = [CompletionItemTag.Deprecated]
                         };
                     }
 
@@ -284,7 +286,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         {
             completionItem = completionItem with
             {
-                Tags = new Container<CompletionItemTag>(CompletionItemTag.Deprecated)
+                Tags = [CompletionItemTag.Deprecated]
             };
         }
 

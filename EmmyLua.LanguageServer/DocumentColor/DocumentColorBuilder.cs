@@ -1,11 +1,11 @@
-﻿using System.Globalization;
+﻿using System.Drawing;
+using System.Globalization;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentColor;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Util;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace EmmyLua.LanguageServer.DocumentColor;
 
@@ -80,13 +80,7 @@ public class DocumentColorBuilder
             colors.Add(new ColorInformation()
             {
                 Range = range.ToLspRange(semanticModel.Document),
-                Color = new OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentColor()
-                {
-                    Red = red,
-                    Green = green,
-                    Blue = blue,
-                    Alpha = 1
-                }
+                Color = new Framework.Protocol.Message.DocumentColor.DocumentColor(red, green, blue, 1)
             });
         }
         else if (colorText.Length == 8)
@@ -99,18 +93,12 @@ public class DocumentColorBuilder
             colors.Add(new ColorInformation()
             {
                 Range = range.ToLspRange(semanticModel.Document),
-                Color = new OmniSharp.Extensions.LanguageServer.Protocol.Models.DocumentColor()
-                {
-                    Red = red,
-                    Green = green,
-                    Blue = blue,
-                    Alpha = alpha
-                }
+                Color = new Framework.Protocol.Message.DocumentColor.DocumentColor(red, green, blue, alpha)
             });
         }
     }
 
-    public List<ColorPresentation> ModifyColor(ColorInformation info, SemanticModel semanticModel)
+    public List<ColorPresentation> ModifyColor(ColorPresentationParams info, SemanticModel semanticModel)
     {
         var range = info.Range;
         var rangeLength = 0;
@@ -127,16 +115,20 @@ public class DocumentColorBuilder
         var a = (int)(color.Alpha * 255);
 
         var newText = rangeLength == 6 ? $"{r:X2}{g:X2}{b:X2}" : $"{r:X2}{g:X2}{b:X2}{a:X2}";
-        var colorPresentation = new ColorPresentation()
+        if (info.Range.HasValue)
         {
-            Label = $"{r:X2}{g:X2}{b:X2}",
-            TextEdit = new TextEdit()
+            var colorPresentation = new ColorPresentation()
             {
-                Range = info.Range,
-                NewText = newText
-            }
-        };
-        colorPresentations.Add(colorPresentation);
+                Label = $"{r:X2}{g:X2}{b:X2}",
+                TextEdit = new TextEdit()
+                {
+                    Range = info.Range.Value,
+                    NewText = newText
+                }
+            };
+            colorPresentations.Add(colorPresentation);
+        }
+
         return colorPresentations;
     }
 }
