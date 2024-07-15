@@ -156,6 +156,7 @@ public class Runtime
     public List<string> RequirePattern { get; set; } = [];
 }
 
+[JsonConverter(typeof(LuaVersionJsonConverter))]
 public enum LuaVersion
 {
     [EnumMember(Value = "Lua5.1")]
@@ -171,6 +172,38 @@ public enum LuaVersion
     Lua54,
     [EnumMember(Value = "LuaLatest")]
     LuaLatest
+}
+
+public class LuaVersionJsonConverter : JsonConverter<LuaVersion>
+{
+    public override LuaVersion Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString();
+        return value switch
+        {
+            "Lua5.1" => LuaVersion.Lua51,
+            "LuaJIT" => LuaVersion.LuaJIT,
+            "Lua5.2" => LuaVersion.Lua52,
+            "Lua5.3" => LuaVersion.Lua53,
+            "Lua5.4" => LuaVersion.Lua54,
+            "LuaLatest" => LuaVersion.LuaLatest,
+            _ => LuaVersion.Lua54
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, LuaVersion value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value switch
+        {
+            LuaVersion.Lua51 => "Lua5.1",
+            LuaVersion.LuaJIT => "LuaJIT",
+            LuaVersion.Lua52 => "Lua5.2",
+            LuaVersion.Lua53 => "Lua5.3",
+            LuaVersion.Lua54 => "Lua5.4",
+            LuaVersion.LuaLatest => "LuaLatest",
+            _ => "Lua5.4"
+        });
+    }
 }
 
 public class Workspace

@@ -185,7 +185,7 @@ public class SignatureHelperBuilder
                 sb.Append('(');
                 for (var i = 0; i < parameterInfos.Count; i++)
                 {
-                    sb.Append(parameterInfos[i].Label);
+                    sb.Append(parameterInfos[i].Label.Result1);
 
                     if (i < parameterInfos.Count - 1)
                     {
@@ -200,7 +200,7 @@ public class SignatureHelperBuilder
             {
                 for (var i = 0; i < parameterInfos.Count; i++)
                 {
-                    sb.Append(parameterInfos[i].Label);
+                    sb.Append(parameterInfos[i].Label.Result1);
 
                     if (i < parameterInfos.Count - 1)
                     {

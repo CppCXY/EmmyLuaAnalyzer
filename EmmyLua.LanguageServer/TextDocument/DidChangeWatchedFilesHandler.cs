@@ -21,8 +21,8 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             {
                 try
                 {
-                    var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.Uri.AbsolutePath);
-                    var uri = fileEvent.Uri.Uri.AbsoluteUri;
+                    var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.FileSystemPath);
+                    var uri = fileEvent.Uri.UnescapeUri;
                     context.UpdateDocument(uri, fileText, cancellationToken);
                 }
                 catch (Exception e)
@@ -34,7 +34,7 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             }
             case FileChangeType.Deleted:
             {
-                var uri = fileEvent.Uri.Uri.AbsoluteUri;
+                var uri = fileEvent.Uri.UnescapeUri;
                 context.RemoveDocument(uri);
                 break;
             }

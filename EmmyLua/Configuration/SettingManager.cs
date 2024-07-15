@@ -1,11 +1,12 @@
 ﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
+using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
 
 
 namespace EmmyLua.Configuration;
@@ -30,7 +31,12 @@ public class SettingManager
     {
         TypeInfoResolver = SettingGenerateContext.Default,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() }
+        Converters =
+        {
+            new JsonStringEnumConverter<DiagnosticCode>(JsonNamingPolicy.KebabCaseLower),
+            new JsonStringEnumConverter<DiagnosticSeverity>(JsonNamingPolicy.KebabCaseLower),
+            new JsonStringEnumConverter<FilenameConvention>(JsonNamingPolicy.KebabCaseLower),
+        }
     };
 
     private FileSystemWatcher? Watcher { get; set; }
@@ -101,7 +107,7 @@ public class SettingManager
         }
         catch (Exception e)
         {
-            // ignore
+            Console.Error.WriteLine(e);
         }
     }
 
@@ -239,12 +245,6 @@ public class SettingManager
 
     public void Save(Setting setting)
     {
-        if (setting.Schema is null)
-        {
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "schema.json");
-            setting.Schema = (new Uri(path)).AbsoluteUri;
-        }
-
         var json = JsonSerializer.Serialize(setting, SerializerSettings);
         File.WriteAllText(SettingPath, json);
     }

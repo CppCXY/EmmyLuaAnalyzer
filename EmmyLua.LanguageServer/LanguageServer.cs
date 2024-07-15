@@ -48,6 +48,7 @@ else
 
 InitializeParams initializeParams = null!;
 var ls = LanguageServer.From(input, output);
+ls.SupportMultiThread();
 ls.AddJsonSerializeContext(EmmyLuaJsonGenerateContext.Default);
 var serverContext = new ServerContext(ls);
 ls.OnInitialize((c, s) =>

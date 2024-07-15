@@ -12,7 +12,7 @@ public class ReferencesHandler(ServerContext context) : ReferenceHandlerBase
 {
     protected override Task<ReferenceResponse?> Handle(ReferenceParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         ReferenceResponse? locationContainer = null;
         context.ReadyRead(() =>
         {

@@ -17,7 +17,7 @@ public class TextDocumentHandler(
 {
     protected override Task Handle(DidOpenTextDocumentParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         context.UpdateDocument(uri, request.TextDocument.Text, token);
         return Task.CompletedTask;
     }
@@ -25,14 +25,14 @@ public class TextDocumentHandler(
     protected override Task Handle(DidChangeTextDocumentParams request, CancellationToken token)
     {
         var changes = request.ContentChanges.ToList();
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         context.UpdateDocument(uri, changes[0].Text, token);
         return Task.CompletedTask;
     }
 
     protected override Task Handle(DidCloseTextDocumentParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         context.ReadyWrite(() => { context.LuaWorkspace.CloseDocument(uri); });
         return Task.CompletedTask;
     }

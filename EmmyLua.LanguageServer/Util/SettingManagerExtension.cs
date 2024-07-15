@@ -13,10 +13,6 @@ public static class SettingManagerExtension
     {
         var config = new CompletionConfig();
         var setting = settingManager.Setting;
-        if (setting is null)
-        {
-            return config;
-        }
 
         config.AutoRequire = setting.Completion.AutoRequire;
         config.CallSnippet = setting.Completion.CallSnippet;
@@ -29,10 +25,6 @@ public static class SettingManagerExtension
     {
         var config = new InlayHintConfig();
         var setting = settingManager.Setting;
-        if (setting is null)
-        {
-            return config;
-        }
 
         config.ParamHint = setting.Hint.ParamHint;
         config.IndexHint = setting.Hint.IndexHint;
@@ -46,13 +38,8 @@ public static class SettingManagerExtension
     {
         var config = new ResourceConfig();
         var setting = settingManager.Setting;
-        if (setting is null)
-        {
-            return config;
-        }
-
+        
         config.Paths = setting.Resource.Paths;
-
         return config;
     }
 
@@ -60,13 +47,8 @@ public static class SettingManagerExtension
     {
         var config = new CodeLensConfig();
         var setting = settingManager.Setting;
-        if (setting is null)
-        {
-            return config;
-        }
 
         config.Enable = setting.CodeLens.Enable;
-
         return config;
     }
 
@@ -74,11 +56,7 @@ public static class SettingManagerExtension
     {
         var config = new SignatureHelperConfig();
         var setting = settingManager.Setting;
-        if (setting is null)
-        {
-            return config;
-        }
-
+        
         config.DetailSignatureHelp = setting.Signature.DetailSignatureHelper;
         return config;
     }

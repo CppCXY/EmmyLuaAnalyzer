@@ -24,7 +24,7 @@ public class HoverHandler(
 
     protected override Task<HoverResponse> Handle(HoverParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         HoverResponse? hover = null;
         context.ReadyRead(() =>
         {

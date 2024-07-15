@@ -14,7 +14,7 @@ public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBas
     
     protected override Task<DocumentLinkResponse> Handle(DocumentLinkParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         DocumentLinkResponse? container = null;
         context.ReadyRead(() =>
         {

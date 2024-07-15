@@ -16,7 +16,7 @@ public class CodeActionHandler(ServerContext context) : CodeActionHandlerBase
     protected override Task<CodeActionResponse> Handle(CodeActionParams request, CancellationToken token)
     {
         var result = new List<CommandOrCodeAction>();
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         var diagnostics = request.Context.Diagnostics;
         context.ReadyRead(() =>
         {

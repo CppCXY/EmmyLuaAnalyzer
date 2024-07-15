@@ -1,5 +1,7 @@
 ﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Common;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server.Options;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.SemanticToken;
 using EmmyLua.LanguageServer.Framework.Server.Handler;
 using EmmyLua.LanguageServer.Server;
@@ -60,6 +62,11 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
 
     public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
     {
-        throw new NotImplementedException();
+        serverCapabilities.SemanticTokensProvider = new SemanticTokensOptions()
+        {
+            Legend = new SemanticTokensLegend(),
+            Full = true,
+            Range = true
+        };
     }
 }

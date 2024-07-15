@@ -13,7 +13,7 @@ public class DocumentColorHandler(ServerContext context) : DocumentColorHandlerB
     
     protected override Task<DocumentColorResponse> Handle(DocumentColorParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         DocumentColorResponse? container = null;
         context.ReadyRead(() =>
         {
@@ -29,7 +29,7 @@ public class DocumentColorHandler(ServerContext context) : DocumentColorHandlerB
 
     protected override Task<ColorPresentationResponse> Resolve(ColorPresentationParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         ColorPresentationResponse container = null!;
         context.ReadyRead(() =>
         {

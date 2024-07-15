@@ -16,7 +16,7 @@ public class InlayHintHandler(ServerContext context) : InlayHintHandlerBase
     
     protected override Task<InlayHintResponse?> Handle(InlayHintParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         InlayHintResponse? inlayHintContainer = null;
         context.ReadyRead(() =>
         {

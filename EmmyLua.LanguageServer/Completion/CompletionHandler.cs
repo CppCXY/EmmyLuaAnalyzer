@@ -16,7 +16,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
     
     protected override Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         CompletionResponse? response = null;
         context.ReadyRead(() =>
         {

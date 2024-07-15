@@ -15,7 +15,7 @@ public class SignatureHelperHandler(ServerContext context) : SignatureHelpHandle
 
     protected override Task<SignatureHelp> Handle(SignatureHelpParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         SignatureHelp? signatureHelp = null;
         context.ReadyRead(() =>
         {

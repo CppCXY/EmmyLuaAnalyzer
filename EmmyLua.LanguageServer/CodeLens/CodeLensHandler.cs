@@ -19,9 +19,9 @@ public class CodeLensHandler(ServerContext context) : CodeLensHandlerBase
         var config = context.SettingManager.GetCodeLensConfig();
         if (!config.Enable)
         {
-            return Task.FromResult(container);
+            return Task.FromResult(container)!;
         }
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         
         context.ReadyRead(() =>
         {
@@ -32,7 +32,7 @@ public class CodeLensHandler(ServerContext context) : CodeLensHandlerBase
             }
         });
         
-        return Task.FromResult(container);
+        return Task.FromResult(container)!;
     }
 
     protected override Task<Framework.Protocol.Message.CodeLens.CodeLens> Resolve(Framework.Protocol.Message.CodeLens.CodeLens request, CancellationToken token)

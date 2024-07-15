@@ -1,7 +1,9 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 
+[JsonConverter(typeof(JsonStringEnumConverter<DiagnosticSeverity>))]
 public enum DiagnosticSeverity
 {
     [EnumMember(Value = "error")]

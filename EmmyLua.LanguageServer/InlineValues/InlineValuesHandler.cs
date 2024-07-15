@@ -13,7 +13,7 @@ public class InlineValuesHandler(ServerContext context): InlineValueHandlerBase
     
     protected override Task<InlineValueResponse> Handle(InlineValueParams inlineValueParams, CancellationToken cancellationToken)
     {
-        var uri = inlineValueParams.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = inlineValueParams.TextDocument.Uri.UnescapeUri;
         InlineValueResponse? container = null;
         context.ReadyRead(() =>
         {

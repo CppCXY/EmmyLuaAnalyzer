@@ -12,10 +12,10 @@ public class ExecuteCommandHandler(ServerContext context) : ExecuteCommandHandle
 {
     private CommandExecutor Executor { get; } = new(context);
     
-    protected override Task<ExecuteCommandResponse> Handle(ExecuteCommandParams request, CancellationToken token)
+    protected override async Task<ExecuteCommandResponse> Handle(ExecuteCommandParams request, CancellationToken token)
     {
-        Executor.ExecuteAsync(request.Command, request.Arguments).WaitAsync(token);
-        return Task.FromResult(new ExecuteCommandResponse(null));
+        await Executor.ExecuteAsync(request.Command, request.Arguments);
+        return await Task.FromResult(new ExecuteCommandResponse(null));
     }
 
     public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)

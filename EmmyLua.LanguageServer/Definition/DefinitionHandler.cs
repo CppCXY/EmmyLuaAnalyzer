@@ -13,7 +13,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
 {
     protected override Task<DefinitionResponse?> Handle(DefinitionParams request, CancellationToken cancellationToken)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         DefinitionResponse? locationLinks = null;
         context.ReadyRead(() =>
         {

@@ -14,7 +14,7 @@ public class RenameHandler(ServerContext context) : RenameHandlerBase
     
     protected override Task<WorkspaceEdit?> Handle(RenameParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         WorkspaceEdit? workspaceEdit = null;
         context.ReadyRead(() =>
         {

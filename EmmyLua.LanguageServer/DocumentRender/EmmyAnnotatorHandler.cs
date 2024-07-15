@@ -13,7 +13,7 @@ public class EmmyAnnotatorHandler(ServerContext context) : IJsonHandler
     public Task<List<EmmyAnnotatorResponse>> Handle(EmmyAnnotatorRequestParams request, CancellationToken cancellationToken)
     {
         var documentUri = request.Uri;
-        var uri = documentUri.Uri.AbsoluteUri;
+        var uri = documentUri.UnescapeUri;
         var response = new List<EmmyAnnotatorResponse>();
         context.ReadyRead(() =>
         {

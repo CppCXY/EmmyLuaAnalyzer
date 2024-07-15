@@ -77,7 +77,13 @@ public class ServerContext(Framework.Server.LanguageServer server)
         LockSlim.EnterWriteLock();
         try
         {
-            if (initializeParams.RootPath is { } rootPath)
+            var rootPath = string.Empty;
+            if (initializeParams.RootUri is { } rootUri)
+            {
+                rootPath = rootUri.FileSystemPath;
+            }
+
+            if (rootPath.Length > 0)
             {
                 MainWorkspacePath = rootPath;
                 LuaWorkspace.Monitor = Monitor;
@@ -91,7 +97,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                 {
                     foreach (var workspaceFolder in workspaceFolders)
                     {
-                        var path = workspaceFolder.Uri.Uri.LocalPath;
+                        var path = workspaceFolder.Uri.FileSystemPath;
                         if (path != MainWorkspacePath)
                         {
                             ExternalWorkspacePaths.Add(path);
@@ -285,8 +291,8 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         case { Type: FileChangeType.Created }:
                         case { Type: FileChangeType.Changed }:
                         {
-                            var uri = fileEvent.Uri.Uri.AbsoluteUri;
-                            var fileText = File.ReadAllText(fileEvent.Uri.Uri.AbsolutePath);
+                            var uri = fileEvent.Uri.UnescapeUri;
+                            var fileText = File.ReadAllText(fileEvent.Uri.FileSystemPath);
                             LuaWorkspace.UpdateDocumentByUri(uri, fileText);
                             var documentId = LuaWorkspace.GetDocumentIdByUri(uri);
                             if (documentId.HasValue)
@@ -298,7 +304,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         }
                         case { Type: FileChangeType.Deleted }:
                         {
-                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.Uri.AbsoluteUri);
+                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.UnescapeUri);
                             break;
                         }
                     }

@@ -14,7 +14,7 @@ public class DocumentSymbolHandler(ServerContext context) : DocumentSymbolHandle
     
     protected override Task<DocumentSymbolResponse> Handle(DocumentSymbolParams request, CancellationToken token)
     {
-        var uri = request.TextDocument.Uri.Uri.AbsoluteUri;
+        var uri = request.TextDocument.Uri.UnescapeUri;
         DocumentSymbolResponse? container = null;
         context.ReadyRead(() =>
         {
