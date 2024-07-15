@@ -30,6 +30,6 @@ public class InlineValuesHandler(ServerContext context): InlineValueHandlerBase
 
     public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
     {
-        serverCapabilities.InlineValuesProvider = true;
+        serverCapabilities.InlineValueProvider = true;
     }
 }

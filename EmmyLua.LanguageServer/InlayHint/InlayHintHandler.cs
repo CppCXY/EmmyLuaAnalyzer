@@ -40,9 +40,9 @@ public class InlayHintHandler(ServerContext context) : InlayHintHandlerBase
 
     public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
     {
-        serverCapabilities.InlayHintsProvider = new InlayHintsOptions()
+        serverCapabilities.InlayHintProvider = new InlayHintsOptions()
         {
-            ResolveProvider = true
+            ResolveProvider = false
         };
     }
 }

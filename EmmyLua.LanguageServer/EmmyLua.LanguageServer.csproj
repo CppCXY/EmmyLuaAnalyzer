@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.1.2" />
+      <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.2.2" />
     </ItemGroup>
 
 </Project>
