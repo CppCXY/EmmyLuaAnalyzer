@@ -16,6 +16,7 @@
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <!-- 发布配置：不生成PDB文件 -->
         <DebugType>none</DebugType>
+         <StripSymbols>true</StripSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.3.2" />
+      <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.3.3" />
     </ItemGroup>
 
 </Project>
