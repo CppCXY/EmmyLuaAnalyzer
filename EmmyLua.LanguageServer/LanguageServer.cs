@@ -56,10 +56,12 @@ ls.OnInitialize((c, s) =>
     s.Name = "EmmyLua.LanguageServer";
     s.Version = "1.0.0";
     initializeParams = c;
+    return Task.CompletedTask;
 });
 ls.OnInitialized((c) =>
 {
     serverContext.StartServerAsync(initializeParams).Wait();
+    return Task.CompletedTask;
 });
 ls.AddHandler(new TextDocumentHandler(serverContext));
 ls.AddHandler(new DefinitionHandler(serverContext));
@@ -79,6 +81,7 @@ ls.AddHandler(new InlayHintHandler(serverContext));
 ls.AddHandler(new InlineValuesHandler(serverContext));
 ls.AddHandler(new ReferencesHandler(serverContext));
 ls.AddHandler(new SignatureHelperHandler(serverContext));
-
+ls.AddHandler(new SemanticTokenHandler(serverContext));
+ls.AddHandler(new TypeHierarchyHandler(serverContext));
 
 await ls.Run();

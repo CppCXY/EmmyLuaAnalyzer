@@ -82,9 +82,9 @@ public class AutoRequire : ICommandBase
             Name = CommandName,
             Arguments =
             [
-                currentId.Id.ToString(),
-                needRequireId.Id.ToString(),
-                position.ToString()
+                currentId.Id,
+                needRequireId.Id,
+                position
             ]
         };
     }

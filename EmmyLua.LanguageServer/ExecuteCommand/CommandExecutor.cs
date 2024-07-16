@@ -39,7 +39,7 @@ public class CommandExecutor(ServerContext context)
             {
                 Changes =  new ()
                 {
-                    { new DocumentUri(new Uri(uri)), new List<TextEdit> { textEdit } }
+                    { uri, [textEdit] }
                 }
             }
         }, CancellationToken.None);

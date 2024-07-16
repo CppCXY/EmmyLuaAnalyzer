@@ -1,12 +1,15 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.PublishDiagnostics;
+using EmmyLua.LanguageServer.Framework.Protocol.Message.Configuration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
+using EmmyLua.LanguageServer.Server.ClientConfig;
 using EmmyLua.LanguageServer.Server.Monitor;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Util;
@@ -47,26 +50,33 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
         if (IsVscode)
         {
-            // var config = await configServer.Configuration.GetConfiguration(new[]
-            // {
-            //     new ConfigurationItem()
-            //     {
-            //         Section = "files"
-            //     },
-            // });
-            //
-            // foreach (var section in config.GetSection("files:associations").GetChildren())
-            // {
-            //     if (section.Value == "lua")
-            //     {
-            //         Extensions.Add(section.Key);
-            //     }
-            // }
-            //
-            // if (config.GetSection("files:encoding").Value is {} encoding)
-            // {
-            //     SettingManager.WorkspaceEncoding = encoding;
-            // }
+            var config = await Server.Client.GetConfiguration(new()
+            {
+                Items =
+                [
+                    new ConfigurationItem()
+                    {
+                        Section = "files"
+                    }
+                ]
+            }, CancellationToken.None);
+
+            if (config.FirstOrDefault()?.Value is JsonDocument jsonDocument)
+            {
+                var filesConfig = jsonDocument.Deserialize<FilesConfig>(Server.JsonSerializerOptions)!;
+                foreach (var (ext, language) in filesConfig.Associations)
+                {
+                    if (string.Equals(language, "lua", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        Extensions.Add(ext);
+                    }
+                }
+               
+                if (filesConfig.Encoding.Length > 0)
+                {
+                    SettingManager.WorkspaceEncoding = filesConfig.Encoding;
+                }
+            } 
         }
 
         StartServer(initializeParams);
@@ -105,6 +115,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         }
                     }
                 }
+                // TODO: read config from initializeOptions
 
                 LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
                 ResourceManager.Config = SettingManager.GetResourceConfig();
@@ -238,7 +249,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                     {
                         // ReSharper disable once AccessToDisposedClosure
                         var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
-                        Server.Client.PushDiagnostics(new PublishDiagnosticsParams()
+                        Server.Client.PublishDiagnostics(new PublishDiagnosticsParams()
                         {
                             Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),
                             Uri = document.Uri,
@@ -336,7 +347,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
             var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
             var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
-            Server.Client.PushDiagnostics(new PublishDiagnosticsParams()
+            Server.Client.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),
                 Uri = document.Uri,
