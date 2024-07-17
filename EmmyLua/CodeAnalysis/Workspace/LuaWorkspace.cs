@@ -110,12 +110,12 @@ public class LuaWorkspace
         if (useIgnore)
         {
             var excludeFolders = Features.ExcludeFolders
-                .Select(it => Path.Combine(directory, it.Trim('\\', '/')))
+                .Select(it => Path.Combine(directory, it))
                 .Select(Path.GetFullPath)
                 .ToList();
-            var excludeFiles = Features.ExcludeFiles.ToList();
+            var excludeGlobs = Features.ExcludeGlobs;
             files = files.Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
-                .Where(file => !excludeFiles.Contains(Path.GetFileName(file), StringComparer.OrdinalIgnoreCase));
+                .Where(file => !excludeGlobs.Any(glob => glob.IsMatch(Path.GetRelativePath(directory, file))));
         }
         return files;
     }

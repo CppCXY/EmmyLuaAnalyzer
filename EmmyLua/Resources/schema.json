@@ -365,7 +365,7 @@
             ]
           }
         },
-        "ignoreFiles": {
+        "ignoreGlobs": {
           "type": [
             "array",
             "null"

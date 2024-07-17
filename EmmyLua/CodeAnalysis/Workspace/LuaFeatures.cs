@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
+using GlobExpressions;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
@@ -29,7 +30,7 @@ public class LuaFeatures
         ".p4",
     ];
 
-    public HashSet<string> ExcludeFiles { get; set; } = [];
+    public List<Glob> ExcludeGlobs { get; set; } = [];
 
     public List<string> RequirePattern { get; set; } =
     [
