@@ -7,6 +7,7 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
+using GlobExpressions;
 
 
 namespace EmmyLua.Configuration;
@@ -145,7 +146,8 @@ public class SettingManager
     {
         var features = new LuaFeatures();
         var setting = Setting;
-        features.ExcludeFolders.UnionWith(setting.Workspace.IgnoreDir);
+        setting.Workspace.IgnoreDir.ForEach(s => features.ExcludeFolders.Add(s.Trim('\\', '/')));
+        setting.Workspace.IgnoreGlobs.ForEach(s => features.ExcludeGlobs.Add(new Glob(s.TrimStart('\\', '/'))));
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);

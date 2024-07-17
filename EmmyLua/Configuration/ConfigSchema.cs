@@ -216,6 +216,9 @@ public class Workspace
         ".vscode"
     ];
 
+    [JsonPropertyName("ignoreGlobs")]
+    public List<string> IgnoreGlobs { get; set; } = [];
+
     [JsonPropertyName("library")]
     public List<string> Library { get; set; } = [];
 
