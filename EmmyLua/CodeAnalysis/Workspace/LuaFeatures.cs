@@ -2,7 +2,6 @@
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
-using GlobExpressions;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
@@ -18,9 +17,9 @@ public class LuaFeatures
 
     public List<FrameworkVersion> FrameworkVersions { get; set; } = [];
 
-    public HashSet<string> Extensions { get; set; } =
+    public HashSet<string> Includes { get; set; } =
     [
-        "*.lua"
+        "**/*.lua"
     ];
 
     public HashSet<string> ExcludeFolders { get; set; } =
@@ -30,7 +29,7 @@ public class LuaFeatures
         ".p4",
     ];
 
-    public List<Glob> ExcludeGlobs { get; set; } = [];
+    public HashSet<string> ExcludeGlobs { get; set; } = [];
 
     public List<string> RequirePattern { get; set; } =
     [

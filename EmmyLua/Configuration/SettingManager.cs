@@ -7,7 +7,6 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.CodeAnalysis.Workspace.Module.FilenameConverter;
-using GlobExpressions;
 
 
 namespace EmmyLua.Configuration;
@@ -146,8 +145,8 @@ public class SettingManager
     {
         var features = new LuaFeatures();
         var setting = Setting;
-        setting.Workspace.IgnoreDir.ForEach(s => features.ExcludeFolders.Add(s.Trim('\\', '/')));
-        setting.Workspace.IgnoreGlobs.ForEach(s => features.ExcludeGlobs.Add(new Glob(s.TrimStart('\\', '/'))));
+        features.ExcludeFolders.UnionWith(setting.Workspace.IgnoreDir.Select(it => it.TrimStart('\\', '/')));
+        features.ExcludeGlobs.UnionWith(setting.Workspace.IgnoreGlobs.Select(it => it.TrimStart('\\', '/')));
         features.DontIndexMaxFileSize = setting.Workspace.PreloadFileSize;
         features.ThirdPartyRoots.AddRange(setting.Workspace.Library);
         features.WorkspaceRoots.AddRange(setting.Workspace.WorkspaceRoots);
@@ -211,15 +210,15 @@ public class SettingManager
         {
             if (extension.StartsWith('.'))
             {
-                features.Extensions.Add($"*{extension}");
+                features.Includes.Add($"**/*{extension}");
             }
             else if (extension.StartsWith("*."))
             {
-                features.Extensions.Add(extension);
+                features.Includes.Add($"**/{extension}");
             }
             else
             {
-                features.Extensions.Add($"*.{extension}");
+                features.Includes.Add($"**/*.{extension}");
             }
         }
 
@@ -229,7 +228,7 @@ public class SettingManager
             features.RequirePattern.AddRange(setting.Runtime.RequirePattern);
         }
 
-        foreach (var extension in features.Extensions)
+        foreach (var extension in features.Includes)
         {
             var hashSet = features.RequirePattern.ToHashSet();
             var newPattern = extension.Replace("*", "?");

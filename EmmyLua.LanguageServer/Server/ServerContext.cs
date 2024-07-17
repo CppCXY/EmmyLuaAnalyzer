@@ -71,12 +71,12 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         Extensions.Add(ext);
                     }
                 }
-               
+
                 if (filesConfig.Encoding.Length > 0)
                 {
                     SettingManager.WorkspaceEncoding = filesConfig.Encoding;
                 }
-            } 
+            }
         }
 
         StartServer(initializeParams);
@@ -101,6 +101,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                 SettingManager.Watch(MainWorkspacePath);
                 SettingManager.OnSettingChanged += OnConfigChanged;
                 SettingManager.WorkspaceExtensions = Extensions;
+                LuaWorkspace.MainWorkspace = MainWorkspacePath;
                 LuaWorkspace.Features = SettingManager.GetLuaFeatures();
                 LuaWorkspace.InitStdLib();
                 if (IsVscode && initializeParams.WorkspaceFolders is { } workspaceFolders)
@@ -190,13 +191,15 @@ public class ServerContext(Framework.Server.LanguageServer server)
         var workspaceNeedReload = false;
         workspaceNeedReload |= !newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
         workspaceNeedReload |= !newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
-        workspaceNeedReload |= !newFeatures.Extensions.SequenceEqual(oldFeatures.Extensions);
+        workspaceNeedReload |= !newFeatures.ExcludeGlobs.SequenceEqual(oldFeatures.ExcludeGlobs);
+        workspaceNeedReload |= !newFeatures.Includes.SequenceEqual(oldFeatures.Includes);
         workspaceNeedReload |= !newFeatures.WorkspaceRoots.SequenceEqual(oldFeatures.WorkspaceRoots);
         workspaceNeedReload |= !newFeatures.ThirdPartyRoots.SequenceEqual(oldFeatures.ThirdPartyRoots);
         if (workspaceNeedReload)
         {
             LuaWorkspace = LuaWorkspace.CleanCreate();
             LuaWorkspace.Monitor = Monitor;
+            LuaWorkspace.MainWorkspace = MainWorkspacePath;
             LuaWorkspace.Features = newFeatures;
             LuaWorkspace.InitStdLib();
             foreach (var workspacePath in ExternalWorkspacePaths)
@@ -302,6 +305,11 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         case { Type: FileChangeType.Created }:
                         case { Type: FileChangeType.Changed }:
                         {
+                            if (LuaWorkspace.IsExclude(fileEvent.Uri.FileSystemPath))
+                            {
+                                continue;
+                            }
+
                             var uri = fileEvent.Uri.UnescapeUri;
                             var fileText = File.ReadAllText(fileEvent.Uri.FileSystemPath);
                             LuaWorkspace.UpdateDocumentByUri(uri, fileText);

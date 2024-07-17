@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace.Module;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
@@ -18,6 +19,7 @@ public class LuaWorkspace
         {
             _features = value;
             ModuleManager.UpdatePattern(_features.RequirePattern);
+            InitExcludeFolders();
         }
     }
 
@@ -44,6 +46,10 @@ public class LuaWorkspace
     public IEnumerable<LuaDocument> AllDocuments => Documents.Values;
 
     private int _idCounter = 1;
+
+    private Matcher ExcludeMatcher { get; set; } = null!;
+
+    private List<string> ExcludeFolders { get; set; } = new();
 
     public LuaWorkspaceMonitor? Monitor { get; set; }
 
@@ -84,6 +90,7 @@ public class LuaWorkspace
         Compilation = new LuaCompilation(this);
         ModuleManager = new ModuleManager(this);
         ModuleManager.UpdatePattern(features.RequirePattern);
+        InitExcludeFolders();
         if (features.InitStdLib)
         {
             InitStdLib();
@@ -103,21 +110,39 @@ public class LuaWorkspace
             return Array.Empty<string>();
         }
 
-        var files = Features.Extensions
-            .SelectMany(it => Directory.GetFiles(directory, it, SearchOption.AllDirectories))
-            .Select(Path.GetFullPath);
-
+        var matcher = new Matcher();
+        matcher.AddIncludePatterns(Features.Includes);
         if (useIgnore)
         {
-            var excludeFolders = Features.ExcludeFolders
-                .Select(it => Path.Combine(directory, it))
-                .Select(Path.GetFullPath)
-                .ToList();
-            var excludeGlobs = Features.ExcludeGlobs;
-            files = files.Where(file => !excludeFolders.Any(filter => file.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
-                .Where(file => !excludeGlobs.Any(glob => glob.IsMatch(Path.GetRelativePath(directory, file))));
+            matcher.AddExcludePatterns(Features.ExcludeGlobs);
+            matcher.AddExcludePatterns(Features.ExcludeFolders);
         }
+
+        var files = matcher.GetResultsInFullPath(directory);
         return files;
+    }
+
+    private void InitExcludeFolders()
+    {
+        ExcludeFolders = Features.ExcludeFolders
+            .Select(it => Path.GetFullPath(Path.Combine(it, "**/*")))
+            .ToList();
+
+        ExcludeMatcher = new Matcher();
+        ExcludeMatcher.AddIncludePatterns(Features.Includes);
+        ExcludeMatcher.AddExcludePatterns(Features.ExcludeGlobs);
+        ExcludeMatcher.AddExcludePatterns(Features.ExcludeFolders);
+    }
+
+    public bool IsExclude(string path)
+    {
+        if (MainWorkspace.Length == 0)
+        {
+            return false;
+        }
+
+        var relativePath = Path.GetRelativePath(MainWorkspace, path);
+        return !ExcludeMatcher.Match(MainWorkspace, relativePath).HasMatches;
     }
 
     /// this will load all third libraries and workspace files
@@ -298,6 +323,12 @@ public class LuaWorkspace
         }
         else
         {
+            var path = new Uri(uri).LocalPath;
+            if (IsExclude(path))
+            {
+                return;
+            }
+
             AddDocumentByUri(uri, text);
         }
     }

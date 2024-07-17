@@ -21,6 +21,12 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
             {
                 try
                 {
+                    var fileSystemPath = fileEvent.Uri.FileSystemPath;
+                    if (context.LuaWorkspace.IsExclude(fileSystemPath))
+                    {
+                        return Task.CompletedTask;
+                    }
+                    
                     var fileText = context.LuaWorkspace.ReadFile(fileEvent.Uri.FileSystemPath);
                     var uri = fileEvent.Uri.UnescapeUri;
                     context.UpdateDocument(uri, fileText, cancellationToken);
