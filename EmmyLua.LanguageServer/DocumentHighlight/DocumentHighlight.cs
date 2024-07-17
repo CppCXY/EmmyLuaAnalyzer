@@ -7,8 +7,6 @@ using EmmyLua.LanguageServer.Server;
 
 namespace EmmyLua.LanguageServer.DocumentHighlight;
 
-// TODO
-// ReSharper disable once UnusedType.Global
 public class DocumentHighlight : DocumentHighlightHandlerBase
 {
     protected override Task<DocumentHighlightResponse> Handle(DocumentHighlightParams request, CancellationToken token)
@@ -18,6 +16,6 @@ public class DocumentHighlight : DocumentHighlightHandlerBase
 
     public override void RegisterCapability(ServerCapabilities serverCapabilities, ClientCapabilities clientCapabilities)
     {
-        throw new NotImplementedException();
+        serverCapabilities.DocumentHighlightProvider = true;
     }
 }

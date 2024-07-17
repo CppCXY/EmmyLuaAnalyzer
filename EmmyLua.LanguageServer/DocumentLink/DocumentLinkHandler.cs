@@ -10,7 +10,7 @@ namespace EmmyLua.LanguageServer.DocumentLink;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBase
 {
-    private DocumentLinkBuilder Builder { get; } = new();
+    private DocumentLinkBuilder Builder { get; } = new(context);
     
     protected override Task<DocumentLinkResponse> Handle(DocumentLinkParams request, CancellationToken token)
     {
