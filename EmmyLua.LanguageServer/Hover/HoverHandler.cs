@@ -22,7 +22,7 @@ public class HoverHandler(
         true
     );
 
-    protected override Task<HoverResponse> Handle(HoverParams request, CancellationToken token)
+    protected override Task<HoverResponse?> Handle(HoverParams request, CancellationToken token)
     {
         var uri = request.TextDocument.Uri.UnescapeUri;
         HoverResponse? hover = null;

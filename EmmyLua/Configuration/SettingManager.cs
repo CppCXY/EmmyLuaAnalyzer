@@ -231,7 +231,7 @@ public class SettingManager
         foreach (var extension in features.Includes)
         {
             var hashSet = features.RequirePattern.ToHashSet();
-            var newPattern = extension.Replace("*", "?");
+            var newPattern = extension.Replace("**/*", "?");
             if (!hashSet.Contains(newPattern))
             {
                 features.RequirePattern.Add(newPattern);
