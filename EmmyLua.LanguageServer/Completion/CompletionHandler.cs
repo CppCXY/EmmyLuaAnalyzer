@@ -14,10 +14,11 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
 
     private CompletionDocumentResolver DocumentResolver { get; } = new();
     
-    protected override Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
+    protected override async Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
     {
         var uri = request.TextDocument.Uri.UnescapeUri;
         CompletionResponse? response = null;
+        // using var _ = await context.ReadyWorkspaceAsync();
         context.ReadyRead(() =>
         {
             var semanticModel = context.GetSemanticModel(uri);
@@ -28,8 +29,8 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
                 response = new CompletionResponse(completions);
             }
         });
-        
-        return Task.FromResult(response)!;
+
+        return await Task.FromResult(response)!;
     }
 
     protected override Task<CompletionItem> Resolve(CompletionItem item, CancellationToken token)

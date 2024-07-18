@@ -1,4 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
@@ -6,25 +8,38 @@ public class GlobalProvider : ICompleteProviderBase
 {
     public void AddCompletion(CompleteContext context)
     {
-        if (context.TriggerToken?.Parent is not LuaNameExprSyntax)
+        if (context.TriggerToken?.Parent is LuaNameExprSyntax)
         {
-            return;
+            AddGlobalCompletion(context);
         }
-
-        var localHashSet = context.SemanticModel
-            .GetDeclarationsBefore(context.TriggerToken)
-            .Select(it => it.Name)
-            .ToHashSet();
-
-        var globals = context.SemanticModel.GetGlobals();
-        foreach (var globalDecl in globals)
+        else if (context.TriggerToken is LuaWhitespaceToken)
         {
-            if (!localHashSet.Contains(globalDecl.Name))
+            AddGlobalCompletion(context);
+        }
+        else if (context.TriggerToken is { Kind: LuaTokenKind.TkEndOfLine })
+        {
+            AddGlobalCompletion(context);
+        }
+    }
+
+    private void AddGlobalCompletion(CompleteContext context)
+    {
+        if (context.TriggerToken is not null)
+        {
+            var localHashSet = context.SemanticModel
+                .GetDeclarationsBefore(context.TriggerToken)
+                .Select(it => it.Name)
+                .ToHashSet();
+            var globals = context.SemanticModel.GetGlobals();
+            foreach (var globalDecl in globals)
             {
-                context.CreateCompletion(globalDecl.Name, globalDecl.Type)
-                    .WithData(globalDecl.RelationInformation)
-                    .WithCheckDeclaration(globalDecl)
-                    .AddToContext();
+                if (!localHashSet.Contains(globalDecl.Name))
+                {
+                    context.CreateCompletion(globalDecl.Name, globalDecl.Type)
+                        .WithData(globalDecl.RelationInformation)
+                        .WithCheckDeclaration(globalDecl)
+                        .AddToContext();
+                }
             }
         }
     }

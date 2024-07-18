@@ -479,7 +479,12 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         }
 
         var offset = Tree.Document.GetOffset(line, col);
-        return TokenAt(offset);
+        if (offset == tree.Document.Text.Length)
+        {
+            offset--;
+        }
+
+        return offset < 0 ? null : TokenAt(offset);
     }
 
     public LuaSyntaxNode? NodeAt(int line, int col)

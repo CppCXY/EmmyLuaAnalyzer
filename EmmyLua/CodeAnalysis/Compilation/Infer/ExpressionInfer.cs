@@ -38,9 +38,10 @@ public static class ExpressionInfer
 
         return unaryExpr.Operator switch
         {
-            OperatorKind.UnaryOperator.OpNot or OperatorKind.UnaryOperator.OpUnm
+            OperatorKind.UnaryOperator.OpNot
                 or OperatorKind.UnaryOperator.OpBNot => Builtin.Boolean,
             OperatorKind.UnaryOperator.OpLen => Builtin.Integer,
+            OperatorKind.UnaryOperator.OpUnm => exprTy,
             _ => Builtin.Unknown
         };
     }

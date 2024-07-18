@@ -35,7 +35,7 @@ public class CompleteContext
         false,
         100
     );
-
+    
     public LuaRenderBuilder RenderBuilder { get; }
 
     // ReSharper disable once ConvertToPrimaryConstructor
@@ -47,7 +47,7 @@ public class CompleteContext
         Continue = true;
         CancellationToken = cancellationToken;
         TriggerToken =
-            semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt((int)position.Line, (int)position.Character);
+            semanticModel.Document.SyntaxTree.SyntaxRoot.TokenLeftBiasedAt(position.Line, position.Character);
         CompletionConfig = context.SettingManager.GetCompletionConfig();
         ServerContext = context;
         RenderBuilder = new LuaRenderBuilder(semanticModel.Context);

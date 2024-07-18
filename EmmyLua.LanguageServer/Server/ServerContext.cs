@@ -11,6 +11,7 @@ using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
 using EmmyLua.LanguageServer.Server.ClientConfig;
 using EmmyLua.LanguageServer.Server.Monitor;
+using EmmyLua.LanguageServer.Server.Ready;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Util;
 
@@ -159,6 +160,13 @@ public class ServerContext(Framework.Server.LanguageServer server)
             LockSlim.ExitReadLock();
         }
     }
+    
+    // public async Task<WorkspaceReady> ReadyWorkspaceAsync()
+    // {
+    //     var ready = new WorkspaceReady();
+    //     // await ready.InitAsync(this);
+    //     return ready;
+    // }
 
     public SemanticModel? GetSemanticModel(string uri)
     {

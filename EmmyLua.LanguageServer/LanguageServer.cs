@@ -11,6 +11,7 @@ using EmmyLua.LanguageServer.DocumentSymbol;
 using EmmyLua.LanguageServer.ExecuteCommand;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Server;
+using EmmyLua.LanguageServer.Framework.Server.Scheduler;
 using EmmyLua.LanguageServer.Hover;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.InlineValues;
@@ -48,7 +49,7 @@ else
 
 InitializeParams initializeParams = null!;
 var ls = LanguageServer.From(input, output);
-ls.SupportMultiThread();
+ls.SetScheduler(new SimpleMultiThreadScheduler());
 ls.AddJsonSerializeContext(EmmyLuaJsonGenerateContext.Default);
 var serverContext = new ServerContext(ls);
 ls.OnInitialize((c, s) =>
