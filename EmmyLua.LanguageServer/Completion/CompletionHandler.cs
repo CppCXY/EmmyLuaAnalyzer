@@ -14,7 +14,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
 
     private CompletionDocumentResolver DocumentResolver { get; } = new();
     
-    protected override async Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
+    protected override Task<CompletionResponse?> Handle(CompletionParams request, CancellationToken token)
     {
         var uri = request.TextDocument.Uri.UnescapeUri;
         CompletionResponse? response = null;
@@ -30,7 +30,7 @@ public class CompletionHandler(ServerContext context) : CompletionHandlerBase
             }
         });
 
-        return await Task.FromResult(response)!;
+        return Task.FromResult(response)!;
     }
 
     protected override Task<CompletionItem> Resolve(CompletionItem item, CancellationToken token)

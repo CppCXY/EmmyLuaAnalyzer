@@ -19,6 +19,7 @@ using EmmyLua.LanguageServer.References;
 using EmmyLua.LanguageServer.Rename;
 using EmmyLua.LanguageServer.SemanticToken;
 using EmmyLua.LanguageServer.Server;
+using EmmyLua.LanguageServer.Server.Scheduler;
 using EmmyLua.LanguageServer.SignatureHelper;
 using EmmyLua.LanguageServer.TextDocument;
 using EmmyLua.LanguageServer.TypeHierarchy;
@@ -49,7 +50,8 @@ else
 
 InitializeParams initializeParams = null!;
 var ls = LanguageServer.From(input, output);
-ls.SetScheduler(new SimpleMultiThreadScheduler());
+var scheduler = new EmmyScheduler();
+ls.SetScheduler(scheduler);
 ls.AddJsonSerializeContext(EmmyLuaJsonGenerateContext.Default);
 var serverContext = new ServerContext(ls);
 ls.OnInitialize((c, s) =>
