@@ -55,7 +55,7 @@ public class VisibilityChecker(LuaCompilation compilation)
             var envElement = FindSourceOrClosure(indexExpr);
             if (declaration.IsPrivate)
             {
-                if (envElement is LuaSourceSyntax || envElement.Parent is not LuaFuncStatSyntax luaFuncStat)
+                if (envElement is LuaSourceSyntax)
                 {
                     context.Report(
                         DiagnosticCode.AccessPrivateMember,
@@ -65,9 +65,8 @@ public class VisibilityChecker(LuaCompilation compilation)
 
                     continue;
                 }
-
                 var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration.UniqueId);
-                var parentTable = context.SearchContext.Infer(luaFuncStat.IndexExpr?.PrefixExpr);
+                var parentTable = context.SearchContext.Infer(prefixExpr);
                 if (!parentTable.Equals(parentType))
                 {
                     context.Report(
@@ -79,7 +78,7 @@ public class VisibilityChecker(LuaCompilation compilation)
             }
             else if (declaration.IsProtected)
             {
-                if (envElement is LuaSourceSyntax || envElement.Parent is not LuaFuncStatSyntax luaFuncStat)
+                if (envElement is LuaSourceSyntax)
                 {
                     context.Report(
                         DiagnosticCode.AccessProtectedMember,
@@ -91,7 +90,7 @@ public class VisibilityChecker(LuaCompilation compilation)
                 }
 
                 var parentType = context.SearchContext.Compilation.Db.QueryParentType(declaration.UniqueId);
-                var parentTable = context.SearchContext.Infer(luaFuncStat.IndexExpr?.PrefixExpr);
+                var parentTable = context.SearchContext.Infer(prefixExpr);
                 if (!parentTable.SubTypeOf(parentType, context.SearchContext))
                 {
                     context.Report(
