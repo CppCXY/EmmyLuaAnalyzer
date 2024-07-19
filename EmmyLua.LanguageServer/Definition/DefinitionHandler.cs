@@ -23,7 +23,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
             {
                 var document = semanticModel.Document;
                 var pos = request.Position;
-                var token = document.SyntaxTree.SyntaxRoot.TokenAt((int)pos.Line, (int)pos.Character);
+                var token = document.SyntaxTree.SyntaxRoot.TokenAt(pos.Line, pos.Character);
                 if (token is LuaStringToken module
                     && token.Parent?.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
                     && workspace.Features.RequireLikeFunction.Contains(funcName))
@@ -38,7 +38,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
                     }
                 }
 
-                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt((int)pos.Line, (int)pos.Character);
+                var node = document.SyntaxTree.SyntaxRoot.NameNodeAt(pos.Line, pos.Character);
                 if (node is not null)
                 {
                     var declaration = semanticModel.Context.FindDeclaration(node);

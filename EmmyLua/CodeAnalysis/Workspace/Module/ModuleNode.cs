@@ -57,6 +57,7 @@ public class ModuleNode
         node.DocumentId = documentId;
     }
 
+
     public LuaDocumentId? FindModule(string modulePath)
     {
         var modulePaths = modulePath.Split('.');

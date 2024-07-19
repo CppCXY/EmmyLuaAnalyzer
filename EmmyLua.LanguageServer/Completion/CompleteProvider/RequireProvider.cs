@@ -6,6 +6,9 @@ namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
 
 public class RequireProvider : ICompleteProviderBase
 {
+    // support stupid code
+    private char[] Separators { get; } = ['.', '/', '\\'];
+
     public void AddCompletion(CompleteContext context)
     {
         var trigger = context.TriggerToken;
@@ -15,13 +18,13 @@ public class RequireProvider : ICompleteProviderBase
         {
             var moduleInfos =
                 context.SemanticModel.Compilation.Workspace.ModuleManager.GetCurrentModuleNames(modulePathToken.Value);
-            
+
             var modulePath = modulePathToken.Value;
-            var parts = modulePath.Split('.');
+            var index = modulePath.LastIndexOfAny(Separators);
             var moduleBase = string.Empty;
-            if (parts.Length > 1)
+            if (index != -1)
             {
-                moduleBase = string.Join('.', parts[..^1]);
+                moduleBase = modulePath[..(index + 1)];
             }
 
             foreach (var moduleInfo in moduleInfos)
@@ -29,9 +32,9 @@ public class RequireProvider : ICompleteProviderBase
                 var filterText = moduleInfo.Name;
                 if (moduleBase.Length != 0)
                 {
-                    filterText = $"{moduleBase}.{filterText}";
+                    filterText = $"{moduleBase}{filterText}";
                 }
-                
+
                 context.Add(new CompletionItem
                 {
                     Label = moduleInfo.Name,
@@ -42,6 +45,7 @@ public class RequireProvider : ICompleteProviderBase
                     Data = new LSPAny(moduleInfo.DocumentId?.Id.ToString())
                 });
             }
+
             context.StopHere();
         }
     }

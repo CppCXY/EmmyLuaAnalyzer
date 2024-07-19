@@ -211,8 +211,16 @@ public class ModuleManager
         root.AddModule(modulePath.Split('.'), documentId);
     }
 
+    // workaround for stupid code
+    private char[] Separators { get; } = [ '/', '\\', '.' ];
+
     public LuaDocument? FindModule(string modulePath)
     {
+        if (modulePath.IndexOfAny(Separators) != -1)
+        {
+            modulePath = modulePath.Replace(Separators[0], '.').Replace(Separators[1], '.');
+        }
+
         foreach (var moduleNode in WorkspaceModule)
         {
             var documentId = moduleNode.Value.FindModule(modulePath);
@@ -262,7 +270,7 @@ public class ModuleManager
     public List<ModuleInfo> GetCurrentModuleNames(string modulePath)
     {
         var moduleInfos = new List<ModuleInfo>();
-        var parts = modulePath.Split('.');
+        var parts = modulePath.Split(Separators);
         if (parts.Length <= 1)
         {
             foreach (var moduleNode in WorkspaceModule)

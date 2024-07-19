@@ -18,20 +18,7 @@ public class DocumentLinkBuilder(ServerContext context)
         foreach (var stringToken in stringTokens)
         {
             var path = stringToken.Value;
-            if (resourceManager.MayFilePath(path))
-            {
-                var targetPath = resourceManager.ResolvePath(path);
-                if (targetPath is not null)
-                {
-                    var link = new Framework.Protocol.Message.DocumentLink.DocumentLink
-                    {
-                        Range = stringToken.Range.ToLspRange(document),
-                        Target = targetPath
-                    };
-                    links.Add(link);
-                }
-            }
-            else if (IsModule(stringToken))
+            if (IsModule(stringToken))
             {
                 var moduleDocument = context.LuaWorkspace.ModuleManager.FindModule(path);
                 if (moduleDocument is not null)
@@ -40,6 +27,19 @@ public class DocumentLinkBuilder(ServerContext context)
                     {
                         Range = stringToken.Range.ToLspRange(document),
                         Target = moduleDocument.Uri
+                    };
+                    links.Add(link);
+                }
+            }
+            else if (resourceManager.MayFilePath(path))
+            {
+                var targetPath = resourceManager.ResolvePath(path);
+                if (targetPath is not null)
+                {
+                    var link = new Framework.Protocol.Message.DocumentLink.DocumentLink
+                    {
+                        Range = stringToken.Range.ToLspRange(document),
+                        Target = targetPath
                     };
                     links.Add(link);
                 }
