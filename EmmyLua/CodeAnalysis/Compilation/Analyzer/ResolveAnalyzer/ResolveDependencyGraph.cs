@@ -206,7 +206,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
             var idType = context.Compilation.Db.QueryTypeFromId(id);
             if (idType is LuaMethodType methodType)
             {
-                if (!methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+                if (!methodType.MainSignature.ReturnType.Equals(Builtin.Nil))
                 {
                     OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
                     return;
