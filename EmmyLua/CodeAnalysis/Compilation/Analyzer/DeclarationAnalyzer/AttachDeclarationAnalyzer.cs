@@ -89,8 +89,10 @@ public class AttachDeclarationAnalyzer(
                 firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = LuaNamedType.Create(name) };
                 if (firstDeclaration.IsGlobal)
                 {
-                    searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, firstDeclaration.Name, firstDeclaration, true);
+                    searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, firstDeclaration.Name,
+                        firstDeclaration, true);
                 }
+
                 return;
             }
 
@@ -106,12 +108,11 @@ public class AttachDeclarationAnalyzer(
                         declarations[i].Info = declarations[i].Info with { DeclarationType = luaTypeList[i] };
                         if (declarations[i].IsGlobal)
                         {
-                            searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, declarations[i].Name, declarations[i], true);
+                            searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, declarations[i].Name,
+                                declarations[i], true);
                         }
                     }
                 }
-
-                return;
             }
         }
     }
@@ -276,7 +277,7 @@ public class AttachDeclarationAnalyzer(
         var parameters = methodType.MainSignature.Parameters;
         foreach (var parameter in parameters)
         {
-            if (parameter is LuaDeclaration { Name: { } name, Info: ParamInfo {} info } declaration)
+            if (parameter is LuaDeclaration { Name: { } name, Info: ParamInfo { } info } declaration)
             {
                 if (parameterDict.TryGetValue(name, out var parameterInfo))
                 {

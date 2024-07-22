@@ -136,7 +136,7 @@ public partial class DeclarationWalker
         var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
         var method = new LuaMethodType(
             new LuaSignature(
-                Builtin.Nil,
+                Builtin.Unknown,
                 parameters.Cast<IDeclaration>().ToList()
             ),
             null,

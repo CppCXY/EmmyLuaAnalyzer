@@ -159,9 +159,12 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var idType = Context.Compilation.Db.QueryTypeFromId(id);
             if (idType is LuaMethodType methodType)
             {
-                var block = unResolvedMethod.Block;
-                var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
-                methodType.MainSignature.ReturnType = returnType;
+                if (methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+                {
+                    var block = unResolvedMethod.Block;
+                    var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
+                    methodType.MainSignature.ReturnType = returnType;
+                }
             }
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
