@@ -28,12 +28,12 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     public void AppendLine(string text)
     {
-        _sb.AppendLine(text);
+        _sb.Append($"{text}\n");
     }
 
     public void AppendLine()
     {
-        _sb.AppendLine();
+        _sb.Append('\n');
     }
 
     public void Append(char ch)
