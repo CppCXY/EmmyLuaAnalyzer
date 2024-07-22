@@ -11,7 +11,6 @@ using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
 using EmmyLua.LanguageServer.Server.ClientConfig;
 using EmmyLua.LanguageServer.Server.Monitor;
-using EmmyLua.LanguageServer.Server.Ready;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Util;
 

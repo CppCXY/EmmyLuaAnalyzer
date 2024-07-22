@@ -11,7 +11,6 @@ using EmmyLua.LanguageServer.DocumentSymbol;
 using EmmyLua.LanguageServer.ExecuteCommand;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Server;
-using EmmyLua.LanguageServer.Framework.Server.Scheduler;
 using EmmyLua.LanguageServer.Hover;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.InlineValues;

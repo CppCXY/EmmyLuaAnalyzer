@@ -52,7 +52,8 @@ public sealed class LuaDocument : IDocument
     {
         var fileText = File.ReadAllText(path);
         var uri = new Uri(path);
-        return new LuaDocument(fileText, language, LuaDocumentId.VirtualDocumentId, uri.AbsoluteUri, uri.LocalPath);
+        return new LuaDocument(fileText, language, LuaDocumentId.VirtualDocumentId,
+            System.Uri.UnescapeDataString(uri.AbsoluteUri), path);
     }
 
     public static LuaDocument FromText(string text, LuaLanguage language)
@@ -63,13 +64,15 @@ public sealed class LuaDocument : IDocument
     public static LuaDocument FromUri(string uri, string text, LuaLanguage language)
     {
         var uri2 = new Uri(uri);
-        return new LuaDocument(text, language, LuaDocumentId.VirtualDocumentId, uri2.AbsoluteUri, uri2.LocalPath);
+        return new LuaDocument(text, language, LuaDocumentId.VirtualDocumentId,
+            System.Uri.UnescapeDataString(uri), uri2.LocalPath);
     }
 
     public static LuaDocument FromPath(string path, string text, LuaLanguage language)
     {
         var uri = new Uri(path);
-        return new LuaDocument(text, language, LuaDocumentId.VirtualDocumentId, uri.AbsoluteUri, uri.LocalPath);
+        return new LuaDocument(text, language, LuaDocumentId.VirtualDocumentId,
+            System.Uri.UnescapeDataString(uri.AbsoluteUri), path);
     }
 
     private LuaDocument(string text, LuaLanguage language, LuaDocumentId id, string uri, string path)

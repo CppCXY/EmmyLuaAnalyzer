@@ -6,7 +6,6 @@ using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 using EmmyLua.LanguageServer.Util;
-using Range = System.Range;
 
 
 namespace EmmyLua.LanguageServer.Completion.CompleteProvider;
