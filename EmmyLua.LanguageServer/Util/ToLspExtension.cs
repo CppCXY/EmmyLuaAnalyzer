@@ -15,11 +15,11 @@ namespace EmmyLua.LanguageServer.Util;
 
 public static class LspExtension
 {
-    public static Location ToLspLocation(this ILocation location)
+    public static Location ToLspLocation(this LuaLocation location)
     {
         return new()
         {
-            Uri = location.Document.Uri,
+            Uri = location.Uri,
             Range = new()
             {
                 Start = new Position()
@@ -81,7 +81,7 @@ public static class LspExtension
         };
     }
 
-    public static DocumentRange ToLspRange(this ILocation location)
+    public static DocumentRange ToLspRange(this LuaLocation location)
     {
         return new()
         {
@@ -110,10 +110,10 @@ public static class LspExtension
     public static (string, TextEdit) ToTextEdit(this LuaLocation location, string text)
     {
         return (
-            location.LuaDocument.Uri,
+            location.Uri,
             new()
             {
-                Range = location.Range.ToLspRange(location.LuaDocument),
+                Range = location.ToLspRange(),
                 NewText = text
             });
     }

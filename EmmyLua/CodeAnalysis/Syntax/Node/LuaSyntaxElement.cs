@@ -445,7 +445,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         }
     }
 
-    public ILocation Location => Tree.Document.GetLocation(Range);
+    public LuaLocation Location => Tree.Document.GetLocation(Range);
 
     // 0 based line and col
     public LuaSyntaxToken? TokenAt(int line, int col)
@@ -479,7 +479,7 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         }
 
         var offset = Tree.Document.GetOffset(line, col);
-        if (offset == tree.Document.Text.Length)
+        if (offset == Tree.Document.Text.Length)
         {
             offset--;
         }

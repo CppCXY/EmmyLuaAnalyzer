@@ -7,11 +7,12 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
+using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
 
 namespace EmmyLua.LanguageServer.Rename;
 
-public class RenameBuilder
+public class RenameBuilder(ServerContext context)
 {
     public Dictionary<DocumentUri, List<TextEdit>> Build(SemanticModel semanticModel, LuaSyntaxElement element,
         string newName)
@@ -72,9 +73,9 @@ public class RenameBuilder
         return changes;
     }
 
-    private void AddChange(Dictionary<DocumentUri, List<TextEdit>> changes, ILocation location, string newName)
+    private void AddChange(Dictionary<DocumentUri, List<TextEdit>> changes, LuaLocation location, string newName)
     {
-        var uri = location.Document.Uri;
+        var uri = location.Uri;
         if (!changes.TryGetValue(uri, out var edits))
         {
             edits = new List<TextEdit>();
@@ -98,10 +99,11 @@ public class RenameBuilder
             return;
         }
 
-        if (referenceResult.Location.Document is LuaDocument document)
+        var document = context.LuaWorkspace.GetDocumentByUri(referenceResult.Location.Uri);
+        if (document is not null)
         {
             range = new SourceRange(StartOffset: range.StartOffset + 1, Length: range.Length - 2);
-            AddChange(changes, new LuaLocation(document, range), newName);
+            AddChange(changes, document.GetLocation(range), newName);
         }
     }
 

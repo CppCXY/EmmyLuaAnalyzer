@@ -131,13 +131,13 @@ public class LuaDeclaration(
         return versions.Any(ValidateFrameworkVersion);
     }
 
-    public ILocation? GetLocation(SearchContext context)
+    public LuaLocation? GetLocation(SearchContext context)
     {
         var document = context.Compilation.Workspace.GetDocument(Info.Ptr.DocumentId);
         if (document is not null)
         {
             var range = document.SyntaxTree.GetSourceRange(Info.Ptr.ElementId);
-            return new LuaLocation(document, range);
+            return document.GetLocation(range);
         }
 
         return null;

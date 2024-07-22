@@ -5,24 +5,31 @@ namespace EmmyLua.CodeAnalysis.Document;
 /// <summary>
 /// A position in a syntax tree.
 /// </summary>
-public record LuaLocation(LuaDocument LuaDocument, SourceRange Range, int BaseLine = 0) : ILocation
+public record LuaLocation(
+    int StartLine,
+    int StartCol,
+    int EndLine,
+    int EndCol,
+    string Uri)
 {
-    public static LuaLocation Empty { get; } = new LuaLocation(LuaDocument.Empty, SourceRange.Empty);
+    public static LuaLocation Empty { get; } = new LuaLocation(0, 0, 0, 0, string.Empty);
 
-    private string FilePath => LuaDocument.Path;
+    public string FilePath => new System.Uri(Uri).AbsolutePath;
 
-    public IDocument Document => LuaDocument;
+    public string Uri { get; } = Uri;
 
-    public int StartLine => LuaDocument.GetLine(Range.StartOffset) + BaseLine;
+    public int StartLine { get; } = StartLine;
 
-    public int StartCol => LuaDocument.GetCol(Range.StartOffset);
+    public int StartCol { get; } = StartCol;
 
-    public int EndLine => LuaDocument.GetLine(Range.EndOffset) + BaseLine;
+    public int EndLine { get; } = EndLine;
 
-    public int EndCol => LuaDocument.GetCol(Range.EndOffset);
+    public int EndCol { get; } = EndCol;
 
     public override string ToString()
     {
         return $"{FilePath}({StartLine}, {StartCol}) - ({EndLine}, {EndCol})";
     }
+
+    public string LspLocation => $"{Uri}#L{StartLine + 1}:{StartCol}";
 }

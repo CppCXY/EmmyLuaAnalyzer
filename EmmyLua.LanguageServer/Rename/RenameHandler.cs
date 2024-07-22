@@ -10,7 +10,7 @@ namespace EmmyLua.LanguageServer.Rename;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class RenameHandler(ServerContext context) : RenameHandlerBase
 {
-    private RenameBuilder Builder { get; } = new();
+    private RenameBuilder Builder { get; } = new(context);
     
     protected override Task<WorkspaceEdit?> Handle(RenameParams request, CancellationToken token)
     {
@@ -36,7 +36,7 @@ public class RenameHandler(ServerContext context) : RenameHandlerBase
             }
         });
         
-        return Task.FromResult<WorkspaceEdit?>(workspaceEdit);
+        return Task.FromResult(workspaceEdit);
     }
 
     protected override Task<PrepareRenameResponse> Handle(PrepareRenameParams request, CancellationToken token)

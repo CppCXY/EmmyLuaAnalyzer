@@ -89,7 +89,8 @@ public sealed class LuaDocument : IDocument
 
     public LuaLocation GetLocation(SourceRange range, int baseLine = 0)
     {
-        return new LuaLocation(this, range, baseLine);
+        return new LuaLocation(GetLine(range.StartOffset) + baseLine, GetCol(range.StartOffset),
+            GetLine(range.EndOffset) + baseLine, GetCol(range.EndOffset), Uri);
     }
 
     public void ReplaceText(string text)

@@ -29,7 +29,7 @@ public interface IDeclaration
 
     public bool IsPackage { get; }
 
-    public ILocation? GetLocation(SearchContext context);
+    public LuaLocation? GetLocation(SearchContext context);
 
     public string RelationInformation { get; }
 
