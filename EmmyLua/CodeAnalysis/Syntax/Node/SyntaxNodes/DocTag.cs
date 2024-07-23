@@ -174,3 +174,13 @@ public class LuaDocAttributeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyn
 {
     public IEnumerable<LuaNameToken> Attributes => ChildrenElement<LuaNameToken>();
 }
+
+public class LuaDocTagNamespaceSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
+{
+    public LuaNameToken? Namespace => FirstChild<LuaNameToken>();
+}
+
+public class LuaDocTagUsingSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
+{
+    public LuaNameToken? Using => FirstChild<LuaNameToken>();
+}

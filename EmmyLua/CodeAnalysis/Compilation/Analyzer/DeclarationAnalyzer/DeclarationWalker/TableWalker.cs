@@ -22,7 +22,7 @@ public partial class DeclarationWalker
                     ));
                 declarationContext.AddAttachedDeclaration(fieldSyntax, declaration);
                 declarationContext.Db.AddMember(DocumentId, tableClass, declaration);
-                var unResolveDeclaration = new UnResolvedDeclaration(
+                var unResolveDeclaration = new UnResolvedSymbol(
                     declaration,
                     new LuaExprRef(value),
                     ResolveState.UnResolvedType

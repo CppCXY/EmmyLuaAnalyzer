@@ -26,7 +26,7 @@ public partial class DeclarationWalker
                 );
                 declarationContext.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
-                var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
                     ResolveState.UnResolvedType);
                 declarationContext.AddUnResolved(unResolved);
                 break;
@@ -48,7 +48,7 @@ public partial class DeclarationWalker
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                     declarationContext.Db.AddGlobal(DocumentId, name2.RepresentText, declaration, true);
-                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                    var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
                 }
@@ -72,7 +72,7 @@ public partial class DeclarationWalker
                         )
                     );
                     declarationContext.AddAttachedDeclaration(indexExpr, declaration);
-                    var unResolved = new UnResolvedDeclaration(declaration, new LuaExprRef(closureExpr),
+                    var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
                 }

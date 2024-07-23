@@ -38,7 +38,7 @@ public class References(SearchContext context)
         return referencesSet.GetReferences();
     }
 
-    private IEnumerable<ReferenceResult> LocalReferences(Declaration.LuaDeclaration declaration, DeclarationInfo info)
+    private IEnumerable<ReferenceResult> LocalReferences(LuaDeclaration declaration, DeclarationInfo info)
     {
         var references = new List<ReferenceResult>();
         var luaReferences = context.Compilation.Db.QueryLocalReferences(declaration);
@@ -53,7 +53,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> GlobalReferences(Declaration.LuaDeclaration declaration)
+    private IEnumerable<ReferenceResult> GlobalReferences(LuaDeclaration declaration)
     {
         var references = new List<ReferenceResult>();
         var globalName = declaration.Name;
@@ -70,7 +70,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> FieldReferences(Declaration.LuaDeclaration declaration, string fieldName)
+    private IEnumerable<ReferenceResult> FieldReferences(LuaDeclaration declaration, string fieldName)
     {
         var references = new List<ReferenceResult>();
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
@@ -85,7 +85,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> MethodReferences(Declaration.LuaDeclaration declaration, MethodInfo methodInfo)
+    private IEnumerable<ReferenceResult> MethodReferences(LuaDeclaration declaration, MethodInfo methodInfo)
     {
         switch (declaration)
         {
@@ -118,7 +118,7 @@ public class References(SearchContext context)
         return [];
     }
 
-    private IEnumerable<ReferenceResult> DocFieldReferences(Declaration.LuaDeclaration fieldDeclaration, DocFieldInfo info)
+    private IEnumerable<ReferenceResult> DocFieldReferences(LuaDeclaration fieldDeclaration, DocFieldInfo info)
     {
         var name = fieldDeclaration.Name;
         var references = new List<ReferenceResult>();
@@ -133,7 +133,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<Declaration.LuaDeclaration>())
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -154,7 +154,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> EnumFieldReferences(Declaration.LuaDeclaration declaration, EnumFieldInfo info)
+    private IEnumerable<ReferenceResult> EnumFieldReferences(LuaDeclaration declaration, EnumFieldInfo info)
     {
         var name = declaration.Name;
         var references = new List<ReferenceResult>();
@@ -169,7 +169,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<Declaration.LuaDeclaration>())
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -188,7 +188,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> TableFieldReferences(Declaration.LuaDeclaration declaration, TableFieldInfo info)
+    private IEnumerable<ReferenceResult> TableFieldReferences(LuaDeclaration declaration, TableFieldInfo info)
     {
         var name = declaration.Name;
         var references = new List<ReferenceResult>();
@@ -203,7 +203,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<Declaration.LuaDeclaration>())
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -222,7 +222,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> TupleMemberReferences(Declaration.LuaDeclaration declaration, TupleMemberInfo info)
+    private IEnumerable<ReferenceResult> TupleMemberReferences(LuaDeclaration declaration, TupleMemberInfo info)
     {
         var name = declaration.Name;
         var references = new List<ReferenceResult>();
@@ -234,7 +234,7 @@ public class References(SearchContext context)
             if (parentType is not null)
             {
                 var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<Declaration.LuaDeclaration>())
+                foreach (var member in members.OfType<LuaDeclaration>())
                 {
                     if (member is
                         {
@@ -253,7 +253,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> NamedTypeReferences(Declaration.LuaDeclaration declaration, NamedTypeInfo info)
+    private IEnumerable<ReferenceResult> NamedTypeReferences(LuaDeclaration declaration, NamedTypeInfo info)
     {
         var name = declaration.Name;
         var references = new List<ReferenceResult>();
@@ -273,7 +273,7 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> ParameterReferences(Declaration.LuaDeclaration declaration, ParamInfo info)
+    private IEnumerable<ReferenceResult> ParameterReferences(LuaDeclaration declaration, ParamInfo info)
     {
         var references = new List<ReferenceResult>();
 
@@ -317,7 +317,7 @@ public class References(SearchContext context)
         return null;
     }
 
-    private IEnumerable<ReferenceResult> IndexExprReferences(Declaration.LuaDeclaration declaration, IndexInfo info)
+    private IEnumerable<ReferenceResult> IndexExprReferences(LuaDeclaration declaration, IndexInfo info)
     {
         var references = new List<ReferenceResult>();
         if (info.IndexExprPtr.ToNode(context) is { Name: { } name })

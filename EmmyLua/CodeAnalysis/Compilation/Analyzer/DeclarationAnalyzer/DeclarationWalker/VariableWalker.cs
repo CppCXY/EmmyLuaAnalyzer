@@ -50,7 +50,7 @@ public partial class DeclarationWalker
                 );
                 declarationContext.AddLocalDeclaration(localName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, localName);
-                var unResolveDeclaration = new UnResolvedDeclaration(
+                var unResolveDeclaration = new UnResolvedSymbol(
                     declaration,
                     relatedExpr,
                     ResolveState.UnResolvedType
@@ -148,7 +148,7 @@ public partial class DeclarationWalker
                             );
                             declarationContext.AddLocalDeclaration(nameExpr, declaration);
                             declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                            var unResolveDeclaration =  new UnResolvedDeclaration(
+                            var unResolveDeclaration =  new UnResolvedSymbol(
                                 declaration,
                                 relatedExpr,
                                 ResolveState.UnResolvedType
@@ -180,7 +180,7 @@ public partial class DeclarationWalker
                             )
                         );
                         declarationContext.AddAttachedDeclaration(varExpr, declaration);
-                        var unResolveDeclaration = new UnResolvedDeclaration(declaration, relatedExpr,
+                        var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,
                             ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
                         declarationContext.AddUnResolved(unResolveDeclaration);
                     }

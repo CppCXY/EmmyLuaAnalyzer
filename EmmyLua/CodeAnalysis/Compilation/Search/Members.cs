@@ -222,7 +222,7 @@ public class Members(SearchContext context)
             }
             case LuaArrayType arrayType when memberName.StartsWith('['):
             {
-                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(arrayType.BaseType))];
+                return [new LuaDeclaration(memberName, new VirtualInfo(arrayType.BaseType))];
             }
             default:
             {
@@ -248,19 +248,19 @@ public class Members(SearchContext context)
             if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
                 && memberName.StartsWith("["))
             {
-                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
 
             if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
             {
-                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
         }
 
         return [];
     }
 
-    private IEnumerable<Declaration.LuaDeclaration> FindTableMember(LuaNamedType namedType, LuaType keyType)
+    private IEnumerable<LuaDeclaration> FindTableMember(LuaNamedType namedType, LuaType keyType)
     {
         if (namedType is LuaGenericType genericTable)
         {
@@ -275,7 +275,7 @@ public class Members(SearchContext context)
 
             if (keyType.SubTypeOf(firstType, context))
             {
-                return [new Declaration.LuaDeclaration(string.Empty, new VirtualInfo(secondType))];
+                return [new LuaDeclaration(string.Empty, new VirtualInfo(secondType))];
             }
         }
 
@@ -305,7 +305,7 @@ public class Members(SearchContext context)
         {
             if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
             {
-                return [new Declaration.LuaDeclaration(string.Empty, new VirtualInfo(arrayType.BaseType))];
+                return [new LuaDeclaration(string.Empty, new VirtualInfo(arrayType.BaseType))];
             }
         }
 

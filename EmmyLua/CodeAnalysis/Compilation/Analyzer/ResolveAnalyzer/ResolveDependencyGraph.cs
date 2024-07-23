@@ -131,7 +131,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
     private void CalcResolveType(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var exprRef = unResolvedDeclaration.ExprRef;
             if (exprRef is not null)
@@ -180,7 +180,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
 
     private void CalcResolveIndex(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.Info.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)

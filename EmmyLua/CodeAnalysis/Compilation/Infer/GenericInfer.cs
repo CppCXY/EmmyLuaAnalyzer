@@ -383,21 +383,21 @@ public static class GenericInfer
                             var type = fmt[index];
                             if (type is 's' or 'q')
                             {
-                                spreadParameter.Add(new Declaration.LuaDeclaration(
+                                spreadParameter.Add(new LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Any)
                                     ));
                             }
                             else if (type is 'c' or 'd' or 'i' or 'u' or 'x' or 'X' or 'o')
                             {
-                                spreadParameter.Add(new Declaration.LuaDeclaration(
+                                spreadParameter.Add(new LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Integer)
                                     ));
                             }
                             else if (type is 'A' or 'a' or 'E' or 'e' or 'f' or 'G' or 'g')
                             {
-                                spreadParameter.Add(new Declaration.LuaDeclaration(
+                                spreadParameter.Add(new LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Number)
                                     ));

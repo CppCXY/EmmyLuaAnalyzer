@@ -677,12 +677,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<Declaration.LuaDeclaration> GenericParamDecls { get; }
+    public List<LuaDeclaration> GenericParamDecls { get; }
 
     public Dictionary<string, LuaType> GenericParams { get; }
 
     public LuaGenericMethodType(
-        List<Declaration.LuaDeclaration> genericParamDecls,
+        List<LuaDeclaration> genericParamDecls,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)

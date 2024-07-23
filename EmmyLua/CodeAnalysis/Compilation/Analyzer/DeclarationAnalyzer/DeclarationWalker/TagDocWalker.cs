@@ -231,6 +231,22 @@ public partial class DeclarationWalker
         }
     }
 
+    private void AnalyzeTagNamespace(LuaDocTagNamespaceSyntax namespaceSyntax)
+    {
+        if (namespaceSyntax is { Namespace: { } name })
+        {
+            // Compilation.Project.ModuleManager.AddNamespace(DocumentId, name.RepresentText);
+        }
+    }
+
+    private void AnalyzeTagUsing(LuaDocTagUsingSyntax usingSyntax)
+    {
+        if (usingSyntax is { Using: { } name })
+        {
+            // Compilation.Project.ModuleManager.AddUsing(DocumentId, name.RepresentText);
+        }
+    }
+
     private void AnalyzeSimpleTag(LuaDocTagSyntax tagSyntax)
     {
         declarationContext.AttachDoc(tagSyntax);

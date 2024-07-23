@@ -19,7 +19,7 @@ public record LuaExprRef(LuaExprSyntax Expr, int RetId = 0);
 
 public record UnResolved(ResolveState ResolvedState);
 
-public record UnResolvedDeclaration(
+public record UnResolvedSymbol(
     LuaDeclaration LuaDeclaration,
     LuaExprRef? ExprRef,
     ResolveState ResolvedState)

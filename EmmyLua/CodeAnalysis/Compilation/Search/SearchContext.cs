@@ -98,7 +98,7 @@ public class SearchContext
         return Declarations.FindDeclaration(element);
     }
 
-    public IEnumerable<Declaration.LuaDeclaration> GetDocumentLocalDeclarations(LuaDocumentId documentId)
+    public IEnumerable<LuaDeclaration> GetDocumentLocalDeclarations(LuaDocumentId documentId)
     {
         return Compilation.Db.QueryDocumentLocalDeclarations(documentId);
     }
@@ -189,7 +189,7 @@ public class SearchContext
         return References.FindReferences(luaDeclaration);
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, Declaration.LuaDeclaration declaration)
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
     {
         return Declarations.IsUpValue(nameExpr, declaration);
     }

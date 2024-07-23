@@ -49,9 +49,9 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         return Compilation.Db.QueryAllGlobal();
     }
 
-    public IEnumerable<Declaration.LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
+    public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
-        var result = new List<Declaration.LuaDeclaration>();
+        var result = new List<LuaDeclaration>();
         var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
         if (Compilation.Db.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
         {

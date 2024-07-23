@@ -165,7 +165,7 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, Declaration.LuaDeclaration declaration)
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
     {
         if (nameExpr.Name is { Text: "self" })
         {

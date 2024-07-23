@@ -75,6 +75,8 @@ public enum LuaSyntaxKind : ushort
     DocOperator,
     DocModule,
     DocMapping,
+    DocNamespace,
+    DocUsing,
 
     DocDetailField,
     DocBody,

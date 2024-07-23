@@ -112,6 +112,8 @@ public enum LuaTokenKind : ushort
     TkTagNodiscard, // nodiscard
     TkTagOperator, // operator
     TkTagMapping, // mapping
+    TkTagNamespace, // namespace
+    TkTagUsing, // using
 
     TkDocOr, // |
     TkDocContinue, // ---

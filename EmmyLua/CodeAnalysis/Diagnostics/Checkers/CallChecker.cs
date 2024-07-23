@@ -43,7 +43,7 @@ public class CallChecker(LuaCompilation compilation)
                 case (true, false):
                 {
                     var oldParameters = parameters;
-                    parameters = [new Compilation.Declaration.LuaDeclaration("self", new VirtualInfo(Builtin.Unknown))];
+                    parameters = [new LuaDeclaration("self", new VirtualInfo(Builtin.Unknown))];
                     parameters.AddRange(oldParameters);
                     break;
                 }

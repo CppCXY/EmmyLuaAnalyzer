@@ -63,7 +63,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     private void ResolveType(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var exprRef = unResolvedDeclaration.ExprRef;
             if (exprRef is not null)
@@ -123,7 +123,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     private void FinalResolveType(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.Info.DeclarationType is not null)
@@ -138,7 +138,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     private void ResolveIndex(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
             if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
@@ -266,7 +266,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         return returnType;
     }
 
-    private void MergeType(UnResolvedDeclaration unResolved, LuaType type, int retId)
+    private void MergeType(UnResolvedSymbol unResolved, LuaType type, int retId)
     {
         if (type is LuaMultiReturnType returnType)
         {

@@ -72,6 +72,8 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DocOperator => new LuaDocTagOperatorSyntax(index, tree),
                 LuaSyntaxKind.DocMeta => new LuaDocTagMetaSyntax(index, tree),
                 LuaSyntaxKind.DocMapping => new LuaDocTagMappingSyntax(index, tree),
+                LuaSyntaxKind.DocNamespace => new LuaDocTagNamespaceSyntax(index, tree),
+                LuaSyntaxKind.DocUsing => new LuaDocTagUsingSyntax(index, tree),
                 LuaSyntaxKind.TypeArray => new LuaDocArrayTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeUnion => new LuaDocUnionTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeFun => new LuaDocFuncTypeSyntax(index, tree),
