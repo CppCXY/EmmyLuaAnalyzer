@@ -55,7 +55,7 @@ public static class LuaTypeRenderer
             {
                 renderContext.Append("    | ");
                 InnerRenderType(typeDeclaration.Type, renderContext, 1);
-                if (typeDeclaration is CodeAnalysis.Compilation.Declaration.LuaDeclaration { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
+                if (typeDeclaration is { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
                     typePtr.ToNode(renderContext.SearchContext) is { Description: { } description })
                 {
                     renderContext.Append(" --");

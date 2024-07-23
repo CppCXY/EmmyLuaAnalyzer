@@ -96,7 +96,7 @@ public class DocProvider : ICompleteProviderBase
         var namedTypes = context.SemanticModel.Compilation.Db.QueryAllNamedTypeDefinitions();
         foreach (var typeDeclaration in namedTypes)
         {
-            if (typeDeclaration is LuaDeclaration { Info: NamedTypeInfo namedTypeInfo })
+            if (typeDeclaration is { Info: NamedTypeInfo namedTypeInfo })
             {
                 context.Add(new CompletionItem
                 {

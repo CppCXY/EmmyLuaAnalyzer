@@ -35,7 +35,7 @@ public class TypeHierarchyBuilder
             if (super is LuaNamedType superNamedType)
             {
                 var typeDefine = compilation.Db.QueryNamedTypeDefinitions(superNamedType.Name).FirstOrDefault();
-                if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
+                if (typeDefine is { Info: NamedTypeInfo info })
                 {
                     var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
                     if (typeDocument is not null
@@ -66,7 +66,7 @@ public class TypeHierarchyBuilder
         foreach (var subTypeName in subTypes)
         {
             var typeDefine = compilation.Db.QueryNamedTypeDefinitions(subTypeName).FirstOrDefault();
-            if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
+            if (typeDefine is { Info: NamedTypeInfo info })
             {
                 var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
                 if (typeDocument is not null

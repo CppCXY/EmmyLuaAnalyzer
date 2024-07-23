@@ -15,7 +15,7 @@ public class LocalEnvProvider : ICompleteProviderBase
         foreach (var varDeclaration in varDeclarations)
         {
             context.CreateCompletion(varDeclaration.Name, varDeclaration.Type)
-                .WithData(varDeclaration.Info.Ptr.Stringify)
+                .WithData(varDeclaration.RelationInformation)
                 .WithCheckDeclaration(varDeclaration)
                 .AddToContext();
         }

@@ -41,7 +41,7 @@ public class WorkspaceSymbolBuilder
                 if (member.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var document = luaProject.GetDocument(member.Info.Ptr.DocumentId);
+                    var document = luaProject.GetDocument(member.DocumentId);
                     if (document is not null && member.Info.Ptr.ToNode(document) is { } node)
                     {
                         result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()

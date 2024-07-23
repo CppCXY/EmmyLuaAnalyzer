@@ -147,7 +147,7 @@ public class SignatureHelperBuilder
 
             foreach (var parameter in parameters)
             {
-                if (parameter is LuaDeclaration { Info.Ptr: { } ptr } &&
+                if (parameter is { Info.Ptr: { } ptr } &&
                     ptr.ToNode(semanticModel.Context) is { } syntaxElement)
                 {
                     parameterInfos.Add(new ParameterInformation()

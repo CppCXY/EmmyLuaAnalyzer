@@ -139,7 +139,7 @@ public class InlayHintBuilder
             }
 
             var parameters = perfectSignature.Parameters.Skip(skipParam).ToList();
-            var hasVarArg = parameters.LastOrDefault() is LuaDeclaration { Info: ParamInfo { IsVararg: true } };
+            var hasVarArg = parameters.LastOrDefault() is { Info: ParamInfo { IsVararg: true } };
             var parameterCount = hasVarArg ? (parameters.Count - 1) : parameters.Count;
             var varCount = 0;
             for (var i = 0; i < args.Count; i++)
@@ -150,7 +150,7 @@ public class InlayHintBuilder
                     var parameter = parameters[i];
                     var nullableText = string.Empty;
                     var location = parameter.GetLocation(semanticModel.Context)?.ToLspLocation();
-                    if (parameter is LuaDeclaration { Info: ParamInfo { Nullable: true } })
+                    if (parameter is { Info: ParamInfo { Nullable: true } })
                     {
                         nullableText = "?";
                     }
@@ -233,7 +233,7 @@ public class InlayHintBuilder
                         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {
                             Position = parameter.Range.EndOffset.ToLspPosition(semanticModel.Document),
-                            Label = $":{renderBuilder.RenderType(type, RenderFeature)}",
+                            Label = $": {renderBuilder.RenderType(type, RenderFeature)}",
                             Kind = InlayHintKind.Parameter,
                             PaddingLeft = true
                         });
@@ -287,7 +287,7 @@ public class InlayHintBuilder
         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
         {
             Position = localName.Range.EndOffset.ToLspPosition(semanticModel.Document),
-            Label = $":{renderBuilder.RenderType(type, RenderFeature)}",
+            Label = $": {renderBuilder.RenderType(type, RenderFeature)}",
             Kind = InlayHintKind.Type,
             PaddingLeft = true
         });
@@ -307,7 +307,7 @@ public class InlayHintBuilder
         {
             var prefixType = semanticModel.Context.InferAndUnwrap(prefixExpr);
             var superMethod = semanticModel.Context.FindSuperMember(prefixType, name).FirstOrDefault();
-            if (superMethod is LuaDeclaration { Info: { } info })
+            if (superMethod is { Info: { } info })
             {
                 var document = semanticModel.Document;
                 var parentDocument = semanticModel.Compilation.Project.GetDocument(info.Ptr.DocumentId);
