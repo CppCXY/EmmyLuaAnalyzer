@@ -97,7 +97,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             for (var i = 0; i < unResolvedForRangeParameter.Parameters.Count; i++)
                             {
                                 var parameter = unResolvedForRangeParameter.Parameters[i];
-                                if (parameter.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
+                                if (parameter.Type is LuaVariableRefType luaVariableRefType)
                                 {
                                     Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
                                         multiReturnType.GetElementType(i));
@@ -107,7 +107,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         else if (unResolvedForRangeParameter.Parameters.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
-                            if (firstDeclaration.Info.DeclarationType is LuaVariableRefType luaVariableRefType)
+                            if (firstDeclaration.Type is LuaVariableRefType luaVariableRefType)
                             {
                                 Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
                                     returnType);
@@ -126,11 +126,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedDeclaration unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Info.DeclarationType is null)
+            if (declaration.Info.DeclarationType is not null)
             {
                 declaration.Info = declaration.Info with
                 {
-                    DeclarationType = new LuaNamedType(declaration.Info.Ptr.Stringify)
+                    DeclarationType = new LuaVariableRefType(declaration.UniqueId)
                 };
             }
         }

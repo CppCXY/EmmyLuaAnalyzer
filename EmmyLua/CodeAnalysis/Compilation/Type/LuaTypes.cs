@@ -217,7 +217,7 @@ public class LuaTupleType(List<LuaDeclaration> tupleDeclaration)
         {
             var lastMember = newTupleTypes[^1];
             newTupleTypes.RemoveAt(newTupleTypes.Count - 1);
-            if (lastMember is Declaration.LuaDeclaration { Info: TupleMemberInfo info } lastMember2)
+            if (lastMember is { Info: TupleMemberInfo info } lastMember2)
             {
                 for (var i = 0; i < multiReturnType.GetElementCount(); i++)
                 {

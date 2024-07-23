@@ -309,7 +309,7 @@ public static class MethodInfer
              i++)
         {
             var parameter = signature.Parameters[i + paramStart];
-            if (parameter is Declaration.LuaDeclaration
+            if (parameter is
                 {
                     Info: ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType }
                 })

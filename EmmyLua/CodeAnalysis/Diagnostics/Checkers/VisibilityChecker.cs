@@ -30,7 +30,7 @@ public class VisibilityChecker(LuaCompilation compilation)
                 continue;
             }
 
-            if (declaration is LuaDeclaration { Info.Ptr.UniqueId: { } id } && id == indexExpr.UniqueId)
+            if (declaration is { Info.Ptr.UniqueId: { } id } && id == indexExpr.UniqueId)
             {
                 continue;
             }

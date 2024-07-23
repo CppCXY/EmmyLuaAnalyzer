@@ -47,7 +47,7 @@ public class WorkspaceSymbolBuilder
                         result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
                         {
                             Name = member.Name,
-                            Kind = ToSymbolKind(member.Info.DeclarationType),
+                            Kind = ToSymbolKind(member.Type),
                             Location = node.Range.ToLspLocation(document)
                         });
                     }

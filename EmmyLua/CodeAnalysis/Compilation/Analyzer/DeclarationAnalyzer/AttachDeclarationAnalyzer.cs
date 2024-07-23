@@ -276,7 +276,7 @@ public class AttachDeclarationAnalyzer(
         var parameters = methodType.MainSignature.Parameters;
         foreach (var parameter in parameters)
         {
-            if (parameter is LuaDeclaration { Name: { } name, Info: ParamInfo { } info } declaration)
+            if (parameter is { Name: { } name, Info: ParamInfo { } info } declaration)
             {
                 if (parameterDict.TryGetValue(name, out var parameterInfo))
                 {

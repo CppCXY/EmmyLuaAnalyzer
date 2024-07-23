@@ -136,7 +136,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                 {
                     var label = stringLiteral.RepresentText;
                     // compact emmylua old alias
-                    if (declaration.Info.DeclarationType is LuaStringLiteralType stringLiteralType
+                    if (declaration.Type is LuaStringLiteralType stringLiteralType
                         && (stringLiteralType.Content.StartsWith('\'') || stringLiteralType.Content.StartsWith('"')))
                     {
                         label = stringLiteralType.Content;
@@ -154,7 +154,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                         Detail = detail
                     });
                 }
-                else if (declaration.Info.DeclarationType is LuaIntegerLiteralType intLiteralType)
+                else if (declaration.Type is LuaIntegerLiteralType intLiteralType)
                 {
                     context.Add(new CompletionItem
                     {

@@ -68,6 +68,12 @@ public class LuaDeclaration(
 
     public List<RequiredVersion>? RequiredVersions { get; set; }
 
+    public SyntaxElementId UniqueId => Info.Ptr.UniqueId;
+
+    public string RelationInformation => Info.Ptr.Stringify;
+
+    public LuaDocumentId DocumentId => Info.Ptr.DocumentId;
+
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
         new(Name, otherInfo, Feature, Visibility);
 
@@ -80,8 +86,6 @@ public class LuaDeclaration(
 
         return this;
     }
-
-    public SyntaxElementId UniqueId => Info.Ptr.UniqueId;
 
     public bool ValidateLuaVersion(VersionNumber version)
     {
@@ -129,7 +133,7 @@ public class LuaDeclaration(
         return versions.Any(ValidateFrameworkVersion);
     }
 
-    public LuaLocation? GetLocation(SearchContext context)
+    public virtual LuaLocation? GetLocation(SearchContext context)
     {
         var document = context.Compilation.Project.GetDocument(Info.Ptr.DocumentId);
         if (document is not null)
@@ -140,10 +144,6 @@ public class LuaDeclaration(
 
         return null;
     }
-
-    public string RelationInformation => Info.Ptr.Stringify;
-
-    public LuaDocumentId DocumentId => Info.Ptr.DocumentId;
 
     public override string ToString()
     {

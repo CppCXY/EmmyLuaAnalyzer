@@ -65,7 +65,7 @@ public class CallChecker(LuaCompilation compilation)
                 for (var i = args.Count; i < parameters.Count; i++)
                 {
                     var parameter = parameters[i];
-                    if (parameter is Compilation.Declaration.LuaDeclaration { Info: ParamInfo paramInfo })
+                    if (parameter is { Info: ParamInfo paramInfo })
                     {
                         if (paramInfo.IsVararg || paramInfo.Nullable)
                         {
