@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
@@ -38,7 +37,6 @@ public class LuaDeclaration(
     DeclarationFeature feature = DeclarationFeature.None,
     DeclarationVisibility visibility = DeclarationVisibility.Public
 )
-    : IDeclaration
 {
     public string Name { get; internal set; } = name;
 
@@ -73,7 +71,7 @@ public class LuaDeclaration(
     public LuaDeclaration WithInfo(DeclarationInfo otherInfo) =>
         new(Name, otherInfo, Feature, Visibility);
 
-    public IDeclaration Instantiate(TypeSubstitution substitution)
+    public LuaDeclaration Instantiate(TypeSubstitution substitution)
     {
         if (Info.DeclarationType is { } type)
         {

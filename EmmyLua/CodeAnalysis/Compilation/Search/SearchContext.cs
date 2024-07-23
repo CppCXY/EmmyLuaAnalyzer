@@ -1,10 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -93,12 +93,12 @@ public class SearchContext
         return bestMatched;
     }
 
-    public IDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
     {
         return Declarations.FindDeclaration(element);
     }
 
-    public IEnumerable<LuaDeclaration> GetDocumentLocalDeclarations(LuaDocumentId documentId)
+    public IEnumerable<Declaration.LuaDeclaration> GetDocumentLocalDeclarations(LuaDocumentId documentId)
     {
         return Compilation.Db.QueryDocumentLocalDeclarations(documentId);
     }
@@ -159,37 +159,37 @@ public class SearchContext
         }
     }
 
-    public IEnumerable<IDeclaration> GetMembers(LuaType type)
+    public IEnumerable<LuaDeclaration> GetMembers(LuaType type)
     {
         return Members.GetMembers(type).GroupBy(m => m.Name).Select(g => g.First());
     }
 
-    public IEnumerable<IDeclaration> GetSuperMembers(LuaType type)
+    public IEnumerable<LuaDeclaration> GetSuperMembers(LuaType type)
     {
         return Members.GetSupersMembers(type).GroupBy(m => m.Name).Select(g => g.First());
     }
 
-    public IEnumerable<IDeclaration> FindMember(LuaType type, string name)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType type, string name)
     {
         return Members.FindMember(type, name);
     }
 
-    public IEnumerable<IDeclaration> FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
     {
         return Members.FindMember(type, indexExpr);
     }
 
-    public IEnumerable<IDeclaration> FindSuperMember(LuaType type, string name)
+    public IEnumerable<LuaDeclaration> FindSuperMember(LuaType type, string name)
     {
         return Members.FindSuperMember(type, name);
     }
 
-    public IEnumerable<ReferenceResult> FindReferences(IDeclaration declaration)
+    public IEnumerable<ReferenceResult> FindReferences(LuaDeclaration luaDeclaration)
     {
-        return References.FindReferences(declaration);
+        return References.FindReferences(luaDeclaration);
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, Declaration.LuaDeclaration declaration)
     {
         return Declarations.IsUpValue(nameExpr, declaration);
     }

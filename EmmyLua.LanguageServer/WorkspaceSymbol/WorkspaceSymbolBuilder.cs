@@ -14,8 +14,8 @@ public class WorkspaceSymbolBuilder
         var result = new List<Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol>();
         try
         {
-            var luaWorkspace = context.LuaProject;
-            var searchContext = new SearchContext(luaWorkspace.Compilation, new SearchContextFeatures());
+            var luaProject = context.LuaProject;
+            var searchContext = new SearchContext(luaProject.Compilation, new SearchContextFeatures());
             var globals = context.LuaProject.Compilation.Db.QueryAllGlobal();
             foreach (var global in globals)
             {
@@ -41,7 +41,7 @@ public class WorkspaceSymbolBuilder
                 if (member.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var document = luaWorkspace.GetDocument(member.Info.Ptr.DocumentId);
+                    var document = luaProject.GetDocument(member.Info.Ptr.DocumentId);
                     if (document is not null && member.Info.Ptr.ToNode(document) is { } node)
                     {
                         result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()

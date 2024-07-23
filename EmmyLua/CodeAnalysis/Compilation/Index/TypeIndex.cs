@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
@@ -11,11 +10,11 @@ public class TypeIndex
 {
     #region Members
 
-    private MultiIndex<string, LuaDeclaration> TypeMembers { get; } = new();
+    private MultiIndex<string, Declaration.LuaDeclaration> TypeMembers { get; } = new();
 
-    private MultiIndex<SyntaxElementId, LuaDeclaration> DocumentVariableMembers { get; } = new();
+    private MultiIndex<SyntaxElementId, Declaration.LuaDeclaration> DocumentVariableMembers { get; } = new();
 
-    private MultiIndex<string, LuaDeclaration> GlobalVariableMembers { get; } = new();
+    private MultiIndex<string, Declaration.LuaDeclaration> GlobalVariableMembers { get; } = new();
 
     #endregion
 
@@ -42,11 +41,11 @@ public class TypeIndex
 
     private MultiIndex<string, string> SubTypes { get; } = new();
 
-    private MultiIndex<string, LuaDeclaration> NamedTypeDefinition { get; } = new();
+    private MultiIndex<string, Declaration.LuaDeclaration> NamedTypeDefinition { get; } = new();
 
     private UniqueIndex<string, LuaType> AliasTypes { get; } = new();
 
-    private MultiIndex<string, LuaDeclaration> GenericParams { get; } = new();
+    private MultiIndex<string, Declaration.LuaDeclaration> GenericParams { get; } = new();
 
     private MultiIndex<string, TypeOperator> TypeOperator { get; } = new();
 
@@ -80,25 +79,25 @@ public class TypeIndex
         TypeOperator.Remove(documentId);
     }
 
-    public void AddNamedTypeMember(LuaDocumentId documentId, LuaNamedType namedType, LuaDeclaration luaDeclaration)
+    public void AddNamedTypeMember(LuaDocumentId documentId, LuaNamedType namedType, Declaration.LuaDeclaration luaDeclaration)
     {
         TypeMembers.Add(documentId, namedType.Name, luaDeclaration);
         ParentNamedType.Update(documentId, luaDeclaration.UniqueId, namedType.Name);
     }
 
-    public void AddLocalVariableMember(SyntaxElementId id, LuaDeclaration luaDeclaration)
+    public void AddLocalVariableMember(SyntaxElementId id, Declaration.LuaDeclaration luaDeclaration)
     {
         DocumentVariableMembers.Add(id.DocumentId, id, luaDeclaration);
         ParentVariableType.Update(id.DocumentId, luaDeclaration.UniqueId, id);
     }
 
-    public void AddGlobalVariableMember(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddGlobalVariableMember(LuaDocumentId documentId, string name, Declaration.LuaDeclaration luaDeclaration)
     {
         GlobalVariableMembers.Add(documentId, name, luaDeclaration);
         ParentGlobalType.Update(documentId, luaDeclaration.UniqueId, name);
     }
 
-    public void AddParentNamedType(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddParentNamedType(LuaDocumentId documentId, string name, Declaration.LuaDeclaration luaDeclaration)
     {
         ParentNamedType.Update(documentId, luaDeclaration.UniqueId, name);
     }
@@ -117,13 +116,13 @@ public class TypeIndex
         }
     }
 
-    public void AddTypeDefinition(LuaDocumentId documentId, string name, LuaDeclaration declaration)
+    public void AddTypeDefinition(LuaDocumentId documentId, string name, Declaration.LuaDeclaration declaration)
     {
         NamedTypeDefinition.Add(documentId, name, declaration);
     }
 
     public void AddAlias(LuaDocumentId documentId, string name, LuaType baseType,
-        LuaDeclaration declaration)
+        Declaration.LuaDeclaration declaration)
     {
         AddTypeDefinition(documentId, name, declaration);
         AliasTypes.Update(documentId, name, baseType);
@@ -152,7 +151,7 @@ public class TypeIndex
     }
 
     public void AddEnum(LuaDocumentId documentId, string name, LuaType? baseType,
-        LuaDeclaration declaration)
+        Declaration.LuaDeclaration declaration)
     {
         AddTypeDefinition(documentId, name, declaration);
         if (baseType != null)
@@ -161,7 +160,7 @@ public class TypeIndex
         }
     }
 
-    public void AddGenericParam(LuaDocumentId documentId, string name, LuaDeclaration luaDeclaration)
+    public void AddGenericParam(LuaDocumentId documentId, string name, Declaration.LuaDeclaration luaDeclaration)
     {
         GenericParams.Add(documentId, name, luaDeclaration);
     }
@@ -176,7 +175,7 @@ public class TypeIndex
         TypeOverloads.Add(documentId, name, methodType);
     }
 
-    public IEnumerable<IDeclaration> QueryMembers(LuaType type)
+    public IEnumerable<LuaDeclaration> QueryMembers(LuaType type)
     {
         if (!type.HasMember)
         {
@@ -222,7 +221,7 @@ public class TypeIndex
         return SubTypes.Query(name);
     }
 
-    public IEnumerable<IDeclaration> QueryNamedTypeDefinitions(string name)
+    public IEnumerable<LuaDeclaration> QueryNamedTypeDefinitions(string name)
     {
         return NamedTypeDefinition.Query(name);
     }
@@ -232,12 +231,12 @@ public class TypeIndex
         return AliasTypes.Query(name);
     }
 
-    public IEnumerable<IDeclaration> QueryGenericParams(string name)
+    public IEnumerable<LuaDeclaration> QueryGenericParams(string name)
     {
         return GenericParams.Query(name);
     }
 
-    public IEnumerable<IDeclaration> QueryAllNamedTypeDefinitions()
+    public IEnumerable<LuaDeclaration> QueryAllNamedTypeDefinitions()
     {
         return NamedTypeDefinition.QueryAll();
     }
@@ -282,7 +281,7 @@ public class TypeIndex
         return null;
     }
 
-    public IEnumerable<LuaDeclaration> QueryAllMembers()
+    public IEnumerable<Declaration.LuaDeclaration> QueryAllMembers()
     {
         return TypeMembers.QueryAll();
     }

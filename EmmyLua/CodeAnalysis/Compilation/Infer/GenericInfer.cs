@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -358,7 +357,7 @@ public static class GenericInfer
             return;
         }
 
-        var spreadParameter = new List<IDeclaration>();
+        var spreadParameter = new List<LuaDeclaration>();
         for(var i = 0; i < fmt.Length; i++)
         {
             var ch = fmt[i];
@@ -384,21 +383,21 @@ public static class GenericInfer
                             var type = fmt[index];
                             if (type is 's' or 'q')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new Declaration.LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Any)
                                     ));
                             }
                             else if (type is 'c' or 'd' or 'i' or 'u' or 'x' or 'X' or 'o')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new Declaration.LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Integer)
                                     ));
                             }
                             else if (type is 'A' or 'a' or 'E' or 'e' or 'f' or 'G' or 'g')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new Declaration.LuaDeclaration(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Number)
                                     ));

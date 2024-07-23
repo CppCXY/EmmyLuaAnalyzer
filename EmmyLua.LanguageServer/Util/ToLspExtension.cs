@@ -8,7 +8,7 @@ using Diagnostic = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic;
 using DiagnosticTag = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic.DiagnosticTag;
 using LuaDiagnosticTag = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticTag;
 using DiagnosticSeverity = EmmyLua.LanguageServer.Framework.Protocol.Model.Diagnostic.DiagnosticSeverity;
-using LuaDiagnosticServerity = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity;
+using LuaDiagnosticSeverity = EmmyLua.CodeAnalysis.Diagnostics.DiagnosticSeverity;
 
 namespace EmmyLua.LanguageServer.Util;
 
@@ -51,14 +51,14 @@ public static class LspExtension
             Range = diagnostic.Range.ToLspRange(document),
             Severity = diagnostic.Severity switch
             {
-                LuaDiagnosticServerity.Error => DiagnosticSeverity.Error,
-                LuaDiagnosticServerity.Warning => DiagnosticSeverity.Warning,
-                LuaDiagnosticServerity.Information =>
+                LuaDiagnosticSeverity.Error => DiagnosticSeverity.Error,
+                LuaDiagnosticSeverity.Warning => DiagnosticSeverity.Warning,
+                LuaDiagnosticSeverity.Information =>
                     DiagnosticSeverity.Information,
-                LuaDiagnosticServerity.Hint => DiagnosticSeverity.Hint,
+                LuaDiagnosticSeverity.Hint => DiagnosticSeverity.Hint,
                 _ => throw new UnreachableException()
             },
-            Data = diagnostic.Data,
+            Data = diagnostic.Data!,
             Source = "EmmyLua",
         };
     }

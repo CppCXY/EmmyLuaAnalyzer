@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -49,29 +48,26 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         return this;
     }
 
-    public CompletionItemBuilder WithCheckDeclaration(IDeclaration declaration)
+    public CompletionItemBuilder WithCheckDeclaration(LuaDeclaration declaration)
     {
         if (declaration.IsDeprecated)
         {
             IsDeprecated = true;
         }
-
-        if (declaration is LuaDeclaration luaDeclaration)
+        
+        if (declaration.RequiredVersions is not null)
         {
-            if (luaDeclaration.RequiredVersions is not null)
+            var feature = CompleteContext.ServerContext.LuaProject.Features;
+            var languageLevel = feature.Language.LanguageLevel;
+            if (!declaration.ValidateLuaVersion(languageLevel))
             {
-                var feature = CompleteContext.ServerContext.LuaProject.Features;
-                var languageLevel = feature.Language.LanguageLevel;
-                if (!luaDeclaration.ValidateLuaVersion(languageLevel))
-                {
-                    Disable = true;
-                }
+                Disable = true;
+            }
 
-                var frameworkVersion = feature.FrameworkVersions;
-                if (!Disable && !luaDeclaration.ValidateFrameworkVersions(frameworkVersion))
-                {
-                    Disable = true;
-                }
+            var frameworkVersion = feature.FrameworkVersions;
+            if (!Disable && !declaration.ValidateFrameworkVersions(frameworkVersion))
+            {
+                Disable = true;
             }
         }
 
@@ -89,7 +85,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         InsertText = insertText;
         return this;
     }
-    
+
     public CompletionItemBuilder WithDotCheckBracketLabel(LuaIndexExprSyntax indexExpr)
     {
         if (Label.StartsWith('['))

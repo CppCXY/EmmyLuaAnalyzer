@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -56,7 +55,7 @@ public static class LuaTypeRenderer
             {
                 renderContext.Append("    | ");
                 InnerRenderType(typeDeclaration.Type, renderContext, 1);
-                if (typeDeclaration is LuaDeclaration { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
+                if (typeDeclaration is CodeAnalysis.Compilation.Declaration.LuaDeclaration { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
                     typePtr.ToNode(renderContext.SearchContext) is { Description: { } description })
                 {
                     renderContext.Append(" --");
@@ -114,7 +113,7 @@ public static class LuaTypeRenderer
         }
     }
 
-    private static void RenderClassOrInterface(string name, List<IDeclaration> generics, List<LuaType> supers,
+    private static void RenderClassOrInterface(string name, List<LuaDeclaration> generics, List<LuaType> supers,
         LuaRenderContext renderContext)
     {
         if (generics.Count > 0)

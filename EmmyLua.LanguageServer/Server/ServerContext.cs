@@ -18,7 +18,7 @@ namespace EmmyLua.LanguageServer.Server;
 
 public class ServerContext(Framework.Server.LanguageServer server)
 {
-    public bool IsVscode { get; set; } = true;
+    public bool IsVscode { get; private set; } = true;
 
     private HashSet<string> Extensions { get; } = new();
 

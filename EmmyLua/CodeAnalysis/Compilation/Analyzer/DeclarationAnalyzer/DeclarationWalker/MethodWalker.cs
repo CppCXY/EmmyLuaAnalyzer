@@ -1,9 +1,9 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -137,7 +137,7 @@ public partial class DeclarationWalker
         var method = new LuaMethodType(
             new LuaSignature(
                 Builtin.Unknown,
-                parameters.Cast<IDeclaration>().ToList()
+                parameters.ToList()
             ),
             null,
             isColonDefine);

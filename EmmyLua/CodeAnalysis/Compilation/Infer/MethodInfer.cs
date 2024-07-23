@@ -1,8 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -285,7 +285,7 @@ public static class MethodInfer
         int matchedParam,
         SearchContext context)
     {
-        var newParameters = new List<IDeclaration>();
+        var newParameters = new List<LuaDeclaration>();
         if (skipParam == 1)
         {
             if (args.Count > 0 && callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } callSelf })
@@ -309,7 +309,7 @@ public static class MethodInfer
              i++)
         {
             var parameter = signature.Parameters[i + paramStart];
-            if (parameter is LuaDeclaration
+            if (parameter is Declaration.LuaDeclaration
                 {
                     Info: ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType }
                 })

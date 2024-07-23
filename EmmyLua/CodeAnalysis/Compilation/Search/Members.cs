@@ -1,21 +1,21 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
 public class Members(SearchContext context)
 {
-    private Dictionary<LuaType, List<IDeclaration>> TypeMemberCaches { get; } = new();
+    private Dictionary<LuaType, List<LuaDeclaration>> TypeMemberCaches { get; } = new();
 
-    private Dictionary<LuaType, List<IDeclaration>> GenericMemberCaches { get; } = new();
+    private Dictionary<LuaType, List<LuaDeclaration>> GenericMemberCaches { get; } = new();
 
-    private Dictionary<LuaType, List<IDeclaration>> BaseMemberCaches { get; } = new();
+    private Dictionary<LuaType, List<LuaDeclaration>> BaseMemberCaches { get; } = new();
 
     private HashSet<LuaType> MemberGuard { get; } = new();
 
-    public IEnumerable<IDeclaration> GetRawMembers(LuaType luaType)
+    public IEnumerable<LuaDeclaration> GetRawMembers(LuaType luaType)
     {
         if (!luaType.HasMember)
         {
@@ -59,7 +59,7 @@ public class Members(SearchContext context)
         }
     }
 
-    public IEnumerable<IDeclaration> GetSupersMembers(LuaType luaType)
+    public IEnumerable<LuaDeclaration> GetSupersMembers(LuaType luaType)
     {
         if (context.Features.Cache && BaseMemberCaches.TryGetValue(luaType, out var members))
         {
@@ -90,7 +90,7 @@ public class Members(SearchContext context)
         return members;
     }
 
-    private IEnumerable<IDeclaration> GetRelatedMembers(LuaType luaType)
+    private IEnumerable<LuaDeclaration> GetRelatedMembers(LuaType luaType)
     {
         if (luaType is LuaVariableRefType variableRefType)
         {
@@ -112,7 +112,7 @@ public class Members(SearchContext context)
         return [];
     }
 
-    private IEnumerable<IDeclaration> GetNormalTypeMembers(LuaType luaType)
+    private IEnumerable<LuaDeclaration> GetNormalTypeMembers(LuaType luaType)
     {
         var selfMembers = GetRawMembers(luaType);
         var supersMembers = GetSupersMembers(luaType);
@@ -121,7 +121,7 @@ public class Members(SearchContext context)
         return allMembers;
     }
 
-    private IEnumerable<IDeclaration> InnerGetMembers(LuaType luaType)
+    private IEnumerable<LuaDeclaration> InnerGetMembers(LuaType luaType)
     {
         if (luaType is LuaGenericType genericType)
         {
@@ -154,7 +154,7 @@ public class Members(SearchContext context)
         return GetNormalTypeMembers(luaType);
     }
 
-    public IEnumerable<IDeclaration> GetMembers(LuaType luaType)
+    public IEnumerable<LuaDeclaration> GetMembers(LuaType luaType)
     {
         if (MemberGuard.Add(luaType))
         {
@@ -171,7 +171,7 @@ public class Members(SearchContext context)
         return [];
     }
 
-    private IEnumerable<IDeclaration> GetGenericMembers(LuaGenericType genericType)
+    private IEnumerable<LuaDeclaration> GetGenericMembers(LuaGenericType genericType)
     {
         if (context.Features.Cache && GenericMemberCaches.TryGetValue(genericType, out var instanceMembers))
         {
@@ -202,7 +202,7 @@ public class Members(SearchContext context)
         return instanceMembers;
     }
 
-    public IEnumerable<IDeclaration> FindMember(LuaType luaType, string memberName)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, string memberName)
     {
         switch (luaType)
         {
@@ -222,7 +222,7 @@ public class Members(SearchContext context)
             }
             case LuaArrayType arrayType when memberName.StartsWith('['):
             {
-                return [new LuaDeclaration(memberName, new VirtualInfo(arrayType.BaseType))];
+                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(arrayType.BaseType))];
             }
             default:
             {
@@ -232,7 +232,7 @@ public class Members(SearchContext context)
         }
     }
 
-    private IEnumerable<IDeclaration> FindTableMember(LuaNamedType namedType, string memberName)
+    private IEnumerable<LuaDeclaration> FindTableMember(LuaNamedType namedType, string memberName)
     {
         if (namedType is LuaGenericType genericTable)
         {
@@ -248,19 +248,19 @@ public class Members(SearchContext context)
             if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
                 && memberName.StartsWith("["))
             {
-                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
+                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
 
             if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
             {
-                return [new LuaDeclaration(memberName, new VirtualInfo(secondType))];
+                return [new Declaration.LuaDeclaration(memberName, new VirtualInfo(secondType))];
             }
         }
 
         return [];
     }
 
-    private IEnumerable<LuaDeclaration> FindTableMember(LuaNamedType namedType, LuaType keyType)
+    private IEnumerable<Declaration.LuaDeclaration> FindTableMember(LuaNamedType namedType, LuaType keyType)
     {
         if (namedType is LuaGenericType genericTable)
         {
@@ -275,14 +275,14 @@ public class Members(SearchContext context)
 
             if (keyType.SubTypeOf(firstType, context))
             {
-                return [new LuaDeclaration(string.Empty, new VirtualInfo(secondType))];
+                return [new Declaration.LuaDeclaration(string.Empty, new VirtualInfo(secondType))];
             }
         }
 
         return [];
     }
 
-    private IEnumerable<IDeclaration> FindIndexMember(LuaType luaType, LuaType keyType)
+    private IEnumerable<LuaDeclaration> FindIndexMember(LuaType luaType, LuaType keyType)
     {
         if (luaType is LuaNamedType namedType)
         {
@@ -294,7 +294,7 @@ public class Members(SearchContext context)
             var op = context.GetBestMatchedIndexOperator(luaType, keyType);
             if (op is not null)
             {
-                return [op.Declaration];
+                return [op.LuaDeclaration];
             }
         }
         else if (luaType is LuaUnionType unionType)
@@ -305,14 +305,14 @@ public class Members(SearchContext context)
         {
             if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
             {
-                return [new LuaDeclaration(string.Empty, new VirtualInfo(arrayType.BaseType))];
+                return [new Declaration.LuaDeclaration(string.Empty, new VirtualInfo(arrayType.BaseType))];
             }
         }
 
         return [];
     }
 
-    public IEnumerable<IDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
+    public IEnumerable<LuaDeclaration> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
     {
         if (luaType.Equals(Builtin.Unknown))
         {
@@ -373,12 +373,12 @@ public class Members(SearchContext context)
             var op = context.GetBestMatchedIndexOperator(luaType, keyType);
             if (op != null)
             {
-                yield return op.Declaration;
+                yield return op.LuaDeclaration;
             }
         }
     }
 
-    public IEnumerable<IDeclaration> FindSuperMember(LuaType luaType, string member)
+    public IEnumerable<LuaDeclaration> FindSuperMember(LuaType luaType, string member)
     {
         var members = GetSupersMembers(luaType);
         return members.Where(it => string.Equals(it.Name, member, StringComparison.CurrentCulture));

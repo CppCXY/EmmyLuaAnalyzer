@@ -16,9 +16,11 @@ public static class FilenameConverter
         };
     }
 
+    private static readonly char[] Separators = [ ' ', '_', '-' ];
+
     private static string ToCamelCase(string input)
     {
-        var words = input.Trim().Split(new[] { ' ', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+        var words = input.Trim().Split(Separators, StringSplitOptions.RemoveEmptyEntries);
         return string.Join("",
             words.Select((word, index) =>
                 index == 0 ? word.ToLower() : CultureInfo.CurrentCulture.TextInfo.ToTitleCase(word.ToLower())));
@@ -26,13 +28,13 @@ public static class FilenameConverter
 
     private static string ToPascalCase(string input)
     {
-        var words = input.Trim().Split(new[] { ' ', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+        var words = input.Trim().Split(Separators, StringSplitOptions.RemoveEmptyEntries);
         return string.Join("", words.Select(word => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(word.ToLower())));
     }
 
     private static string ToSnakeCase(string source)
     {
-        var words = source.Trim().Split(new[] { ' ', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+        var words = source.Trim().Split(Separators, StringSplitOptions.RemoveEmptyEntries);
         return string.Join("_", words.Select(word => word.ToLower()));
     }
 }

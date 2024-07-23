@@ -12,7 +12,7 @@ public record LuaLocation(
 {
     public static LuaLocation Empty { get; } = new LuaLocation(0, 0, 0, 0, string.Empty);
 
-    public string FilePath => new System.Uri(Uri).AbsolutePath;
+    public string FilePath => new Uri(Uri).AbsolutePath;
 
     public string Uri { get; } = Uri;
 

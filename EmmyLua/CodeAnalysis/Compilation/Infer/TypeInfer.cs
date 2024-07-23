@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
@@ -83,7 +82,7 @@ public static class TypeInfer
 
     private static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var typedParameters = new List<IDeclaration>();
+        var typedParameters = new List<LuaDeclaration>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name, Nullable: { } nullable })
@@ -94,13 +93,13 @@ public static class TypeInfer
                     type = type.Union(Builtin.Nil);
                 }
 
-                var paramDeclaration = new LuaDeclaration(name.RepresentText,
+                var paramDeclaration = new Declaration.LuaDeclaration(name.RepresentText,
                     new ParamInfo(new(typedParam), type, false));
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var paramDeclaration = new LuaDeclaration("...",
+                var paramDeclaration = new Declaration.LuaDeclaration("...",
                     new ParamInfo(new(typedParam), context.Infer(typedParam.Type), true));
                 typedParameters.Add(paramDeclaration);
             }
@@ -148,11 +147,11 @@ public static class TypeInfer
         var tupleMembers = tupleType.TypeList
             .Select((it, i) =>
                 // lua from 1 start
-                new LuaDeclaration($"[{i + 1}]", new TupleMemberInfo(
+                new Declaration.LuaDeclaration($"[{i + 1}]", new TupleMemberInfo(
                     i + 1, context.Infer(it), new(it)
                 ))
             )
-            .Cast<IDeclaration>()
+            .Cast<LuaDeclaration>()
             .ToList();
         return new LuaTupleType(tupleMembers);
     }
@@ -192,7 +191,7 @@ public static class TypeInfer
     {
         var declarations = aggregateType.TypeList
             .Select((it, i) =>
-                new LuaDeclaration(string.Empty, new AggregateMemberInfo(
+                new Declaration.LuaDeclaration(string.Empty, new AggregateMemberInfo(
                     new(it), context.Infer(it)
                 ))
             )

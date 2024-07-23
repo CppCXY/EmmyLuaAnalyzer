@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -143,10 +142,10 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes)
     }
 }
 
-public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
+public class LuaAggregateType(IEnumerable<LuaDeclaration> declarations)
     : LuaType(LuaTypeAttribute.None), IEquatable<LuaAggregateType>
 {
-    public List<IDeclaration> Declarations { get; } = declarations.ToList();
+    public List<LuaDeclaration> Declarations { get; } = declarations.ToList();
 
     public override bool Equals(object? obj)
     {
@@ -177,10 +176,10 @@ public class LuaAggregateType(IEnumerable<IDeclaration> declarations)
     }
 }
 
-public class LuaTupleType(List<IDeclaration> tupleDeclaration)
+public class LuaTupleType(List<LuaDeclaration> tupleDeclaration)
     : LuaType(LuaTypeAttribute.HasMember | LuaTypeAttribute.CanIndex), IEquatable<LuaTupleType>
 {
-    public List<IDeclaration> TupleDeclaration { get; } = tupleDeclaration;
+    public List<LuaDeclaration> TupleDeclaration { get; } = tupleDeclaration;
 
     public override bool Equals(object? obj)
     {
@@ -218,7 +217,7 @@ public class LuaTupleType(List<IDeclaration> tupleDeclaration)
         {
             var lastMember = newTupleTypes[^1];
             newTupleTypes.RemoveAt(newTupleTypes.Count - 1);
-            if (lastMember is LuaDeclaration { Info: TupleMemberInfo info } lastMember2)
+            if (lastMember is Declaration.LuaDeclaration { Info: TupleMemberInfo info } lastMember2)
             {
                 for (var i = 0; i < multiReturnType.GetElementCount(); i++)
                 {
@@ -583,11 +582,11 @@ public class LuaMultiReturnType : LuaType, IEquatable<LuaMultiReturnType>
     }
 }
 
-public class LuaSignature(LuaType returnType, List<IDeclaration> parameters) : IEquatable<LuaSignature>
+public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters) : IEquatable<LuaSignature>
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<IDeclaration> Parameters { get; } = parameters;
+    public List<LuaDeclaration> Parameters { get; } = parameters;
 
     public bool Equals(LuaSignature? other)
     {
@@ -633,7 +632,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<IDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<LuaDeclaration> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }
@@ -678,12 +677,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<LuaDeclaration> GenericParamDecls { get; }
+    public List<Declaration.LuaDeclaration> GenericParamDecls { get; }
 
     public Dictionary<string, LuaType> GenericParams { get; }
 
     public LuaGenericMethodType(
-        List<LuaDeclaration> genericParamDecls,
+        List<Declaration.LuaDeclaration> genericParamDecls,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)

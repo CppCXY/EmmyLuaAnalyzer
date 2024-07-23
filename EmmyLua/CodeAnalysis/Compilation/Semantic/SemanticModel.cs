@@ -1,11 +1,11 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
 
@@ -44,14 +44,14 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         return Compilation.GetDiagnostics(Document.Id, Context);
     }
 
-    public IEnumerable<IDeclaration> GetGlobals()
+    public IEnumerable<LuaDeclaration> GetGlobals()
     {
         return Compilation.Db.QueryAllGlobal();
     }
 
-    public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
+    public IEnumerable<Declaration.LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
-        var result = new List<LuaDeclaration>();
+        var result = new List<Declaration.LuaDeclaration>();
         var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
         if (Compilation.Db.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
         {
