@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Document;
@@ -99,7 +98,7 @@ public class RenameBuilder(ServerContext context)
             return;
         }
 
-        var document = context.LuaWorkspace.GetDocumentByUri(referenceResult.Location.Uri);
+        var document = context.LuaProject.GetDocumentByUri(referenceResult.Location.Uri);
         if (document is not null)
         {
             range = new SourceRange(StartOffset: range.StartOffset + 1, Length: range.Length - 2);

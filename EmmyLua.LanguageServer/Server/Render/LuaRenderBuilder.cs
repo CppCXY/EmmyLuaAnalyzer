@@ -86,10 +86,10 @@ public class LuaRenderBuilder(SearchContext context)
 
                 var display = $"\"{preview}\"";
                 if (literalExpr.Parent?.Parent is LuaCallExprSyntax {Name: { } funcName}
-                    && searchContext.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
+                    && searchContext.Compilation.Project.Features.RequireLikeFunction.Contains(funcName))
                 {
                     renderContext.WrapperLuaAppend($"module {display}");
-                    var moduleDocument = searchContext.Compilation.Workspace.ModuleManager.FindModule(stringLiteral.Value);
+                    var moduleDocument = searchContext.Compilation.Project.ModuleManager.FindModule(stringLiteral.Value);
                     if (moduleDocument is not null)
                     {
                         LuaModuleRenderer.RenderModule(moduleDocument, renderContext);

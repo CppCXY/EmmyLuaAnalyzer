@@ -14,10 +14,10 @@ public class RequireProvider : ICompleteProviderBase
         var trigger = context.TriggerToken;
         if (trigger is LuaStringToken modulePathToken
             && trigger.Parent?.Parent?.Parent is LuaCallExprSyntax { Name: { } funcName }
-            && context.SemanticModel.Compilation.Workspace.Features.RequireLikeFunction.Contains(funcName))
+            && context.SemanticModel.Compilation.Project.Features.RequireLikeFunction.Contains(funcName))
         {
             var moduleInfos =
-                context.SemanticModel.Compilation.Workspace.ModuleManager.GetCurrentModuleNames(modulePathToken.Value);
+                context.SemanticModel.Compilation.Project.ModuleManager.GetCurrentModuleNames(modulePathToken.Value);
 
             var modulePath = modulePathToken.Value;
             var index = modulePath.LastIndexOfAny(Separators);

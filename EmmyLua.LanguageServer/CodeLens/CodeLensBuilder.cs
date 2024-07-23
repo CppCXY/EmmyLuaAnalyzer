@@ -74,7 +74,7 @@ public class CodeLensBuilder
         var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
         if (ptr.DocumentId is { } documentId)
         {
-            if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
+            if (ptr.ToNode(context.LuaProject) is LuaFuncStatSyntax
                 {
                     NameElement: { Parent: { } element } nameElement
                 })
@@ -101,7 +101,7 @@ public class CodeLensBuilder
         var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
         if (ptr.DocumentId is { } documentId)
         {
-            if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
+            if (ptr.ToNode(context.LuaProject) is LuaFuncStatSyntax
                 {
                     NameElement: { Parent: { } element } nameElement
                 })

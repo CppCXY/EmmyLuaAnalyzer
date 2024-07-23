@@ -65,7 +65,7 @@ public class CompletionDocumentResolver
             if (completionItem.Data?.Value is string strPtr)
             {
                 var ptr = LuaElementPtr<LuaSyntaxNode>.From(strPtr);
-                var node = ptr.ToNode(context.LuaWorkspace);
+                var node = ptr.ToNode(context.LuaProject);
                 if (node is null)
                 {
                     return completionItem;

@@ -20,7 +20,7 @@ public class DocumentLinkBuilder(ServerContext context)
             var path = stringToken.Value;
             if (IsModule(stringToken))
             {
-                var moduleDocument = context.LuaWorkspace.ModuleManager.FindModule(path);
+                var moduleDocument = context.LuaProject.ModuleManager.FindModule(path);
                 if (moduleDocument is not null)
                 {
                     var link = new Framework.Protocol.Message.DocumentLink.DocumentLink
@@ -52,6 +52,6 @@ public class DocumentLinkBuilder(ServerContext context)
     private bool IsModule(LuaSyntaxElement element)
     {
         return element is LuaStringToken { Parent.Parent.Parent: LuaCallExprSyntax { Name: { } funcName } } &&
-               context.LuaWorkspace.Features.RequireLikeFunction.Contains(funcName);
+               context.LuaProject.Features.RequireLikeFunction.Contains(funcName);
     }
 }

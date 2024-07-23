@@ -34,7 +34,7 @@ public class DeclarationContext(
 
     private LuaCompilation Compilation => Analyzer.Compilation;
 
-    public WorkspaceIndex Db => Compilation.Db;
+    public ProjectIndex Db => Compilation.Db;
 
     private AnalyzeContext AnalyzeContext { get; } = analyzeContext;
 

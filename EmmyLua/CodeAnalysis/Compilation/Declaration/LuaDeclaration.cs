@@ -133,7 +133,7 @@ public class LuaDeclaration(
 
     public LuaLocation? GetLocation(SearchContext context)
     {
-        var document = context.Compilation.Workspace.GetDocument(Info.Ptr.DocumentId);
+        var document = context.Compilation.Project.GetDocument(Info.Ptr.DocumentId);
         if (document is not null)
         {
             var range = document.SyntaxTree.GetSourceRange(Info.Ptr.ElementId);

@@ -60,7 +60,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         {
             if (luaDeclaration.RequiredVersions is not null)
             {
-                var feature = CompleteContext.ServerContext.LuaWorkspace.Features;
+                var feature = CompleteContext.ServerContext.LuaProject.Features;
                 var languageLevel = feature.Language.LanguageLevel;
                 if (!luaDeclaration.ValidateLuaVersion(languageLevel))
                 {

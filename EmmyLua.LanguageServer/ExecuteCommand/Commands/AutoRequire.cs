@@ -28,7 +28,7 @@ public class AutoRequire : ICommandBase
             var currentId = new LuaDocumentId(parameters[0].Value is int { } intId ? intId : 0);
             var needRequireId = new LuaDocumentId(parameters[1].Value is int { } intId2 ? intId2 : 0);
             var position = parameters[2].Value is int { } intPosition ? intPosition : 0;
-            var currentDocument = executor.Context.LuaWorkspace.GetDocument(currentId);
+            var currentDocument = executor.Context.LuaProject.GetDocument(currentId);
             if (currentDocument is null) return;
             var sourceBlock = currentDocument.SyntaxTree.SyntaxRoot.Block;
             if (sourceBlock is null) return;
@@ -40,7 +40,7 @@ public class AutoRequire : ICommandBase
                     break;
                 }
 
-                if (IsRequireStat(stat, executor.Context.LuaWorkspace.Features))
+                if (IsRequireStat(stat, executor.Context.LuaProject.Features))
                 {
                     lastRequireStat = stat;
                 }
@@ -52,7 +52,7 @@ public class AutoRequire : ICommandBase
                 range = new DocumentRange(new(line, 0), new(line, 0));
             }
 
-            var module = executor.Context.LuaWorkspace.ModuleManager.GetModuleInfo(needRequireId);
+            var module = executor.Context.LuaProject.ModuleManager.GetModuleInfo(needRequireId);
             if (module is null) return;
             var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireFilenameConvention
                              ?? FilenameConvention.SnakeCase;

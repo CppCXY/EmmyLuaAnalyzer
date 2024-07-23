@@ -17,7 +17,7 @@ public class DefinitionHandler(ServerContext context) : DefinitionHandlerBase
         DefinitionResponse? locationLinks = null;
         context.ReadyRead(() =>
         {
-            var workspace = context.LuaWorkspace;
+            var workspace = context.LuaProject;
             var semanticModel = workspace.Compilation.GetSemanticModel(uri);
             if (semanticModel is not null)
             {

@@ -310,7 +310,7 @@ public class InlayHintBuilder
             if (superMethod is LuaDeclaration { Info: { } info })
             {
                 var document = semanticModel.Document;
-                var parentDocument = semanticModel.Compilation.Workspace.GetDocument(info.Ptr.DocumentId);
+                var parentDocument = semanticModel.Compilation.Project.GetDocument(info.Ptr.DocumentId);
                 var location = new Location();
                 if (parentDocument is not null)
                 {

@@ -18,7 +18,7 @@ public class DocumentLinkHandler(ServerContext context) : DocumentLinkHandlerBas
         DocumentLinkResponse? container = null;
         context.ReadyRead(() =>
         {
-            var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
+            var semanticModel = context.LuaProject.Compilation.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
                 var document = semanticModel.Document;

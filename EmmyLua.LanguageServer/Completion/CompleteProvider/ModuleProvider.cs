@@ -28,7 +28,7 @@ public class ModuleProvider : ICompleteProviderBase
         }
 
         var semanticModel = context.SemanticModel;
-        var modules = semanticModel.Compilation.Workspace.ModuleManager.GetAllModules();
+        var modules = semanticModel.Compilation.Project.ModuleManager.GetAllModules();
         var localNames = semanticModel.GetDeclarationsBefore(context.TriggerToken).Select(it => it.Name).ToHashSet();
         foreach (var module in modules)
         {

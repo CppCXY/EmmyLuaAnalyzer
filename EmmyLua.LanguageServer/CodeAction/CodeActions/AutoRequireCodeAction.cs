@@ -19,7 +19,7 @@ public class AutoRequireCodeAction(DiagnosticCode code) : CodeActionBase(code)
         var documentIds = data.Split(',').Select(it => new LuaDocumentId(int.Parse(it)));
         foreach (var documentId in documentIds)
         {
-            var moduleInfo = context.LuaWorkspace.ModuleManager.GetModuleInfo(documentId);
+            var moduleInfo = context.LuaProject.ModuleManager.GetModuleInfo(documentId);
             if (moduleInfo is not null)
             {
                 yield return new Framework.Protocol.Message.CodeAction.CodeAction

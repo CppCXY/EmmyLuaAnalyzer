@@ -10,7 +10,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class WorkspaceIndex
+public class ProjectIndex
 {
     private TypeIndex TypeIndex { get; } = new();
 

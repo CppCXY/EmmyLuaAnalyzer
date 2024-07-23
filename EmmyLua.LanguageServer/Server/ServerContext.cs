@@ -28,7 +28,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
     private ReaderWriterLockSlim LockSlim { get; } = new();
 
-    public LuaWorkspace LuaWorkspace { get; private set; } = LuaWorkspace.CleanCreate();
+    public LuaProject LuaProject { get; private set; } = LuaProject.CleanCreate();
 
     public SettingManager SettingManager { get; } = new();
 
@@ -96,14 +96,14 @@ public class ServerContext(Framework.Server.LanguageServer server)
             if (rootPath.Length > 0)
             {
                 MainWorkspacePath = rootPath;
-                LuaWorkspace.Monitor = Monitor;
+                LuaProject.Monitor = Monitor;
                 SettingManager.SupportMultiEncoding();
                 SettingManager.Watch(MainWorkspacePath);
                 SettingManager.OnSettingChanged += OnConfigChanged;
                 SettingManager.WorkspaceExtensions = Extensions;
-                LuaWorkspace.MainWorkspace = MainWorkspacePath;
-                LuaWorkspace.Features = SettingManager.GetLuaFeatures();
-                LuaWorkspace.InitStdLib();
+                LuaProject.MainWorkspacePath = MainWorkspacePath;
+                LuaProject.Features = SettingManager.GetLuaFeatures();
+                LuaProject.InitStdLib();
                 if (IsVscode && initializeParams.WorkspaceFolders is { } workspaceFolders)
                 {
                     foreach (var workspaceFolder in workspaceFolders)
@@ -112,20 +112,20 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         if (path != MainWorkspacePath)
                         {
                             ExternalWorkspacePaths.Add(path);
-                            LuaWorkspace.LoadWorkspace(path);
+                            LuaProject.LoadWorkspace(path);
                         }
                     }
                 }
                 // TODO: read config from initializeOptions
 
-                LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
+                LuaProject.LoadMainWorkspace(MainWorkspacePath);
                 ResourceManager.Config = SettingManager.GetResourceConfig();
                 WorkspaceCancellationTokenSource = new CancellationTokenSource();
                 PushWorkspaceDiagnostics();
             }
             else
             {
-                LuaWorkspace.InitStdLib();
+                LuaProject.InitStdLib();
             }
         }
         finally
@@ -169,12 +169,12 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
     public SemanticModel? GetSemanticModel(string uri)
     {
-        return LuaWorkspace.Compilation.GetSemanticModel(uri);
+        return LuaProject.Compilation.GetSemanticModel(uri);
     }
 
     public SemanticModel? GetSemanticModel(LuaDocumentId documentId)
     {
-        return LuaWorkspace.Compilation.GetSemanticModel(documentId);
+        return LuaProject.Compilation.GetSemanticModel(documentId);
     }
 
     private void OnConfigChanged(SettingManager settingManager)
@@ -194,7 +194,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
     private void UpdateFeatures(LuaFeatures newFeatures)
     {
-        var oldFeatures = LuaWorkspace.Features;
+        var oldFeatures = LuaProject.Features;
         var workspaceNeedReload = false;
         workspaceNeedReload |= !newFeatures.RequirePattern.SequenceEqual(oldFeatures.RequirePattern);
         workspaceNeedReload |= !newFeatures.ExcludeFolders.SequenceEqual(oldFeatures.ExcludeFolders);
@@ -204,22 +204,22 @@ public class ServerContext(Framework.Server.LanguageServer server)
         workspaceNeedReload |= !newFeatures.ThirdPartyRoots.SequenceEqual(oldFeatures.ThirdPartyRoots);
         if (workspaceNeedReload)
         {
-            LuaWorkspace = LuaWorkspace.CleanCreate();
-            LuaWorkspace.Monitor = Monitor;
-            LuaWorkspace.MainWorkspace = MainWorkspacePath;
-            LuaWorkspace.Features = newFeatures;
-            LuaWorkspace.InitStdLib();
+            LuaProject = LuaProject.CleanCreate();
+            LuaProject.Monitor = Monitor;
+            LuaProject.MainWorkspacePath = MainWorkspacePath;
+            LuaProject.Features = newFeatures;
+            LuaProject.InitStdLib();
             foreach (var workspacePath in ExternalWorkspacePaths)
             {
-                LuaWorkspace.LoadWorkspace(workspacePath);
+                LuaProject.LoadWorkspace(workspacePath);
             }
 
-            LuaWorkspace.LoadMainWorkspace(MainWorkspacePath);
+            LuaProject.LoadMainWorkspace(MainWorkspacePath);
             PushWorkspaceDiagnostics();
         }
         else // TODO check condition
         {
-            LuaWorkspace.Features = newFeatures;
+            LuaProject.Features = newFeatures;
             PushWorkspaceDiagnostics();
         }
     }
@@ -235,15 +235,15 @@ public class ServerContext(Framework.Server.LanguageServer server)
     private async Task PushWorkspaceDiagnosticsAsync(CancellationToken cancellationToken)
     {
         Monitor.OnStartDiagnosticCheck();
-        var documents = LuaWorkspace.AllDocuments.ToList();
+        var documents = LuaProject.AllDocuments.ToList();
         var diagnosticCount = documents.Count;
         var context = new ThreadLocal<SearchContext>(() =>
-            new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures()));
+            new SearchContext(LuaProject.Compilation, new SearchContextFeatures()));
         try
         {
             var tasks = new List<Task>();
             var currentCount = 0;
-            foreach (var document in LuaWorkspace.AllDocuments)
+            foreach (var document in LuaProject.AllDocuments)
             {
                 tasks.Add(Task.Run(() =>
                 {
@@ -258,7 +258,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                     try
                     {
                         // ReSharper disable once AccessToDisposedClosure
-                        var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context.Value!);
+                        var diagnostics = LuaProject.Compilation.GetDiagnostics(document.Id, context.Value!);
                         Server.Client.PublishDiagnostics(new PublishDiagnosticsParams()
                         {
                             Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),
@@ -288,8 +288,8 @@ public class ServerContext(Framework.Server.LanguageServer server)
         LuaDocumentId documentId = LuaDocumentId.VirtualDocumentId;
         ReadyWrite(() =>
         {
-            LuaWorkspace.UpdateDocumentByUri(uri, text);
-            documentId = LuaWorkspace.GetDocumentIdByUri(uri) ?? LuaDocumentId.VirtualDocumentId;
+            LuaProject.UpdateDocumentByUri(uri, text);
+            documentId = LuaProject.GetDocumentIdByUri(uri) ?? LuaDocumentId.VirtualDocumentId;
         });
 
         if (documentId != LuaDocumentId.VirtualDocumentId)
@@ -303,7 +303,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
         var documentIds = new List<LuaDocumentId>();
         ReadyWrite(() =>
         {
-            LuaWorkspace.Compilation.BulkUpdate(() =>
+            LuaProject.Compilation.BulkUpdate(() =>
             {
                 foreach (var fileEvent in fileEvents)
                 {
@@ -312,15 +312,15 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         case { Type: FileChangeType.Created }:
                         case { Type: FileChangeType.Changed }:
                         {
-                            if (LuaWorkspace.IsExclude(fileEvent.Uri.FileSystemPath))
+                            if (LuaProject.IsExclude(fileEvent.Uri.FileSystemPath))
                             {
                                 continue;
                             }
 
                             var uri = fileEvent.Uri.UnescapeUri;
                             var fileText = File.ReadAllText(fileEvent.Uri.FileSystemPath);
-                            LuaWorkspace.UpdateDocumentByUri(uri, fileText);
-                            var documentId = LuaWorkspace.GetDocumentIdByUri(uri);
+                            LuaProject.UpdateDocumentByUri(uri, fileText);
+                            var documentId = LuaProject.GetDocumentIdByUri(uri);
                             if (documentId.HasValue)
                             {
                                 documentIds.Add(documentId.Value);
@@ -330,7 +330,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         }
                         case { Type: FileChangeType.Deleted }:
                         {
-                            LuaWorkspace.RemoveDocumentByUri(fileEvent.Uri.UnescapeUri);
+                            LuaProject.RemoveDocumentByUri(fileEvent.Uri.UnescapeUri);
                             break;
                         }
                     }
@@ -346,7 +346,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
 
     public void RemoveDocument(string uri)
     {
-        ReadyWrite(() => { LuaWorkspace.RemoveDocumentByUri(uri); });
+        ReadyWrite(() => { LuaProject.RemoveDocumentByUri(uri); });
     }
 
     private void PushDocumentDiagnostics(LuaDocumentId documentId)
@@ -354,14 +354,14 @@ public class ServerContext(Framework.Server.LanguageServer server)
         LockSlim.EnterReadLock();
         try
         {
-            var document = LuaWorkspace.GetDocument(documentId);
+            var document = LuaProject.GetDocument(documentId);
             if (document is null)
             {
                 return;
             }
 
-            var context = new SearchContext(LuaWorkspace.Compilation, new SearchContextFeatures());
-            var diagnostics = LuaWorkspace.Compilation.GetDiagnostics(document.Id, context);
+            var context = new SearchContext(LuaProject.Compilation, new SearchContextFeatures());
+            var diagnostics = LuaProject.Compilation.GetDiagnostics(document.Id, context);
             Server.Client.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Diagnostics = diagnostics.Select(it => it.ToLspDiagnostic(document)).ToList(),

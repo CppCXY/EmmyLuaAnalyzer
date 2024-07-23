@@ -31,7 +31,7 @@ public class LuaDiagnostics(LuaCompilation compilation)
 
     private Dictionary<LuaDocumentId, DisableNextLine> DisableNextLines { get; } = new();
 
-    public DiagnosticConfig Config => Compilation.Workspace.Features.DiagnosticConfig;
+    public DiagnosticConfig Config => Compilation.Project.Features.DiagnosticConfig;
 
     private Dictionary<LuaDocumentId, List<Diagnostic>> BasicSyntaxErrors { get; } = new();
 

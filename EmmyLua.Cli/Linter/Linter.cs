@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
@@ -13,7 +12,7 @@ public class Linter(CheckOptions options)
         var workspacePath = options.Workspace;
         var settingManager = new SettingManager();
         settingManager.LoadSetting(workspacePath);
-        var luaWorkspace = LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
+        var luaWorkspace = LuaProject.Create(workspacePath, settingManager.GetLuaFeatures());
         var foundedError = false;
 
         var searchContext = new SearchContext(luaWorkspace.Compilation, new SearchContextFeatures());

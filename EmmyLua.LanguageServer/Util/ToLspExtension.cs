@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;

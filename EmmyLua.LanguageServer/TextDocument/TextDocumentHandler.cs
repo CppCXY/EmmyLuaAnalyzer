@@ -31,7 +31,7 @@ public class TextDocumentHandler(
     protected override Task Handle(DidCloseTextDocumentParams request, CancellationToken token)
     {
         var uri = request.TextDocument.Uri.UnescapeUri;
-        context.ReadyWrite(() => { context.LuaWorkspace.CloseDocument(uri); });
+        context.ReadyWrite(() => { context.LuaProject.CloseDocument(uri); });
         return Task.CompletedTask;
     }
 

@@ -1,14 +1,13 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-using EmmyLua.CodeAnalysis.Compilation;
+﻿using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace.Module;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace EmmyLua.CodeAnalysis.Workspace;
 
-public class LuaWorkspace
+public class LuaProject
 {
-    public string MainWorkspace { get; set; } = string.Empty;
+    public string MainWorkspacePath { get; set; } = string.Empty;
 
     private LuaFeatures _features;
 
@@ -57,16 +56,16 @@ public class LuaWorkspace
 
     public ModuleManager ModuleManager { get; }
 
-    public static LuaWorkspace Create() => Create("", new LuaFeatures());
+    public static LuaProject Create() => Create("", new LuaFeatures());
 
-    public static LuaWorkspace Create(string workspacePath)
+    public static LuaProject Create(string workspacePath)
     {
         return Create(workspacePath, new LuaFeatures());
     }
 
-    public static LuaWorkspace Create(string workspacePath, LuaFeatures features)
+    public static LuaProject Create(string workspacePath, LuaFeatures features)
     {
-        var workspace = new LuaWorkspace(features);
+        var workspace = new LuaProject(features);
         if (workspacePath.Length != 0)
         {
             workspace.LoadMainWorkspace(workspacePath);
@@ -75,16 +74,16 @@ public class LuaWorkspace
         return workspace;
     }
 
-    public static LuaWorkspace CleanCreate()
+    public static LuaProject CleanCreate()
     {
         var features = new LuaFeatures()
         {
             InitStdLib = false
         };
-        return new LuaWorkspace(features);
+        return new LuaProject(features);
     }
 
-    public LuaWorkspace(LuaFeatures features)
+    public LuaProject(LuaFeatures features)
     {
         _features = features;
         Compilation = new LuaCompilation(this);
@@ -136,19 +135,19 @@ public class LuaWorkspace
 
     public bool IsExclude(string path)
     {
-        if (MainWorkspace.Length == 0)
+        if (MainWorkspacePath.Length == 0)
         {
             return false;
         }
 
-        var relativePath = Path.GetRelativePath(MainWorkspace, path);
-        return !ExcludeMatcher.Match(MainWorkspace, relativePath).HasMatches;
+        var relativePath = Path.GetRelativePath(MainWorkspacePath, path);
+        return !ExcludeMatcher.Match(MainWorkspacePath, relativePath).HasMatches;
     }
 
     /// this will load all third libraries and workspace files
     public void LoadMainWorkspace(string workspace)
     {
-        MainWorkspace = workspace;
+        MainWorkspacePath = workspace;
         Monitor?.OnStartLoadWorkspace();
         var thirdPartyRoots = Features.ThirdPartyRoots;
         var files = new List<string>();

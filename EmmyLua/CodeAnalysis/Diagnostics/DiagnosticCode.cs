@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics;
 

@@ -31,7 +31,7 @@ public class CodeActionBuilder
         ServerContext context)
     {
         var result = new List<CommandOrCodeAction>();
-        var currentDocumentId = context.LuaWorkspace.GetDocumentIdByUri(currentUri);
+        var currentDocumentId = context.LuaProject.GetDocumentIdByUri(currentUri);
         if (!currentDocumentId.HasValue)
         {
             return result;

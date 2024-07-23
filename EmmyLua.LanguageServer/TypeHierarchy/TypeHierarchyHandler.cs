@@ -89,7 +89,7 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
         {
             if (typeHierarchySupertypesParams.Item.Data?.Value is string str)
             {
-                result = new(Builder.BuildSupers(context.LuaWorkspace.Compilation, str));
+                result = new(Builder.BuildSupers(context.LuaProject.Compilation, str));
             }
         });
 
@@ -104,7 +104,7 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
         {
             if (typeHierarchySubtypesParams.Item.Data?.Value is string str)
             {
-                result = new(Builder.BuildSubTypes(context.LuaWorkspace.Compilation, str));
+                result = new(Builder.BuildSubTypes(context.LuaProject.Compilation, str));
             }
         });
 

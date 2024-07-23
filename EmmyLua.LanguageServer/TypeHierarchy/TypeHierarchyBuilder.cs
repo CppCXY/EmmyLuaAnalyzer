@@ -37,7 +37,7 @@ public class TypeHierarchyBuilder
                 var typeDefine = compilation.Db.QueryNamedTypeDefinitions(superNamedType.Name).FirstOrDefault();
                 if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
                 {
-                    var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
+                    var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
                     if (typeDocument is not null
                         && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
                     {
@@ -68,7 +68,7 @@ public class TypeHierarchyBuilder
             var typeDefine = compilation.Db.QueryNamedTypeDefinitions(subTypeName).FirstOrDefault();
             if (typeDefine is LuaDeclaration { Info: NamedTypeInfo info })
             {
-                var typeDocument = compilation.Workspace.GetDocument(info.TypeDefinePtr.DocumentId);
+                var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
                 if (typeDocument is not null
                     && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
                 {

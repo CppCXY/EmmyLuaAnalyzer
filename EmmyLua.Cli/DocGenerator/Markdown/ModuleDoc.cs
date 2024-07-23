@@ -1,12 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-// using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
+﻿// using EmmyLua.CodeAnalysis.Compilation.Semantic.Render;
 // using EmmyLua.CodeAnalysis.Compilation.Semantic.Render.Renderer;
-using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace.Module;
 
 namespace EmmyLua.Cli.DocGenerator.Markdown;
 

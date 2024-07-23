@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Common;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Kind;

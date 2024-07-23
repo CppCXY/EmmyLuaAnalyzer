@@ -170,11 +170,11 @@ public partial class DeclarationWalker
     {
         if (moduleSyntax.Module is { Value: { } moduleName })
         {
-            Compilation.Workspace.ModuleManager.AddVirtualModule(DocumentId, moduleName);
+            Compilation.Project.ModuleManager.AddVirtualModule(DocumentId, moduleName);
         }
         else if (moduleSyntax.Action is { Text: "no-require" })
         {
-            Compilation.Workspace.ModuleManager.AddDisableRequire(DocumentId);
+            Compilation.Project.ModuleManager.AddDisableRequire(DocumentId);
         }
     }
 

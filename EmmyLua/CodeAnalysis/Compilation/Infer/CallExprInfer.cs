@@ -11,7 +11,7 @@ public static class CallExprInfer
         LuaType returnType = Builtin.Unknown;
         var prefixExpr = callExpr.PrefixExpr;
         var callName = callExpr.Name;
-        if (context.Compilation.Workspace.Features.RequireLikeFunction.Contains(callName))
+        if (context.Compilation.Project.Features.RequireLikeFunction.Contains(callName))
         {
             return InferRequire(callExpr, context);
         }
@@ -158,7 +158,7 @@ public static class CallExprInfer
         var firstArg = callExpr.ArgList?.ArgList.FirstOrDefault();
         if (firstArg is LuaLiteralExprSyntax { Literal: LuaStringToken { Value: { } modulePath } })
         {
-            var document = context.Compilation.Workspace.ModuleManager.FindModule(modulePath);
+            var document = context.Compilation.Project.ModuleManager.FindModule(modulePath);
             if (document is not null)
             {
                 return context.Infer(document.SyntaxTree.SyntaxRoot);

@@ -18,7 +18,7 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
         SemanticTokens? semanticTokens = null;
         context.ReadyRead(() =>
         {
-            var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
+            var semanticModel = context.LuaProject.Compilation.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
                 semanticTokens = new()
@@ -44,7 +44,7 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
         SemanticTokens? semanticTokens = null;
         context.ReadyRead(() =>
         {
-            var semanticModel = context.LuaWorkspace.Compilation.GetSemanticModel(uri);
+            var semanticModel = context.LuaProject.Compilation.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
                 semanticTokens = new()

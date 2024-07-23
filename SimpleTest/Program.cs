@@ -1,9 +1,5 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compile;
-using EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Workspace;
 
 
 var stopwatch = Stopwatch.StartNew();

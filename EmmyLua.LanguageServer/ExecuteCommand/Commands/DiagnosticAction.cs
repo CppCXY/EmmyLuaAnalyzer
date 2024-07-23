@@ -26,7 +26,7 @@ public class DiagnosticAction : ICommandBase
             documentId = new LuaDocumentId(id);
         }
 
-        var document = executor.Context.LuaWorkspace.GetDocument(documentId);
+        var document = executor.Context.LuaProject.GetDocument(documentId);
         if (document is null)
         {
             return;

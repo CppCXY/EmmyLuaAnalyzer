@@ -1,5 +1,4 @@
 ﻿using Docfx;
-using EmmyLua.Cli.DocGenerator.Markdown;
 using EmmyLua.Cli.DocGenerator.Proto;
 using EmmyLua.CodeAnalysis.Workspace;
 using EmmyLua.Configuration;
@@ -79,12 +78,12 @@ public class DocGenerator(DocOptions options)
         }
     }
 
-    private LuaWorkspace LoadLuaWorkspace()
+    private LuaProject LoadLuaWorkspace()
     {
         var workspacePath = options.Workspace;
         var settingManager = new SettingManager();
         settingManager.LoadSetting(workspacePath);
-        return LuaWorkspace.Create(workspacePath, settingManager.GetLuaFeatures());
+        return LuaProject.Create(workspacePath, settingManager.GetLuaFeatures());
     }
 
     // TODO: Generate APIs
@@ -94,7 +93,7 @@ public class DocGenerator(DocOptions options)
         // var tocItems = new List<TocItem>();
         // foreach (var module in luaWorkspace.ModuleManager.GetAllModules())
         // {
-        //     if (module.Workspace == luaWorkspace.MainWorkspace)
+        //     if (module.Workspace == luaWorkspace.MainWorkspacePath)
         //     {
         //         var renderer = new ModuleDoc(luaWorkspace.Compilation, module);
         //         var text = renderer.Build();

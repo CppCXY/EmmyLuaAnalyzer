@@ -1,6 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Common;
-
-namespace EmmyLua.CodeAnalysis.Document;
+﻿namespace EmmyLua.CodeAnalysis.Document;
 
 /// <summary>
 /// A position in a syntax tree.

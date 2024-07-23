@@ -29,9 +29,9 @@ public readonly struct LuaElementPtr<TNode>(SyntaxElementId uniqueId)
         return document.SyntaxTree.GetElement(ElementId) as TNode;
     }
 
-    public TNode? ToNode(LuaWorkspace workspace)
+    public TNode? ToNode(LuaProject project)
     {
-        var document = workspace.GetDocument(DocumentId);
+        var document = project.GetDocument(DocumentId);
         if (document is null)
         {
             return null;
@@ -42,7 +42,7 @@ public readonly struct LuaElementPtr<TNode>(SyntaxElementId uniqueId)
 
     public TNode? ToNode(SearchContext context)
     {
-        return ToNode(context.Compilation.Workspace);
+        return ToNode(context.Compilation.Project);
     }
 
     public LuaElementPtr<TBaseNode> Cast<TBaseNode>()
