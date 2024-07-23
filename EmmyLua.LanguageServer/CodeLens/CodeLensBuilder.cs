@@ -32,8 +32,13 @@ public class CodeLensBuilder
                 codeLens.Add(new Framework.Protocol.Message.CodeLens.CodeLens()
                 {
                     Range = funcToken.Range.ToLspRange(document),
-                    Data = funcStat.UniqueId.ToString()
+                    Data = $"usage|{funcStat.UniqueId}"
                 });
+                // codeLens.Add(new Framework.Protocol.Message.CodeLens.CodeLens()
+                // {
+                //     Range = funcToken.Range.ToLspRange(document),
+                //     Data = $"implement|{funcStat.UniqueId}"
+                // });
             }
         }
 
@@ -43,41 +48,84 @@ public class CodeLensBuilder
     public Framework.Protocol.Message.CodeLens.CodeLens Resolve(
         Framework.Protocol.Message.CodeLens.CodeLens codeLens, ServerContext context)
     {
-        if (codeLens.Data?.Value is string uniqueIdString)
+        if (codeLens.Data?.Value is string data)
         {
-            try
+            var parts = data.Split('|');
+            if (parts.Length != 2)
             {
-                var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
-                if (ptr.DocumentId is { } documentId)
-                {
-                    if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
-                        {
-                            NameElement: { Parent: { } element } nameElement
-                        })
-                    {
-                        var semanticModel = context.GetSemanticModel(documentId);
-                        if (semanticModel is not null)
-                        {
-                            var references = semanticModel.FindReferences(element).ToList();
-                            codeLens = new Framework.Protocol.Message.CodeLens.CodeLens()
-                            {
-                                Range = codeLens.Range,
-                                Command = MakeCommand(references, nameElement, context)
-                            };
-                        }
-                    }
-                }
+                return codeLens;
             }
-            catch
+
+            switch (parts[0])
             {
-                // ignore
+                case "usage":
+                    return ResolveUsage(codeLens, parts[1], context);
+                case "implement":
+                    return ResolveImplement(codeLens, parts[1], context);
             }
         }
 
         return codeLens;
     }
 
-    private static Command MakeCommand(List<ReferenceResult> results, LuaSyntaxElement element,
+    private Framework.Protocol.Message.CodeLens.CodeLens ResolveUsage(
+        Framework.Protocol.Message.CodeLens.CodeLens codeLens, string uniqueIdString, ServerContext context)
+    {
+        var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
+        if (ptr.DocumentId is { } documentId)
+        {
+            if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
+                {
+                    NameElement: { Parent: { } element } nameElement
+                })
+            {
+                var semanticModel = context.GetSemanticModel(documentId);
+                if (semanticModel is not null)
+                {
+                    var references = semanticModel.FindReferences(element).ToList();
+                    codeLens = new Framework.Protocol.Message.CodeLens.CodeLens()
+                    {
+                        Range = codeLens.Range,
+                        Command = MakeUsageCommand(references, nameElement, context)
+                    };
+                }
+            }
+        }
+
+        return codeLens;
+    }
+    
+    private  Framework.Protocol.Message.CodeLens.CodeLens ResolveImplement(
+        Framework.Protocol.Message.CodeLens.CodeLens codeLens, string uniqueIdString, ServerContext context)
+    {
+        var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
+        if (ptr.DocumentId is { } documentId)
+        {
+            if (ptr.ToNode(context.LuaWorkspace) is LuaFuncStatSyntax
+                {
+                    NameElement: { Parent: { } element } nameElement
+                })
+            {
+                var semanticModel = context.GetSemanticModel(documentId);
+                if (semanticModel is not null)
+                {
+                    var references = semanticModel.FindImplementations(element).ToList();
+                    if (references.Count > 1)
+                    {
+                        codeLens = new Framework.Protocol.Message.CodeLens.CodeLens()
+                        {
+                            Range = codeLens.Range,
+                            Command = MakeImplementCommand(references, nameElement, context)
+                        };
+                    }
+                }
+            }
+        }
+
+        return codeLens;
+    }
+    
+    private static Command MakeUsageCommand(List<ReferenceResult> results, LuaSyntaxElement element,
         ServerContext serverContext)
     {
         var range = element.Range;
@@ -88,6 +136,27 @@ public class CodeLensBuilder
         return new Command
         {
             Title = $"{results.Count - 1} usage",
+            Name = serverContext.IsVscode ? VscodeCommandName : OtherCommandName,
+            Arguments =
+            [
+                element.Tree.Document.Uri,
+                new LSPAny(position),
+                new LSPAny(locations)
+            ]
+        };
+    }
+    
+    private static Command MakeImplementCommand(List<ReferenceResult> results, LuaSyntaxElement element,
+        ServerContext serverContext)
+    {
+        var range = element.Range;
+        var line = element.Tree.Document.GetLine(range.StartOffset);
+        var col = element.Tree.Document.GetCol(range.StartOffset);
+        var position = new Position(line, col);
+        var locations = results.Select(it => it.Location.ToLspLocation()).ToList();
+        return new Command
+        {
+            Title = $"{results.Count - 1} implement",
             Name = serverContext.IsVscode ? VscodeCommandName : OtherCommandName,
             Arguments =
             [

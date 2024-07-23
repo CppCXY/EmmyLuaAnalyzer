@@ -28,6 +28,17 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         return [];
     }
 
+    public IEnumerable<ReferenceResult> FindImplementations(LuaSyntaxElement element)
+    {
+        // var declaration = Context.FindDeclaration(element);
+        // if (declaration is not null)
+        // {
+        //     return Context.FindImplementations(declaration);
+        // }
+
+        return [];
+    }
+
     public IEnumerable<Diagnostic> GetDiagnostics()
     {
         return Compilation.GetDiagnostics(Document.Id, Context);

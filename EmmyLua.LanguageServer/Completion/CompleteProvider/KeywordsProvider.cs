@@ -20,6 +20,7 @@ public class KeywordsProvider : ICompleteProviderBase
         if (nameExpr.Parent?.Parent is LuaBlockSyntax)
         {
             context.AddRange(KeySnippets.StatKeyWords);
+            AddSmartFuncStatCompletion(context);
         }
 
         context.AddRange(KeySnippets.ExprKeywords);
@@ -95,5 +96,25 @@ public class KeywordsProvider : ICompleteProviderBase
         }
 
         return null;
+    }
+
+    private void AddSmartFuncStatCompletion(CompleteContext context)
+    {
+        var prevStat = context.TriggerToken?.Parent?.Parent?.PrevOfType<LuaStatSyntax>().FirstOrDefault();
+        if (prevStat is not LuaFuncStatSyntax funcStatSyntax)
+        {
+            return;
+        }
+
+        var indexExpr = funcStatSyntax.IndexExpr;
+        if (indexExpr is { PrefixExpr.Text: { } text, IsColonIndex: { } colonIndex })
+        {
+            var dot = colonIndex ? ":" : ".";
+            
+            context.CreateSnippet("function")
+                .WithInsertText($"function {text}{dot}${{1:name}}(${{2:...}})\n\t${0}\nend")
+                .WithDetail($" (function {text}{dot}name(...) .. end)")
+                .AddToContext();
+        }
     }
 }

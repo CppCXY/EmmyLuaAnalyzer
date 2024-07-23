@@ -15,7 +15,7 @@ public static class KeySnippets
             InsertText = "if ${1:condition} then\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (if condition then ... end)"
+                Detail = " (if condition then .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -27,9 +27,21 @@ public static class KeySnippets
             InsertText = "else\n\t${0}",
             LabelDetails = new()
             {
-                Detail = " (else ...)"
+                Detail = " (else ..)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
+        },
+        new CompletionItem()
+        {
+            Label = "else",
+            Kind = CompletionItemKind.Snippet,
+            InsertTextMode = InsertTextMode.AdjustIndentation,
+            InsertText = "else\n\t${0}\nend",
+            LabelDetails = new()
+            {
+                Detail = " (else .. end)"
+            },
+            InsertTextFormat = InsertTextFormat.Snippet  
         },
         new CompletionItem()
         {
@@ -39,7 +51,7 @@ public static class KeySnippets
             InsertText = "elseif ${1:condition} then\n\t${0}",
             LabelDetails = new()
             {
-                Detail = " (elseif condition then ... )"
+                Detail = " (elseif condition then .. )"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -51,7 +63,19 @@ public static class KeySnippets
             InsertText = "then\n\t${0}",
             LabelDetails = new()
             {
-                Detail = " (then ... )"
+                Detail = " (then .. )"
+            },
+            InsertTextFormat = InsertTextFormat.Snippet
+        },
+        new CompletionItem()
+        {
+            Label = "then",
+            Kind = CompletionItemKind.Snippet,
+            InsertTextMode = InsertTextMode.AdjustIndentation,
+            InsertText = "then\n\t${0}\nend",
+            LabelDetails = new()
+            {
+                Detail = " (then .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -64,7 +88,7 @@ public static class KeySnippets
             InsertText = "for ${1:i} = ${2:1}, ${3:finish} do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for i = 1, finish do ... end)"
+                Detail = " (for i = 1, finish do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -76,7 +100,7 @@ public static class KeySnippets
             InsertText = "for ${1:k}, ${2:v} in pairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for k,v in pairs(table) do ... end)"
+                Detail = " (for k,v in pairs(table) do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -88,7 +112,7 @@ public static class KeySnippets
             InsertText = "for ${1:i},${2:v} in ipairs(${3:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (for i, v in ipairs(table) do ... end)"
+                Detail = " (for i, v in ipairs(table) do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -100,7 +124,7 @@ public static class KeySnippets
             InsertText = "in pairs(${1:table}) do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (in pairs(table) do ... end)"
+                Detail = " (in pairs(table) do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -112,7 +136,7 @@ public static class KeySnippets
             InsertText = "do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (do ... end)"
+                Detail = " (do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -124,7 +148,7 @@ public static class KeySnippets
             InsertText = "while ${1:condition} do\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (while condition do ... end)"
+                Detail = " (while condition do .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -136,7 +160,7 @@ public static class KeySnippets
             InsertText = "repeat\n\t${0}\nuntil ${1:condition}",
             LabelDetails = new()
             {
-                Detail = " (repeat ... until condition)"
+                Detail = " (repeat .. until condition)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -162,7 +186,7 @@ public static class KeySnippets
             InsertText = "function ${1:name}(${2:...})\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (function name(...) ... end)"
+                Detail = " (function name(...) .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -175,7 +199,7 @@ public static class KeySnippets
             InsertText = "local function ${1:name}(${2:...})\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (local function name(...) ... end)"
+                Detail = " (local function name(...) .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },
@@ -191,7 +215,7 @@ public static class KeySnippets
             InsertText = "function (${1:...})\n\t${0}\nend",
             LabelDetails = new()
             {
-                Detail = " (function (...) ... end)"
+                Detail = " (function (...) .. end)"
             },
             InsertTextFormat = InsertTextFormat.Snippet
         },

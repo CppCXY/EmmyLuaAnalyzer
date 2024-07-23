@@ -349,11 +349,6 @@ public class LuaWorkspace
         }
     }
 
-    public IDocument? GetDocument(int id)
-    {
-        return GetDocument(new LuaDocumentId(id));
-    }
-
     // 通过文件路径和设置中的编码读取文件
     public string ReadFile(string path)
     {

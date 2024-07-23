@@ -10,7 +10,7 @@ public readonly record struct LuaDocumentId(int Id)
     public bool IsVirtual => Id == 0;
 }
 
-public sealed class LuaDocument : IDocument
+public sealed class LuaDocument
 {
     public static readonly LuaDocument Empty = new(string.Empty, LuaLanguage.Default, LuaDocumentId.VirtualDocumentId,
         string.Empty, string.Empty);
