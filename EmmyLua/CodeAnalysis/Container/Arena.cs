@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
+﻿namespace EmmyLua.CodeAnalysis.Container;
 
 public record struct ArenaId(int Id);
 // TODO: This is a simple implementation of Arena<TValue> that is not used in the project.

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Server.Render.Renderer;
 
 namespace EmmyLua.LanguageServer.Server.Render;

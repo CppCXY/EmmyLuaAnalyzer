@@ -1,7 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -33,7 +34,7 @@ public static class GenericInfer
                 Literal: LuaStringToken { } stringToken1
             })
         {
-            substitution.Add(templateType.TemplateName, new LuaNamedType(templateType.PrefixName + stringToken1.Value));
+            substitution.Add(templateType.TemplateName, new LuaNamedType(LuaDocumentId.VirtualDocumentId, templateType.PrefixName + stringToken1.Value));
             return true;
         }
 

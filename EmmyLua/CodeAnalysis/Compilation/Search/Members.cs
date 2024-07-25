@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
@@ -17,11 +17,6 @@ public class Members(SearchContext context)
 
     public IEnumerable<LuaDeclaration> GetRawMembers(LuaType luaType)
     {
-        if (!luaType.HasMember)
-        {
-            return [];
-        }
-
         if (context.Features.Cache && TypeMemberCaches.TryGetValue(luaType, out var members))
         {
             return members;

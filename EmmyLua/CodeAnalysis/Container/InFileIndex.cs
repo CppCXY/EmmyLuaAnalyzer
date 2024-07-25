@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Index.IndexContainer;
+namespace EmmyLua.CodeAnalysis.Container;
 
 public class InFileIndex<TKey, TValue> where TKey : notnull
 {

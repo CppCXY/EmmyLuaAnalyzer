@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -119,13 +119,13 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId);
-        return methodType ?? Builtin.Unknown;
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        return typeInfo?.BaseType ?? Builtin.Unknown;
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        return new LuaTableLiteralType(tableExpr);
+        return new LuaElementType(tableExpr.UniqueId);
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

@@ -43,7 +43,8 @@ public enum DiagnosticCode
     UndefinedField,
     [EnumMember(Value = "local-const-reassign")]
     LocalConstReassign,
-
+    [EnumMember(Value = "duplicate-type")]
+    DuplicateType,
 }
 // @formatter:on
 public static class DiagnosticCodeHelper
@@ -97,32 +98,9 @@ public static class DiagnosticCodeHelper
             DiagnosticCode.DisableGlobalDefine => false,
             DiagnosticCode.UndefinedField => false,
             DiagnosticCode.LocalConstReassign => true,
+            DiagnosticCode.DuplicateType => true,
             _ => false
         };
     }
 }
 
-// public class DiagnosticCodeJsonConverter : JsonConverter<DiagnosticCode>
-// {
-//     public override DiagnosticCode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-//     {
-//         var name = reader.GetString();
-//         return DiagnosticCodeHelper.GetCode(name!);
-//     }
-//
-//     public override void Write(Utf8JsonWriter writer, DiagnosticCode value, JsonSerializerOptions options)
-//     {
-//         writer.WriteStringValue(DiagnosticCodeHelper.GetName(value));
-//     }
-//
-//     public override void WriteAsPropertyName(Utf8JsonWriter writer, DiagnosticCode value, JsonSerializerOptions options)
-//     {
-//         writer.WritePropertyName(DiagnosticCodeHelper.GetName(value));
-//     }
-//
-//     public override DiagnosticCode ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-//     {
-//         var name = reader.GetString();
-//         return DiagnosticCodeHelper.GetCode(name!);
-//     }
-// }

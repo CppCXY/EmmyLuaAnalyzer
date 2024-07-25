@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -45,7 +45,7 @@ public static class TypeInfer
 
     private static LuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
     {
-        return new LuaDocTableType(tableType);
+        return new LuaElementType(tableType.UniqueId);
     }
 
     private static LuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)
@@ -123,13 +123,7 @@ public static class TypeInfer
     {
         if (nameType.Name is { RepresentText: { } name })
         {
-            var builtInType = Builtin.FromName(name);
-            if (builtInType is not null)
-            {
-                return builtInType;
-            }
-
-            return new LuaNamedType(name);
+            return new LuaNamedType(nameType.DocumentId, name);
         }
 
         return Builtin.Unknown;
@@ -161,7 +155,7 @@ public static class TypeInfer
         var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
         if (genericType is { Name: { } name })
         {
-            return new LuaGenericType(name.RepresentText, typeArgs);
+            return new LuaGenericType(genericType.DocumentId, name.RepresentText, typeArgs);
         }
 
         return Builtin.Unknown;
@@ -171,7 +165,7 @@ public static class TypeInfer
     {
         if (variadicType is { Name: { } name })
         {
-            return new LuaVariadicType(new LuaNamedType(name.RepresentText));
+            return new LuaVariadicType(new LuaNamedType(variadicType.DocumentId, name.RepresentText));
         }
 
         return new LuaVariadicType(Builtin.Unknown);

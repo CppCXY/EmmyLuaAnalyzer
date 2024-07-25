@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
@@ -197,6 +197,12 @@ public class SearchContext
     public bool IsSubTypeOf(LuaType left, LuaType right)
     {
         return SubTypeInfer.IsSubTypeOf(left, right);
+    }
+
+    public bool IsSameType(LuaType left, LuaType right)
+    {
+        throw new NotImplementedException();
+        // return SubTypeInfer.IsSameType(left, right);
     }
 
     public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr, List<LuaExprSyntax> args)

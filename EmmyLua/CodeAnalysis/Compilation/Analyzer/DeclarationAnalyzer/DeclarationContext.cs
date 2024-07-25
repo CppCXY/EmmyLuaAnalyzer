@@ -3,9 +3,11 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type.Manager;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -35,6 +37,8 @@ public class DeclarationContext(
     private LuaCompilation Compilation => Analyzer.Compilation;
 
     public ProjectIndex Db => Compilation.Db;
+
+    public LuaTypeManager TypeManager => Compilation.TypeManager;
 
     private AnalyzeContext AnalyzeContext { get; } = analyzeContext;
 
@@ -206,5 +210,13 @@ public class DeclarationContext(
     public LuaClosureExprSyntax? GetElementRelatedClosure(LuaSyntaxElement element)
     {
         return _elementRelatedClosure.GetValueOrDefault(element.UniqueId).ToNode(Document);
+    }
+
+    public void AddDiagnostic(Diagnostic diagnostic)
+    {
+        if (Compilation.Diagnostics.CanAddDiagnostic(DocumentId, diagnostic.Code, diagnostic.Range))
+        {
+            Compilation.Diagnostics.AddDiagnostic(DocumentId, diagnostic);
+        }
     }
 }

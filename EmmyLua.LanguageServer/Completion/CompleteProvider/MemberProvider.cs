@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
@@ -60,18 +60,15 @@ public class MemberProvider : ICompleteProviderBase
         }
 
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
-        if (prefixType.HasMember)
+        var colon = indexExpr.IsColonIndex;
+        foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
         {
-            var colon = indexExpr.IsColonIndex;
-            foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
-            {
-                context.CreateCompletion(member.Name, member.Type)
-                    .WithColon(colon)
-                    .WithData(member.RelationInformation)
-                    .WithDotCheckBracketLabel(indexExpr)
-                    .WithCheckDeclaration(member)
-                    .AddToContext();
-            }
+            context.CreateCompletion(member.Name, member.Type)
+                .WithColon(colon)
+                .WithData(member.RelationInformation)
+                .WithDotCheckBracketLabel(indexExpr)
+                .WithCheckDeclaration(member)
+                .AddToContext();
         }
     }
 
@@ -84,45 +81,43 @@ public class MemberProvider : ICompleteProviderBase
 
         var indexExpr = funcStatSyntax.IndexExpr;
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
-        if (prefixType.HasMember)
+
+        var colon = indexExpr.IsColonIndex;
+        foreach (var member in context.SemanticModel
+                     .Context.GetSuperMembers(prefixType))
         {
-            var colon = indexExpr.IsColonIndex;
-            foreach (var member in context.SemanticModel
-                         .Context.GetSuperMembers(prefixType))
+            if (member.Type is LuaMethodType methodType)
             {
-                if (member.Type is LuaMethodType methodType)
+                var insertRange = context.TriggerToken!.Range.ToLspRange(context.SemanticModel.Document);
+                if (context.TriggerToken is { Kind: LuaTokenKind.TkDot or LuaTokenKind.TkColon })
                 {
-                    var insertRange = context.TriggerToken!.Range.ToLspRange(context.SemanticModel.Document);
-                    if (context.TriggerToken is { Kind: LuaTokenKind.TkDot or LuaTokenKind.TkColon })
+                    insertRange = insertRange with
                     {
-                        insertRange = insertRange with
-                        {
-                            Start = new Position(insertRange.Start.Line, insertRange.Start.Character + 1)
-                        };
-                    }
-
-                    var replaceRange = insertRange;
-                    if (funcStatSyntax.ClosureExpr?.ParamList?.FirstChildToken(LuaTokenKind.TkRightParen) is { } token)
-                    {
-                        var col = context.SemanticModel.Document.GetCol(token.Range.EndOffset);
-                        replaceRange = new (insertRange.Start, new Position(insertRange.End.Line, col));
-                    }
-
-                    var textOrReplaceEdit = new TextEditOrInsertReplaceEdit(new TextEdit()
-                    {
-                        NewText =
-                            $"{member.Name}{MakeSignature(methodType.MainSignature, methodType.ColonDefine, colon)}",
-                        Range = replaceRange,
-                    });
-
-                    context.CreateCompletion($"override {member.Name}", member.Type)
-                        .WithColon(colon)
-                        .WithTextEditOrReplaceEdit(textOrReplaceEdit)
-                        .WithData(member.RelationInformation)
-                        .WithDotCheckBracketLabel(indexExpr)
-                        .WithCheckDeclaration(member)
-                        .AddToContext();
+                        Start = new Position(insertRange.Start.Line, insertRange.Start.Character + 1)
+                    };
                 }
+
+                var replaceRange = insertRange;
+                if (funcStatSyntax.ClosureExpr?.ParamList?.FirstChildToken(LuaTokenKind.TkRightParen) is { } token)
+                {
+                    var col = context.SemanticModel.Document.GetCol(token.Range.EndOffset);
+                    replaceRange = new(insertRange.Start, new Position(insertRange.End.Line, col));
+                }
+
+                var textOrReplaceEdit = new TextEditOrInsertReplaceEdit(new TextEdit()
+                {
+                    NewText =
+                        $"{member.Name}{MakeSignature(methodType.MainSignature, methodType.ColonDefine, colon)}",
+                    Range = replaceRange,
+                });
+
+                context.CreateCompletion($"override {member.Name}", member.Type)
+                    .WithColon(colon)
+                    .WithTextEditOrReplaceEdit(textOrReplaceEdit)
+                    .WithData(member.RelationInformation)
+                    .WithDotCheckBracketLabel(indexExpr)
+                    .WithCheckDeclaration(member)
+                    .AddToContext();
             }
         }
     }

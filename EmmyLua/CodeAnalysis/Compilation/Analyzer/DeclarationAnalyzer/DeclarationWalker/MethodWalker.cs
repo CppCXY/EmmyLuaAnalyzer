@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
@@ -39,15 +39,16 @@ public partial class DeclarationWalker
                     var declaration = new LuaDeclaration(
                         name2.RepresentText,
                         new MethodInfo(
-                            new(luaFuncStat.NameExpr),
+                            new(nameExpr),
                             null,
                             new(luaFuncStat)
                         ),
                         DeclarationFeature.Global
                     );
+                    declarationContext.TypeManager.AddGlobal(nameExpr.UniqueId, name2.RepresentText);
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                    declarationContext.Db.AddGlobal(DocumentId, name2.RepresentText, declaration, true);
+                    // declarationContext.Db.AddGlobal(DocumentId, name2.RepresentText, declaration, true);
                     var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
@@ -142,7 +143,8 @@ public partial class DeclarationWalker
             null,
             isColonDefine);
 
-        declarationContext.Db.UpdateIdRelatedType(closureExprSyntax.UniqueId, method);
+        declarationContext.TypeManager.AddElementType(closureExprSyntax.UniqueId);
+        declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
         {

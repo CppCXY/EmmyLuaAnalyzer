@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -42,7 +42,7 @@ public partial class DeclarationWalker
                     name.RepresentText,
                     new LocalInfo(
                         new(localName),
-                        new LuaVariableRefType(localName.UniqueId),
+                        new LuaElementType(localName.UniqueId),
                         localName.Attribute?.IsConst ?? false,
                         localName.Attribute?.IsClose ?? false
                     ),
@@ -54,7 +54,7 @@ public partial class DeclarationWalker
                     declaration,
                     relatedExpr,
                     ResolveState.UnResolvedType
-                    );
+                );
                 declarationContext.AddUnResolved(unResolveDeclaration);
             }
         }
@@ -71,7 +71,7 @@ public partial class DeclarationWalker
                     name.RepresentText,
                     new ParamInfo(
                         new(param),
-                        new LuaVariableRefType(param.UniqueId),
+                        new LuaElementType(param.UniqueId),
                         false
                     ),
                     DeclarationFeature.Local);
@@ -146,15 +146,15 @@ public partial class DeclarationWalker
                                 ),
                                 DeclarationFeature.Global
                             );
+                            declarationContext.TypeManager.AddGlobal(nameExpr.UniqueId, name.RepresentText);
                             declarationContext.AddLocalDeclaration(nameExpr, declaration);
                             declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                            var unResolveDeclaration =  new UnResolvedSymbol(
+                            var unResolveDeclaration = new UnResolvedSymbol(
                                 declaration,
                                 relatedExpr,
                                 ResolveState.UnResolvedType
-                                );
+                            );
                             declarationContext.AddUnResolved(unResolveDeclaration);
-                            declarationContext.Db.AddGlobal(DocumentId, name.RepresentText, declaration, false);
                         }
                         else
                         {
@@ -184,9 +184,6 @@ public partial class DeclarationWalker
                             ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
                         declarationContext.AddUnResolved(unResolveDeclaration);
                     }
-                    // else if (indexExpr is { IndexKeyExpr: { } indexKeyExpr })
-                    // {
-                    // }
 
                     break;
                 }

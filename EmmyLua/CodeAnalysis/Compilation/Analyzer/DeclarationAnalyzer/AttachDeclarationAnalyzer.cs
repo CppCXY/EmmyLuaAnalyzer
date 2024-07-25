@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -85,7 +85,7 @@ public class AttachDeclarationAnalyzer(
             if (nameTypeDefine is { Name.RepresentText: { } name } &&
                 declarations.FirstOrDefault() is { } firstDeclaration)
             {
-                firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = LuaNamedType.Create(name) };
+                firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = new LuaNamedType(declarationContext.DocumentId, name) };
                 if (firstDeclaration.IsGlobal)
                 {
                     searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, firstDeclaration.Name,
@@ -205,8 +205,8 @@ public class AttachDeclarationAnalyzer(
             return;
         }
 
-        var idType = declarationContext.Db.QueryTypeFromId(closureExpr.UniqueId);
-        if (idType is not LuaMethodType methodType)
+        var typeInfo = declarationContext.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        if (typeInfo?.BaseType is not LuaMethodType methodType)
         {
             return;
         }
@@ -306,6 +306,6 @@ public class AttachDeclarationAnalyzer(
                 methodType.ColonDefine);
         }
 
-        declarationContext.Db.UpdateIdRelatedType(closureExpr.UniqueId, methodType);
+        declarationContext.TypeManager.SetBaseType(closureExpr.UniqueId, methodType);
     }
 }

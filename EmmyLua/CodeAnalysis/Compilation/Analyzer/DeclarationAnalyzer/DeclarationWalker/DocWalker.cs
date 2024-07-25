@@ -1,13 +1,13 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
 public partial class DeclarationWalker
 {
-    private void AnalyzeDocDetailField(LuaType parentType, LuaDocFieldSyntax field)
+    private LuaDeclaration? AnalyzeDocDetailField(LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
         switch (field)
@@ -15,7 +15,7 @@ public partial class DeclarationWalker
             case { NameField: { } nameField, Type: { } type1 }:
             {
                 var type = searchContext.Infer(type1);
-                var declaration = new LuaDeclaration(
+                return new LuaDeclaration(
                     nameField.RepresentText,
                     new DocFieldInfo(
                         new(field),
@@ -23,13 +23,11 @@ public partial class DeclarationWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                declarationContext.Db.AddMember(DocumentId, parentType, declaration);
-                break;
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
             {
                 var type = searchContext.Infer(type2);
-                var declaration = new LuaDeclaration(
+                return new LuaDeclaration(
                     $"[{integerField.Value}]",
                     new DocFieldInfo(
                         new(field),
@@ -38,13 +36,11 @@ public partial class DeclarationWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                declarationContext.Db.AddMember(DocumentId, parentType, declaration);
-                break;
             }
             case { StringField: { } stringField, Type: { } type3 }:
             {
                 var type = searchContext.Infer(type3);
-                var declaration = new LuaDeclaration(
+                return new LuaDeclaration(
                     stringField.Value,
                     new DocFieldInfo(
                         new(field),
@@ -52,10 +48,54 @@ public partial class DeclarationWalker
                     DeclarationFeature.None,
                     GetVisibility(visibility)
                 );
-                declarationContext.Db.AddMember(DocumentId, parentType, declaration);
-                break;
             }
-            case { TypeField: { } typeField, Type: { } type4 }:
+        }
+
+        return null;
+    }
+
+    private void AnalyzeTypeFields(LuaNamedType namedType, LuaDocTagSyntax typeTag)
+    {
+        var declarations = new List<LuaDeclaration>();
+        foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
+        {
+            if (tagField.Field is not null)
+            {
+                if (tagField.Field is { TypeField: { } typeField, Type: { } type4 })
+                {
+                    var keyType = searchContext.Infer(typeField);
+                    var valueType = searchContext.Infer(type4);
+                    var docIndexDeclaration = new LuaDeclaration(
+                        string.Empty,
+                        new TypeIndexInfo(
+                            keyType,
+                            valueType,
+                            new(tagField.Field)
+                        ));
+                    var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
+                    declarationContext.TypeManager.AddOperators(namedType, [indexOperator]);
+                    continue;
+                }
+
+                if (AnalyzeDocDetailField(tagField.Field) is {} declaration)
+                {
+                    declarations.Add(declaration);
+                }
+            }
+        }
+
+        if (declarations.Count > 0)
+        {
+            declarationContext.TypeManager.AddMemberDeclarations(namedType, declarations);
+        }
+    }
+
+    private void AnalyzeTagDocBody(LuaNamedType namedType, LuaDocBodySyntax docBody)
+    {
+        var declarations = new List<LuaDeclaration>();
+        foreach (var field in docBody.FieldList)
+        {
+            if (field is { TypeField: { } typeField, Type: { } type4 })
             {
                 var keyType = searchContext.Infer(typeField);
                 var valueType = searchContext.Infer(type4);
@@ -66,39 +106,39 @@ public partial class DeclarationWalker
                         valueType,
                         new(field)
                     ));
-                var indexOperator = new IndexOperator(parentType, keyType, valueType, docIndexDeclaration);
-                declarationContext.Db.AddTypeOperator(DocumentId, indexOperator);
-                break;
+                var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
+                declarationContext.TypeManager.AddOperators(namedType, [indexOperator]);
+                continue;
             }
-        }
-    }
 
-    private void AnalyzeTypeFields(LuaNamedType namedType, LuaDocTagSyntax typeTag)
-    {
-        foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
-        {
-            if (tagField.Field is not null)
+            if (AnalyzeDocDetailField(field) is {} declaration)
             {
-                AnalyzeDocDetailField(namedType, tagField.Field);
+                declarations.Add(declaration);
             }
         }
-    }
 
-    private void AnalyzeDocBody(LuaType type, LuaDocBodySyntax docBody)
-    {
-        foreach (var field in docBody.FieldList)
+        if (declarations.Count > 0)
         {
-            AnalyzeDocDetailField(type, field);
+            declarationContext.TypeManager.AddMemberDeclarations(namedType, declarations);
         }
     }
 
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     {
-        var tableType = new LuaDocTableType(luaDocTableTypeSyntax);
+        var declarations = new List<LuaDeclaration>();
+        declarationContext.TypeManager.AddElementType(luaDocTableTypeSyntax.UniqueId);
         if (luaDocTableTypeSyntax.Body is not null)
         {
-            AnalyzeDocBody(tableType, luaDocTableTypeSyntax.Body);
+            foreach (var field in luaDocTableTypeSyntax.Body.FieldList)
+            {
+                if (AnalyzeDocDetailField(field) is {} declaration)
+                {
+                    declarations.Add(declaration);
+                }
+            }
         }
+
+        declarationContext.TypeManager.AddElementMember(luaDocTableTypeSyntax.UniqueId, declarations);
     }
 
     private void AnalyzeMeta()

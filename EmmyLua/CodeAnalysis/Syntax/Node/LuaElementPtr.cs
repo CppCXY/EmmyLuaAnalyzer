@@ -4,12 +4,12 @@ using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-public readonly struct LuaElementPtr<TNode>(SyntaxElementId uniqueId)
+public readonly record struct LuaElementPtr<TNode>(SyntaxElementId UniqueId)
     where TNode : LuaSyntaxElement
 {
-    public static readonly LuaElementPtr<TNode> Empty = new LuaElementPtr<TNode>(SyntaxElementId.Empty);
+    public static readonly LuaElementPtr<TNode> Empty = new(SyntaxElementId.Empty);
 
-    public SyntaxElementId UniqueId { get; } = uniqueId;
+    public SyntaxElementId UniqueId { get; } = UniqueId;
 
     public LuaDocumentId DocumentId => UniqueId.DocumentId;
 

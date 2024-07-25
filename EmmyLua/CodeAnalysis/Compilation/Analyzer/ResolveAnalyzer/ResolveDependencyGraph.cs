@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -203,8 +203,8 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var idType = context.Compilation.Db.QueryTypeFromId(id);
-            if (idType is LuaMethodType methodType)
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(id);
+            if (typeInfo?.BaseType is LuaMethodType methodType)
             {
                 var retType = methodType.MainSignature.ReturnType;
                 if (!retType.Equals(Builtin.Unknown))

@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -63,15 +63,15 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     private void ResolveType(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedSymbol)
         {
-            var exprRef = unResolvedDeclaration.ExprRef;
+            var exprRef = unResolvedSymbol.ExprRef;
             if (exprRef is not null)
             {
                 var exprType = Context.Infer(exprRef.Expr);
                 if (!exprType.Equals(Builtin.Unknown))
                 {
-                    MergeType(unResolvedDeclaration, exprType, exprRef.RetId);
+                    MergeType(unResolvedSymbol, exprType, exprRef.RetId);
                 }
             }
         }

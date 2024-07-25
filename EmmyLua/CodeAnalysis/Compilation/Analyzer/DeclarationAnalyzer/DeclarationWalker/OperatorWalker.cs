@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -8,6 +9,7 @@ public partial class DeclarationWalker
 {
     private void AnalyzeTypeOperator(LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
+        var operators = new List<TypeOperator>();
         foreach (var operatorSyntax in typeTag.NextOfType<LuaDocTagOperatorSyntax>())
         {
             switch (operatorSyntax.Operator?.RepresentText)
@@ -23,7 +25,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "sub":
@@ -37,7 +39,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "mul":
@@ -51,7 +53,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "div":
@@ -65,7 +67,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "mod":
@@ -79,7 +81,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "pow":
@@ -93,7 +95,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "unm":
@@ -106,7 +108,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "idiv":
@@ -120,7 +122,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "band":
@@ -134,7 +136,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "bor":
@@ -148,7 +150,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "bxor":
@@ -162,7 +164,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "bnot":
@@ -175,7 +177,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "shl":
@@ -189,7 +191,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "shr":
@@ -203,7 +205,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "concat":
@@ -217,7 +219,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "len":
@@ -230,7 +232,7 @@ public partial class DeclarationWalker
                             retType
                         ));
                     var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "eq":
@@ -243,7 +245,7 @@ public partial class DeclarationWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "lt":
@@ -256,7 +258,7 @@ public partial class DeclarationWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
                 case "le":
@@ -269,19 +271,34 @@ public partial class DeclarationWalker
                             type
                         ));
                     var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean, opDeclaration);
-                    declarationContext.Db.AddTypeOperator(DocumentId, op);
+                    operators.Add(op);
                     break;
                 }
             }
         }
 
+        if (operators.Count > 0)
+        {
+            declarationContext.TypeManager.AddOperators(namedType, operators);
+        }
+
+        var overloads = new List<TypeInfo.OverloadStub>();
         foreach (var overloadSyntax in typeTag.NextOfType<LuaDocTagOverloadSyntax>())
         {
             var overloadType = searchContext.Infer(overloadSyntax.TypeFunc);
             if (overloadType is LuaMethodType methodType)
             {
-                declarationContext.Db.AddTypeOverload(DocumentId, namedType.Name, methodType);
+                var overload = new TypeInfo.OverloadStub(
+                    DocumentId,
+                    methodType
+                );
+                overloads.Add(overload);
             }
+        }
+
+        if (overloads.Count > 0)
+        {
+            declarationContext.TypeManager.AddOverloads(namedType, overloads);
         }
     }
 }
