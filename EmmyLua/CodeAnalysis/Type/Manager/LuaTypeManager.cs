@@ -306,8 +306,11 @@ public class LuaTypeManager(LuaCompilation compilation)
     {
         if (ElementTypeInfos.Query(elementId.DocumentId, elementId) is { } typeInfo)
         {
-            typeInfo.Declarations ??= new();
-            typeInfo.Declarations.TryAdd(member.Name, member);
+            if (member.DocumentId == elementId.DocumentId)
+            {
+                typeInfo.Declarations ??= new();
+                typeInfo.Declarations.TryAdd(member.Name, member);
+            }
         }
     }
 
