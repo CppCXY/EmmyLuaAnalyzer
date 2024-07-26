@@ -9,7 +9,7 @@ public class NamespaceOrTypeInfo
 
     public Dictionary<string, NamespaceOrTypeInfo>? Children { get; set; } = null;
 
-    public TypeInfo? TypeInfo { get; set; }
+    public TypeInfo.TypeInfo? TypeInfo { get; set; }
 
     public void Remove(LuaDocumentId documentId)
     {
@@ -115,6 +115,7 @@ public class NamespaceOrTypeInfo
                 }
 
                 TypeInfo.DefinedElementIds.Add(elementId);
+                TypeInfo.DefinedDocumentIds.Add(elementId.DocumentId);
             }
             else
             {
@@ -123,13 +124,14 @@ public class NamespaceOrTypeInfo
         }
         else
         {
-            TypeInfo = new TypeInfo()
+            TypeInfo = new TypeInfo.TypeInfo()
             {
                 MainDocumentId = elementId.DocumentId,
                 Kind = kind,
                 Attribute = attribute,
                 ResolvedMainDocumentId = kind == NamedTypeKind.Alias,
-                DefinedElementIds = [elementId]
+                DefinedElementIds = [elementId],
+                DefinedDocumentIds = [elementId.DocumentId]
             };
         }
 

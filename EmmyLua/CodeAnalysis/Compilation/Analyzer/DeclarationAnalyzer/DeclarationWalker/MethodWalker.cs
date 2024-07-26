@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -15,14 +16,14 @@ public partial class DeclarationWalker
         {
             case { IsLocal: true, LocalName.Name: { } name, ClosureExpr: { } closureExpr }:
             {
-                var declaration = new LuaDeclaration(
+                var declaration = new LuaSymbol(
                     name.RepresentText,
                     new MethodInfo(
                         new(luaFuncStat.LocalName),
                         null,
                         new(luaFuncStat)
                     ),
-                    DeclarationFeature.Local
+                    SymbolFeature.Local
                 );
                 declarationContext.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
@@ -36,19 +37,18 @@ public partial class DeclarationWalker
                 var prevDeclaration = declarationContext.FindLocalDeclaration(luaFuncStat.NameExpr);
                 if (prevDeclaration is null)
                 {
-                    var declaration = new LuaDeclaration(
+                    var declaration = new LuaSymbol(
                         name2.RepresentText,
                         new MethodInfo(
                             new(nameExpr),
                             null,
                             new(luaFuncStat)
                         ),
-                        DeclarationFeature.Global
+                        SymbolFeature.Global
                     );
-                    declarationContext.TypeManager.AddGlobal(nameExpr.UniqueId, name2.RepresentText);
+                    declarationContext.TypeManager.AddGlobal(name2.RepresentText, declaration);
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                    // declarationContext.Db.AddGlobal(DocumentId, name2.RepresentText, declaration, true);
                     var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
@@ -64,7 +64,7 @@ public partial class DeclarationWalker
             {
                 if (indexExpr is { Name: { } name })
                 {
-                    var declaration = new LuaDeclaration(
+                    var declaration = new LuaSymbol(
                         name,
                         new MethodInfo(
                             new(indexExpr),
@@ -94,30 +94,38 @@ public partial class DeclarationWalker
             }
         }
 
-        var parameters = new List<LuaDeclaration>();
+        var parameters = new List<LuaSymbol>();
         if (closureExprSyntax.ParamList is { } paramList)
         {
             foreach (var param in paramList.Params)
             {
                 if (param.Name is { } name)
                 {
-                    var declaration = new LuaDeclaration(
+                    var paramName = name.RepresentText;
+                    LuaType? paramType = null;
+                    if (paramName is not "self")
+                    {
+                        paramType = new LuaElementType(param.UniqueId);
+                        declarationContext.TypeManager.AddElementType(param.UniqueId);
+                    }
+
+                    var declaration = new LuaSymbol(
                         name.RepresentText,
                         new ParamInfo(
                             new(param),
-                            null,
-                            false,
+                            paramType,
                             false
                         ),
-                        DeclarationFeature.Local
+                        SymbolFeature.Local
                     );
+
                     declarationContext.AddLocalDeclaration(param, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
                     parameters.Add(declaration);
                 }
                 else if (param.IsVarArgs)
                 {
-                    var declaration = new LuaDeclaration(
+                    var declaration = new LuaSymbol(
                         "...",
                         new ParamInfo(
                             new(param),
@@ -125,7 +133,7 @@ public partial class DeclarationWalker
                             true,
                             true
                         ),
-                        DeclarationFeature.Local
+                        SymbolFeature.Local
                     );
 
                     declarationContext.AddLocalDeclaration(param, declaration);

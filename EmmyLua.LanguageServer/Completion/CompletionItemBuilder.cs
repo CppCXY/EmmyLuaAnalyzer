@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
@@ -48,24 +49,24 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         return this;
     }
 
-    public CompletionItemBuilder WithCheckDeclaration(LuaDeclaration declaration)
+    public CompletionItemBuilder WithCheckDeclaration(LuaSymbol symbol)
     {
-        if (declaration.IsDeprecated)
+        if (symbol.IsDeprecated)
         {
             IsDeprecated = true;
         }
         
-        if (declaration.RequiredVersions is not null)
+        if (symbol.RequiredVersions is not null)
         {
             var feature = CompleteContext.ServerContext.LuaProject.Features;
             var languageLevel = feature.Language.LanguageLevel;
-            if (!declaration.ValidateLuaVersion(languageLevel))
+            if (!symbol.ValidateLuaVersion(languageLevel))
             {
                 Disable = true;
             }
 
             var frameworkVersion = feature.FrameworkVersions;
-            if (!Disable && !declaration.ValidateFrameworkVersions(frameworkVersion))
+            if (!Disable && !symbol.ValidateFrameworkVersions(frameworkVersion))
             {
                 Disable = true;
             }

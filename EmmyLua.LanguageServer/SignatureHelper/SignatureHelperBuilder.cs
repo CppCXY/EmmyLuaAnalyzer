@@ -69,7 +69,7 @@ public class SignatureHelperBuilder
         var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
 
 
-        semanticModel.Context.FindMethodsForType(parentType, luaMethod =>
+        semanticModel.Context.FindCallableType(parentType, luaMethod =>
         {
             var signatures = new List<LuaSignature>();
             if (luaMethod is LuaGenericMethodType genericMethodType)

@@ -1,28 +1,31 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager;
+namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
-public class TypeInfo
+public class TypeInfo : ITypeInfo
 {
     public LuaDocumentId MainDocumentId { get; set; }
 
-    public bool ResolvedMainDocumentId { get; set; } = false;
+    public bool ResolvedMainDocumentId { get; set; }
 
-    public HashSet<SyntaxElementId> DefinedElementIds { get; set; } = new();
+    public HashSet<SyntaxElementId> DefinedElementIds { get; init; } = new();
+
+    public HashSet<LuaDocumentId> DefinedDocumentIds { get; init; } = new();
 
     public string Name { get; set; } = string.Empty;
 
-    public List<LuaDeclaration>? GenericParams { get; set; }
+    public List<LuaSymbol>? GenericParams { get; set; }
 
     public LuaType? BaseType { get; set; }
 
     public List<LuaNamedType>? Supers { get; set; }
 
-    public Dictionary<string, LuaDeclaration>? Declarations { get; set; }
+    public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
-    public Dictionary<string, LuaDeclaration>? Implements { get; set; }
+    public Dictionary<string, LuaSymbol>? Implements { get; set; }
 
     public List<TypeOperator>? Operators { get; set; }
 
@@ -65,6 +68,7 @@ public class TypeInfo
         }
 
         DefinedElementIds.RemoveWhere(it => it.DocumentId == documentId);
+        DefinedDocumentIds.Remove(documentId);
         return removeAll;
     }
 
@@ -128,7 +132,7 @@ public class TypeInfo
         var removeAll = true;
         if (Operators is not null)
         {
-            var operators = Operators.Where(it => it.LuaDeclaration.DocumentId != documentId).ToList();
+            var operators = Operators.Where(it => it.LuaSymbol.DocumentId != documentId).ToList();
             if (operators.Count > 0)
             {
                 Operators = operators;
@@ -165,6 +169,6 @@ public class TypeInfo
 
     public bool IsDefinedInDocument(LuaDocumentId documentId)
     {
-        return MainDocumentId == documentId || DefinedElementIds.Any(it => it.DocumentId == documentId);
+        return DefinedDocumentIds.Contains(documentId);
     }
 }

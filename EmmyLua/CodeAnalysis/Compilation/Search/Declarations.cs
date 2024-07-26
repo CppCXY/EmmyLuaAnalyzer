@@ -1,15 +1,15 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
 public class Declarations(SearchContext context)
 {
-    private Dictionary<SyntaxElementId, LuaDeclaration?> DeclarationCaches { get; } = new();
+    private Dictionary<SyntaxElementId, LuaSymbol?> DeclarationCaches { get; } = new();
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    public LuaSymbol? FindDeclaration(LuaSyntaxElement? element)
     {
         if (element is null)
         {
@@ -31,7 +31,7 @@ public class Declarations(SearchContext context)
         return declaration;
     }
 
-    private LuaDeclaration? InnerDeclaration(LuaSyntaxElement? element)
+    private LuaSymbol? InnerDeclaration(LuaSyntaxElement? element)
     {
         switch (element)
         {
@@ -92,7 +92,7 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    private LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr)
+    private LuaSymbol? FindNameDeclaration(LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { Text: "self" })
         {
@@ -115,13 +115,13 @@ public class Declarations(SearchContext context)
 
         if (nameExpr.Name is { } name)
         {
-            return context.Compilation.Db.QueryGlobals(name.RepresentText);
+            // return context.Compilation.TypeManager
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindTableFieldDeclaration(LuaTableFieldSyntax tableField)
+    private LuaSymbol? FindTableFieldDeclaration(LuaTableFieldSyntax tableField)
     {
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
@@ -133,7 +133,7 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    private LuaDeclaration? FindIndexDeclaration(LuaIndexExprSyntax indexExpr)
+    private LuaSymbol? FindIndexDeclaration(LuaIndexExprSyntax indexExpr)
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
@@ -144,7 +144,7 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    private LuaDeclaration? FindTypeDeclaration(string? name)
+    private LuaSymbol? FindTypeDeclaration(string? name)
     {
         if (name is not null)
         {
@@ -154,7 +154,7 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    private LuaDeclaration? FindDocFieldDeclaration(LuaDocFieldSyntax docField)
+    private LuaSymbol? FindDocFieldDeclaration(LuaDocFieldSyntax docField)
     {
         var parentType = context.Compilation.Db.QueryParentType(docField);
         if (parentType is not null && docField.Name is { } name)
@@ -165,20 +165,20 @@ public class Declarations(SearchContext context)
         return null;
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaSymbol symbol)
     {
         if (nameExpr.Name is { Text: "self" })
         {
             return false;
         }
 
-        if (declaration.DocumentId != nameExpr.DocumentId)
+        if (symbol.DocumentId != nameExpr.DocumentId)
         {
             return false;
         }
 
         var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
-        var element = declaration.Info.Ptr.ToNode(context);
+        var element = symbol.Info.Ptr.ToNode(context);
         if (closure is not null && element is not null)
         {
             return closure.Position > element.Position;

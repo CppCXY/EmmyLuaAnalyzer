@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -10,12 +11,12 @@ public partial class DeclarationWalker
     private void AnalyzeTableExpr(LuaTableExprSyntax tableExprSyntax)
     {
         declarationContext.TypeManager.AddElementType(tableExprSyntax.UniqueId);
-        var fields = new List<LuaDeclaration>();
+        var fields = new List<LuaSymbol>();
         foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
             if (fieldSyntax is { Name: { } fieldName, Value: { } value })
             {
-                var declaration = new LuaDeclaration(
+                var declaration = new LuaSymbol(
                     fieldName,
                     new TableFieldInfo(
                         new(fieldSyntax),
@@ -34,7 +35,7 @@ public partial class DeclarationWalker
 
         if (fields.Count > 0)
         {
-            declarationContext.TypeManager.AddElementMember(tableExprSyntax.UniqueId, fields);
+            declarationContext.TypeManager.AddElementMembers(tableExprSyntax.UniqueId, fields);
         }
     }
 }

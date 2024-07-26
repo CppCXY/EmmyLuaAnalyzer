@@ -1,7 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -18,7 +20,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -32,7 +34,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -46,7 +48,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -60,7 +62,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -74,7 +76,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -88,7 +90,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -101,7 +103,7 @@ public partial class DeclarationWalker
                 case "unm":
                 {
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -115,7 +117,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -129,7 +131,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -143,7 +145,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -157,7 +159,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -170,7 +172,7 @@ public partial class DeclarationWalker
                 case "bnot":
                 {
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -184,7 +186,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -198,7 +200,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -212,7 +214,7 @@ public partial class DeclarationWalker
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -225,7 +227,7 @@ public partial class DeclarationWalker
                 case "len":
                 {
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -238,7 +240,7 @@ public partial class DeclarationWalker
                 case "eq":
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -251,7 +253,7 @@ public partial class DeclarationWalker
                 case "lt":
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),
@@ -264,7 +266,7 @@ public partial class DeclarationWalker
                 case "le":
                 {
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaDeclaration(
+                    var opDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeOpInfo(
                             new(operatorSyntax),

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -94,12 +95,12 @@ public partial class DeclarationWalker
             }
 
             declarationContext.TypeManager.SetBaseType(luaEnum, baseType);
-            var enumFields = new List<LuaDeclaration>();
+            var enumFields = new List<LuaSymbol>();
             foreach (var field in tagEnumSyntax.FieldList)
             {
                 if (field is { Name: { } fieldName })
                 {
-                    var fieldDeclaration = new LuaDeclaration(
+                    var fieldDeclaration = new LuaSymbol(
                         fieldName.RepresentText,
                         new EnumFieldInfo(
                             new(field),
@@ -189,13 +190,13 @@ public partial class DeclarationWalker
     private void AnalyzeTypeGenericParam(LuaDocGenericDeclareListSyntax generic,
         LuaNamedType namedType)
     {
-        var genericParams = new List<LuaDeclaration>();
+        var genericParams = new List<LuaSymbol>();
         foreach (var param in generic.Params)
         {
             if (param is { Name: { } name })
             {
                 var type = param.Type is not null ? searchContext.Infer(param.Type) : null;
-                var declaration = new LuaDeclaration(
+                var declaration = new LuaSymbol(
                     name.RepresentText,
                     new GenericParamInfo(
                         new(param),

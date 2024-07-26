@@ -68,26 +68,26 @@ namespace EmmyLua.Cli.DocGenerator.Markdown;
 //         {
 //             if (funcStat is { NameElement.Parent: { } node })
 //             {
-//                 var declaration = SearchContext.FindDeclaration(node);
-//                 if (declaration is LuaDeclaration luaDeclaration)
+//                 var symbol = SearchContext.FindDeclaration(node);
+//                 if (symbol is LuaSymbol luaSymbol)
 //                 {
-//                     RenderFuncDeclaration(luaDeclaration, funcStat);
+//                     RenderFuncDeclaration(luaSymbol, funcStat);
 //                     RenderContext.AddSeparator();
 //                 }
 //             }
 //         }
 //     }
 //
-//     private void RenderFuncDeclaration(LuaDeclaration declaration, LuaFuncStatSyntax funcStat)
+//     private void RenderFuncDeclaration(LuaSymbol symbol, LuaFuncStatSyntax funcStat)
 //     {
-//         if (declaration.IsLocal || declaration.IsPrivate)
+//         if (symbol.IsLocal || symbol.IsPrivate)
 //         {
 //             return;
 //         }
 //
-//         var asyncText = declaration.IsAsync ? "async " : string.Empty;
+//         var asyncText = symbol.IsAsync ? "async " : string.Empty;
 //
-//         if (declaration.Info is MethodInfo methodInfo)
+//         if (symbol.Info is MethodInfo methodInfo)
 //         {
 //             if (methodInfo.IndexPtr.ToNode(SearchContext) is { } indexExpr)
 //             {

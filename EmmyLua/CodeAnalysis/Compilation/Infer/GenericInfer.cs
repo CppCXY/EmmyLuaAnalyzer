@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -19,7 +20,7 @@ public static class GenericInfer
             return;
         }
 
-        var exprType = context.InferAndUnwrap(expr);
+        var exprType = context.Infer(expr);
         InferByType(type, exprType, substitution, context);
     }
 
@@ -34,7 +35,8 @@ public static class GenericInfer
                 Literal: LuaStringToken { } stringToken1
             })
         {
-            substitution.Add(templateType.TemplateName, new LuaNamedType(LuaDocumentId.VirtualDocumentId, templateType.PrefixName + stringToken1.Value));
+            substitution.Add(templateType.TemplateName,
+                new LuaNamedType(LuaDocumentId.VirtualDocumentId, templateType.PrefixName + stringToken1.Value));
             return true;
         }
 
@@ -57,7 +59,7 @@ public static class GenericInfer
         SearchContext context
     )
     {
-        substitution.Add(expandType.Name, new LuaMultiReturnType(expr.Select(context.InferAndUnwrap).ToList()));
+        substitution.Add(expandType.Name, new LuaMultiReturnType(expr.Select(context.Infer).ToList()));
     }
 
     public static void InferByType(
@@ -125,18 +127,15 @@ public static class GenericInfer
                 }
             }
         }
-        else if (exprType is LuaTableLiteralType tableType)
+        else if (exprType is LuaElementType elementType &&
+                 elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
             if (substitution.IsGenericParam(genericType.Name))
             {
                 substitution.Add(genericType.Name, Builtin.Table);
             }
 
-            var tableExpr = tableType.TableExprPtr.ToNode(context);
-            if (tableExpr is not null)
-            {
-                GenericTableExprInstantiate(genericType, tableExpr, substitution, context);
-            }
+            GenericTableExprInstantiate(genericType, tableExpr, substitution, context);
         }
     }
 
@@ -170,7 +169,8 @@ public static class GenericInfer
             {
                 keyType = keyType.Union(Builtin.String);
             }
-            var fieldValueType = context.InferAndUnwrap(fieldSyntax.Value);
+
+            var fieldValueType = context.Infer(fieldSyntax.Value);
             valueType = valueType.Union(fieldValueType);
         }
 
@@ -188,29 +188,26 @@ public static class GenericInfer
         {
             InferByType(arrayType.BaseType, arrayType2.BaseType, substitution, context);
         }
-        else if (exprType is LuaTableLiteralType tableLiteralType)
+        else if (exprType is LuaElementType elementType &&
+                 elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
-            var tableExpr = tableLiteralType.TableExprPtr.ToNode(context);
-            if (tableExpr is not null)
+            LuaType valueType = Builtin.Unknown;
+
+            foreach (var field in tableExpr.FieldList)
             {
-                LuaType valueType = Builtin.Unknown;
-
-                foreach (var field in tableExpr.FieldList)
+                if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
                 {
-                    if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
-                    {
-                        break;
-                    }
-
-                    if (field.IsValue)
-                    {
-                        var fieldValueType = context.InferAndUnwrap(field.Value);
-                        valueType = valueType.Union(fieldValueType);
-                    }
+                    break;
                 }
 
-                InferByType(arrayType.BaseType, valueType, substitution, context);
+                if (field.IsValue)
+                {
+                    var fieldValueType = context.Infer(field.Value);
+                    valueType = valueType.Union(fieldValueType);
+                }
             }
+
+            InferByType(arrayType.BaseType, valueType, substitution, context);
         }
     }
 
@@ -311,35 +308,32 @@ public static class GenericInfer
                 }
             }
         }
-        else if (exprType is LuaTableLiteralType tableLiteralType)
+        else if (exprType is LuaElementType elementType &&
+                 elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
-            var tableExpr = tableLiteralType.TableExprPtr.ToNode(context);
-            if (tableExpr is not null)
+            var fileList = tableExpr.FieldList.ToList();
+            for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
             {
-                var fileList = tableExpr.FieldList.ToList();
-                for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
+                var tupleElementType = tupleType.TupleDeclaration[i].Type;
+                if (tupleElementType is LuaExpandType expandType)
                 {
-                    var tupleElementType = tupleType.TupleDeclaration[i].Type;
-                    if (tupleElementType is LuaExpandType expandType)
+                    var fileExprs = fileList[i..]
+                        .Where(it => it is { IsValue: true, Value: not null })
+                        .Select(it => it.Value!);
+                    InferByExpandTypeAndExprs(expandType, fileExprs, substitution,
+                        context);
+                    break;
+                }
+                else
+                {
+                    var field = fileList[i];
+                    if (field is { IsValue: true, Value: { } valueExpr })
                     {
-                        var fileExprs = fileList[i..]
-                            .Where(it => it is { IsValue: true, Value: not null })
-                            .Select(it => it.Value!);
-                        InferByExpandTypeAndExprs(expandType, fileExprs, substitution,
+                        InferByExpr(
+                            tupleElementType,
+                            valueExpr,
+                            substitution,
                             context);
-                        break;
-                    }
-                    else
-                    {
-                        var field = fileList[i];
-                        if (field is { IsValue: true, Value: { } valueExpr })
-                        {
-                            InferByExpr(
-                                tupleElementType,
-                                valueExpr,
-                                substitution,
-                                context);
-                        }
                     }
                 }
             }
@@ -358,8 +352,8 @@ public static class GenericInfer
             return;
         }
 
-        var spreadParameter = new List<LuaDeclaration>();
-        for(var i = 0; i < fmt.Length; i++)
+        var spreadParameter = new List<LuaSymbol>();
+        for (var i = 0; i < fmt.Length; i++)
         {
             var ch = fmt[i];
             if (fmt[i] == '%')
@@ -384,24 +378,24 @@ public static class GenericInfer
                             var type = fmt[index];
                             if (type is 's' or 'q')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Any)
-                                    ));
+                                ));
                             }
                             else if (type is 'c' or 'd' or 'i' or 'u' or 'x' or 'X' or 'o')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Integer)
-                                    ));
+                                ));
                             }
                             else if (type is 'A' or 'a' or 'E' or 'e' or 'f' or 'G' or 'g')
                             {
-                                spreadParameter.Add(new LuaDeclaration(
+                                spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
                                     new VirtualInfo(Builtin.Number)
-                                    ));
+                                ));
                             }
                         }
                     }

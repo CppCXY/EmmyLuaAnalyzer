@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
-public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Declaration")
+public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Symbol")
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Type;
@@ -113,7 +114,7 @@ public static class LuaTypeRenderer
         }
     }
 
-    private static void RenderClassOrInterface(string name, List<LuaDeclaration> generics, List<LuaType> supers,
+    private static void RenderClassOrInterface(string name, List<LuaSymbol> generics, List<LuaType> supers,
         LuaRenderContext renderContext)
     {
         if (generics.Count > 0)

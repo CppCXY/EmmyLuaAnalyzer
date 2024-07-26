@@ -1,35 +1,31 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Node;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager;
+namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
-public class GlobalTypeInfo
+public class GlobalTypeInfo : ITypeInfo
 {
     public LuaDocumentId MainDocumentId { get; set; }
 
-    public HashSet<SyntaxElementId> DefinedElementIds { get; set; } = new();
+    public Dictionary<LuaDocumentId, LuaSymbol> DefinedDeclarations { get; init; } = new();
 
     public string Name { get; set; } = string.Empty;
 
-    public LuaType? BaseType { get; set; }
+    public LuaType? BaseType => DefinedDeclarations.TryGetValue(MainDocumentId, out var declaration) ? declaration.Type : null;
 
-    public Dictionary<string, LuaDeclaration>? Declarations { get; set; }
+    public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
     public bool RemovePartial(LuaDocumentId documentId)
     {
-        var removeAll = true;
-        if (MainDocumentId == documentId)
+        var removeAll = !RemoveMembers(documentId);
+        DefinedDeclarations.Remove(documentId);
+        if (DefinedDeclarations.Count != 0)
         {
-            BaseType = null;
-        }
-
-        if (RemoveMembers(documentId))
-        {
+            MainDocumentId = DefinedDeclarations.Keys.FirstOrDefault();
             removeAll = false;
         }
 
-        DefinedElementIds.RemoveWhere(it => it.DocumentId == documentId);
         return removeAll;
     }
 
@@ -63,6 +59,6 @@ public class GlobalTypeInfo
 
     public bool IsDefinedInDocument(LuaDocumentId documentId)
     {
-        return MainDocumentId == documentId || DefinedElementIds.Any(it => it.DocumentId == documentId);
+        return DefinedDeclarations.ContainsKey(documentId);
     }
 }

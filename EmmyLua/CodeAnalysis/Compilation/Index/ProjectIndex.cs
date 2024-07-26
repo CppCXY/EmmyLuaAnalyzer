@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Container;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -12,7 +13,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class ProjectIndex
 {
-    // private PriorityIndex<string, LuaDeclaration> Globals { get; } = new();
+    // private PriorityIndex<string, LuaSymbol> Globals { get; } = new();
 
     private Dictionary<LuaDocumentId, LuaType> ModuleTypes { get; } = new();
 
@@ -26,7 +27,7 @@ public class ProjectIndex
 
     private InFileIndex<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
 
-    private InFileIndex<SyntaxElementId, LuaDeclaration> InFiledDeclarations { get; } = new();
+    private InFileIndex<SyntaxElementId, LuaSymbol> InFiledDeclarations { get; } = new();
 
     private Dictionary<LuaDocumentId, LuaDeclarationTree> DocumentDeclarationTrees { get; } = new();
 
@@ -78,20 +79,20 @@ public class ProjectIndex
         }
     }
 
-    public void AddReference(LuaDocumentId documentId, LuaDeclaration declaration, LuaReference reference)
+    public void AddReference(LuaDocumentId documentId, LuaSymbol symbol, LuaReference reference)
     {
-        var list = InFiledReferences.Query(documentId, declaration.UniqueId);
+        var list = InFiledReferences.Query(documentId, symbol.UniqueId);
         if (list is null)
         {
             list = [reference];
-            InFiledReferences.Add(documentId, declaration.UniqueId, list);
+            InFiledReferences.Add(documentId, symbol.UniqueId, list);
         }
         else
         {
             list.Add(reference);
         }
 
-        InFiledDeclarations.Add(documentId, reference.Ptr.UniqueId, declaration);
+        InFiledDeclarations.Add(documentId, reference.Ptr.UniqueId, symbol);
     }
 
     public void AddDeclarationTree(LuaDocumentId documentId, LuaDeclarationTree declarationTree)
@@ -99,10 +100,10 @@ public class ProjectIndex
         DocumentDeclarationTrees[documentId] = declarationTree;
     }
 
-    // public void AddGlobal(LuaDocumentId documentId, string name, LuaDeclaration declaration,
+    // public void AddGlobal(LuaDocumentId documentId, string name, LuaSymbol symbol,
     //     bool hightestPriority = false)
     // {
-    //     Globals.AddGlobal(documentId, name, declaration, hightestPriority);
+    //     Globals.AddGlobal(documentId, name, symbol, hightestPriority);
     // }
 
     public void AddMapping(SyntaxElementId id, string name)
@@ -114,19 +115,19 @@ public class ProjectIndex
 
     #region Query
 
-    // public IEnumerable<LuaDeclaration> QueryAllGlobal()
+    // public IEnumerable<LuaSymbol> QueryAllGlobal()
     // {
     //     return Globals.QueryAll();
     // }
 
-    // public LuaDeclaration? QueryGlobals(string name)
+    // public LuaSymbol? QueryGlobals(string name)
     // {
     //     return Globals.Query(name);
     // }
 
-    public IEnumerable<LuaReference> QueryLocalReferences(LuaDeclaration declaration)
+    public IEnumerable<LuaReference> QueryLocalReferences(LuaSymbol symbol)
     {
-        var list = InFiledReferences.Query(declaration.Info.Ptr.DocumentId, declaration.UniqueId);
+        var list = InFiledReferences.Query(symbol.Info.Ptr.DocumentId, symbol.UniqueId);
         if (list is not null)
         {
             return list;
@@ -135,12 +136,12 @@ public class ProjectIndex
         return [];
     }
 
-    public LuaDeclaration? QueryLocalDeclaration(LuaSyntaxElement element)
+    public LuaSymbol? QueryLocalDeclaration(LuaSyntaxElement element)
     {
         return InFiledDeclarations.Query(element.DocumentId, element.UniqueId);
     }
 
-    public IEnumerable<LuaDeclaration> QueryDocumentLocalDeclarations(LuaDocumentId documentId)
+    public IEnumerable<LuaSymbol> QueryDocumentLocalDeclarations(LuaDocumentId documentId)
     {
         var tree = DocumentDeclarationTrees.GetValueOrDefault(documentId);
         return tree is not null ? tree.Root.Descendants : [];

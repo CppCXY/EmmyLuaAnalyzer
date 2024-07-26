@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -28,7 +29,7 @@ public class DeclarationContext(
 
     private HashSet<SyntaxElementId> _uniqueReferences = new();
 
-    private Dictionary<SyntaxElementId, LuaDeclaration> _declarations = new();
+    private Dictionary<SyntaxElementId, LuaSymbol> _declarations = new();
 
     private Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> _elementRelatedClosure = new();
 
@@ -56,7 +57,7 @@ public class DeclarationContext(
         return null;
     }
 
-    public LuaDeclaration? FindLocalDeclaration(LuaNameExprSyntax nameExpr)
+    public LuaSymbol? FindLocalDeclaration(LuaNameExprSyntax nameExpr)
     {
         return FindScope(nameExpr)?.FindNameDeclaration(nameExpr);
     }
@@ -77,18 +78,18 @@ public class DeclarationContext(
         return null;
     }
 
-    public void AddLocalDeclaration(LuaSyntaxElement element, LuaDeclaration luaDeclaration)
+    public void AddLocalDeclaration(LuaSyntaxElement element, LuaSymbol luaSymbol)
     {
-        _curScope?.Add(new DeclarationNode(element.Position, luaDeclaration));
-        AddAttachedDeclaration(element, luaDeclaration);
+        _curScope?.Add(new DeclarationNode(element.Position, luaSymbol));
+        AddAttachedDeclaration(element, luaSymbol);
     }
 
-    public void AddAttachedDeclaration(LuaSyntaxElement element, LuaDeclaration luaDeclaration)
+    public void AddAttachedDeclaration(LuaSyntaxElement element, LuaSymbol luaSymbol)
     {
-        _declarations.Add(element.UniqueId, luaDeclaration);
+        _declarations.Add(element.UniqueId, luaSymbol);
     }
 
-    public void AddReference(ReferenceKind kind, LuaDeclaration declaration, LuaSyntaxElement nameElement)
+    public void AddReference(ReferenceKind kind, LuaSymbol symbol, LuaSyntaxElement nameElement)
     {
         if (!_uniqueReferences.Add(nameElement.UniqueId))
         {
@@ -96,7 +97,7 @@ public class DeclarationContext(
         }
 
         var reference = new LuaReference(new(nameElement), kind);
-        Db.AddReference(DocumentId, declaration, reference);
+        Db.AddReference(DocumentId, symbol, reference);
     }
 
     public void AddUnResolved(UnResolved declaration)
@@ -197,7 +198,7 @@ public class DeclarationContext(
         }
     }
 
-    public LuaDeclaration? GetAttachedDeclaration(LuaSyntaxElement element)
+    public LuaSymbol? GetAttachedDeclaration(LuaSyntaxElement element)
     {
         return _declarations.GetValueOrDefault(element.UniqueId);
     }

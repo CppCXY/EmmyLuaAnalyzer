@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 namespace EmmyLua.CodeAnalysis.Type;
 
@@ -8,7 +9,7 @@ public class TypeSubstitution
 
     private Dictionary<string, LuaType> Template { get; } = new();
 
-    private Dictionary<string, List<LuaDeclaration>> SpreadParameters { get; } = new();
+    private Dictionary<string, List<LuaSymbol>> SpreadParameters { get; } = new();
 
     public void SetTemplate(Dictionary<string, LuaType> defaultTypeMap)
     {
@@ -44,7 +45,7 @@ public class TypeSubstitution
         }
     }
 
-    public void AddSpreadParameter(string name, IEnumerable<LuaDeclaration> parameters)
+    public void AddSpreadParameter(string name, IEnumerable<LuaSymbol> parameters)
     {
         SpreadParameters[name] = parameters.ToList();
     }
@@ -53,6 +54,6 @@ public class TypeSubstitution
 
     public bool IsGenericParam(string paramName) => Template.ContainsKey(paramName);
 
-    public IEnumerable<LuaDeclaration> GetSpreadParameters(string name) =>
-        SpreadParameters.GetValueOrDefault(name) ?? Enumerable.Empty<LuaDeclaration>();
+    public IEnumerable<LuaSymbol> GetSpreadParameters(string name) =>
+        SpreadParameters.GetValueOrDefault(name) ?? Enumerable.Empty<LuaSymbol>();
 }

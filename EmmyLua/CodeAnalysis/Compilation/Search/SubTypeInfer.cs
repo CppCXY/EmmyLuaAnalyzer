@@ -17,8 +17,6 @@ public class SubTypeInfer(SearchContext context)
 
     public bool IsSubTypeOf(LuaType left, LuaType right)
     {
-        left = left.UnwrapType(context);
-        right = right.UnwrapType(context);
         var key = new SubTypeKey(left, right);
         if (SubTypeCaches.TryGetValue(key, out var result))
         {
@@ -52,13 +50,40 @@ public class SubTypeInfer(SearchContext context)
 
     private bool IsSubTypeOfNamedType(LuaNamedType left, LuaNamedType right)
     {
-        if (left.Equals(right))
+        if (left.IsSameType(right, context))
         {
             return true;
         }
 
-        var supers = context.Compilation.Db.QuerySupers(left.Name);
-        return supers.Any(super => IsSubTypeOf(super, right));
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(left);
+        if (typeInfo is null)
+        {
+            return false;
+        }
+
+        switch (typeInfo.Kind)
+        {
+            case NamedTypeKind.Alias or NamedTypeKind.Enum:
+            {
+                return typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right);
+            }
+            case NamedTypeKind.Class or NamedTypeKind.Interface:
+            {
+                if (typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right))
+                {
+                    return true;
+                }
+
+                if (typeInfo.Supers is not null)
+                {
+                    return typeInfo.Supers.Any(super => IsSubTypeOf(super, right));
+                }
+
+                break;
+            }
+        }
+
+        return false;
     }
 
     private bool IsSubTypeOfUnionType(LuaUnionType left, LuaUnionType right)

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -285,7 +286,7 @@ public static class MethodInfer
         int matchedParam,
         SearchContext context)
     {
-        var newParameters = new List<LuaDeclaration>();
+        var newParameters = new List<LuaSymbol>();
         if (skipParam == 1)
         {
             if (args.Count > 0 && callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } callSelf })

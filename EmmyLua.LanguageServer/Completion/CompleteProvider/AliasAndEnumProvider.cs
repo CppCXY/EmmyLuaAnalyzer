@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -45,7 +46,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             .Count(comma => comma.Position <= trigger.Position);
 
         var prefixType = context.SemanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
-        context.SemanticModel.Context.FindMethodsForType(prefixType, methodType =>
+        context.SemanticModel.Context.FindCallableType(prefixType, methodType =>
         {
             var colonDefine = methodType.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
@@ -122,7 +123,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
 
     private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
     {
-        foreach (var declaration in aggregateType.Declarations.OfType<LuaDeclaration>())
+        foreach (var declaration in aggregateType.Declarations.OfType<LuaSymbol>())
         {
             if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
             {

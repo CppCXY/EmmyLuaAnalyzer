@@ -27,7 +27,7 @@ public static class ExpressionInfer
 
     private static LuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
-        var exprTy = context.Infer(unaryExpr.Expression).UnwrapType(context);
+        var exprTy = context.Infer(unaryExpr.Expression);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(unaryExpr.Operator);
         var op = context.GetBestMatchedUnaryOperator(opKind, exprTy);
 
@@ -95,8 +95,8 @@ public static class ExpressionInfer
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
-        var leftTy = context.InferAndUnwrap(binaryExpr.LeftExpr);
-        var rightTy = context.InferAndUnwrap(binaryExpr.RightExpr);
+        var leftTy = context.Infer(binaryExpr.LeftExpr);
+        var rightTy = context.Infer(binaryExpr.RightExpr);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
         var bop = context.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
         if (bop is not null)
@@ -109,7 +109,7 @@ public static class ExpressionInfer
             return bop2.Ret;
         }
 
-        if (leftTy.Equals(Builtin.Integer) && rightTy.Equals(Builtin.Integer))
+        if (leftTy.SubTypeOf(Builtin.Integer, context) && rightTy.SubTypeOf(Builtin.Integer, context))
         {
             return Builtin.Integer;
         }

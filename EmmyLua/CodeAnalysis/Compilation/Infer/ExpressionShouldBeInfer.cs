@@ -29,7 +29,7 @@ public static class ExpressionShouldBeInfer
 
         var prefixType = context.Infer(callExpr.PrefixExpr);
         LuaType exprType = Builtin.Unknown;
-        context.FindMethodsForType(prefixType, methodType =>
+        foreach(var methodType in context.FindCallableType(prefixType))
         {
             var colonDefine = methodType.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
@@ -52,7 +52,7 @@ public static class ExpressionShouldBeInfer
                 var param = methodType.MainSignature.Parameters[activeParam];
                 exprType = exprType.Union(param.Type);
             }
-        });
+        }
 
         return exprType;
     }

@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -20,11 +21,6 @@ public class LuaType
     }
 
     public virtual LuaType Instantiate(TypeSubstitution substitution)
-    {
-        return this;
-    }
-
-    public virtual LuaType UnwrapType(SearchContext context)
     {
         return this;
     }
@@ -84,10 +80,10 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes)
     }
 }
 
-public class LuaAggregateType(IEnumerable<LuaDeclaration> declarations)
+public class LuaAggregateType(IEnumerable<LuaSymbol> declarations)
     : LuaType
 {
-    public List<LuaDeclaration> Declarations { get; } = declarations.ToList();
+    public List<LuaSymbol> Declarations { get; } = declarations.ToList();
 
     public override int GetHashCode()
     {
@@ -101,10 +97,10 @@ public class LuaAggregateType(IEnumerable<LuaDeclaration> declarations)
     }
 }
 
-public class LuaTupleType(List<LuaDeclaration> tupleDeclaration)
+public class LuaTupleType(List<LuaSymbol> tupleDeclaration)
     : LuaType
 {
-    public List<LuaDeclaration> TupleDeclaration { get; } = tupleDeclaration;
+    public List<LuaSymbol> TupleDeclaration { get; } = tupleDeclaration;
 
     public override int GetHashCode()
     {
@@ -303,11 +299,11 @@ public class LuaMultiReturnType : LuaType
     }
 }
 
-public class LuaSignature(LuaType returnType, List<LuaDeclaration> parameters)
+public class LuaSignature(LuaType returnType, List<LuaSymbol> parameters)
 {
     public LuaType ReturnType { get; set; } = returnType;
 
-    public List<LuaDeclaration> Parameters { get; } = parameters;
+    public List<LuaSymbol> Parameters { get; } = parameters;
 
     public override int GetHashCode()
     {
@@ -333,7 +329,7 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
     public bool ColonDefine { get; } = colonDefine;
 
-    public LuaMethodType(LuaType returnType, List<LuaDeclaration> parameters, bool colonDefine)
+    public LuaMethodType(LuaType returnType, List<LuaSymbol> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
     }
@@ -353,12 +349,12 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
 
 public class LuaGenericMethodType : LuaMethodType
 {
-    public List<LuaDeclaration> GenericParamDecls { get; }
+    public List<LuaSymbol> GenericParamDecls { get; }
 
     public Dictionary<string, LuaType> GenericParams { get; }
 
     public LuaGenericMethodType(
-        List<LuaDeclaration> genericParamDecls,
+        List<LuaSymbol> genericParamDecls,
         LuaSignature mainSignature,
         List<LuaSignature>? overloads,
         bool colonDefine) : base(mainSignature, overloads, colonDefine)
@@ -394,6 +390,12 @@ public class LuaElementType(SyntaxElementId id)
 {
     public SyntaxElementId Id { get; } = id;
 
+    public LuaSyntaxElement? ToSyntaxElement(SearchContext context)
+    {
+        var document = context.Compilation.Project.GetDocument(Id.DocumentId);
+        return document?.SyntaxTree.GetElement(id.ElementId);
+    }
+
     public override bool Equals(object? obj)
     {
         return Equals(obj as LuaElementType);
@@ -408,16 +410,13 @@ public class LuaElementType(SyntaxElementId id)
     {
         return Id.GetHashCode();
     }
-
-    public override LuaType UnwrapType(SearchContext context)
-    {
-        return this;
-    }
 }
 
-public class GlobalNameType(string name)
+public class GlobalNameType(SyntaxElementId id, string name)
     : LuaType
 {
+    public SyntaxElementId Id { get; } = id;
+
     public string Name { get; } = name;
 
     public override bool Equals(object? obj)
@@ -433,10 +432,5 @@ public class GlobalNameType(string name)
     public override int GetHashCode()
     {
         return Name.GetHashCode();
-    }
-
-    public override LuaType UnwrapType(SearchContext context)
-    {
-        return this;
     }
 }

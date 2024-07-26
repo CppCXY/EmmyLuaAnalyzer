@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -54,10 +55,10 @@ public class LuaRenderBuilder(SearchContext context)
         return renderContext.GetText();
     }
 
-    public string RenderDeclaration(LuaDeclaration declaration, LuaRenderFeature feature)
+    public string RenderDeclaration(LuaSymbol symbol, LuaRenderFeature feature)
     {
         var renderContext = new LuaRenderContext(context, feature);
-        LuaDeclarationRenderer.RenderDeclaration(declaration, renderContext);
+        LuaDeclarationRenderer.RenderDeclaration(symbol, renderContext);
         return renderContext.GetText();
     }
 

@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -7,7 +8,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private LuaDeclaration? AnalyzeDocDetailField(LuaDocFieldSyntax field)
+    private LuaSymbol? AnalyzeDocDetailField(LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
         switch (field)
@@ -15,37 +16,37 @@ public partial class DeclarationWalker
             case { NameField: { } nameField, Type: { } type1 }:
             {
                 var type = searchContext.Infer(type1);
-                return new LuaDeclaration(
+                return new LuaSymbol(
                     nameField.RepresentText,
                     new DocFieldInfo(
                         new(field),
                         type),
-                    DeclarationFeature.None,
+                    SymbolFeature.None,
                     GetVisibility(visibility)
                 );
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
             {
                 var type = searchContext.Infer(type2);
-                return new LuaDeclaration(
+                return new LuaSymbol(
                     $"[{integerField.Value}]",
                     new DocFieldInfo(
                         new(field),
                         type
                     ),
-                    DeclarationFeature.None,
+                    SymbolFeature.None,
                     GetVisibility(visibility)
                 );
             }
             case { StringField: { } stringField, Type: { } type3 }:
             {
                 var type = searchContext.Infer(type3);
-                return new LuaDeclaration(
+                return new LuaSymbol(
                     stringField.Value,
                     new DocFieldInfo(
                         new(field),
                         type),
-                    DeclarationFeature.None,
+                    SymbolFeature.None,
                     GetVisibility(visibility)
                 );
             }
@@ -56,7 +57,7 @@ public partial class DeclarationWalker
 
     private void AnalyzeTypeFields(LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
-        var declarations = new List<LuaDeclaration>();
+        var declarations = new List<LuaSymbol>();
         foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
         {
             if (tagField.Field is not null)
@@ -65,7 +66,7 @@ public partial class DeclarationWalker
                 {
                     var keyType = searchContext.Infer(typeField);
                     var valueType = searchContext.Infer(type4);
-                    var docIndexDeclaration = new LuaDeclaration(
+                    var docIndexDeclaration = new LuaSymbol(
                         string.Empty,
                         new TypeIndexInfo(
                             keyType,
@@ -92,14 +93,14 @@ public partial class DeclarationWalker
 
     private void AnalyzeTagDocBody(LuaNamedType namedType, LuaDocBodySyntax docBody)
     {
-        var declarations = new List<LuaDeclaration>();
+        var declarations = new List<LuaSymbol>();
         foreach (var field in docBody.FieldList)
         {
             if (field is { TypeField: { } typeField, Type: { } type4 })
             {
                 var keyType = searchContext.Infer(typeField);
                 var valueType = searchContext.Infer(type4);
-                var docIndexDeclaration = new LuaDeclaration(
+                var docIndexDeclaration = new LuaSymbol(
                     string.Empty,
                     new TypeIndexInfo(
                         keyType,
@@ -125,7 +126,7 @@ public partial class DeclarationWalker
 
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     {
-        var declarations = new List<LuaDeclaration>();
+        var declarations = new List<LuaSymbol>();
         declarationContext.TypeManager.AddElementType(luaDocTableTypeSyntax.UniqueId);
         if (luaDocTableTypeSyntax.Body is not null)
         {
@@ -138,7 +139,7 @@ public partial class DeclarationWalker
             }
         }
 
-        declarationContext.TypeManager.AddElementMember(luaDocTableTypeSyntax.UniqueId, declarations);
+        declarationContext.TypeManager.AddElementMembers(luaDocTableTypeSyntax.UniqueId, declarations);
     }
 
     private void AnalyzeMeta()
@@ -146,15 +147,15 @@ public partial class DeclarationWalker
         Compilation.Diagnostics.AddMeta(DocumentId);
     }
 
-    public static DeclarationVisibility GetVisibility(VisibilityKind visibility)
+    public static SymbolVisibility GetVisibility(VisibilityKind visibility)
     {
         return visibility switch
         {
-            VisibilityKind.Public => DeclarationVisibility.Public,
-            VisibilityKind.Protected => DeclarationVisibility.Protected,
-            VisibilityKind.Private => DeclarationVisibility.Private,
-            VisibilityKind.Package => DeclarationVisibility.Package,
-            _ => DeclarationVisibility.Public
+            VisibilityKind.Public => SymbolVisibility.Public,
+            VisibilityKind.Protected => SymbolVisibility.Protected,
+            VisibilityKind.Private => SymbolVisibility.Private,
+            VisibilityKind.Package => SymbolVisibility.Package,
+            _ => SymbolVisibility.Public
         };
     }
 }
