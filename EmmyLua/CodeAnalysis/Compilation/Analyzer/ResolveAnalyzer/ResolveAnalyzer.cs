@@ -74,12 +74,9 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     MergeType(unResolvedSymbol, exprRef.Expr, exprType, exprRef.RetId);
                 }
             }
-            else if (unResolvedSymbol.LuaSymbol.Info.DeclarationType is null)
+            else if (unResolvedSymbol.LuaSymbol.Type is null)
             {
-                unResolvedSymbol.LuaSymbol.Info = unResolvedSymbol.LuaSymbol.Info with
-                {
-                    DeclarationType = Builtin.Nil
-                };
+                unResolvedSymbol.LuaSymbol.Type = Builtin.Nil;
             }
         }
         else if (unResolved is UnResolvedForRangeParameter unResolvedForRangeParameter)
@@ -108,7 +105,8 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                 {
                                     if (Compilation.TypeManager.GetBaseType(elementType.Id) is null)
                                     {
-                                        Compilation.TypeManager.SetBaseType(elementType.Id, multiReturnType.GetElementType(i));
+                                        Compilation.TypeManager.SetBaseType(elementType.Id,
+                                            multiReturnType.GetElementType(i));
                                     }
                                 }
                             }
@@ -137,13 +135,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaSymbol;
-            if (declaration.Info.DeclarationType is null)
-            {
-                declaration.Info = declaration.Info with
-                {
-                    DeclarationType = new LuaElementType(declaration.UniqueId)
-                };
-            }
+            declaration.Type ??= new LuaElementType(declaration.UniqueId);
         }
     }
 
@@ -209,7 +201,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var callExpr = unResolvedClosureParameters.CallExpr;
             var prefixType = Context.Infer(callExpr.PrefixExpr);
             var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
-            foreach (var methodType1 in  Context.FindCallableType(prefixType))
+            foreach (var methodType1 in Context.FindCallableType(prefixType))
             {
                 var signature = Context.FindPerfectMatchSignature(methodType1, callExpr, callArgList);
                 var paramIndex = unResolvedClosureParameters.Index;
@@ -217,14 +209,14 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
                 if (paramDeclaration is null) break;
                 var closureParams = unResolvedClosureParameters.Parameters;
-                if (Context.FindCallableType(paramDeclaration.Type).FirstOrDefault() is {} methodType2)
+                if (Context.FindCallableType(paramDeclaration.Type).FirstOrDefault() is { } methodType2)
                 {
                     var mainParams = methodType2.MainSignature.Parameters;
                     for (var i = 0; i < closureParams.Count && i < mainParams.Count; i++)
                     {
                         var closureParam = closureParams[i];
                         var mainParam = mainParams[i];
-                        Compilation.TypeManager.SetBaseType(closureParam.UniqueId, mainParam.Type);
+                        Compilation.TypeManager.SetBaseType(closureParam.UniqueId, mainParam.Type ?? Builtin.Any);
                     }
                 }
             }
@@ -298,13 +290,13 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         var declaration = unResolved.LuaSymbol;
 
-        if (declaration.Info.DeclarationType is null)
+        if (declaration.Type is null)
         {
-            declaration.Info = declaration.Info with { DeclarationType = type };
+            declaration.Type = type;
         }
         else
         {
-            var declarationType = unResolved.LuaSymbol.Info.DeclarationType;
+            var declarationType = unResolved.LuaSymbol.Type;
             if (declarationType is LuaElementType elementType)
             {
                 Compilation.TypeManager.SetBaseType(elementType.Id, type);

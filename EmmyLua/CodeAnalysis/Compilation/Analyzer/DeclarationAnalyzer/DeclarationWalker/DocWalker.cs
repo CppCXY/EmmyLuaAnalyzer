@@ -18,9 +18,8 @@ public partial class DeclarationWalker
                 var type = searchContext.Infer(type1);
                 return new LuaSymbol(
                     nameField.RepresentText,
-                    new DocFieldInfo(
-                        new(field),
-                        type),
+                    type,
+                    new DocFieldInfo(new(field)),
                     SymbolFeature.None,
                     GetVisibility(visibility)
                 );
@@ -30,10 +29,8 @@ public partial class DeclarationWalker
                 var type = searchContext.Infer(type2);
                 return new LuaSymbol(
                     $"[{integerField.Value}]",
-                    new DocFieldInfo(
-                        new(field),
-                        type
-                    ),
+                    type,
+                    new DocFieldInfo( new(field)),
                     SymbolFeature.None,
                     GetVisibility(visibility)
                 );
@@ -43,9 +40,8 @@ public partial class DeclarationWalker
                 var type = searchContext.Infer(type3);
                 return new LuaSymbol(
                     stringField.Value,
-                    new DocFieldInfo(
-                        new(field),
-                        type),
+                    type,
+                    new DocFieldInfo(new(field)),
                     SymbolFeature.None,
                     GetVisibility(visibility)
                 );
@@ -68,6 +64,7 @@ public partial class DeclarationWalker
                     var valueType = searchContext.Infer(type4);
                     var docIndexDeclaration = new LuaSymbol(
                         string.Empty,
+                        valueType,
                         new TypeIndexInfo(
                             keyType,
                             valueType,
@@ -102,6 +99,7 @@ public partial class DeclarationWalker
                 var valueType = searchContext.Infer(type4);
                 var docIndexDeclaration = new LuaSymbol(
                     string.Empty,
+                    valueType,
                     new TypeIndexInfo(
                         keyType,
                         valueType,

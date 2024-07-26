@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -41,9 +40,9 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     name.RepresentText,
+                    null,
                     new LocalInfo(
                         new(localName),
-                        null,
                         localName.Attribute?.IsConst ?? false,
                         localName.Attribute?.IsClose ?? false
                     ),
@@ -70,9 +69,9 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     name.RepresentText,
+                    new LuaElementType(param.UniqueId),
                     new ParamInfo(
                         new(param),
-                        new LuaElementType(param.UniqueId),
                         false
                     ),
                     SymbolFeature.Local);
@@ -93,9 +92,9 @@ public partial class DeclarationWalker
         {
             var declaration = new LuaSymbol(
                 name.RepresentText,
+                Builtin.Integer,
                 new ParamInfo(
                     new(forStatSyntax.IteratorName),
-                    Builtin.Integer,
                     false
                 ),
                 SymbolFeature.Local);
@@ -142,10 +141,8 @@ public partial class DeclarationWalker
                         {
                             var declaration = new LuaSymbol(
                                 name.RepresentText,
-                                new GlobalInfo(
-                                    new(nameExpr),
-                                    new GlobalNameType(nameExpr.UniqueId, name.RepresentText)
-                                ),
+                                new GlobalNameType(nameExpr.UniqueId, name.RepresentText),
+                                new GlobalInfo(new(nameExpr)),
                                 SymbolFeature.Global
                             );
                             declarationContext.TypeManager.AddGlobal(name.RepresentText, declaration);
@@ -175,11 +172,8 @@ public partial class DeclarationWalker
                             : LuaElementPtr<LuaExprSyntax>.Empty;
                         var declaration = new LuaSymbol(
                             name,
-                            new IndexInfo(
-                                new(indexExpr),
-                                valueExprPtr,
-                                null
-                            )
+                            null,
+                            new IndexInfo(new(indexExpr), valueExprPtr)
                         );
                         declarationContext.AddAttachedDeclaration(varExpr, declaration);
                         var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,

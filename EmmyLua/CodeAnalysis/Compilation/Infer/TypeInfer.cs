@@ -94,14 +94,17 @@ public static class TypeInfer
                     type = type.Union(Builtin.Nil);
                 }
 
-                var paramDeclaration = new LuaSymbol(name.RepresentText,
-                    new ParamInfo(new(typedParam), type, false));
+                var paramDeclaration = new LuaSymbol(
+                    name.RepresentText,
+                    type,
+                    new ParamInfo(new(typedParam), false));
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
                 var paramDeclaration = new LuaSymbol("...",
-                    new ParamInfo(new(typedParam), context.Infer(typedParam.Type), true));
+                    context.Infer(typedParam.Type),
+                    new ParamInfo(new(typedParam), true));
                 typedParameters.Add(paramDeclaration);
             }
         }
@@ -142,11 +145,14 @@ public static class TypeInfer
         var tupleMembers = tupleType.TypeList
             .Select((it, i) =>
                 // lua from 1 start
-                new LuaSymbol($"[{i + 1}]", new TupleMemberInfo(
-                    i + 1, context.Infer(it), new(it)
-                ))
+                new LuaSymbol(
+                    $"[{i + 1}]",
+                    context.Infer(it),
+                    new TupleMemberInfo(
+                        i + 1, new(it)
+                    )
+                )
             )
-            .Cast<LuaSymbol>()
             .ToList();
         return new LuaTupleType(tupleMembers);
     }
@@ -186,9 +192,11 @@ public static class TypeInfer
     {
         var declarations = aggregateType.TypeList
             .Select((it, i) =>
-                new LuaSymbol(string.Empty, new AggregateMemberInfo(
-                    new(it), context.Infer(it)
-                ))
+                new LuaSymbol(
+                    string.Empty,
+                    context.Infer(it),
+                    new AggregateMemberInfo(new(it))
+                )
             )
             .ToList();
         return new LuaAggregateType(declarations);

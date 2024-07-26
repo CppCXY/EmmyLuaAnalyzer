@@ -18,9 +18,9 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     name.RepresentText,
+                    null,
                     new MethodInfo(
                         new(luaFuncStat.LocalName),
-                        null,
                         new(luaFuncStat)
                     ),
                     SymbolFeature.Local
@@ -39,9 +39,9 @@ public partial class DeclarationWalker
                 {
                     var declaration = new LuaSymbol(
                         name2.RepresentText,
+                        null,
                         new MethodInfo(
                             new(nameExpr),
-                            null,
                             new(luaFuncStat)
                         ),
                         SymbolFeature.Global
@@ -66,9 +66,9 @@ public partial class DeclarationWalker
                 {
                     var declaration = new LuaSymbol(
                         name,
+                        null,
                         new MethodInfo(
                             new(indexExpr),
-                            null,
                             new(luaFuncStat)
                         )
                     );
@@ -111,9 +111,9 @@ public partial class DeclarationWalker
 
                     var declaration = new LuaSymbol(
                         name.RepresentText,
+                        paramType,
                         new ParamInfo(
                             new(param),
-                            paramType,
                             false
                         ),
                         SymbolFeature.Local
@@ -127,9 +127,9 @@ public partial class DeclarationWalker
                 {
                     var declaration = new LuaSymbol(
                         "...",
+                        null,
                         new ParamInfo(
                             new(param),
-                            null,
                             true,
                             true
                         ),

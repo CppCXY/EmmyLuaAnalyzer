@@ -104,7 +104,7 @@ public class SearchContext
         return ExpressionShouldBeInfer.InferExprShouldBe(expr, this);
     }
 
-    public List<LuaMethodType> FindCallableType(LuaType type)
+    public List<LuaMethodType> FindCallableType(LuaType? type)
     {
         var methods = new List<LuaMethodType>();
         var action = new Action<LuaMethodType>(methods.Add);
@@ -129,7 +129,7 @@ public class SearchContext
         return methods;
     }
 
-    private void InnerFindMethods(LuaType type, Action<LuaMethodType> action, int level)
+    private void InnerFindMethods(LuaType? type, Action<LuaMethodType> action, int level)
     {
         if (level > 3)
         {

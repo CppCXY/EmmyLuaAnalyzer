@@ -13,8 +13,6 @@ namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class ProjectIndex
 {
-    // private PriorityIndex<string, LuaSymbol> Globals { get; } = new();
-
     private Dictionary<LuaDocumentId, LuaType> ModuleTypes { get; } = new();
 
     private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
@@ -35,8 +33,6 @@ public class ProjectIndex
 
     public void Remove(LuaDocumentId documentId)
     {
-        // TypeIndex.Remove(documentId);
-        // Globals.Remove(documentId);
         ModuleTypes.Remove(documentId);
         ModuleReturns.Remove(documentId);
         NameExpr.Remove(documentId);
@@ -100,12 +96,6 @@ public class ProjectIndex
         DocumentDeclarationTrees[documentId] = declarationTree;
     }
 
-    // public void AddGlobal(LuaDocumentId documentId, string name, LuaSymbol symbol,
-    //     bool hightestPriority = false)
-    // {
-    //     Globals.AddGlobal(documentId, name, symbol, hightestPriority);
-    // }
-
     public void AddMapping(SyntaxElementId id, string name)
     {
         MappingName.Update(id.DocumentId, id, name);
@@ -114,16 +104,6 @@ public class ProjectIndex
     #endregion
 
     #region Query
-
-    // public IEnumerable<LuaSymbol> QueryAllGlobal()
-    // {
-    //     return Globals.QueryAll();
-    // }
-
-    // public LuaSymbol? QueryGlobals(string name)
-    // {
-    //     return Globals.Query(name);
-    // }
 
     public IEnumerable<LuaReference> QueryLocalReferences(LuaSymbol symbol)
     {

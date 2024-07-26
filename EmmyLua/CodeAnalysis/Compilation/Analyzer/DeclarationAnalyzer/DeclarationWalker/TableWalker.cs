@@ -18,10 +18,8 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     fieldName,
-                    new TableFieldInfo(
-                        new(fieldSyntax),
-                        null
-                    ));
+                    null,
+                    new TableFieldInfo(new(fieldSyntax)));
                 declarationContext.AddAttachedDeclaration(fieldSyntax, declaration);
                 fields.Add(declaration);
                 var unResolveDeclaration = new UnResolvedSymbol(

@@ -22,10 +22,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -36,10 +34,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -50,10 +46,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -64,10 +58,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -78,10 +70,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -92,10 +82,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -105,10 +93,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -119,10 +105,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -133,10 +117,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -147,10 +129,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -161,10 +141,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -174,10 +152,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -188,10 +164,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -202,10 +176,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -216,10 +188,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -229,10 +199,8 @@ public partial class DeclarationWalker
                     var retType = searchContext.Infer(operatorSyntax.ReturnType);
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            retType
-                        ));
+                        retType,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType, opDeclaration);
                     operators.Add(op);
                     break;
@@ -242,10 +210,8 @@ public partial class DeclarationWalker
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            type
-                        ));
+                        type,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean, opDeclaration);
                     operators.Add(op);
                     break;
@@ -255,10 +221,8 @@ public partial class DeclarationWalker
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            type
-                        ));
+                        type,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean, opDeclaration);
                     operators.Add(op);
                     break;
@@ -268,10 +232,8 @@ public partial class DeclarationWalker
                     var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
                     var opDeclaration = new LuaSymbol(
                         string.Empty,
-                        new TypeOpInfo(
-                            new(operatorSyntax),
-                            type
-                        ));
+                        type,
+                        new TypeOpInfo(new(operatorSyntax)));
                     var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean, opDeclaration);
                     operators.Add(op);
                     break;

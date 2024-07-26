@@ -94,10 +94,7 @@ public class AttachDeclarationAnalyzer(
                 }
                 else
                 {
-                    firstDeclaration.Info = firstDeclaration.Info with
-                    {
-                        DeclarationType = new LuaNamedType(declarationContext.DocumentId, name)
-                    };
+                    firstDeclaration.Type = new LuaNamedType(declarationContext.DocumentId, name);
                 }
 
                 return;
@@ -118,7 +115,7 @@ public class AttachDeclarationAnalyzer(
                         }
                         else
                         {
-                            declarations[i].Info = declarations[i].Info with { DeclarationType = luaTypeList[i] };
+                            declarations[i].Type = luaTypeList[i];
                         }
                     }
                 }
@@ -242,10 +239,8 @@ public class AttachDeclarationAnalyzer(
                     {
                         var declaration = new LuaSymbol(
                             name.RepresentText,
-                            new GenericParamInfo(
-                                new(param),
-                                searchContext.Infer(param.Type)
-                            )
+                            searchContext.Infer(param.Type),
+                            new GenericParamInfo(new(param))
                         );
                         genericParams.Add(declaration);
                     }
@@ -290,22 +285,18 @@ public class AttachDeclarationAnalyzer(
             {
                 if (parameterDict.TryGetValue(name, out var parameterInfo))
                 {
+                    declaration.Info = info with
+                    {
+                        Nullable = parameterInfo.Nullable,
+                        IsVararg = name == "..."
+                    };
+
                     if (name is "self")
                     {
-                        declaration.Info = info with
-                        {
-                            DeclarationType = parameterInfo.Type,
-                            Nullable = parameterInfo.Nullable,
-                            IsVararg = false
-                        };
+                        declaration.Type = parameterInfo.Type;
                     }
                     else if (declaration.Type is LuaElementType elementType)
                     {
-                        declaration.Info = info with
-                        {
-                            Nullable = parameterInfo.Nullable,
-                            IsVararg = false
-                        };
                         declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);
                     }
                 }
@@ -352,7 +343,7 @@ public class AttachDeclarationAnalyzer(
         foreach (var paramDef in forRangeStatSyntax.IteratorNames)
         {
             var declaration = declarationContext.GetAttachedDeclaration(paramDef);
-            if (declaration is { Info.DeclarationType: LuaElementType elementType } &&
+            if (declaration?.Type is LuaElementType elementType &&
                 parameterDict.TryGetValue(declaration.Name, out var parameterInfo))
             {
                 declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);

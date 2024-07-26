@@ -380,21 +380,24 @@ public static class GenericInfer
                             {
                                 spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
-                                    new VirtualInfo(Builtin.Any)
+                                    Builtin.Any,
+                                    new VirtualInfo()
                                 ));
                             }
                             else if (type is 'c' or 'd' or 'i' or 'u' or 'x' or 'X' or 'o')
                             {
                                 spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
-                                    new VirtualInfo(Builtin.Integer)
+                                    Builtin.Integer,
+                                    new VirtualInfo()
                                 ));
                             }
                             else if (type is 'A' or 'a' or 'E' or 'e' or 'f' or 'G' or 'g')
                             {
                                 spreadParameter.Add(new LuaSymbol(
                                     $"%{type}",
-                                    new VirtualInfo(Builtin.Number)
+                                    Builtin.Number,
+                                    new VirtualInfo()
                                 ));
                             }
                         }

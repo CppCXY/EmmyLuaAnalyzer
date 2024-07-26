@@ -102,10 +102,8 @@ public partial class DeclarationWalker
                 {
                     var fieldDeclaration = new LuaSymbol(
                         fieldName.RepresentText,
-                        new EnumFieldInfo(
-                            new(field),
-                            baseType
-                        ));
+                        baseType,
+                        new EnumFieldInfo(new(field)));
                     enumFields.Add(fieldDeclaration);
                 }
             }
@@ -198,10 +196,8 @@ public partial class DeclarationWalker
                 var type = param.Type is not null ? searchContext.Infer(param.Type) : null;
                 var declaration = new LuaSymbol(
                     name.RepresentText,
-                    new GenericParamInfo(
-                        new(param),
-                        type
-                    ));
+                    type,
+                    new GenericParamInfo(new(param)));
                 genericParams.Add(declaration);
             }
         }
