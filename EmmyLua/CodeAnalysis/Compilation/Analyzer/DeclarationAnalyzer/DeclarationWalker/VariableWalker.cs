@@ -75,7 +75,7 @@ public partial class DeclarationWalker
                         false
                     ),
                     SymbolFeature.Local);
-                declarationContext.TypeManager.AddElementType(param.UniqueId);
+                declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
                 declarationContext.AddLocalDeclaration(param, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
                 parameters.Add(declaration);
@@ -141,7 +141,7 @@ public partial class DeclarationWalker
                         {
                             var declaration = new LuaSymbol(
                                 name.RepresentText,
-                                new GlobalNameType(nameExpr.UniqueId, name.RepresentText),
+                                new GlobalNameType(name.RepresentText),
                                 new GlobalInfo(new(nameExpr)),
                                 SymbolFeature.Global
                             );

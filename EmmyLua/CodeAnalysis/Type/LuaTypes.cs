@@ -120,12 +120,11 @@ public class LuaTupleType(List<LuaSymbol> tupleDeclaration)
             {
                 for (var i = 0; i < multiReturnType.GetElementCount(); i++)
                 {
-                    newTupleTypes.Add(lastMember2.WithInfo(
-                        info with
+                    newTupleTypes.Add(lastMember2.WithInfo(info with
                         {
                             Index = info.Index + i,
-                            DeclarationType = multiReturnType.GetElementType(i),
-                        }));
+                        }).WithType(multiReturnType.GetElementType(i))
+                    );
                 }
             }
         }
@@ -412,11 +411,9 @@ public class LuaElementType(SyntaxElementId id)
     }
 }
 
-public class GlobalNameType(SyntaxElementId id, string name)
+public class GlobalNameType(string name)
     : LuaType
 {
-    public SyntaxElementId Id { get; } = id;
-
     public string Name { get; } = name;
 
     public override bool Equals(object? obj)

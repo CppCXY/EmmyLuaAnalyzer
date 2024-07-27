@@ -87,14 +87,11 @@ public class AttachDeclarationAnalyzer(
             if (nameTypeDefine is { Name.RepresentText: { } name } &&
                 declarations.FirstOrDefault() is { } firstDeclaration)
             {
+                var type = new LuaNamedType(declarationContext.DocumentId, name);
+                firstDeclaration.Type = type;
                 if (firstDeclaration.IsGlobal)
                 {
-                    declarationContext.TypeManager.SetGlobalProxyType(firstDeclaration.Name,
-                        new LuaNamedType(declarationContext.DocumentId, name));
-                }
-                else
-                {
-                    firstDeclaration.Type = new LuaNamedType(declarationContext.DocumentId, name);
+                    declarationContext.TypeManager.SetGlobalTypeSymbol(firstDeclaration.Name, type);
                 }
 
                 return;
@@ -109,9 +106,9 @@ public class AttachDeclarationAnalyzer(
                 {
                     if (declarations.Count > i)
                     {
-                        if (declarations[i].IsGlobal)
+                        if (declarations[i].IsGlobal && declarations[i].Type is GlobalNameType globalNameType)
                         {
-                            declarationContext.TypeManager.SetGlobalBaseType(declarations[i].Name, luaTypeList[i]);
+                            declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId, globalNameType, luaTypeList[i]);
                         }
                         else
                         {

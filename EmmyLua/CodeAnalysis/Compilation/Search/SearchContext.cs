@@ -192,6 +192,19 @@ public class SearchContext
         return Members.FindMember(type, name);
     }
 
+    public IEnumerable<LuaSymbol> FindMember(SyntaxElementId id, string name)
+    {
+        var typeInfo = Compilation.TypeManager.FindTypeInfo(id);
+        if (typeInfo?.Declarations?.TryGetValue(name, out var value) == true)
+        {
+            return [value];
+        }
+        else
+        {
+            return [];
+        }
+    }
+
     public IEnumerable<LuaSymbol> FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
     {
         return Members.FindMember(type, indexExpr);

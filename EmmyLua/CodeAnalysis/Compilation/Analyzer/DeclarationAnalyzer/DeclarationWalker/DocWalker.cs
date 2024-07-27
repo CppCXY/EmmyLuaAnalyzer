@@ -125,7 +125,7 @@ public partial class DeclarationWalker
     private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     {
         var declarations = new List<LuaSymbol>();
-        declarationContext.TypeManager.AddElementType(luaDocTableTypeSyntax.UniqueId);
+        declarationContext.TypeManager.AddDocumentElementType(luaDocTableTypeSyntax.UniqueId);
         if (luaDocTableTypeSyntax.Body is not null)
         {
             foreach (var field in luaDocTableTypeSyntax.Body.FieldList)

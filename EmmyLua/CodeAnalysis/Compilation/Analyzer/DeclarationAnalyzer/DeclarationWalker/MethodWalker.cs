@@ -106,7 +106,7 @@ public partial class DeclarationWalker
                     if (paramName is not "self")
                     {
                         paramType = new LuaElementType(param.UniqueId);
-                        declarationContext.TypeManager.AddElementType(param.UniqueId);
+                        declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
                     }
 
                     var declaration = new LuaSymbol(
@@ -151,7 +151,7 @@ public partial class DeclarationWalker
             null,
             isColonDefine);
 
-        declarationContext.TypeManager.AddElementType(closureExprSyntax.UniqueId);
+        declarationContext.TypeManager.AddDocumentElementType(closureExprSyntax.UniqueId);
         declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)

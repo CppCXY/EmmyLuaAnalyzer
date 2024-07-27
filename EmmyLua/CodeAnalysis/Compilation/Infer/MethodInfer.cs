@@ -312,7 +312,8 @@ public static class MethodInfer
             var parameter = signature.Parameters[i + paramStart];
             if (parameter is
                 {
-                    Info: ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType }
+                    Type: LuaExpandType expandType,
+                    Info: ParamInfo { IsVararg: true }
                 })
             {
                 var varargs = args[(i + argStart)..];

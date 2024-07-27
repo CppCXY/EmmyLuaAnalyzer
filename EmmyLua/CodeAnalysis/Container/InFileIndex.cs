@@ -4,44 +4,52 @@ namespace EmmyLua.CodeAnalysis.Container;
 
 public class InFileIndex<TKey, TValue> where TKey : notnull
 {
-    private readonly Dictionary<LuaDocumentId, Dictionary<TKey, TValue>> _map = new();
+    private readonly Dictionary<TKey, TValue> _map = new();
+
+    private readonly Dictionary<LuaDocumentId, HashSet<TKey>> _documentKeys = new();
 
     public void Add(LuaDocumentId documentId, TKey key, TValue value)
     {
-        if (!_map.TryGetValue(documentId, out var documentMap))
+        _map[key] = value;
+
+        if (!_documentKeys.TryGetValue(documentId, out var keys))
         {
-            documentMap = new();
-            _map.Add(documentId, documentMap);
+            keys = new HashSet<TKey>();
+            _documentKeys[documentId] = keys;
         }
 
-        documentMap[key] = value;
+        keys.Add(key);
     }
 
     public void Remove(LuaDocumentId documentId)
     {
-        _map.Remove(documentId);
+        if (_documentKeys.TryGetValue(documentId, out var keys))
+        {
+            foreach (var key in keys)
+            {
+                _map.Remove(key);
+            }
+
+            _documentKeys.Remove(documentId);
+        }
     }
 
-    public TValue? Query(LuaDocumentId documentId, TKey key)
+    public TValue? Query(TKey key)
     {
-        if (_map.TryGetValue(documentId, out var documentMap))
-        {
-            if (documentMap.TryGetValue(key, out var value))
-            {
-                return value;
-            }
-        }
-
-        return default;
+        return _map.GetValueOrDefault(key);
     }
 
     public IEnumerable<TValue> QueryAll(LuaDocumentId documentId)
     {
-        if (_map.TryGetValue(documentId, out var documentMap))
+        if (_documentKeys.TryGetValue(documentId, out var keys))
         {
-            return documentMap.Values;
+            foreach (var key in keys)
+            {
+                if (_map.TryGetValue(key, out var value))
+                {
+                    yield return value;
+                }
+            }
         }
-
-        return [];
     }
 }

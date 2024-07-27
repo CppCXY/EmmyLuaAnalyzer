@@ -42,7 +42,7 @@ public class LuaSymbol(
 
     public LuaType? Type { get; set; } = type;
 
-    public SymbolInfo Info { get; internal set; } = info;
+    public SymbolInfo Info { get; set; } = info;
 
     public SymbolFeature Feature { get; internal set; } = feature;
 
@@ -76,6 +76,9 @@ public class LuaSymbol(
 
     public LuaSymbol WithInfo(SymbolInfo otherInfo) =>
         new(Name, Type, otherInfo, Feature, Visibility);
+
+    public LuaSymbol WithType(LuaType? otherType) =>
+        new(Name, otherType, Info, Feature, Visibility);
 
     public LuaSymbol Instantiate(TypeSubstitution substitution) =>
         new(Name, Type?.Instantiate(substitution), Info, Feature, Visibility);
@@ -136,6 +139,22 @@ public class LuaSymbol(
         }
 
         return null;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is LuaSymbol symbol && Equals(symbol);
+    }
+
+    public bool Equals(LuaSymbol? obj)
+    {
+        return Info.Ptr == obj?.Info.Ptr;
+    }
+
+    public override int GetHashCode()
+    {
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
+        return Info.Ptr.GetHashCode();
     }
 
     public override string ToString()

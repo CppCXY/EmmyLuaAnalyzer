@@ -77,7 +77,7 @@ public class ProjectIndex
 
     public void AddReference(LuaDocumentId documentId, LuaSymbol symbol, LuaReference reference)
     {
-        var list = InFiledReferences.Query(documentId, symbol.UniqueId);
+        var list = InFiledReferences.Query(symbol.UniqueId);
         if (list is null)
         {
             list = [reference];
@@ -107,7 +107,7 @@ public class ProjectIndex
 
     public IEnumerable<LuaReference> QueryLocalReferences(LuaSymbol symbol)
     {
-        var list = InFiledReferences.Query(symbol.Info.Ptr.DocumentId, symbol.UniqueId);
+        var list = InFiledReferences.Query(symbol.UniqueId);
         if (list is not null)
         {
             return list;
@@ -118,7 +118,7 @@ public class ProjectIndex
 
     public LuaSymbol? QueryLocalDeclaration(LuaSyntaxElement element)
     {
-        return InFiledDeclarations.Query(element.DocumentId, element.UniqueId);
+        return InFiledDeclarations.Query(element.UniqueId);
     }
 
     public IEnumerable<LuaSymbol> QueryDocumentLocalDeclarations(LuaDocumentId documentId)

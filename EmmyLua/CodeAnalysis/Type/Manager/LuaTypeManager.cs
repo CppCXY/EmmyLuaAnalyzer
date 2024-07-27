@@ -1,5 +1,4 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Container;
 using EmmyLua.CodeAnalysis.Document;
@@ -17,11 +16,11 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private Dictionary<LuaDocumentId, NamespaceIndex> NamespaceIndices { get; } = new();
 
-    private InFileIndex<SyntaxElementId, DocumentElementTypeInfo> ElementTypeInfos { get; } = new();
+    private InFileIndex<SyntaxElementId, DocumentElementTypeInfo> DocumentElementTypeInfos { get; } = new();
 
-    private Dictionary<string, GlobalTypeInfo> GlobalInfos { get; } = new();
+    private GlobalIndex GlobalIndices { get; } = new();
 
-    private Dictionary<LuaDocumentId, List<string>> DocumentGlobalNames { get; } = new();
+    private InFileIndex<string, LuaNamedType> GlobalProxyTypes { get; } = new();
 
     public TypeInfo.TypeInfo? FindTypeInfo(LuaNamedType type)
     {
@@ -55,7 +54,12 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     public DocumentElementTypeInfo? FindTypeInfo(SyntaxElementId elementId)
     {
-        return ElementTypeInfos.Query(elementId.DocumentId, elementId);
+        return DocumentElementTypeInfos.Query(elementId);
+    }
+
+    public GlobalTypeInfo? FindGlobalInfo(string name)
+    {
+        return GlobalIndices.Query(name);
     }
 
     public void Remove(LuaDocumentId documentId)
@@ -72,21 +76,9 @@ public class LuaTypeManager(LuaCompilation compilation)
             RootNamespace.Remove(documentId);
         }
 
-        ElementTypeInfos.Remove(documentId);
-
-        if (DocumentGlobalNames.Remove(documentId, out var globalNames))
-        {
-            foreach (var globalName in globalNames)
-            {
-                if (GlobalInfos.TryGetValue(globalName, out var globalInfo))
-                {
-                    if (globalInfo.RemovePartial(documentId))
-                    {
-                        GlobalInfos.Remove(globalName);
-                    }
-                }
-            }
-        }
+        DocumentElementTypeInfos.Remove(documentId);
+        GlobalIndices.Remove(documentId);
+        GlobalProxyTypes.Remove(documentId);
     }
 
     public bool AddTypeDefinition(LuaDocTagNamedTypeSyntax element, string name, NamedTypeKind kind,
@@ -105,41 +97,19 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
     }
 
-    public void AddElementType(SyntaxElementId id)
+    public void AddDocumentElementType(SyntaxElementId id)
     {
         var typeInfo = new DocumentElementTypeInfo()
         {
             DocumentId = id.DocumentId
         };
 
-        ElementTypeInfos.Add(id.DocumentId, id, typeInfo);
+        DocumentElementTypeInfos.Add(id.DocumentId, id, typeInfo);
     }
 
     public void AddGlobal(string name, LuaSymbol symbol)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalInfo))
-        {
-            globalInfo.DefinedDeclarations.Add(symbol.DocumentId, symbol);
-        }
-        else
-        {
-            globalInfo = new GlobalTypeInfo()
-            {
-                Name = name
-            };
-            globalInfo.DefinedDeclarations.Add(symbol.DocumentId, symbol);
-            GlobalInfos[name] = globalInfo;
-        }
-
-        if (DocumentGlobalNames.TryGetValue(symbol.DocumentId, out var globalNames))
-        {
-            globalNames.Add(name);
-        }
-        else
-        {
-            globalNames = [name];
-            DocumentGlobalNames[symbol.DocumentId] = globalNames;
-        }
+        GlobalIndices.AddGlobal(name, symbol);
     }
 
     public void SetBaseType(LuaNamedType type, LuaType baseType)
@@ -163,26 +133,56 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     public void SetBaseType(SyntaxElementId elementId, LuaType baseType)
     {
-        if (ElementTypeInfos.Query(elementId.DocumentId, elementId) is { } typeInfo)
+        if (DocumentElementTypeInfos.Query(elementId) is { } typeInfo)
         {
             typeInfo.BaseType = baseType;
         }
     }
 
-    public void SetGlobalProxyType(string name, LuaNamedType type)
+
+    public void SetExprType(LuaNamedType namedType, LuaType type)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalTypeInfo))
+        if (type is LuaElementType elementType)
         {
-            // globalTypeInfo.MainDocumentId = symbol.DocumentId;
-            // globalTypeInfo.DefinedDeclarations.TryAdd(symbol.DocumentId, symbol);
+            var elementTypeInfo = FindTypeInfo(elementType.Id);
+            if (elementTypeInfo?.Declarations is { } members)
+            {
+                AddMemberImplementations(namedType, members.Values);
+            }
         }
     }
 
-    public void SetGlobalBaseType(string name, LuaType baseType)
+    public void SetExprType(LuaDocumentId documentId, GlobalNameType globalNameType, LuaType baseType)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalTypeInfo))
+        if (GlobalProxyTypes.Query(globalNameType.Name) is { } namedType)
         {
-            // globalTypeInfo.BaseType = baseType;
+            SetExprType(namedType, baseType);
+        }
+        else
+        {
+            SetGlobalBaseType(documentId, globalNameType, baseType);
+        }
+    }
+
+    public void SetGlobalTypeSymbol(string name, LuaNamedType namedType)
+    {
+        if (GlobalIndices.Query(name) is { } globalTypeInfo)
+        {
+            globalTypeInfo.MainDocumentId = namedType.DocumentId;
+            GlobalProxyTypes.Add(namedType.DocumentId, name, namedType);
+            if (globalTypeInfo.Declarations is { } members)
+            {
+                AddMemberImplementations(namedType, members.Values);
+            }
+        }
+    }
+
+    public void SetGlobalBaseType(LuaDocumentId documentId, GlobalNameType globalNameType, LuaType baseType)
+    {
+        if (GlobalIndices.Query(globalNameType.Name) is { BaseType: null } globalTypeInfo)
+        {
+            globalTypeInfo.MainDocumentId = documentId;
+            globalTypeInfo.BaseType = baseType;
         }
     }
 
@@ -283,7 +283,7 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     public void AddElementMembers(SyntaxElementId elementId, IEnumerable<LuaSymbol> members)
     {
-        if (ElementTypeInfos.Query(elementId.DocumentId, elementId) is { } typeInfo)
+        if (DocumentElementTypeInfos.Query(elementId) is { } typeInfo)
         {
             typeInfo.Declarations ??= new();
             foreach (var member in members)
@@ -295,16 +295,16 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     public void AddGlobalMember(string name, LuaSymbol member)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalInfo))
+        GlobalIndices.AddGlobalMember(name, member);
+        if (GlobalProxyTypes.Query(name) is { } namedType)
         {
-            globalInfo.Declarations ??= new();
-            globalInfo.Declarations.TryAdd(member.Name, member);
+            AddMemberImplementation(namedType, member);
         }
     }
 
     public void AddElementMember(SyntaxElementId elementId, LuaSymbol member)
     {
-        if (ElementTypeInfos.Query(elementId.DocumentId, elementId) is { } typeInfo)
+        if (DocumentElementTypeInfos.Query(elementId) is { } typeInfo)
         {
             if (member.DocumentId == elementId.DocumentId)
             {
@@ -387,19 +387,57 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
     }
 
-    public LuaType? GetBaseType(LuaNamedType type)
-    {
-        var typeInfo = FindTypeInfo(type);
-        return typeInfo?.BaseType;
-    }
-
     public LuaType? GetBaseType(SyntaxElementId id)
     {
-        if (ElementTypeInfos.Query(id.DocumentId, id) is { } typeInfo)
+        if (DocumentElementTypeInfos.Query(id) is { } typeInfo)
         {
             return typeInfo.BaseType;
         }
 
         return null;
+    }
+
+    public IEnumerable<GlobalTypeInfo> GetAllGlobalInfos()
+    {
+        return GlobalIndices.QueryAll();
+    }
+
+    public LuaSymbol? GetGlobalSymbol(string name)
+    {
+        var globalInfo = GlobalIndices.Query(name);
+        if (globalInfo?.DefinedDeclarations.TryGetValue(globalInfo.MainDocumentId, out var symbol) == true)
+        {
+            var proxyType = GlobalProxyTypes.Query(name);
+            if (proxyType is not null)
+            {
+                return new LuaSymbol(symbol.Name, proxyType, symbol.Info);
+            }
+
+            return symbol;
+        }
+
+        return null;
+    }
+
+    public LuaSymbol? GetTypeDefinedSymbol(LuaNamedType namedType)
+    {
+        var typeInfo = FindTypeInfo(namedType);
+        if (typeInfo is null)
+        {
+            return null;
+        }
+
+        var id = SyntaxElementId.Empty;
+        if (typeInfo.DefinedElementIds.Count == 1)
+        {
+            id = typeInfo.DefinedElementIds.First();
+        }
+        else if (typeInfo.DefinedElementIds?.FirstOrDefault(it => it.DocumentId == typeInfo.MainDocumentId) is {} elementId)
+        {
+            id = elementId;
+        }
+
+        var info = new NamedTypeInfo(new LuaElementPtr<LuaDocTagNamedTypeSyntax>(id), typeInfo.Kind);
+        return new LuaSymbol(typeInfo.Name, namedType, info);
     }
 }

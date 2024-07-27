@@ -12,12 +12,17 @@ public class GlobalTypeInfo : ITypeInfo
 
     public string Name { get; set; } = string.Empty;
 
-    public LuaType? BaseType => DefinedDeclarations.TryGetValue(MainDocumentId, out var declaration) ? declaration.Type : null;
+    public LuaType? BaseType { get; set; }
 
     public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
     public bool RemovePartial(LuaDocumentId documentId)
     {
+        if (documentId == MainDocumentId)
+        {
+            BaseType = null;
+        }
+
         var removeAll = !RemoveMembers(documentId);
         DefinedDeclarations.Remove(documentId);
         if (DefinedDeclarations.Count != 0)

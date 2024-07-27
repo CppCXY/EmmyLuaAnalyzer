@@ -125,6 +125,19 @@ public static class ExpressionInfer
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
+        if (tableExpr.Parent is LuaLocalStatSyntax localStatSyntax)
+        {
+            var index = localStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
+            var localNameElement = localStatSyntax.NameList.ElementAtOrDefault(index);
+            return context.Infer(localNameElement);
+        }
+        else if (tableExpr.Parent is LuaAssignStatSyntax assignStatSyntax)
+        {
+            var index = assignStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
+            var localNameElement = assignStatSyntax.VarList.ElementAtOrDefault(index);
+            return context.Infer(localNameElement);
+        }
+
         return new LuaElementType(tableExpr.UniqueId);
     }
 

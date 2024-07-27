@@ -31,7 +31,7 @@ public class CallChecker(LuaCompilation compilation)
 
     private void CheckMissingParameter(DiagnosticContext context, LuaCallExprSyntax callExpr, LuaSymbol luaSymbol)
     {
-        foreach(var luaMethodType in context.SearchContext.FindCallableType(luaSymbol.Type))
+        foreach (var luaMethodType in context.SearchContext.FindCallableType(luaSymbol.Type))
         {
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
             var perfectSignature = context.SearchContext.FindPerfectMatchSignature(luaMethodType, callExpr, args);
@@ -44,7 +44,7 @@ public class CallChecker(LuaCompilation compilation)
                 case (true, false):
                 {
                     var oldParameters = parameters;
-                    parameters = [new LuaSymbol("self", new VirtualInfo(Builtin.Unknown))];
+                    parameters = [new LuaSymbol("self", Builtin.Unknown, new VirtualInfo())];
                     parameters.AddRange(oldParameters);
                     break;
                 }

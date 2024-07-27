@@ -303,14 +303,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             }
             else if (declarationType is GlobalNameType globalNameType)
             {
-                // symbol
+                Compilation.TypeManager.SetExprType(luaExpr.DocumentId, globalNameType, type);
             }
             else if (declarationType is LuaNamedType namedType)
             {
-                if (type is LuaElementType elementType2 && elementType2.ToSyntaxElement(Context) is LuaTableExprSyntax)
-                {
-                    Compilation.TypeManager.SetBaseType(namedType, elementType2);
-                }
+                Compilation.TypeManager.SetExprType(namedType, type);
             }
         }
     }

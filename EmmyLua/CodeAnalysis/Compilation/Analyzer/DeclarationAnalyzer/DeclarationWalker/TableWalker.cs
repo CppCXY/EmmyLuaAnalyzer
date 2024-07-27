@@ -10,7 +10,7 @@ public partial class DeclarationWalker
 {
     private void AnalyzeTableExpr(LuaTableExprSyntax tableExprSyntax)
     {
-        declarationContext.TypeManager.AddElementType(tableExprSyntax.UniqueId);
+        declarationContext.TypeManager.AddDocumentElementType(tableExprSyntax.UniqueId);
         var fields = new List<LuaSymbol>();
         foreach (var fieldSyntax in tableExprSyntax.FieldList)
         {
