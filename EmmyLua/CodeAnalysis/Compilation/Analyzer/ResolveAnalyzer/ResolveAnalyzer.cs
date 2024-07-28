@@ -160,7 +160,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     Compilation.TypeManager.AddGlobalMember(globalNameType.Name, declaration);
                 }
 
-                Context.ClearMemberCache(ty);
+                // Context.ClearMemberCache(ty);
             }
         }
     }

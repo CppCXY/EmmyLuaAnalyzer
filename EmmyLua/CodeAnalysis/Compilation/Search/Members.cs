@@ -1,388 +1,291 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
 public class Members(SearchContext context)
 {
-    private Dictionary<LuaType, List<LuaSymbol>> TypeMemberCaches { get; } = new();
+    private HashSet<ITypeInfo> _visitedTypes = new();
 
-    private Dictionary<LuaType, List<LuaSymbol>> GenericMemberCaches { get; } = new();
-
-    private Dictionary<LuaType, List<LuaSymbol>> BaseMemberCaches { get; } = new();
-
-    private HashSet<LuaType> MemberGuard { get; } = new();
-
-    public IEnumerable<LuaSymbol> GetRawMembers(LuaType luaType)
+    public List<LuaSymbol> GetTypeMembers(LuaType luaType)
     {
-        if (context.Features.Cache && TypeMemberCaches.TryGetValue(luaType, out var members))
+        return luaType switch
         {
-            return members;
+            LuaGenericType genericType => GetGenericTypeMembers(genericType),
+            LuaNamedType namedType => GetNamedTypeMembers(namedType),
+            LuaElementType elementType => GetElementTypeMembers(elementType),
+            GlobalNameType globalType => GetGlobalTypeMembers(globalType),
+            LuaUnionType unionType => unionType.UnionTypes.SelectMany(GetTypeMembers).ToList(),
+            LuaTupleType tupleType => GetTupleTypeMembers(tupleType),
+            _ => []
+        };
+    }
+
+    private List<LuaSymbol> GetNamedTypeMembers(LuaNamedType namedType)
+    {
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
+        if (typeInfo is null)
+        {
+            return [];
         }
 
-        members = context.Compilation.Db.QueryMembers(luaType).ToList();
-
-        if (context.Features.Cache)
+        if (!_visitedTypes.Add(typeInfo))
         {
-            TypeMemberCaches[luaType] = members;
+            return [];
         }
 
+        var members = new Dictionary<string, LuaSymbol>();
+        try
+        {
+            switch (typeInfo.Kind)
+            {
+                case NamedTypeKind.Class:
+                {
+                    if (typeInfo.Declarations is { } declarations)
+                    {
+                        foreach (var (name, symbol) in declarations)
+                        {
+                            members.TryAdd(name, symbol);
+                        }
+                    }
+
+                    break;
+                }
+                case NamedTypeKind.Interface:
+                {
+                    if (typeInfo.Declarations is { } declarations)
+                    {
+                        foreach (var (name, symbol) in declarations)
+                        {
+                            members.TryAdd(name, symbol);
+                        }
+                    }
+
+                    break;
+                }
+                case NamedTypeKind.Enum:
+                {
+                    if (typeInfo.Declarations is { } declarations)
+                    {
+                        foreach (var (name, symbol) in declarations)
+                        {
+                            members.TryAdd(name, symbol);
+                        }
+                    }
+
+                    break;
+                }
+                case NamedTypeKind.Alias:
+                {
+                    if (typeInfo.BaseType is not null)
+                    {
+                        var originMembers = GetTypeMembers(typeInfo.BaseType);
+                        foreach (var member in originMembers)
+                        {
+                            members.TryAdd(member.Name, member);
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            // base
+            if (typeInfo.Kind is NamedTypeKind.Class && typeInfo.BaseType is not null)
+            {
+                var baseMembers = GetTypeMembers(typeInfo.BaseType);
+                foreach (var member in baseMembers)
+                {
+                    members.TryAdd(member.Name, member);
+                }
+            }
+
+            // supers
+            if (typeInfo.Kind is NamedTypeKind.Class or NamedTypeKind.Interface && typeInfo.Supers is { } supers)
+            {
+                foreach (var super in supers)
+                {
+                    var superMembers = GetTypeMembers(super);
+                    foreach (var member in superMembers)
+                    {
+                        members.TryAdd(member.Name, member);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            _visitedTypes.Remove(typeInfo);
+        }
+
+        return members.Values.ToList();
+    }
+
+    private List<LuaSymbol> GetElementTypeMembers(LuaElementType elementType)
+    {
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
+        if (typeInfo is null)
+        {
+            return [];
+        }
+
+        if (!_visitedTypes.Add(typeInfo))
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, LuaSymbol>();
+        try
+        {
+            if (typeInfo.Declarations is { } declarations)
+            {
+                foreach (var (name, symbol) in declarations)
+                {
+                    members.TryAdd(name, symbol);
+                }
+            }
+
+            if (typeInfo.BaseType is not null)
+            {
+                var baseMembers = GetTypeMembers(typeInfo.BaseType);
+                foreach (var member in baseMembers)
+                {
+                    members.TryAdd(member.Name, member);
+                }
+            }
+        }
+        finally
+        {
+            _visitedTypes.Remove(typeInfo);
+        }
+
+        return members.Values.ToList();
+    }
+
+    private List<LuaSymbol> GetGlobalTypeMembers(GlobalNameType globalType)
+    {
+        var namedType = context.Compilation.TypeManager.GetGlobalProxyNameType(globalType.Name);
+        if (namedType is not null)
+        {
+            return GetTypeMembers(namedType);
+        }
+
+        var typeInfo = context.Compilation.TypeManager.FindGlobalInfo(globalType.Name);
+        if (typeInfo is null)
+        {
+            return [];
+        }
+
+        if (!_visitedTypes.Add(typeInfo))
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, LuaSymbol>();
+        try
+        {
+            if (typeInfo.Declarations is { } declarations)
+            {
+                foreach (var (name, symbol) in declarations)
+                {
+                    members.TryAdd(name, symbol);
+                }
+            }
+
+            if (typeInfo.BaseType is not null)
+            {
+                var baseMembers = GetTypeMembers(typeInfo.BaseType);
+                foreach (var member in baseMembers)
+                {
+                    members.TryAdd(member.Name, member);
+                }
+            }
+        }
+        finally
+        {
+            _visitedTypes.Remove(typeInfo);
+        }
+
+        return members.Values.ToList();
+    }
+
+    private List<LuaSymbol> GetTupleTypeMembers(LuaTupleType tupleType)
+    {
+        var members = new List<LuaSymbol>();
+        members.AddRange(tupleType.TupleDeclaration);
         return members;
     }
 
-    private void CollectSupers(string name, HashSet<LuaType> hashSet, List<LuaType> result)
+    private List<LuaSymbol> GetGenericTypeMembers(LuaGenericType genericType)
     {
-        var supers = context.Compilation.Db.QuerySupers(name);
-        var namedSupers = new List<string>();
-        foreach (var super in supers)
+        if (genericType.Name == "table")
         {
-            if (hashSet.Add(super))
+            return [];
+        }
+
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(genericType);
+        if (typeInfo is null)
+        {
+            return [];
+        }
+
+        if (!_visitedTypes.Add(typeInfo))
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, LuaSymbol>();
+        try
+        {
+            if (typeInfo.Kind is NamedTypeKind.Class or NamedTypeKind.Interface)
             {
-                result.Add(super);
-                if (super is LuaNamedType namedType)
+                var substitute = new TypeSubstitution();
+                var genericArgs = genericType.GenericArgs;
+                if (typeInfo.GenericParams is not null)
                 {
-                    namedSupers.Add(namedType.Name);
+                    for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
+                    {
+                        substitute.Add(typeInfo.GenericParams[i].Name , genericArgs[i], true);
+                    }
+                }
+
+                if (typeInfo.Declarations is { } declarations)
+                {
+                    foreach (var (name, symbol) in declarations)
+                    {
+                        members.TryAdd(name, symbol.Instantiate(substitute));
+                    }
+                }
+
+                if (typeInfo.BaseType is not null)
+                {
+                    var baseMembers = GetTypeMembers(typeInfo.BaseType);
+                    foreach (var member in baseMembers)
+                    {
+                        members.TryAdd(member.Name, member);
+                    }
+                }
+
+                if (typeInfo.Supers is { } supers)
+                {
+                    foreach (var super in supers)
+                    {
+                        var superMembers = GetTypeMembers(super);
+                        foreach (var member in superMembers)
+                        {
+                            members.TryAdd(member.Name, member);
+                        }
+                    }
                 }
             }
         }
-
-        foreach (var super in namedSupers)
+        finally
         {
-            CollectSupers(super, hashSet, result);
-        }
-    }
-
-    public IEnumerable<LuaSymbol> GetSupersMembers(LuaType luaType)
-    {
-        if (context.Features.Cache && BaseMemberCaches.TryGetValue(luaType, out var members))
-        {
-            return members;
+            _visitedTypes.Remove(typeInfo);
         }
 
-        var hashSet = new HashSet<LuaType>();
-        var result = new List<LuaType>();
-        if (luaType is LuaNamedType namedType)
-        {
-            CollectSupers(namedType.Name, hashSet, result);
-        }
-
-        members = [];
-        foreach (var superType in result)
-        {
-            if (!superType.Equals(luaType))
-            {
-                members.AddRange(GetRawMembers(superType));
-            }
-        }
-
-        if (context.Features.Cache)
-        {
-            BaseMemberCaches[luaType] = members;
-        }
-
-        return members;
-    }
-
-    private IEnumerable<LuaSymbol> GetRelatedMembers(LuaType luaType)
-    {
-        if (luaType is LuaVariableRefType variableRefType)
-        {
-            var relatedType = context.Compilation.Db.QueryTypeFromId(variableRefType.Id);
-            if (relatedType is not null && !relatedType.Equals(luaType))
-            {
-                return GetMembers(relatedType);
-            }
-        }
-        else if (luaType is GlobalNameType globalNameType)
-        {
-            var relatedType = context.Compilation.Db.QueryRelatedGlobalType(globalNameType.Name);
-            if (relatedType is not null && !relatedType.Equals(luaType))
-            {
-                return GetMembers(relatedType);
-            }
-        }
-
-        return [];
-    }
-
-    private IEnumerable<LuaSymbol> GetNormalTypeMembers(LuaType luaType)
-    {
-        var selfMembers = GetRawMembers(luaType);
-        var supersMembers = GetSupersMembers(luaType);
-        var relatedMembers = GetRelatedMembers(luaType);
-        var allMembers = selfMembers.Concat(supersMembers).Concat(relatedMembers);
-        return allMembers;
-    }
-
-    private IEnumerable<LuaSymbol> InnerGetMembers(LuaType luaType)
-    {
-        if (luaType is LuaGenericType genericType)
-        {
-            return GetGenericMembers(genericType);
-        }
-        else if (luaType is LuaNamedType namedType)
-        {
-            var namedTypeKind = namedType.GetTypeKind(context);
-            if (namedTypeKind == NamedTypeKind.Alias)
-            {
-                var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
-                if (originType is not null)
-                {
-                    return GetMembers(originType);
-                }
-            }
-
-            return GetNormalTypeMembers(namedType);
-        }
-        else if (luaType is LuaUnionType unionType)
-        {
-            // 这样是为了防止错误递归 ---@alias aaa aaa | global
-            return unionType.UnionTypes.SelectMany(GetMembers).ToList();
-        }
-        else if (luaType is LuaTupleType tupleType)
-        {
-            return tupleType.TupleDeclaration;
-        }
-
-        return GetNormalTypeMembers(luaType);
-    }
-
-    public IEnumerable<LuaSymbol> GetMembers(LuaType luaType)
-    {
-        if (MemberGuard.Add(luaType))
-        {
-            try
-            {
-                return InnerGetMembers(luaType);
-            }
-            finally
-            {
-                MemberGuard.Remove(luaType);
-            }
-        }
-
-        return [];
-    }
-
-    private IEnumerable<LuaSymbol> GetGenericMembers(LuaGenericType genericType)
-    {
-        if (context.Features.Cache && GenericMemberCaches.TryGetValue(genericType, out var instanceMembers))
-        {
-            return instanceMembers;
-        }
-
-        var members = GetNormalTypeMembers(genericType);
-        var genericParams = context.Compilation.Db.QueryGenericParams(genericType.Name).ToList();
-        var genericArgs = genericType.GenericArgs;
-
-        var substitution = new TypeSubstitution();
-        for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
-        {
-            substitution.Add(genericParams[i].Name, genericArgs[i], true);
-        }
-
-        instanceMembers = [];
-        foreach (var member in members)
-        {
-            instanceMembers.Add(member.Instantiate(substitution));
-        }
-
-        if (context.Features.Cache)
-        {
-            GenericMemberCaches.TryAdd(genericType, instanceMembers);
-        }
-
-        return instanceMembers;
-    }
-
-    public IEnumerable<LuaSymbol> FindMember(LuaType luaType, string memberName)
-    {
-        switch (luaType)
-        {
-            case LuaNamedType namedType when namedType is { Name: "table" }:
-            {
-                return FindTableMember(namedType, memberName);
-            }
-            case LuaNamedType namedType when namedType.GetTypeKind(context) == NamedTypeKind.Alias:
-            {
-                var originType = context.Compilation.Db.QueryAliasOriginTypes(namedType.Name);
-                if (originType is not null)
-                {
-                    return FindMember(originType, memberName);
-                }
-
-                return [];
-            }
-            case LuaArrayType arrayType when memberName.StartsWith('['):
-            {
-                return [new LuaSymbol(memberName, new VirtualInfo(arrayType.BaseType))];
-            }
-            default:
-            {
-                return GetMembers(luaType)
-                    .Where(it => string.Equals(it.Name, memberName, StringComparison.CurrentCulture));
-            }
-        }
-    }
-
-    private IEnumerable<LuaSymbol> FindTableMember(LuaNamedType namedType, string memberName)
-    {
-        if (namedType is LuaGenericType genericTable)
-        {
-            var args = genericTable.GenericArgs;
-            if (args.Count != 2)
-            {
-                return [];
-            }
-
-            var firstType = genericTable.GenericArgs[0];
-            var secondType = genericTable.GenericArgs[1];
-
-            if ((firstType.Equals(Builtin.Integer) || firstType.Equals(Builtin.Number))
-                && memberName.StartsWith("["))
-            {
-                return [new LuaSymbol(memberName, new VirtualInfo(secondType))];
-            }
-
-            if (firstType.Equals(Builtin.String) && !memberName.StartsWith("["))
-            {
-                return [new LuaSymbol(memberName, new VirtualInfo(secondType))];
-            }
-        }
-
-        return [];
-    }
-
-    private IEnumerable<LuaSymbol> FindTableMember(LuaNamedType namedType, LuaType keyType)
-    {
-        if (namedType is LuaGenericType genericTable)
-        {
-            var args = genericTable.GenericArgs;
-            if (args.Count != 2)
-            {
-                return [];
-            }
-
-            var firstType = genericTable.GenericArgs[0];
-            var secondType = genericTable.GenericArgs[1];
-
-            if (keyType.SubTypeOf(firstType, context))
-            {
-                return [new LuaSymbol(string.Empty, new VirtualInfo(secondType))];
-            }
-        }
-
-        return [];
-    }
-
-    private IEnumerable<LuaSymbol> FindIndexMember(LuaType luaType, LuaType keyType)
-    {
-        if (luaType is LuaNamedType namedType)
-        {
-            if (namedType is { Name: "table" })
-            {
-                return FindTableMember(namedType, keyType);
-            }
-
-            var op = context.GetBestMatchedIndexOperator(luaType, keyType);
-            if (op is not null)
-            {
-                return [op.LuaSymbol];
-            }
-        }
-        else if (luaType is LuaUnionType unionType)
-        {
-            return unionType.UnionTypes.SelectMany(it => FindIndexMember(it, keyType));
-        }
-        else if (luaType is LuaArrayType arrayType)
-        {
-            if (keyType.Equals(Builtin.Integer) || keyType.Equals(Builtin.Number))
-            {
-                return [new LuaSymbol(string.Empty, new VirtualInfo(arrayType.BaseType))];
-            }
-        }
-
-        return [];
-    }
-
-    public IEnumerable<LuaSymbol> FindMember(LuaType luaType, LuaIndexExprSyntax indexExpr)
-    {
-        if (luaType.Equals(Builtin.Unknown))
-        {
-            yield break;
-        }
-
-        var notFounded = true;
-        var mappingName = context.Compilation.Db.QueryMapping(indexExpr.UniqueId);
-        if (mappingName is not null)
-        {
-            foreach (var declaration in FindMember(luaType, mappingName))
-            {
-                notFounded = false;
-                yield return declaration;
-            }
-        }
-        else if (indexExpr is { Name: { } name })
-        {
-            foreach (var declaration in FindMember(luaType, name))
-            {
-                notFounded = false;
-                yield return declaration;
-            }
-        }
-        else if (indexExpr is { IndexKeyExpr: { } keyExpr })
-        {
-            var keyExprType = context.InferAndUnwrap(keyExpr);
-            foreach (var declaration in FindIndexMember(luaType, keyExprType))
-            {
-                notFounded = false;
-                yield return declaration;
-            }
-        }
-
-        if (notFounded)
-        {
-            LuaType keyType = Builtin.Unknown;
-            if (indexExpr.DotOrColonIndexName != null)
-            {
-                keyType = Builtin.String;
-            }
-            else if (indexExpr.IndexKeyExpr is LuaLiteralExprSyntax literal)
-            {
-                if (literal.Literal is LuaStringToken)
-                {
-                    keyType = Builtin.String;
-                }
-                else if (literal.Literal is LuaIntegerToken luaIntegerToken)
-                {
-                    keyType = Builtin.Integer;
-                }
-            }
-            else
-            {
-                keyType = context.Infer(indexExpr.KeyElement);
-            }
-
-            var op = context.GetBestMatchedIndexOperator(luaType, keyType);
-            if (op != null)
-            {
-                yield return op.LuaSymbol;
-            }
-        }
-    }
-
-    public IEnumerable<LuaSymbol> FindSuperMember(LuaType luaType, string member)
-    {
-        var members = GetSupersMembers(luaType);
-        return members.Where(it => string.Equals(it.Name, member, StringComparison.CurrentCulture));
-    }
-
-    public void ClearMember(LuaType luaType)
-    {
-        TypeMemberCaches.Remove(luaType);
-        GenericMemberCaches.Remove(luaType);
-        BaseMemberCaches.Remove(luaType);
+        return members.Values.ToList();
     }
 }

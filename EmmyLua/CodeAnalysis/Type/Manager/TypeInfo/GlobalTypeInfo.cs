@@ -16,6 +16,19 @@ public class GlobalTypeInfo : ITypeInfo
 
     public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
+    public LuaSymbol? MainLuaSymbol
+    {
+        get
+        {
+            if (DefinedDeclarations.TryGetValue(MainDocumentId, out var symbol))
+            {
+                return symbol;
+            }
+
+            return DefinedDeclarations.FirstOrDefault().Value;
+        }
+    }
+
     public bool RemovePartial(LuaDocumentId documentId)
     {
         if (documentId == MainDocumentId)

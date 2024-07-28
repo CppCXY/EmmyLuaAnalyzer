@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -15,6 +16,44 @@ public class TypeInfo : ITypeInfo
 
     public HashSet<LuaDocumentId> DefinedDocumentIds { get; init; } = new();
 
+    public SyntaxElementId MainElementId
+    {
+        get
+        {
+            if (DefinedElementIds.Count == 0)
+            {
+                return SyntaxElementId.Empty;
+            }
+            else if (DefinedElementIds.Count == 1)
+            {
+                return DefinedElementIds.First();
+            }
+
+            return DefinedElementIds.FirstOrDefault(it => it.DocumentId == MainDocumentId);
+        }
+    }
+
+    public LuaLocation? GetLocation(SearchContext context)
+    {
+        var mainElementId = MainElementId;
+        if (mainElementId == SyntaxElementId.Empty)
+        {
+            return null;
+        }
+
+        var document = context.Compilation.Project.GetDocument(mainElementId.DocumentId);
+        if (document is not null)
+        {
+            var element = document.SyntaxTree.GetElement(mainElementId.ElementId);
+            if (element is not null)
+            {
+                return element.Location;
+            }
+        }
+
+        return null;
+    }
+
     public string Name { get; set; } = string.Empty;
 
     public List<LuaSymbol>? GenericParams { get; set; }
@@ -27,7 +66,7 @@ public class TypeInfo : ITypeInfo
 
     public Dictionary<string, LuaSymbol>? Implements { get; set; }
 
-    public List<TypeOperator>? Operators { get; set; }
+    public Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators { get; set; }
 
     public record struct OverloadStub(LuaDocumentId DocumentId, LuaMethodType MethodType);
 
@@ -132,13 +171,29 @@ public class TypeInfo : ITypeInfo
         var removeAll = true;
         if (Operators is not null)
         {
-            var operators = Operators.Where(it => it.LuaSymbol.DocumentId != documentId).ToList();
-            if (operators.Count > 0)
+            var toBeRemove = new List<TypeOperatorKind>();
+            foreach (var (key, value) in Operators)
             {
-                Operators = operators;
-                removeAll = false;
+                for (var i = value.Count - 1; i >= 0; i--)
+                {
+                    if (value[i].LuaSymbol.DocumentId == documentId)
+                    {
+                        value.RemoveAt(i);
+                    }
+                }
+
+                if (value.Count == 0)
+                {
+                    toBeRemove.Add(key);
+                }
             }
-            else
+
+            foreach (var key in toBeRemove)
+            {
+                Operators.Remove(key);
+            }
+
+            if (Operators.Count == 0)
             {
                 Operators = null;
             }

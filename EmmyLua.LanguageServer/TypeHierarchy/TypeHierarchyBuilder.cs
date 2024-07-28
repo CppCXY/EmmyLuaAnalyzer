@@ -29,65 +29,65 @@ public class TypeHierarchyBuilder
 
     public List<TypeHierarchyItem> BuildSupers(LuaCompilation compilation, string name)
     {
-        var supers = compilation.Db.QuerySupers(name);
-        var items = new List<TypeHierarchyItem>();
-        foreach (var super in supers)
-        {
-            if (super is LuaNamedType superNamedType)
-            {
-                var typeDefine = compilation.Db.QueryNamedTypeDefinitions(superNamedType.Name).FirstOrDefault();
-                if (typeDefine is { Info: NamedTypeInfo info })
-                {
-                    var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
-                    if (typeDocument is not null
-                        && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
-                    {
-                        var range = sourceRange.ToLspRange(typeDocument);
-                        items.Add(new TypeHierarchyItem
-                        {
-                            Name = $"super {superNamedType.Name}",
-                            Kind = ToSymbolKind(info),
-                            Uri = typeDocument!.Uri,
-                            Range = range,
-                            SelectionRange = range,
-                            Data = superNamedType.Name
-                        });
-                    }
-                }
-            }
-        }
+        // var supers = compilation.Db.QuerySupers(name);
+        // var items = new List<TypeHierarchyItem>();
+        // foreach (var super in supers)
+        // {
+        //     if (super is LuaNamedType superNamedType)
+        //     {
+        //         var typeDefine = compilation.Db.QueryNamedTypeDefinitions(superNamedType.Name).FirstOrDefault();
+        //         if (typeDefine is { Info: NamedTypeInfo info })
+        //         {
+        //             var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
+        //             if (typeDocument is not null
+        //                 && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
+        //             {
+        //                 var range = sourceRange.ToLspRange(typeDocument);
+        //                 items.Add(new TypeHierarchyItem
+        //                 {
+        //                     Name = $"super {superNamedType.Name}",
+        //                     Kind = ToSymbolKind(info),
+        //                     Uri = typeDocument!.Uri,
+        //                     Range = range,
+        //                     SelectionRange = range,
+        //                     Data = superNamedType.Name
+        //                 });
+        //             }
+        //         }
+        //     }
+        // }
 
-        return items;
+        return [];
     }
 
     public List<TypeHierarchyItem> BuildSubTypes(LuaCompilation compilation, string name)
     {
-        var subTypes = compilation.Db.QuerySubTypes(name);
-        var items = new List<TypeHierarchyItem>();
-        foreach (var subTypeName in subTypes)
-        {
-            var typeDefine = compilation.Db.QueryNamedTypeDefinitions(subTypeName).FirstOrDefault();
-            if (typeDefine is { Info: NamedTypeInfo info })
-            {
-                var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
-                if (typeDocument is not null
-                    && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
-                {
-                    var range = sourceRange.ToLspRange(typeDocument);
-                    items.Add(new TypeHierarchyItem
-                    {
-                        Name = $"subtype {subTypeName}",
-                        Kind = ToSymbolKind(info),
-                        Uri = typeDocument!.Uri,
-                        Range = range,
-                        SelectionRange = range,
-                        Data = subTypeName,
-                    });
-                }
-            }
-        }
+        // var subTypes = compilation.Db.QuerySubTypes(name);
+        // var items = new List<TypeHierarchyItem>();
+        // foreach (var subTypeName in subTypes)
+        // {
+        //     var typeDefine = compilation.Db.QueryNamedTypeDefinitions(subTypeName).FirstOrDefault();
+        //     if (typeDefine is { Info: NamedTypeInfo info })
+        //     {
+        //         var typeDocument = compilation.Project.GetDocument(info.TypeDefinePtr.DocumentId);
+        //         if (typeDocument is not null
+        //             && info.TypeDefinePtr.ToNode(typeDocument) is { Range: { } sourceRange })
+        //         {
+        //             var range = sourceRange.ToLspRange(typeDocument);
+        //             items.Add(new TypeHierarchyItem
+        //             {
+        //                 Name = $"subtype {subTypeName}",
+        //                 Kind = ToSymbolKind(info),
+        //                 Uri = typeDocument!.Uri,
+        //                 Range = range,
+        //                 SelectionRange = range,
+        //                 Data = subTypeName,
+        //             });
+        //         }
+        //     }
+        // }
 
-        return items;
+        return [];
     }
 
     private static SymbolKind ToSymbolKind(NamedTypeInfo info)

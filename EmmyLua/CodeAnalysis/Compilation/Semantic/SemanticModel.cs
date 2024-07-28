@@ -6,6 +6,7 @@ using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
@@ -47,8 +48,13 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 
     public IEnumerable<LuaSymbol> GetGlobals()
     {
-        throw new NotImplementedException();
-        // return Compilation.TypeManager.
+        foreach (var globalInfo in Compilation.TypeManager.GetAllGlobalInfos())
+        {
+            if (globalInfo.MainLuaSymbol is { } luaSymbol)
+            {
+                yield return luaSymbol;
+            }
+        }
     }
 
     public IEnumerable<LuaSymbol> GetDeclarationsBefore(LuaSyntaxElement beforeToken)

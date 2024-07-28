@@ -327,7 +327,13 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             if (typeInfo.IsDefinedInDocument(op.LuaSymbol.DocumentId))
             {
-                typeInfo.Operators.Add(op);
+                if (!typeInfo.Operators.TryGetValue(op.Kind, out var list))
+                {
+                    list = new();
+                    typeInfo.Operators[op.Kind] = list;
+                }
+
+                list.Add(op);
             }
         }
     }
@@ -385,6 +391,15 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             namespaceIndex.UsingNamespaces.Add(usingNamespace);
         }
+        else
+        {
+            namespaceIndex = new NamespaceIndex()
+            {
+                FullName = string.Empty
+            };
+            namespaceIndex.UsingNamespaces.Add(usingNamespace);
+            NamespaceIndices[documentId] = namespaceIndex;
+        }
     }
 
     public LuaType? GetBaseType(SyntaxElementId id)
@@ -432,12 +447,89 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             id = typeInfo.DefinedElementIds.First();
         }
-        else if (typeInfo.DefinedElementIds?.FirstOrDefault(it => it.DocumentId == typeInfo.MainDocumentId) is {} elementId)
+        else if (typeInfo.DefinedElementIds?.FirstOrDefault(it => it.DocumentId == typeInfo.MainDocumentId) is
+                 { } elementId)
         {
             id = elementId;
         }
 
         var info = new NamedTypeInfo(new LuaElementPtr<LuaDocTagNamedTypeSyntax>(id), typeInfo.Kind);
         return new LuaSymbol(typeInfo.Name, namedType, info);
+    }
+
+    public LuaNamedType? GetGlobalProxyNameType(string name)
+    {
+        if (GlobalProxyTypes.Query(name) is { } namedType)
+        {
+            return namedType;
+        }
+
+        return null;
+    }
+
+    public record struct NamespaceOrType(string Name, bool IsNamespace, NamedTypeKind Kind, SyntaxElementId Id);
+
+    public IEnumerable<NamespaceOrType> GetNamespaceOrTypeInfos(string prefix, LuaDocumentId documentId)
+    {
+        var prefixNamespace = string.Empty;
+        var dotIndex = prefix.LastIndexOf('.');
+        if (dotIndex != -1)
+        {
+            prefixNamespace = prefix[..dotIndex];
+        }
+
+        if (documentId != LuaDocumentId.VirtualDocumentId)
+        {
+            if (NamespaceIndices.TryGetValue(documentId, out var namespaceIndex))
+            {
+                if (RootNamespace.FindNamespaceOrType(namespaceIndex.FullName) is { } namespaceInfo)
+                {
+                    if (namespaceInfo.FindNamespaceOrType(prefixNamespace) is { Children: { } children1 })
+                    {
+                        foreach (var (name, child) in children1)
+                        {
+                            yield return new NamespaceOrType(
+                                name,
+                                child.TypeInfo is null,
+                                child.TypeInfo?.Kind ?? NamedTypeKind.None,
+                                child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty
+                            );
+                        }
+                    }
+                }
+
+                foreach (var usingNamespace in namespaceIndex.UsingNamespaces)
+                {
+                    if (RootNamespace.FindNamespaceOrType(usingNamespace) is { } usingNamespaceInfo)
+                    {
+                        if (usingNamespaceInfo.FindNamespaceOrType(prefixNamespace) is { Children: { } children2 })
+                        {
+                            foreach (var (name, child) in children2)
+                            {
+                                yield return new NamespaceOrType(
+                                    name,
+                                    child.TypeInfo is null,
+                                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
+                                    child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (RootNamespace.FindNamespaceOrType(prefixNamespace) is { Children: { } children3 })
+        {
+            foreach (var (name, child) in children3)
+            {
+                yield return new NamespaceOrType(
+                    name,
+                    child.TypeInfo is null,
+                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
+                    child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty
+                );
+            }
+        }
     }
 }

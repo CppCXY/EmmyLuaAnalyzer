@@ -60,16 +60,15 @@ public class SignatureHelperBuilder
             callArgs = callArgs2;
         }
 
-        var parentType = semanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
+        var parentType = semanticModel.Context.Infer(callExpr.PrefixExpr);
         var signatureInfos = new List<SignatureInformation>();
         var activeParameter = callArgs.ChildTokens(LuaTokenKind.TkComma)
             .Count(comma => comma.Position <= triggerToken.Position);
 
         var activeSignature = 0;
         var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
-
-
-        semanticModel.Context.FindCallableType(parentType, luaMethod =>
+        
+        foreach (var luaMethod in semanticModel.Context.FindCallableType(parentType))
         {
             var signatures = new List<LuaSignature>();
             if (luaMethod is LuaGenericMethodType genericMethodType)
@@ -97,8 +96,7 @@ public class SignatureHelperBuilder
                 renderBuilder,
                 config
             );
-        });
-
+        }
 
         return new SignatureHelp()
         {

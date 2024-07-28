@@ -4,51 +4,37 @@ namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
 public class Operators(SearchContext context)
 {
-    private Dictionary<LuaType, Dictionary<TypeOperatorKind, List<TypeOperator>>> TypeOperatorCaches { get; } = new();
-
     public IEnumerable<TypeOperator> GetOperators(TypeOperatorKind kind, LuaNamedType left)
     {
-        if (left is LuaGenericType genericType)
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(left);
+        if (typeInfo is null)
         {
-            if (context.Features.Cache)
-            {
-                if (TypeOperatorCaches.TryGetValue(genericType, out var cache))
-                {
-                    if (cache.TryGetValue(kind, out var operators))
-                    {
-                        return operators;
-                    }
-                }
-            }
-
-            var originOperators = context.Compilation.Db.QueryTypeOperators(left.Name)
-                .Where(it => it.Kind == kind).ToList();
-
-            var genericParams = context.Compilation.Db.QueryGenericParams(genericType.Name).ToList();
-            var genericArgs = genericType.GenericArgs;
-
-            var substitution = new TypeSubstitution();
-            for (var i = 0; i < genericParams.Count && i < genericArgs.Count; i++)
-            {
-                substitution.Add(genericParams[i].Name , genericArgs[i], true);
-            }
-
-            var instanceOperators = originOperators.Select(op => op.Instantiate(substitution)).ToList();
-            if (context.Features.Cache)
-            {
-                if (!TypeOperatorCaches.TryGetValue(genericType, out var cache))
-                {
-                    cache = new Dictionary<TypeOperatorKind, List<TypeOperator>>();
-                    TypeOperatorCaches.Add(genericType, cache);
-                }
-
-                cache[kind] = instanceOperators;
-            }
-
-            return instanceOperators;
+            return [];
         }
 
-        return context.Compilation.Db.QueryTypeOperators(left.Name)
-            .Where(it => it.Kind == kind);
+        if (typeInfo.Operators is null)
+        {
+            return [];
+        }
+
+        if (typeInfo.Operators.TryGetValue(kind, out var operators))
+        {
+            if (left is LuaGenericType genericType && typeInfo.GenericParams is not null)
+            {
+                var substitution = new TypeSubstitution();
+                var genericArgs = genericType.GenericArgs;
+                for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
+                {
+                    substitution.Add(typeInfo.GenericParams[i].Name, genericArgs[i], true);
+                }
+
+                var instanceOperators = operators.Select(op => op.Instantiate(substitution)).ToList();
+                return instanceOperators;
+            }
+
+            return operators;
+        }
+
+        return [];
     }
 }

@@ -12,7 +12,6 @@ public class GlobalIndex
 
     public void Remove(LuaDocumentId documentId)
     {
-        // TODO
         if (GlobalLocations.TryGetValue(documentId, out var globalNames))
         {
             var toBeRemove = new List<string>();
@@ -70,7 +69,7 @@ public class GlobalIndex
         if (GlobalInfos.TryGetValue(name, out var globalInfo))
         {
             globalInfo.Declarations ??= new Dictionary<string, LuaSymbol>();
-            globalInfo.Declarations.Add(symbol.Name, symbol);
+            globalInfo.Declarations.TryAdd(symbol.Name, symbol);
         }
 
         if (GlobalLocations.TryGetValue(symbol.DocumentId, out var globalNames))

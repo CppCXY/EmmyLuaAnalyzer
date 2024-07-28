@@ -55,6 +55,11 @@ public class NamespaceOrTypeInfo
 
     public NamespaceOrTypeInfo? FindNamespaceOrType(string fullName)
     {
+        if (fullName == string.Empty)
+        {
+            return this;
+        }
+
         var parts = fullName.Split('.');
         return FindNamespaceOrType(parts);
     }

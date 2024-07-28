@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 using EmmyLua.LanguageServer.Server.Render.Renderer;
 
 namespace EmmyLua.LanguageServer.Server.Render;
@@ -13,9 +15,9 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     private StringBuilder _sb = new StringBuilder();
 
-    private HashSet<string> _typeLinks = [];
+    private HashSet<TypeInfo> _typeLinks = [];
 
-    private HashSet<LuaNamedType> _aliasExpand = [];
+    private HashSet<TypeInfo> _aliasExpand = [];
 
     private bool _allowExpandAlias = false;
 
@@ -110,12 +112,12 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         {
             var gotoList = new List<string>();
             var typeList = _typeLinks.ToList();
-            foreach (var typeName in typeList)
+            foreach (var typeInfo in typeList)
             {
-                var typeDeclaration = SearchContext.Compilation.Db.QueryNamedTypeDefinitions(typeName).FirstOrDefault();
-                if (typeDeclaration is not null)
+                var location = typeInfo.GetLocation(SearchContext);
+                if (location is not null)
                 {
-                    gotoList.Add($"[{typeName}]({typeDeclaration.GetLocation(SearchContext)?.LspLocation})");
+                    gotoList.Add($"[{typeInfo.Name}]({location.LspLocation})");
                 }
             }
             
@@ -133,13 +135,12 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
     {
         if (_aliasExpand.Count != 0)
         {
-            foreach (var type in _aliasExpand)
+            foreach (var typeInfo in _aliasExpand)
             {
-                var name = type.Name;
-                var originType = SearchContext.Compilation.Db.QueryAliasOriginTypes(name);
+                var originType = typeInfo.BaseType;
                 if (originType is LuaAggregateType aggregateType)
                 {
-                    LuaTypeRenderer.RenderAliasMember(name, aggregateType, this);
+                    LuaTypeRenderer.RenderAliasMember(typeInfo.Name, aggregateType, this);
                 }
             }
         }
@@ -148,8 +149,12 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
     public void AddTypeLink(LuaType type)
     {
         if (Feature.ShowTypeLink && type is LuaNamedType namedType)
-        {
-            _typeLinks.Add(namedType.Name);
+        { 
+            var typeInfo = SearchContext.Compilation.TypeManager.FindTypeInfo(namedType);
+            if (typeInfo is not null)
+            {
+                _typeLinks.Add(typeInfo);
+            }
         }
 
         if (_allowExpandAlias && type is LuaNamedType namedType2)
@@ -160,9 +165,10 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     public void AddAliasExpand(LuaNamedType type)
     {
-        if (type.GetTypeKind(SearchContext) == NamedTypeKind.Alias)
+        var typeInfo = SearchContext.Compilation.TypeManager.FindTypeInfo(type);
+        if (typeInfo?.Kind == NamedTypeKind.Alias)
         {
-            _aliasExpand.Add(type);
+            _aliasExpand.Add(typeInfo);
         }
     }
     

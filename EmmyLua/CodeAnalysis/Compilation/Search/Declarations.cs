@@ -127,7 +127,7 @@ public class Declarations(SearchContext context)
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
             var parentType = context.Infer(parentTable);
-            return context.FindMember(parentType, name).FirstOrDefault();
+            return context.FindMember(parentType, name);
         }
 
         return null;
@@ -138,7 +138,7 @@ public class Declarations(SearchContext context)
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
             var prefixType = context.Infer(prefixExpr);
-            return context.FindMember(prefixType, indexExpr).FirstOrDefault();
+            return context.FindMember(prefixType, indexExpr);
         }
 
         return null;
@@ -169,7 +169,7 @@ public class Declarations(SearchContext context)
             if (firstNamedTag is { Name: { } name })
             {
                 var namedType = new LuaNamedType(name.DocumentId, name.RepresentText);
-                return context.FindMember(namedType, docField.Name).FirstOrDefault();
+                return context.FindMember(namedType, docField.Name);
             }
         }
         else if (docField.Parent is LuaDocTableTypeSyntax tableTypeSyntax)
@@ -178,18 +178,18 @@ public class Declarations(SearchContext context)
             {
                 if (tagNamedType is LuaDocTagAliasSyntax)
                 {
-                    return context.FindMember(tableTypeSyntax.UniqueId, docField.Name).FirstOrDefault();
+                    return context.FindMember(tableTypeSyntax.UniqueId, docField.Name);
                 }
 
                 if (tagNamedType.Name is not null)
                 {
                     var namedType = new LuaNamedType(tagNamedType.DocumentId, tagNamedType.Name.RepresentText);
-                    return context.FindMember(namedType, docField.Name).FirstOrDefault();
+                    return context.FindMember(namedType, docField.Name);
                 }
             }
             else
             {
-                return context.FindMember(tableTypeSyntax.UniqueId, docField.Name).FirstOrDefault();
+                return context.FindMember(tableTypeSyntax.UniqueId, docField.Name);
             }
         }
 

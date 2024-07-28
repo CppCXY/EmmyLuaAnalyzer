@@ -149,8 +149,37 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
 
     public LuaIntegerToken? IntegerField => FirstChild<LuaIntegerToken>();
 
-    public LuaDocTypeSyntax? TypeField =>
-        ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkRightBracket).FirstOrDefault();
+    public LuaDocTypeSyntax? TypeField
+    {
+        get
+        {
+            var start = ChildStartIndex;
+            if (start == -1)
+            {
+                return null;
+            }
+
+            var finish = ChildFinishIndex;
+            for (var i = start; i <= finish; i++)
+            {
+                if (Tree.GetTokenKind(i) == LuaTokenKind.TkLeftBracket)
+                {
+                    if (i + 1 < finish)
+                    {
+                        var element = Tree.GetElement(i);
+                        if (element is LuaDocTypeSyntax typeSyntax)
+                        {
+                            return typeSyntax;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            return null;
+        }
+    }
 
     public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
 

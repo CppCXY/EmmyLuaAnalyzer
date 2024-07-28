@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
@@ -33,22 +32,6 @@ public class LuaNamedType(LuaDocumentId documentId, string name)
 
     public string Name { get; } = name;
 
-    public NamedTypeKind GetTypeKind(SearchContext context)
-    {
-        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(this);
-        if (typeInfo is not null)
-        {
-            return typeInfo.Kind;
-        }
-
-        return NamedTypeKind.None;
-    }
-
-    public override int GetHashCode()
-    {
-        return Name.GetHashCode();
-    }
-
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
         return substitution.Substitute(Name, this);
@@ -68,11 +51,6 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes)
 {
     public HashSet<LuaType> UnionTypes { get; } = [..unionTypes];
 
-    public override int GetHashCode()
-    {
-        return UnionTypes.GetHashCode();
-    }
-
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
         var newUnionTypes = UnionTypes.Select(t => t.Instantiate(substitution));
@@ -85,11 +63,6 @@ public class LuaAggregateType(IEnumerable<LuaSymbol> declarations)
 {
     public List<LuaSymbol> Declarations { get; } = declarations.ToList();
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Declarations);
-    }
-
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
         var newAggregateTypes = Declarations.Select(t => t.Instantiate(substitution));
@@ -101,11 +74,6 @@ public class LuaTupleType(List<LuaSymbol> tupleDeclaration)
     : LuaType
 {
     public List<LuaSymbol> TupleDeclaration { get; } = tupleDeclaration;
-
-    public override int GetHashCode()
-    {
-        return TupleDeclaration.GetHashCode();
-    }
 
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
@@ -138,11 +106,6 @@ public class LuaArrayType(LuaType baseType)
 {
     public LuaType BaseType { get; } = baseType;
 
-    public override int GetHashCode()
-    {
-        return BaseType.GetHashCode();
-    }
-
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
         var newBaseType = BaseType.Instantiate(substitution);
@@ -154,11 +117,6 @@ public class LuaGenericType(LuaDocumentId documentId, string baseName, List<LuaT
     : LuaNamedType(documentId, baseName)
 {
     public List<LuaType> GenericArgs { get; } = genericArgs;
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(base.GetHashCode(), GenericArgs);
-    }
 
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
@@ -177,33 +135,18 @@ public class LuaStringLiteralType(string content)
     : LuaType
 {
     public string Content { get; } = content;
-
-    public override int GetHashCode()
-    {
-        return Content.GetHashCode();
-    }
 }
 
 public class LuaIntegerLiteralType(long value)
     : LuaType
 {
     public long Value { get; } = value;
-
-    public override int GetHashCode()
-    {
-        return Value.GetHashCode();
-    }
 }
 
 public class LuaVariadicType(LuaType baseType)
     : LuaType
 {
     public LuaType BaseType { get; } = baseType;
-
-    public override int GetHashCode()
-    {
-        return BaseType.GetHashCode();
-    }
 
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
@@ -216,11 +159,6 @@ public class LuaExpandType(string baseName)
     : LuaType
 {
     public string Name { get; } = baseName;
-
-    public override int GetHashCode()
-    {
-        return Name.GetHashCode();
-    }
 
     public override LuaType Instantiate(TypeSubstitution substitution)
     {
@@ -291,11 +229,6 @@ public class LuaMultiReturnType : LuaType
             return new LuaMultiReturnType(BaseType!.Instantiate(substitution));
         }
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(RetTypes);
-    }
 }
 
 public class LuaSignature(LuaType returnType, List<LuaSymbol> parameters)
@@ -303,11 +236,6 @@ public class LuaSignature(LuaType returnType, List<LuaSymbol> parameters)
     public LuaType ReturnType { get; set; } = returnType;
 
     public List<LuaSymbol> Parameters { get; } = parameters;
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Parameters);
-    }
 
     public LuaSignature Instantiate(TypeSubstitution substitution)
     {
@@ -331,11 +259,6 @@ public class LuaMethodType(LuaSignature mainSignature, List<LuaSignature>? overl
     public LuaMethodType(LuaType returnType, List<LuaSymbol> parameters, bool colonDefine)
         : this(new LuaSignature(returnType, parameters), null, colonDefine)
     {
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(MainSignature, ColonDefine);
     }
 
     public override LuaType Instantiate(TypeSubstitution substitution)
@@ -392,22 +315,7 @@ public class LuaElementType(SyntaxElementId id)
     public LuaSyntaxElement? ToSyntaxElement(SearchContext context)
     {
         var document = context.Compilation.Project.GetDocument(Id.DocumentId);
-        return document?.SyntaxTree.GetElement(id.ElementId);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as LuaElementType);
-    }
-
-    public bool Equals(LuaElementType? other)
-    {
-        return Id == other?.Id;
-    }
-
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
+        return document?.SyntaxTree.GetElement(Id.ElementId);
     }
 }
 
@@ -415,19 +323,4 @@ public class GlobalNameType(string name)
     : LuaType
 {
     public string Name { get; } = name;
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as GlobalNameType);
-    }
-
-    public bool Equals(GlobalNameType? other)
-    {
-        return Name == other?.Name;
-    }
-
-    public override int GetHashCode()
-    {
-        return Name.GetHashCode();
-    }
 }

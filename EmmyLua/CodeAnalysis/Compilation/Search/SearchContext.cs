@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -19,6 +18,8 @@ public class SearchContext
 
     private Members Members { get; }
 
+    private IndexMembers IndexMembers { get; }
+
     private References References { get; }
 
     private Operators Operators { get; }
@@ -32,6 +33,7 @@ public class SearchContext
         Compilation = compilation;
         Declarations = new Declarations(this);
         Members = new Members(this);
+        IndexMembers = new IndexMembers(this);
         References = new References(this);
         Operators = new Operators(this);
         ElementInfer = new ElementInfer(this);
@@ -44,10 +46,10 @@ public class SearchContext
         return ElementInfer.Infer(element);
     }
 
-    public void ClearMemberCache(LuaType luaType)
-    {
-        Members.ClearMember(luaType);
-    }
+    // public void ClearMemberCache(LuaType luaType)
+    // {
+    //     // Members.ClearMember(luaType);
+    // }
 
     public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
     {
@@ -60,7 +62,7 @@ public class SearchContext
 
         var bestMatched = operators
             .OfType<BinaryOperator>()
-            .FirstOrDefault(it => it.Right.Equals(right));
+            .FirstOrDefault(it => it.Right.IsSameType(right, this));
         return bestMatched;
     }
 
@@ -85,7 +87,7 @@ public class SearchContext
         var operators = Operators.GetOperators(TypeOperatorKind.Index, namedType);
         var bestMatched = operators
             .OfType<IndexOperator>()
-            .FirstOrDefault(it => it.Key.Equals(key));
+            .FirstOrDefault(it => it.Key.IsSameType(key, this));
         return bestMatched;
     }
 
@@ -177,42 +179,35 @@ public class SearchContext
         }
     }
 
-    public IEnumerable<LuaSymbol> GetMembers(LuaType type)
+    public List<LuaSymbol> GetMembers(LuaType type)
     {
-        return Members.GetMembers(type).GroupBy(m => m.Name).Select(g => g.First());
+        return Members.GetTypeMembers(type);
     }
 
-    public IEnumerable<LuaSymbol> GetSuperMembers(LuaType type)
+    public LuaSymbol? FindMember(LuaType type, string name)
     {
-        return Members.GetSupersMembers(type).GroupBy(m => m.Name).Select(g => g.First());
+        return IndexMembers.FindTypeMember(type, name);
     }
 
-    public IEnumerable<LuaSymbol> FindMember(LuaType type, string name)
+    public LuaSymbol? FindMember(SyntaxElementId id, string name)
     {
-        return Members.FindMember(type, name);
+        var elementType = new LuaElementType(id);
+        return IndexMembers.FindTypeMember(elementType, name);
     }
 
-    public IEnumerable<LuaSymbol> FindMember(SyntaxElementId id, string name)
+    public LuaSymbol? FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
     {
-        var typeInfo = Compilation.TypeManager.FindTypeInfo(id);
-        if (typeInfo?.Declarations?.TryGetValue(name, out var value) == true)
-        {
-            return [value];
-        }
-        else
-        {
-            return [];
-        }
+        return IndexMembers.FindTypeMember(type, indexExpr);
     }
 
-    public IEnumerable<LuaSymbol> FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
+    public List<LuaSymbol> GetSuperMembers(LuaType type)
     {
-        return Members.FindMember(type, indexExpr);
+        return [];
     }
 
-    public IEnumerable<LuaSymbol> FindSuperMember(LuaType type, string name)
+    public LuaSymbol? FindSuperMember(LuaType type, string name)
     {
-        return Members.FindSuperMember(type, name);
+        return null;
     }
 
     public IEnumerable<ReferenceResult> FindReferences(LuaSymbol luaSymbol)
@@ -232,7 +227,14 @@ public class SearchContext
 
     public bool IsSameType(LuaType left, LuaType right)
     {
-        throw new NotImplementedException();
+        if (left is LuaNamedType namedType1 && right is LuaNamedType namedType2)
+        {
+            var typeInfo1 = Compilation.TypeManager.FindTypeInfo(namedType1);
+            var typeInfo2 = Compilation.TypeManager.FindTypeInfo(namedType2);
+            return typeInfo1 == typeInfo2;
+        }
+
+        return ReferenceEquals(left, right);
     }
 
     public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr,

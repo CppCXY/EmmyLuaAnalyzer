@@ -1,10 +1,16 @@
 ﻿namespace EmmyLua.CodeAnalysis.Type;
 
+// TODO use isSame
 public static class TypeExtension
 {
-    public static LuaType Union(this LuaType left, LuaType right)
+    public static LuaType Union(this LuaType left, LuaType? right)
     {
         if (left.Equals(right))
+        {
+            return left;
+        }
+
+        if (right is null)
         {
             return left;
         }

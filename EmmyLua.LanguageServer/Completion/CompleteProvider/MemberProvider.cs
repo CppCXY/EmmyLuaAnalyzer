@@ -130,7 +130,7 @@ public class MemberProvider : ICompleteProviderBase
         }
 
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
-        if (!prefixType.Equals(Builtin.Table))
+        if (!prefixType.IsSameType(Builtin.Table, context.SemanticModel.Context))
         {
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {
@@ -150,7 +150,7 @@ public class MemberProvider : ICompleteProviderBase
         }
 
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
-        if (!prefixType.Equals(Builtin.Table))
+        if (!prefixType.IsSameType(Builtin.Table, context.SemanticModel.Context))
         {
             foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
             {

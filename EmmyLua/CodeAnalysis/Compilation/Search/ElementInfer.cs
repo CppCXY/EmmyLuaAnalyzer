@@ -31,7 +31,7 @@ public class ElementInfer(SearchContext context)
             }
 
             luaType = InferCore(element);
-            if (context.Features.CacheUnknown || !luaType.Equals(Builtin.Unknown))
+            if (context.Features.CacheUnknown || !luaType.IsSameType(Builtin.Unknown, context))
             {
                 InferCaches[element.UniqueId] = luaType;
             }

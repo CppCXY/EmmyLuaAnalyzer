@@ -68,7 +68,7 @@ public static class ExpressionShouldBeInfer
         var exprShouldType = InferExprShouldBe(tableExpr, context);
         if (tableField.Name is { } name)
         {
-            return context.FindMember(exprShouldType, name).FirstOrDefault()?.Type ?? Builtin.Unknown;
+            return context.FindMember(exprShouldType, name)?.Type ?? Builtin.Unknown;
         }
 
         return Builtin.Unknown;

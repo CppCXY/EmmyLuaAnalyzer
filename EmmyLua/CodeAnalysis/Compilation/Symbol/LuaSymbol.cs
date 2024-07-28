@@ -141,20 +141,15 @@ public class LuaSymbol(
         return null;
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is LuaSymbol symbol && Equals(symbol);
-    }
-
-    public bool Equals(LuaSymbol? obj)
-    {
-        return Info.Ptr == obj?.Info.Ptr;
-    }
-
     public override int GetHashCode()
     {
         // ReSharper disable once NonReadonlyMemberInGetHashCode
         return Info.Ptr.GetHashCode();
+    }
+
+    public bool IsReferenceTo(LuaSymbol other)
+    {
+        return Info.Ptr.ElementId == other.Info.Ptr.ElementId;
     }
 
     public override string ToString()

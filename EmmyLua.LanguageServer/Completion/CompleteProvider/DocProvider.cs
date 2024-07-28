@@ -13,7 +13,7 @@ public class DocProvider : ICompleteProviderBase
     [
         "class", "enum", "interface", "alias", "module", "field", "param", "return", "see", "deprecated",
         "type", "overload", "generic", "async", "cast", "private", "protected", "public", "operator",
-        "meta", "version", "as", "nodiscard", "diagnostic", "mapping",// "package",
+        "meta", "version", "as", "nodiscard", "diagnostic", "mapping", "namespace", "using" // "package",
     ];
 
     private List<string> Actions { get; } = ["disable-next-line", "disable", "enable"];
@@ -33,9 +33,9 @@ public class DocProvider : ICompleteProviderBase
                 AddParamNameCompletion(paramSyntax, context);
                 break;
             }
-            case LuaNameToken { Parent: LuaDocNameTypeSyntax }:
+            case LuaNameToken { Parent: LuaDocNameTypeSyntax, RepresentText: { } filter }:
             {
-                AddTypeNameCompletion(context);
+                AddTypeNameCompletion(filter, context);
                 break;
             }
             case LuaNameToken { Parent: LuaDocTagDiagnosticSyntax }:
@@ -92,18 +92,28 @@ public class DocProvider : ICompleteProviderBase
         }
     }
 
-    private void AddTypeNameCompletion(CompleteContext context)
+    private void AddTypeNameCompletion(string prefix, CompleteContext context)
     {
-        var namedTypes = context.SemanticModel.Compilation.Db.QueryAllNamedTypeDefinitions();
-        foreach (var typeDeclaration in namedTypes)
+        var namespaceOrTypes =
+            context.SemanticModel.Compilation.TypeManager.GetNamespaceOrTypeInfos(prefix,
+                context.SemanticModel.Document.Id);
+        foreach (var namespaceOrType in namespaceOrTypes)
         {
-            if (typeDeclaration is { Info: NamedTypeInfo namedTypeInfo })
+            if (namespaceOrType.IsNamespace)
             {
-                context.Add(new CompletionItem
+                context.Add(new CompletionItem()
                 {
-                    Label = typeDeclaration.Name,
-                    Kind = ConvertTypedName(namedTypeInfo.Kind),
-                    Data = namedTypeInfo.Ptr.Stringify
+                    Label = namespaceOrType.Name,
+                    Kind = CompletionItemKind.Module,
+                });
+            }
+            else
+            {
+                context.Add(new CompletionItem()
+                {
+                    Label = namespaceOrType.Name,
+                    Kind = ConvertTypedName(namespaceOrType.Kind),
+                    Data = namespaceOrType.Id.Stringify
                 });
             }
         }

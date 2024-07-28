@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Reference;
+﻿using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -77,7 +76,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr) == symbol && indexExpr.KeyElement is { } keyElement)
+            if (context.FindDeclaration(indexExpr)?.IsReferenceTo(symbol) == true && indexExpr.KeyElement is { } keyElement)
             {
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
@@ -115,8 +114,6 @@ public class References(SearchContext context)
                 return results;
             }
         }
-
-        return [];
     }
 
     private IEnumerable<ReferenceResult> DocFieldReferences(LuaSymbol fieldSymbol, DocFieldInfo info)
@@ -128,25 +125,6 @@ public class References(SearchContext context)
             if (fieldDef.FieldElement is { } fieldElement)
             {
                 references.Add(new ReferenceResult(fieldElement.Location, fieldElement));
-            }
-
-            var parentType = context.Compilation.Db.QueryParentType(fieldDef);
-            if (parentType is not null)
-            {
-                var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<LuaSymbol>())
-                {
-                    if (member is
-                        {
-                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
-                        }
-                        && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
-                       )
-                    {
-                        references.Add(new ReferenceResult(keyElement.Location, keyElement));
-                        break;
-                    }
-                }
             }
 
             references.AddRange(FieldReferences(fieldSymbol, name));
@@ -166,23 +144,6 @@ public class References(SearchContext context)
                 references.Add(new ReferenceResult(enumFieldName.Location, enumFieldName));
             }
 
-            var parentType = context.Compilation.Db.QueryParentType(enumFieldDef);
-            if (parentType is not null)
-            {
-                var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<LuaSymbol>())
-                {
-                    if (member is
-                        {
-                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
-                        } && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
-                       )
-                    {
-                        references.Add(new ReferenceResult(keyElement.Location, keyElement));
-                    }
-                }
-            }
-
             references.AddRange(FieldReferences(symbol, name));
         }
 
@@ -200,23 +161,6 @@ public class References(SearchContext context)
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
 
-            var parentType = context.Compilation.Db.QueryParentType(fieldDef);
-            if (parentType is not null)
-            {
-                var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<LuaSymbol>())
-                {
-                    if (member is
-                        {
-                            Name: { } name2, Info: DocFieldInfo { FieldDefPtr: { } fieldDefPtr }
-                        } && fieldDefPtr.ToNode(context) is { FieldElement: { } fieldElement }
-                       )
-                    {
-                        references.Add(new ReferenceResult(fieldElement.Location, fieldElement));
-                    }
-                }
-            }
-
             references.AddRange(FieldReferences(symbol, name));
         }
 
@@ -230,24 +174,6 @@ public class References(SearchContext context)
         if (info.TypePtr.ToNode(context) is { } tupleMember)
         {
             references.Add(new ReferenceResult(tupleMember.Location, tupleMember));
-
-            var parentType = context.Compilation.Db.QueryParentType(tupleMember);
-            if (parentType is not null)
-            {
-                var members = context.FindMember(parentType, name);
-                foreach (var member in members.OfType<LuaSymbol>())
-                {
-                    if (member is
-                        {
-                            Name: { } name2, Info: TableFieldInfo { TableFieldPtr: { } tableFieldPtr }
-                        } && tableFieldPtr.ToNode(context) is { KeyElement: { } keyElement }
-                       )
-                    {
-                        references.Add(new ReferenceResult(keyElement.Location, keyElement));
-                    }
-                }
-            }
-
             references.AddRange(FieldReferences(symbol, name));
         }
 

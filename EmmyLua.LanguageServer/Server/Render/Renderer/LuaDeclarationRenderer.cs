@@ -61,7 +61,7 @@ public static class LuaDeclarationRenderer
 
     private static void RenderInClass(LuaIndexExprSyntax indexExpr, LuaRenderContext renderContext)
     {
-        var prefixType = renderContext.SearchContext.InferAndUnwrap(indexExpr.PrefixExpr);
+        var prefixType = renderContext.SearchContext.Infer(indexExpr.PrefixExpr);
         if (!prefixType.Equals(Builtin.Unknown))
         {
             RenderBelongType(prefixType, renderContext);
@@ -75,7 +75,8 @@ public static class LuaDeclarationRenderer
             var parentTypeDescription = "class";
             if (prefixType is LuaNamedType namedType)
             {
-                var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
+                var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(namedType);
+                var namedTypeKind = typeInfo?.Kind;
                 if (namedTypeKind == NamedTypeKind.Alias)
                 {
                     parentTypeDescription = "alias";
@@ -112,8 +113,8 @@ public static class LuaDeclarationRenderer
         renderContext.WrapperLua(() =>
         {
             renderContext.Append($"local {symbol.Name}{attrib} : ");
-            LuaTypeRenderer.RenderType(localInfo.DeclarationType, renderContext);
-            LuaTypeRenderer.RenderDefinedType(localInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
+            LuaTypeRenderer.RenderDefinedType(symbol.Type, renderContext);
         });
 
         LuaCommentRenderer.RenderDeclarationStatComment(symbol, renderContext);
@@ -125,8 +126,8 @@ public static class LuaDeclarationRenderer
         renderContext.WrapperLua(() =>
         {
             renderContext.Append($"global {symbol.Name}: ");
-            LuaTypeRenderer.RenderType(globalInfo.DeclarationType, renderContext);
-            LuaTypeRenderer.RenderDefinedType(globalInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
+            LuaTypeRenderer.RenderDefinedType(symbol.Type, renderContext);
         });
 
         LuaCommentRenderer.RenderDeclarationStatComment(symbol, renderContext);
@@ -168,7 +169,7 @@ public static class LuaDeclarationRenderer
             renderContext.WrapperLua(() =>
             {
                 renderContext.Append($"local function {symbol.Name}");
-                LuaTypeRenderer.RenderFunc(methodInfo.Method, renderContext);
+                LuaTypeRenderer.RenderFunc(symbol.Type, renderContext);
             });
         }
         else
@@ -176,7 +177,7 @@ public static class LuaDeclarationRenderer
             renderContext.WrapperLua(() =>
             {
                 renderContext.Append($"function {symbol.Name}");
-                LuaTypeRenderer.RenderFunc(methodInfo.Method, renderContext);
+                LuaTypeRenderer.RenderFunc(symbol.Type, renderContext);
             });
 
             if (methodInfo.IndexPtr.ToNode(renderContext.SearchContext) is { } indexExpr)
@@ -193,7 +194,7 @@ public static class LuaDeclarationRenderer
         LuaRenderContext renderContext)
     {
         renderContext.EnableAliasRender();
-        if (paramInfo.DeclarationType is { } declarationType)
+        if (symbol.Type is { } declarationType)
         {
             renderContext.WrapperLua(() =>
             {
@@ -222,7 +223,7 @@ public static class LuaDeclarationRenderer
                 _ => ""
             };
             renderContext.Append($"{visibility}(field) {symbol.Name} : ");
-            LuaTypeRenderer.RenderType(docFieldInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
         });
         LuaCommentRenderer.RenderDocFieldComment(docFieldInfo, renderContext);
     }
@@ -241,7 +242,7 @@ public static class LuaDeclarationRenderer
             };
 
             renderContext.Append($"{visibility}{symbol.Name} : ");
-            LuaTypeRenderer.RenderType(tableFieldInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
             if (tableFieldInfo.TableFieldPtr.ToNode(renderContext.SearchContext) is
                 { IsValue: false, Value: LuaLiteralExprSyntax expr })
             {
@@ -257,9 +258,10 @@ public static class LuaDeclarationRenderer
     {
         renderContext.WrapperLua(() =>
         {
-            if (namedTypeInfo.DeclarationType is LuaNamedType namedType)
+            if (symbol.Type is LuaNamedType namedType)
             {
-                var namedTypeKind = namedType.GetTypeKind(renderContext.SearchContext);
+                var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(namedType);
+                var namedTypeKind = typeInfo?.Kind;
                 switch (namedTypeKind)
                 {
                     case NamedTypeKind.Alias:
@@ -280,8 +282,8 @@ public static class LuaDeclarationRenderer
                 }
             }
 
-            LuaTypeRenderer.RenderType(namedTypeInfo.DeclarationType, renderContext);
-            LuaTypeRenderer.RenderDefinedType(namedTypeInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
+            LuaTypeRenderer.RenderDefinedType(symbol.Type, renderContext);
         });
 
         LuaCommentRenderer.RenderTypeComment(namedTypeInfo, renderContext);
@@ -311,7 +313,7 @@ public static class LuaDeclarationRenderer
                 _ => ""
             };
             renderContext.Append($"{visibility}(field) {symbol.Name} : ");
-            LuaTypeRenderer.RenderType(indexInfo.DeclarationType, renderContext);
+            LuaTypeRenderer.RenderType(symbol.Type, renderContext);
             var valueExpr = indexInfo.ValueExprPtr.ToNode(renderContext.SearchContext);
             if (valueExpr is LuaLiteralExprSyntax literalExpr)
             {
