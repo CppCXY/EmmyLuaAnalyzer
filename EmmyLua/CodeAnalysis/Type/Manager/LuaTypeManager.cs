@@ -482,18 +482,21 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             if (NamespaceIndices.TryGetValue(documentId, out var namespaceIndex))
             {
-                if (RootNamespace.FindNamespaceOrType(namespaceIndex.FullName) is { } namespaceInfo)
+                if (namespaceIndex.FullName.Length != 0)
                 {
-                    if (namespaceInfo.FindNamespaceOrType(prefixNamespace) is { Children: { } children1 })
+                    if (RootNamespace.FindNamespaceOrType(namespaceIndex.FullName) is { } namespaceInfo)
                     {
-                        foreach (var (name, child) in children1)
+                        if (namespaceInfo.FindNamespaceOrType(prefixNamespace) is { Children: { } children1 })
                         {
-                            yield return new NamespaceOrType(
-                                name,
-                                child.TypeInfo is null,
-                                child.TypeInfo?.Kind ?? NamedTypeKind.None,
-                                child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty
-                            );
+                            foreach (var (name, child) in children1)
+                            {
+                                yield return new NamespaceOrType(
+                                    name,
+                                    child.TypeInfo is null,
+                                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
+                                    child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty
+                                );
+                            }
                         }
                     }
                 }

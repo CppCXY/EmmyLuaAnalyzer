@@ -81,10 +81,14 @@ public class MemberProvider : ICompleteProviderBase
 
         var indexExpr = funcStatSyntax.IndexExpr;
         var prefixType = context.SemanticModel.Context.Infer(indexExpr.PrefixExpr);
+        if (prefixType is not LuaNamedType namedType)
+        {
+            return;
+        }
 
         var colon = indexExpr.IsColonIndex;
         foreach (var member in context.SemanticModel
-                     .Context.GetSuperMembers(prefixType))
+                     .Context.GetSuperMembers(namedType))
         {
             if (member.Type is LuaMethodType methodType)
             {

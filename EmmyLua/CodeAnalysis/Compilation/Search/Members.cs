@@ -288,4 +288,43 @@ public class Members(SearchContext context)
 
         return members.Values.ToList();
     }
+
+    public List<LuaSymbol> GetSuperMembers(LuaNamedType namedType)
+    {
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
+        if (typeInfo is null)
+        {
+            return [];
+        }
+
+        if (!_visitedTypes.Add(typeInfo))
+        {
+            return [];
+        }
+
+        var members = new Dictionary<string, LuaSymbol>();
+        try
+        {
+            if (typeInfo.Kind is NamedTypeKind.Class or NamedTypeKind.Interface)
+            {
+                if (typeInfo.Supers is { } supers)
+                {
+                    foreach (var super in supers)
+                    {
+                        var superMembers = GetTypeMembers(super);
+                        foreach (var member in superMembers)
+                        {
+                            members.TryAdd(member.Name, member);
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            _visitedTypes.Remove(typeInfo);
+        }
+
+        return members.Values.ToList();
+    }
 }

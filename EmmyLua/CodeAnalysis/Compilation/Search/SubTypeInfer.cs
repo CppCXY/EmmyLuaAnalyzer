@@ -21,7 +21,7 @@ public class SubTypeInfer(SearchContext context)
         {
             return false;
         }
-
+        // remove the cache
         var key = new SubTypeKey(left, right);
         if (SubTypeCaches.TryGetValue(key, out var result))
         {
@@ -116,7 +116,6 @@ public class SubTypeInfer(SearchContext context)
         {
             return false;
         }
-
 
         return !left.TupleDeclaration.Where((t, i) => !IsSubTypeOf(t.Type, right.TupleDeclaration[i].Type)).Any();
     }

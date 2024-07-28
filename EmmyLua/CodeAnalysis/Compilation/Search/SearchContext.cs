@@ -28,6 +28,8 @@ public class SearchContext
 
     private SubTypeInfer SubTypeInfer { get; }
 
+    private SameTypeInfer SameTypeInfer { get; }
+
     public SearchContext(LuaCompilation compilation, SearchContextFeatures features)
     {
         Compilation = compilation;
@@ -38,6 +40,7 @@ public class SearchContext
         Operators = new Operators(this);
         ElementInfer = new ElementInfer(this);
         SubTypeInfer = new SubTypeInfer(this);
+        SameTypeInfer = new SameTypeInfer(this);
         Features = features;
     }
 
@@ -200,9 +203,9 @@ public class SearchContext
         return IndexMembers.FindTypeMember(type, indexExpr);
     }
 
-    public List<LuaSymbol> GetSuperMembers(LuaType type)
+    public List<LuaSymbol> GetSuperMembers(LuaNamedType type)
     {
-        return [];
+        return Members.GetSuperMembers(type);
     }
 
     public LuaSymbol? FindSuperMember(LuaType type, string name)
@@ -227,14 +230,7 @@ public class SearchContext
 
     public bool IsSameType(LuaType left, LuaType right)
     {
-        if (left is LuaNamedType namedType1 && right is LuaNamedType namedType2)
-        {
-            var typeInfo1 = Compilation.TypeManager.FindTypeInfo(namedType1);
-            var typeInfo2 = Compilation.TypeManager.FindTypeInfo(namedType2);
-            return typeInfo1 == typeInfo2;
-        }
-
-        return ReferenceEquals(left, right);
+        return SameTypeInfer.IsSameType(left, right);
     }
 
     public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr,
