@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Semantic;
+﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -229,7 +228,7 @@ public class InlayHintBuilder
                 if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
-                    if (type is not null && !type.Equals(Builtin.Unknown))
+                    if (type is not null && !type.IsSameType(Builtin.Unknown, semanticModel.Context))
                     {
                         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {

@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -163,15 +162,15 @@ public static class GenericInfer
 
             if (fieldSyntax.IsValue)
             {
-                keyType = keyType.Union(Builtin.Integer);
+                keyType = keyType.Union(Builtin.Integer, context);
             }
             else if (fieldSyntax.IsStringKey || fieldSyntax.IsNameKey)
             {
-                keyType = keyType.Union(Builtin.String);
+                keyType = keyType.Union(Builtin.String, context);
             }
 
             var fieldValueType = context.Infer(fieldSyntax.Value);
-            valueType = valueType.Union(fieldValueType);
+            valueType = valueType.Union(fieldValueType, context);
         }
 
         InferByType(genericArgs[0], keyType, substitution, context);
@@ -203,7 +202,7 @@ public static class GenericInfer
                 if (field.IsValue)
                 {
                     var fieldValueType = context.Infer(field.Value);
-                    valueType = valueType.Union(fieldValueType);
+                    valueType = valueType.Union(fieldValueType, context);
                 }
             }
 
@@ -229,10 +228,13 @@ public static class GenericInfer
                     substitution.AddSpreadParameter(expandType.Name, mainSignature2.Parameters[i..]);
                     break;
                 }
-                else
+                else if (leftParamType is not null)
                 {
                     var rightParamType = mainSignature2.Parameters[i].Type;
-                    InferByType(leftParamType, rightParamType, substitution, context);
+                    if (rightParamType is not null)
+                    {
+                        InferByType(leftParamType, rightParamType, substitution, context);
+                    }
                 }
             }
 
@@ -251,7 +253,7 @@ public static class GenericInfer
     {
         if (unionType.UnionTypes.Contains(Builtin.Nil))
         {
-            var newType = unionType.Remove(Builtin.Nil);
+            var newType = unionType.Remove(Builtin.Nil, context);
             InferByType(newType, exprType, substitution, context);
         }
 
@@ -276,17 +278,26 @@ public static class GenericInfer
             for (var i = 0; i < tupleType.TupleDeclaration.Count && i < tupleType2.TupleDeclaration.Count; i++)
             {
                 var leftElementType = tupleType.TupleDeclaration[i].Type;
+                if (leftElementType is null)
+                {
+                    continue;
+                }
+
                 if (leftElementType is LuaExpandType expandType)
                 {
                     var rightExprTypes = tupleType2.TupleDeclaration[i..]
-                        .Select(it => it.Type);
-                    substitution.Add(expandType.Name, new LuaMultiReturnType(rightExprTypes.ToList()));
+                        .Select(it => it.Type)
+                        .Where(it => it is not null);
+                    substitution.Add(expandType.Name, new LuaMultiReturnType(rightExprTypes.ToList()!));
                 }
                 else
                 {
                     var rightElementType = tupleType2.TupleDeclaration[i].Type;
-                    InferByType(leftElementType, rightElementType, substitution,
-                        context);
+                    if (rightElementType is not null)
+                    {
+                        InferByType(leftElementType, rightElementType, substitution,
+                            context);
+                    }
                 }
             }
         }
@@ -296,6 +307,11 @@ public static class GenericInfer
             foreach (var tupleElement in tupleType.TupleDeclaration)
             {
                 var leftElementType = tupleElement.Type;
+                if (leftElementType is null)
+                {
+                    continue;
+                }
+
                 if (leftElementType is LuaExpandType expandType)
                 {
                     substitution.Add(expandType.Name, new LuaMultiReturnType(arrayElementType));
@@ -315,6 +331,11 @@ public static class GenericInfer
             for (var i = 0; i < fileList.Count && i < tupleType.TupleDeclaration.Count; i++)
             {
                 var tupleElementType = tupleType.TupleDeclaration[i].Type;
+                if (tupleElementType is null)
+                {
+                    continue;
+                }
+
                 if (tupleElementType is LuaExpandType expandType)
                 {
                     var fileExprs = fileList[i..]
@@ -356,7 +377,7 @@ public static class GenericInfer
         for (var i = 0; i < fmt.Length; i++)
         {
             var ch = fmt[i];
-            if (fmt[i] == '%')
+            if (ch == '%')
             {
                 if (i + 1 < fmt.Length)
                 {

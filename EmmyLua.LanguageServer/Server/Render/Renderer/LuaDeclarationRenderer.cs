@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -62,7 +61,7 @@ public static class LuaDeclarationRenderer
     private static void RenderInClass(LuaIndexExprSyntax indexExpr, LuaRenderContext renderContext)
     {
         var prefixType = renderContext.SearchContext.Infer(indexExpr.PrefixExpr);
-        if (!prefixType.Equals(Builtin.Unknown))
+        if (!prefixType.IsSameType(Builtin.Unknown, renderContext.SearchContext))
         {
             RenderBelongType(prefixType, renderContext);
         }
@@ -70,7 +69,7 @@ public static class LuaDeclarationRenderer
 
     private static void RenderBelongType(LuaType prefixType, LuaRenderContext renderContext)
     {
-        if (!prefixType.Equals(Builtin.Unknown))
+        if (!prefixType.IsSameType(Builtin.Unknown, renderContext.SearchContext))
         {
             var parentTypeDescription = "class";
             if (prefixType is LuaNamedType namedType)

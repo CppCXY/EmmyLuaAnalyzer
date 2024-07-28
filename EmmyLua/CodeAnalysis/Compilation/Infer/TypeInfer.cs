@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -91,7 +90,7 @@ public static class TypeInfer
                 var type = context.Infer(typedParam.Type);
                 if (nullable)
                 {
-                    type = type.Union(Builtin.Nil);
+                    type = type.Union(Builtin.Nil, context);
                 }
 
                 var paramDeclaration = new LuaSymbol(

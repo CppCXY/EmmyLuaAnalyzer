@@ -21,7 +21,7 @@ public class ModuleProvider : ICompleteProviderBase
         {
             return;
         }
-        
+
         if (context.TriggerToken?.Parent is not LuaNameExprSyntax nameExpr)
         {
             return;
@@ -36,7 +36,8 @@ public class ModuleProvider : ICompleteProviderBase
             {
                 var documentId = module.DocumentId;
                 var retTy = semanticModel.GetExportType(documentId) ?? Builtin.Unknown;
-                var insetText = FilenameConverter.ConvertToIdentifier(module.Name, context.CompletionConfig.AutoRequireFilenameConvention);
+                var insetText = FilenameConverter.ConvertToIdentifier(module.Name,
+                    context.CompletionConfig.AutoRequireFilenameConvention);
                 context.Add(new CompletionItem
                 {
                     Label = insetText,
@@ -56,7 +57,7 @@ public class ModuleProvider : ICompleteProviderBase
     }
 
     private bool AllowModule(
-        ModuleIndex moduleInfo, 
+        ModuleIndex moduleInfo,
         HashSet<string> localNames,
         SemanticModel semanticModel)
     {
@@ -73,6 +74,7 @@ public class ModuleProvider : ICompleteProviderBase
 
         var documentId = moduleInfo.DocumentId;
         var retTy = semanticModel.GetExportType(documentId);
-        return retTy is not null && !retTy.Equals(Builtin.Unknown) && !retTy.Equals(Builtin.Nil);
+        return retTy is not null && !retTy.IsSameType(Builtin.Unknown, semanticModel.Context) &&
+               !retTy.IsSameType(Builtin.Nil, semanticModel.Context);
     }
 }

@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -293,8 +292,11 @@ public static class MethodInfer
             {
                 var prefixType = context.Infer(callSelf);
                 var parameterType = signature.Parameters[0].Type;
-                GenericInfer.InferByType(parameterType, prefixType, substitution,
-                    context);
+                if (parameterType is not null)
+                {
+                    GenericInfer.InferByType(parameterType, prefixType, substitution,
+                        context);
+                }
             }
 
             newParameters.Add(signature.Parameters[0].Instantiate(substitution));
@@ -323,8 +325,11 @@ public static class MethodInfer
             {
                 var arg = args[i + argStart];
                 var parameterType = parameter.Type;
-                GenericInfer.InferByExpr(parameterType, arg, substitution,
-                    context);
+                if (parameterType is not null)
+                {
+                    GenericInfer.InferByExpr(parameterType, arg, substitution,
+                        context);
+                }
             }
         }
 

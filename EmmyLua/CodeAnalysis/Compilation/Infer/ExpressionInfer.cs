@@ -89,7 +89,7 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var lty = context.Infer(lhs);
-        return rhs != null ? lty.Union(context.Infer(rhs)) : lty;
+        return rhs != null ? lty.Union(context.Infer(rhs), context) : lty;
     }
 
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
@@ -103,6 +103,7 @@ public static class ExpressionInfer
         {
             return bop.Ret;
         }
+
         var bop2 = context.GetBestMatchedBinaryOperator(opKind, rightTy, leftTy);
         if (bop2 is not null)
         {
@@ -178,7 +179,7 @@ public static class ExpressionInfer
             return ty;
         }
 
-        if (nameExpr.Name is { Text: "self"})
+        if (nameExpr.Name is { Text: "self" })
         {
             return InferSelf(nameExpr, context);
         }

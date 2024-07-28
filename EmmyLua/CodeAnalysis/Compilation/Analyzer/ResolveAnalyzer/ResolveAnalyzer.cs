@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 
@@ -246,7 +245,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     {
                         case 0:
                         {
-                            returnType = returnType.Union(Builtin.Nil);
+                            returnType = returnType.Union(Builtin.Nil, Context);
                             break;
                         }
                         case >= 1:
@@ -258,19 +257,19 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             }
 
                             relatedExpr.Add(rets[0]);
-                            returnType = returnType.Union(mainReturn);
+                            returnType = returnType.Union(mainReturn, Context);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    returnType = returnType.Union(Builtin.Nil);
+                    returnType = returnType.Union(Builtin.Nil, Context);
                 }
             }
             else
             {
-                returnType = returnType.Union(Builtin.Nil);
+                returnType = returnType.Union(Builtin.Nil, Context);
             }
         }
 

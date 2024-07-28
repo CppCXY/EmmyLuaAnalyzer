@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Type;
@@ -34,8 +33,10 @@ public static class LuaTypeRenderer
     {
         if (type is LuaNamedType namedType)
         {
-            if (type.Equals(Builtin.Nil) || type.Equals(Builtin.Unknown) || type.Equals(Builtin.Any) ||
-                type.Equals(Builtin.UserData))
+            if (type.IsSameType(Builtin.Nil, renderContext.SearchContext) ||
+                type.IsSameType(Builtin.Unknown, renderContext.SearchContext) || 
+                type.IsSameType(Builtin.Any, renderContext.SearchContext) ||
+                type.IsSameType(Builtin.UserData, renderContext.SearchContext))
             {
                 return;
             }
@@ -364,7 +365,7 @@ public static class LuaTypeRenderer
 
         if (unionType.UnionTypes.Count == 2 && unionType.UnionTypes.Contains(Builtin.Nil))
         {
-            var newType = unionType.Remove(Builtin.Nil);
+            var newType = unionType.Remove(Builtin.Nil, renderContext.SearchContext);
             InnerRenderType(newType, renderContext, level + 1);
             renderContext.Append('?');
             return;

@@ -1,8 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Type;
+﻿using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentSymbol;
 using EmmyLua.LanguageServer.Server;
-using EmmyLua.LanguageServer.Util;
 
 namespace EmmyLua.LanguageServer.WorkspaceSymbol;
 

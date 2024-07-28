@@ -15,8 +15,13 @@ public class SubTypeInfer(SearchContext context)
 
     record struct SubTypeKey(LuaType Left, LuaType Right);
 
-    public bool IsSubTypeOf(LuaType left, LuaType right)
+    public bool IsSubTypeOf(LuaType? left, LuaType? right)
     {
+        if (left is null || right is null)
+        {
+            return false;
+        }
+
         var key = new SubTypeKey(left, right);
         if (SubTypeCaches.TryGetValue(key, out var result))
         {
@@ -112,7 +117,7 @@ public class SubTypeInfer(SearchContext context)
             return false;
         }
 
-        return !left.TupleDeclaration.Where((t, i) =>
-            !t.Type.SubTypeOf(right.TupleDeclaration[i].Type, context)).Any();
+
+        return !left.TupleDeclaration.Where((t, i) => !IsSubTypeOf(t.Type, right.TupleDeclaration[i].Type)).Any();
     }
 }

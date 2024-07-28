@@ -24,7 +24,7 @@ public static class CallExprInfer
             if (perfectSig.ReturnType is { } retTy)
             {
                 // ReSharper disable once AccessToModifiedClosure
-                returnType = returnType.Union(retTy);
+                returnType = returnType.Union(retTy, context);
                 break;
             }
         }

@@ -285,7 +285,10 @@ public class LuaGenericMethodType : LuaMethodType
         GenericParams = new Dictionary<string, LuaType>();
         foreach (var decl in GenericParamDecls)
         {
-            GenericParams[decl.Name] = decl.Type;
+            if (decl.Type is not null)
+            {
+                GenericParams[decl.Name] = decl.Type;
+            }
         }
     }
 

@@ -50,7 +50,7 @@ public static class ExpressionShouldBeInfer
             if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
             {
                 var param = methodType.MainSignature.Parameters[activeParam];
-                exprType = exprType.Union(param.Type);
+                exprType = exprType.Union(param.Type, context);
             }
         }
 
