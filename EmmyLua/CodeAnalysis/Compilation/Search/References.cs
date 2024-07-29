@@ -38,7 +38,7 @@ public class References(SearchContext context)
         return referencesSet.GetReferences();
     }
 
-    private IEnumerable<ReferenceResult> LocalReferences(LuaSymbol symbol, SymbolInfo info)
+    private IEnumerable<ReferenceResult> LocalReferences(LuaSymbol symbol, ISymbolInfo info)
     {
         var references = new List<ReferenceResult>();
         var luaReferences = context.Compilation.Db.QueryLocalReferences(symbol);

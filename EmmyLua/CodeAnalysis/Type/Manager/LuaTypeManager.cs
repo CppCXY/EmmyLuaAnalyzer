@@ -69,6 +69,10 @@ public class LuaTypeManager(LuaCompilation compilation)
             if (RootNamespace.FindNamespaceOrType(namespaceIndex.FullName) is { } namespaceInfo)
             {
                 namespaceInfo.Remove(documentId);
+                if (namespaceInfo.Children is null && namespaceInfo.TypeInfo is null)
+                {
+                    RootNamespace.RemoveChildNamespace(namespaceIndex.FullName);
+                }
             }
         }
         else
@@ -420,12 +424,12 @@ public class LuaTypeManager(LuaCompilation compilation)
     public LuaSymbol? GetGlobalSymbol(string name)
     {
         var globalInfo = GlobalIndices.Query(name);
-        if (globalInfo?.DefinedDeclarations.TryGetValue(globalInfo.MainDocumentId, out var symbol) == true)
+        if (globalInfo?.MainLuaSymbol is { } symbol)
         {
             var proxyType = GlobalProxyTypes.Query(name);
             if (proxyType is not null)
             {
-                return new LuaSymbol(symbol.Name, proxyType, symbol.Info);
+                return symbol.WithType(proxyType);
             }
 
             return symbol;
@@ -442,12 +446,12 @@ public class LuaTypeManager(LuaCompilation compilation)
             return null;
         }
 
-        var id = SyntaxElementId.Empty;
+        SyntaxElementId id;
         if (typeInfo.DefinedElementIds.Count == 1)
         {
             id = typeInfo.DefinedElementIds.First();
         }
-        else if (typeInfo.DefinedElementIds?.FirstOrDefault(it => it.DocumentId == typeInfo.MainDocumentId) is
+        else if (typeInfo.DefinedElementIds.FirstOrDefault(it => it.DocumentId == typeInfo.MainDocumentId) is
                  { } elementId)
         {
             id = elementId;
@@ -534,5 +538,20 @@ public class LuaTypeManager(LuaCompilation compilation)
                 );
             }
         }
+    }
+
+    public bool IsSameType(LuaNamedType left, LuaNamedType right)
+    {
+        if (left.DocumentId == right.DocumentId)
+        {
+            return left.Name == right.Name;
+        }
+        else if (!NamespaceIndices.ContainsKey(left.DocumentId) &&
+                 !NamespaceIndices.ContainsKey(right.DocumentId))
+        {
+            return left.Name == right.Name;
+        }
+
+        return FindTypeInfo(left) == FindTypeInfo(right);
     }
 }

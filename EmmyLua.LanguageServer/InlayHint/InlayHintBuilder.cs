@@ -228,6 +228,11 @@ public class InlayHintBuilder
                 if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
+                    if (type is LuaElementType elementType)
+                    {
+                        type = semanticModel.Context.Compilation.TypeManager.GetBaseType(elementType.Id);
+                    }
+                    
                     if (type is not null && !type.IsSameType(Builtin.Unknown, semanticModel.Context))
                     {
                         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()

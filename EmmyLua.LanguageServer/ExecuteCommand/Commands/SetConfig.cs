@@ -46,11 +46,11 @@ public class SetConfig : ICommandBase
 
     public string Name => CommandName;
 
-    public async Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor)
+    public Task ExecuteAsync(List<LSPAny>? parameters, CommandExecutor executor)
     {
         if (parameters is not { Count: 3 })
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var action =
@@ -86,6 +86,8 @@ public class SetConfig : ICommandBase
                 }
             }
         });
+        
+        return Task.CompletedTask;
     }
 
     private object? GetPropertyByName(Setting setting, string propertyName)

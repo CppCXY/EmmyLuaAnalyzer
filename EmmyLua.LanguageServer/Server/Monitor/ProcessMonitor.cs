@@ -16,10 +16,10 @@ public class ProcessMonitor(Framework.Server.LanguageServer server) : LuaWorkspa
 
     private Framework.Server.LanguageServer Server { get; } = server;
 
-    public void Send(string method, object @params)
+    private void Send(string method, object @params)
     {
         Server.SendNotification(new NotificationMessage(method,
-            JsonSerializer.SerializeToDocument(@params, server.JsonSerializerOptions))).Wait();
+            JsonSerializer.SerializeToDocument(@params, Server.JsonSerializerOptions))).Wait();
     }
 
     public override void OnStartLoadWorkspace()

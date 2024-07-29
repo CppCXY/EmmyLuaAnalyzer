@@ -145,7 +145,6 @@ public class LuaRenderBuilder(SearchContext context)
             if (paramSyntax.Description is { } description)
             {
                 renderContext.AppendLine();
-                // renderContext.AddSeparator();
                 renderContext.Append(description.CommentText);
             }
         }

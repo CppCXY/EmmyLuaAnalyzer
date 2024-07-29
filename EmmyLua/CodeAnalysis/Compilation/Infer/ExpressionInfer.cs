@@ -130,13 +130,21 @@ public static class ExpressionInfer
         {
             var index = localStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
             var localNameElement = localStatSyntax.NameList.ElementAtOrDefault(index);
-            return context.Infer(localNameElement);
+            var localType = context.Infer(localNameElement);
+            if (!localType.IsSameType(Builtin.Unknown, context))
+            {
+                return localType;
+            }
         }
         else if (tableExpr.Parent is LuaAssignStatSyntax assignStatSyntax)
         {
             var index = assignStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
-            var localNameElement = assignStatSyntax.VarList.ElementAtOrDefault(index);
-            return context.Infer(localNameElement);
+            var nameElement = assignStatSyntax.VarList.ElementAtOrDefault(index);
+            var globalType =  context.Infer(nameElement);
+            if (!globalType.IsSameType(Builtin.Unknown, context))
+            {
+                return globalType;
+            }
         }
 
         return new LuaElementType(tableExpr.UniqueId);

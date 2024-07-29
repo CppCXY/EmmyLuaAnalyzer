@@ -150,7 +150,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                                 CompleteContext.RenderFeature),
                         },
                         InsertText = InsertText,
-                        Data = Data,
+                        Data = Data!,
                         Command = Command,
                         TextEdit = TextOrReplaceEdit
                     };
@@ -264,7 +264,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                     CompleteContext.RenderBuilder.RenderType(signature.ReturnType, CompleteContext.RenderFeature)
             },
             InsertText = InsertText,
-            Data = Data,
+            Data = Data!,
             Command = Command,
             TextEdit = TextOrReplaceEdit
         };

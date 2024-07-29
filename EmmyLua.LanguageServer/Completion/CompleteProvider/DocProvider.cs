@@ -46,6 +46,11 @@ public class DocProvider : ICompleteProviderBase
                 AddDiagnosticCodeCompletion(context);
                 break;
             }
+            case LuaNameToken { Parent: LuaDocTagNamespaceSyntax or LuaDocTagUsingSyntax }:
+            {
+                AddTypeNameCompletion(triggerToken.RepresentText, context);
+                break;
+            }
         }
     }
 

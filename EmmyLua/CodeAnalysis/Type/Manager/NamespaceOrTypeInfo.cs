@@ -36,6 +36,8 @@ public class NamespaceOrTypeInfo
                 }
             }
 
+            child.Remove(documentId);
+
             if (child.TypeInfo is null && child.Children is null)
             {
                 toBeRemoved.Add(child.Name);
@@ -50,6 +52,49 @@ public class NamespaceOrTypeInfo
         if (Children.Count == 0)
         {
             Children = null;
+        }
+    }
+
+    public void RemoveChildNamespace(string fullName)
+    {
+        if (fullName == string.Empty)
+        {
+            return;
+        }
+
+        var parts = fullName.Split('.');
+        var stack = new Stack<NamespaceOrTypeInfo>();
+        var children = Children;
+        foreach (var part in parts)
+        {
+            if (children is null || !children.TryGetValue(part, out var child))
+            {
+                break;
+            }
+
+            stack.Push(child);
+        }
+
+        while (stack.Count != 0)
+        {
+            var child = stack.Pop();
+            if (stack.Count == 0)
+            {
+                Children?.Remove(child.Name);
+                break;
+            }
+
+            var parent = stack.Peek();
+            parent.Children?.Remove(child.Name);
+            if (parent.Children?.Count == 0)
+            {
+                parent.Children = null;
+            }
+
+            if (parent.TypeInfo is not null || parent.Children is not null)
+            {
+                break;
+            }
         }
     }
 
@@ -131,6 +176,7 @@ public class NamespaceOrTypeInfo
         {
             TypeInfo = new TypeInfo.TypeInfo()
             {
+                Name = Name,
                 MainDocumentId = elementId.DocumentId,
                 Kind = kind,
                 Attribute = attribute,

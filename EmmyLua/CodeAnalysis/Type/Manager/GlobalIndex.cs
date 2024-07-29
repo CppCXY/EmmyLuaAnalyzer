@@ -41,7 +41,7 @@ public class GlobalIndex
     {
         if (GlobalInfos.TryGetValue(name, out var globalInfo))
         {
-            globalInfo.DefinedDeclarations.Add(symbol.DocumentId, symbol);
+            globalInfo.DefinedDeclarations.TryAdd(symbol.DocumentId, symbol);
         }
         else
         {
@@ -49,7 +49,7 @@ public class GlobalIndex
             {
                 Name = name
             };
-            globalInfo.DefinedDeclarations.Add(symbol.DocumentId, symbol);
+            globalInfo.DefinedDeclarations.TryAdd(symbol.DocumentId, symbol);
             GlobalInfos[name] = globalInfo;
         }
 

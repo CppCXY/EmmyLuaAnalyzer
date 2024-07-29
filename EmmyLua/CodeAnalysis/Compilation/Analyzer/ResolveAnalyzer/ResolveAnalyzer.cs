@@ -291,7 +291,17 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         if (declaration.Type is null)
         {
-            declaration.Type = type;
+            if (declaration.IsLocal && (type.IsSameType(Builtin.Table, Context) ||
+                                        type.IsSameType(Builtin.UserData, Context)
+                ))
+            {
+                declaration.Type = new LuaElementType(declaration.UniqueId);
+                Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+            }
+            else
+            {
+                declaration.Type = type;
+            }
         }
         else
         {

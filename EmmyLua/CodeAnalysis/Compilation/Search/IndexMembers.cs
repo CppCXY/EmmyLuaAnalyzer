@@ -104,6 +104,12 @@ public class IndexMembers(SearchContext context)
                 }
             }
 
+            var op = context.GetBestMatchedIndexOperator(namedType, Builtin.String);
+            if (op is not null)
+            {
+                return new LuaSymbol(name, op.Ret, new VirtualInfo());
+            }
+
             return null;
         }
         finally
@@ -237,7 +243,7 @@ public class IndexMembers(SearchContext context)
             {
                 for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
                 {
-                    substitute.Add(typeInfo.GenericParams[i].Name , genericArgs[i], true);
+                    substitute.Add(typeInfo.GenericParams[i].Name, genericArgs[i], true);
                 }
             }
 
@@ -292,9 +298,27 @@ public class IndexMembers(SearchContext context)
         {
             return FindTypeMember(type, name);
         }
-        else if (indexExpr.IndexKeyExpr is { } indexKeyExpr)
+        else if (type is LuaArrayType arrayType)
         {
-            // TODO
+            return new LuaSymbol(string.Empty, arrayType.BaseType, new VirtualInfo());
+        }
+        else if (type is LuaNamedType namedType && indexExpr.IndexKeyExpr is { } indexKeyExpr)
+        {
+            var keyType = context.Infer(indexKeyExpr);
+            if (keyType.IsSameType(Builtin.Unknown, context))
+            {
+                return null;
+            }
+
+            if (keyType is LuaNamedType keyNamedType)
+            {
+                var op = context.GetBestMatchedIndexOperator(namedType, keyNamedType);
+                if (op is not null)
+                {
+                    return new LuaSymbol(string.Empty, op.Ret, new VirtualInfo());
+                }
+            }
+
             return null;
         }
 

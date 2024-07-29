@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -13,7 +14,7 @@ public class SubTypeInfer(SearchContext context)
         False,
     }
 
-    record struct SubTypeKey(LuaType Left, LuaType Right);
+    record struct SubTypeKey(TypeInfo Left, TypeInfo Right);
 
     public bool IsSubTypeOf(LuaType? left, LuaType? right)
     {
@@ -21,16 +22,8 @@ public class SubTypeInfer(SearchContext context)
         {
             return false;
         }
-        // remove the cache
-        var key = new SubTypeKey(left, right);
-        if (SubTypeCaches.TryGetValue(key, out var result))
-        {
-            return result == SubTypeResult.True;
-        }
 
-        SubTypeCaches[key] = SubTypeResult.NoAnswer;
         var result2 = InnerSubTypeOf(left, right);
-        SubTypeCaches[key] = result2 ? SubTypeResult.True : SubTypeResult.False;
         return result2;
     }
 
@@ -65,30 +58,51 @@ public class SubTypeInfer(SearchContext context)
         {
             return false;
         }
-
-        switch (typeInfo.Kind)
+        var typeInfoRight = context.Compilation.TypeManager.FindTypeInfo(right);
+        if (typeInfoRight is null)
         {
-            case NamedTypeKind.Alias or NamedTypeKind.Enum:
-            {
-                return typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right);
-            }
-            case NamedTypeKind.Class or NamedTypeKind.Interface:
-            {
-                if (typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right))
-                {
-                    return true;
-                }
-
-                if (typeInfo.Supers is not null)
-                {
-                    return typeInfo.Supers.Any(super => IsSubTypeOf(super, right));
-                }
-
-                break;
-            }
+            return false;
+        }
+        var key = new SubTypeKey(typeInfo, typeInfoRight);
+        if (SubTypeCaches.TryGetValue(key, out var result))
+        {
+            return result == SubTypeResult.True;
         }
 
-        return false;
+        var judgeResult = false;
+        try
+        {
+            SubTypeCaches[key] = SubTypeResult.NoAnswer;
+            switch (typeInfo.Kind)
+            {
+                case NamedTypeKind.Alias or NamedTypeKind.Enum:
+                {
+                    judgeResult = typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right);
+                    break;
+                }
+                case NamedTypeKind.Class or NamedTypeKind.Interface:
+                {
+                    if (typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right))
+                    {
+                        judgeResult = true;
+                        break;
+                    }
+
+                    if (typeInfo.Supers is not null)
+                    {
+                        judgeResult = typeInfo.Supers.Any(super => IsSubTypeOf(super, right));
+                    }
+
+                    break;
+                }
+            }
+
+            return judgeResult;
+        }
+        finally
+        {
+            SubTypeCaches[key] = judgeResult ? SubTypeResult.True : SubTypeResult.False;
+        }
     }
 
     private bool IsSubTypeOfUnionType(LuaUnionType left, LuaUnionType right)

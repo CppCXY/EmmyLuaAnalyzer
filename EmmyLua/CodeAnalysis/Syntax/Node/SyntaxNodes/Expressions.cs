@@ -203,7 +203,37 @@ public class LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(i
 
     public LuaNameToken? DotOrColonIndexName => FirstChild<LuaNameToken>();
 
-    public LuaExprSyntax? IndexKeyExpr => ChildNodeAfterToken<LuaExprSyntax>(LuaTokenKind.TkLeftBracket);
+    public LuaExprSyntax? IndexKeyExpr
+    {
+        get
+        {
+            var start = ChildStartIndex;
+            if (start == -1)
+            {
+                return null;
+            }
+
+            var finish = ChildFinishIndex;
+            for (var i = start; i <= finish; i++)
+            {
+                if (Tree.GetTokenKind(i) == LuaTokenKind.TkLeftBracket)
+                {
+                    if (i + 1 < finish)
+                    {
+                        var element = Tree.GetElement(i);
+                        if (element is LuaExprSyntax exprSyntax)
+                        {
+                            return exprSyntax;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            return null;
+        }
+    }
 
     public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
 

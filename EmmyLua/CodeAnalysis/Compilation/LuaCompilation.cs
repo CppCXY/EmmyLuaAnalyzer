@@ -136,6 +136,7 @@ public class LuaCompilation
                     var document = Project.GetDocument(documentId);
                     if (document is not null && document.Text.Length < Project.Features.DontIndexMaxFileSize)
                     {
+                        Diagnostics.ClearDiagnostic(document.Id);
                         documents.Add(document);
                     }
                 }
@@ -149,7 +150,6 @@ public class LuaCompilation
 
                 foreach (var document in documents)
                 {
-                    Diagnostics.ClearDiagnostic(document.Id);
                     foreach (var diagnostic in document.SyntaxTree.Diagnostics)
                     {
                         Diagnostics.AddDiagnostic(document.Id, diagnostic);

@@ -80,13 +80,8 @@ public class SearchContext
         return operators.OfType<UnaryOperator>().FirstOrDefault();
     }
 
-    public IndexOperator? GetBestMatchedIndexOperator(LuaType type, LuaType key)
+    public IndexOperator? GetBestMatchedIndexOperator(LuaNamedType namedType, LuaNamedType key)
     {
-        if (type is not LuaNamedType namedType)
-        {
-            return null;
-        }
-
         var operators = Operators.GetOperators(TypeOperatorKind.Index, namedType);
         var bestMatched = operators
             .OfType<IndexOperator>()

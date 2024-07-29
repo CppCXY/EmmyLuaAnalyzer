@@ -34,8 +34,6 @@ public class SameTypeInfer(SearchContext context)
 
     private bool IsSameTypeOfNamedType(LuaNamedType left, LuaNamedType right)
     {
-        var typeInfo1 = TypeManager.FindTypeInfo(left);
-        var typeInfo2 = TypeManager.FindTypeInfo(right);
-        return typeInfo1 == typeInfo2;
+        return context.Compilation.TypeManager.IsSameType(left, right);
     }
 }

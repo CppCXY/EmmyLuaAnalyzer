@@ -107,7 +107,8 @@ public class AttachDeclarationAnalyzer(
                     {
                         if (declarations[i].IsGlobal && declarations[i].Type is GlobalNameType globalNameType)
                         {
-                            declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId, globalNameType, luaTypeList[i]);
+                            declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId,
+                                globalNameType, luaTypeList[i]);
                         }
                         else
                         {
@@ -287,14 +288,7 @@ public class AttachDeclarationAnalyzer(
                         IsVararg = name == "..."
                     };
 
-                    if (name is "self")
-                    {
-                        declaration.Type = parameterInfo.Type;
-                    }
-                    else if (declaration.Type is LuaElementType elementType)
-                    {
-                        declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);
-                    }
+                    declaration.Type = parameterInfo.Type;
                 }
             }
         }
