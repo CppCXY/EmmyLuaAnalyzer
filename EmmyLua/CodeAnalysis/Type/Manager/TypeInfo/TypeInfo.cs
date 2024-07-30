@@ -92,17 +92,17 @@ public class TypeInfo : ITypeInfo
             RemoveInherits(typeManager);
         }
 
-        if (RemoveMembers(documentId))
+        if (!RemoveMembers(documentId))
         {
             removeAll = false;
         }
 
-        if (RemoveOperators(documentId))
+        if (!RemoveOperators(documentId))
         {
             removeAll = false;
         }
 
-        if (RemoveOverloads(documentId))
+        if (!RemoveOverloads(documentId))
         {
             removeAll = false;
         }
@@ -141,7 +141,7 @@ public class TypeInfo : ITypeInfo
 
     private bool RemoveMembers(LuaDocumentId documentId)
     {
-        var removeAll = true;
+        var removeAll = false;
         if (Declarations is not null)
         {
             var toBeRemove = new List<string>();
@@ -188,7 +188,7 @@ public class TypeInfo : ITypeInfo
 
         if (Implements is null && Declarations is null)
         {
-            removeAll = false;
+            removeAll = true;
         }
 
         return removeAll;
@@ -224,6 +224,10 @@ public class TypeInfo : ITypeInfo
             if (Operators.Count == 0)
             {
                 Operators = null;
+            }
+            else
+            {
+                removeAll = false;
             }
         }
 

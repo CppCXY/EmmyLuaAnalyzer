@@ -35,7 +35,7 @@ public class GlobalTypeInfo : ITypeInfo
             BaseType = null;
         }
 
-        var removeAll = !RemoveMembers(documentId);
+        var removeAll = RemoveMembers(documentId);
         DefinedDeclarations.Remove(documentId);
         if (DefinedDeclarations.Count != 0)
         {
@@ -68,6 +68,10 @@ public class GlobalTypeInfo : ITypeInfo
             if (Declarations.Count == 0)
             {
                 Declarations = null;
+            }
+            else
+            {
+                removeAll = false;
             }
         }
 
