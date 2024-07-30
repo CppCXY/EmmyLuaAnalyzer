@@ -11,7 +11,7 @@ public class NamespaceOrTypeInfo
 
     public TypeInfo.TypeInfo? TypeInfo { get; set; }
 
-    public void Remove(LuaDocumentId documentId)
+    public void Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         if (Children is null)
         {
@@ -25,18 +25,19 @@ public class NamespaceOrTypeInfo
             {
                 if (child.TypeInfo.Partial)
                 {
-                    if (child.TypeInfo.IsDefinedInDocument(documentId) && child.TypeInfo.RemovePartial(documentId))
+                    if (child.TypeInfo.IsDefinedInDocument(documentId) && child.TypeInfo.RemovePartial(documentId, typeManager))
                     {
                         child.TypeInfo = null;
                     }
                 }
                 else if (child.TypeInfo.MainDocumentId == documentId)
                 {
+                    child.TypeInfo.RemoveInherits(typeManager);
                     child.TypeInfo = null;
                 }
             }
 
-            child.Remove(documentId);
+            child.Remove(documentId, typeManager);
 
             if (child.TypeInfo is null && child.Children is null)
             {

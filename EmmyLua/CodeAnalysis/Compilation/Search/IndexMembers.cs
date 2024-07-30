@@ -324,4 +324,54 @@ public class IndexMembers(SearchContext context)
 
         return null;
     }
+
+    public LuaSymbol? FindSuperMember(LuaType luaType, string name)
+    {
+        if (luaType is LuaNamedType namedType)
+        {
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
+            if (typeInfo is null)
+            {
+                return null;
+            }
+
+            if (!_visitedTypes.Add(typeInfo))
+            {
+                return null;
+            }
+
+            try
+            {
+                if (typeInfo.Kind is NamedTypeKind.Class or NamedTypeKind.Interface)
+                {
+                    if (typeInfo.BaseType is { } baseType)
+                    {
+                        if (FindTypeMember(baseType, name) is { } symbol)
+                        {
+                            return symbol;
+                        }
+                    }
+
+                    if (typeInfo.Supers is { } supers)
+                    {
+                        foreach (var super in supers)
+                        {
+                            if (FindTypeMember(super, name) is { } symbol)
+                            {
+                                return symbol;
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+            finally
+            {
+                _visitedTypes.Remove(typeInfo);
+            }
+        }
+
+        return null;
+    }
 }

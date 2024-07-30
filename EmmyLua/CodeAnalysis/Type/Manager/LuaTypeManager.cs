@@ -22,6 +22,9 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private InFileIndex<string, LuaNamedType> GlobalProxyTypes { get; } = new();
 
+    // left super, right sub
+    private List<(LuaNamedType, LuaNamedType)> WaitBuildSubtypes { get; } = new();
+
     public TypeInfo.TypeInfo? FindTypeInfo(LuaNamedType type)
     {
         if (type.DocumentId != LuaDocumentId.VirtualDocumentId)
@@ -68,7 +71,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             if (RootNamespace.FindNamespaceOrType(namespaceIndex.FullName) is { } namespaceInfo)
             {
-                namespaceInfo.Remove(documentId);
+                namespaceInfo.Remove(documentId, this);
                 if (namespaceInfo.Children is null && namespaceInfo.TypeInfo is null)
                 {
                     RootNamespace.RemoveChildNamespace(namespaceIndex.FullName);
@@ -77,11 +80,11 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
         else
         {
-            RootNamespace.Remove(documentId);
+            RootNamespace.Remove(documentId, this);
         }
 
         DocumentElementTypeInfos.Remove(documentId);
-        GlobalIndices.Remove(documentId);
+        GlobalIndices.Remove(documentId, this);
         GlobalProxyTypes.Remove(documentId);
     }
 
@@ -207,7 +210,24 @@ public class LuaTypeManager(LuaCompilation compilation)
         typeInfo.MainDocumentId = type.DocumentId;
 
         typeInfo.Supers ??= new();
-        typeInfo.Supers.AddRange(supers);
+        foreach (var super in supers)
+        {
+            typeInfo.Supers.Add(super);
+            WaitBuildSubtypes.Add((super, type));
+        }
+    }
+
+    public void BuildSubTypes()
+    {
+        foreach (var (left, right) in WaitBuildSubtypes)
+        {
+            if (FindTypeInfo(left) is { } leftTypeInfo)
+            {
+                leftTypeInfo.SubTypes ??= new();
+                leftTypeInfo.SubTypes.Add(right);
+            }
+        }
+        WaitBuildSubtypes.Clear();
     }
 
     public void AddMemberDeclarations(LuaNamedType type, IEnumerable<LuaSymbol> members)

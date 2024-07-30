@@ -4,5 +4,5 @@ namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 public interface ITypeInfo
 {
-    public bool RemovePartial(LuaDocumentId documentId);
+    public bool RemovePartial(LuaDocumentId documentId, LuaTypeManager typeManager);
 }

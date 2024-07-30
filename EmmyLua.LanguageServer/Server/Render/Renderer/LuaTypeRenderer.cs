@@ -108,12 +108,12 @@ public static class LuaTypeRenderer
                 InnerRenderType(originType, renderContext, 1);
             }
         }
-        else if (namedTypeKind is NamedTypeKind.Class or NamedTypeKind.Interface)
-        {
-            var generics = typeInfo.GenericParams ?? [];
-            var supers = typeInfo.Supers ?? [];
-            RenderClassOrInterface(namedType.Name, generics, supers, renderContext);
-        }
+        // else if (namedTypeKind is NamedTypeKind.Class or NamedTypeKind.Interface)
+        // {
+            // var generics = typeInfo.GenericParams ?? [];
+            // var supers = typeInfo.Supers ?? [];
+            // RenderClassOrInterface(namedType.Name, generics, supers, renderContext);
+        // }
         else if (namedTypeKind == NamedTypeKind.Enum)
         {
             var baseType = typeInfo.BaseType;
@@ -149,53 +149,6 @@ public static class LuaTypeRenderer
 
             renderContext.Append('>');
         }
-
-        // if (supers.Count > 0)
-        // {
-        //     renderContext.Append(" extends ");
-        //     for (var i = 0; i < supers.Count; i++)
-        //     {
-        //         if (i > 0)
-        //         {
-        //             renderContext.Append(',');
-        //         }
-        //
-        //         InnerRenderType(supers[i], renderContext, 1);
-        //     }
-        // }
-
-        // 似乎没有展开的意义
-        // var members = renderContext.SearchContext.GetMembers(new LuaNamedType(name)).ToList();
-        // if (members.Count == 0)
-        // {
-        //     return;
-        // }
-        //
-        // // 只渲染20个
-        // var count = 0;
-        // renderContext.Append(" {\n");
-        // foreach (var member in members)
-        // {
-        //     if (count > 20)
-        //     {
-        //         renderContext.Append(",    \n...");
-        //         break;
-        //     }
-        //
-        //     if (count > 0)
-        //     {
-        //         renderContext.Append(",\n");
-        //     }
-        //
-        //     renderContext.Append("    ");
-        //     renderContext.Append(member.Name);
-        //     renderContext.Append(": ");
-        //     InnerRenderType(member.Type, renderContext, 1);
-        //
-        //     count++;
-        // }
-        //
-        // renderContext.Append("\n}");
     }
 
     private static void InnerRenderType(LuaType? type, LuaRenderContext renderContext, int level)

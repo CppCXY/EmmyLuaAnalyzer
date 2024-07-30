@@ -36,7 +36,8 @@ public class SettingManager
             new JsonStringEnumConverter<DiagnosticCode>(JsonNamingPolicy.KebabCaseLower),
             new JsonStringEnumConverter<DiagnosticSeverity>(JsonNamingPolicy.KebabCaseLower),
             new JsonStringEnumConverter<FilenameConvention>(JsonNamingPolicy.KebabCaseLower),
-        }
+        },
+        WriteIndented = true
     };
 
     private FileSystemWatcher? Watcher { get; set; }

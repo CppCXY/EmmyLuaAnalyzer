@@ -28,7 +28,7 @@ public class GlobalTypeInfo : ITypeInfo
         }
     }
 
-    public bool RemovePartial(LuaDocumentId documentId)
+    public bool RemovePartial(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         if (documentId == MainDocumentId)
         {

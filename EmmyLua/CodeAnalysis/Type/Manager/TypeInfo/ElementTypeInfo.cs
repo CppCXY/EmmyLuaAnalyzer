@@ -11,7 +11,7 @@ public class DocumentElementTypeInfo : ITypeInfo
 
     public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
-    public bool RemovePartial(LuaDocumentId documentId)
+    public bool RemovePartial(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         if (DocumentId == documentId)
         {

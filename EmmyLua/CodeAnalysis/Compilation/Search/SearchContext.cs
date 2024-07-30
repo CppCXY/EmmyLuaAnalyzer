@@ -205,7 +205,7 @@ public class SearchContext
 
     public LuaSymbol? FindSuperMember(LuaType type, string name)
     {
-        return null;
+        return IndexMembers.FindSuperMember(type, name);
     }
 
     public IEnumerable<ReferenceResult> FindReferences(LuaSymbol luaSymbol)

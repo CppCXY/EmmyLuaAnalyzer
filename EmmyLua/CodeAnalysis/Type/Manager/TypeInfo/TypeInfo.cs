@@ -61,6 +61,8 @@ public class TypeInfo : ITypeInfo
 
     public List<LuaNamedType>? Supers { get; set; }
 
+    public List<LuaNamedType>? SubTypes { get; set; }
+
     public Dictionary<string, LuaSymbol>? Declarations { get; set; }
 
     public Dictionary<string, LuaSymbol>? Implements { get; set; }
@@ -79,15 +81,15 @@ public class TypeInfo : ITypeInfo
 
     public bool Exact => Attribute.HasFlag(LuaTypeAttribute.Exact);
 
-    public bool RemovePartial(LuaDocumentId documentId)
+    public bool RemovePartial(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         var removeAll = true;
         if (MainDocumentId == documentId)
         {
             GenericParams = null;
             BaseType = null;
-            Supers = null;
             ResolvedMainDocumentId = false;
+            RemoveInherits(typeManager);
         }
 
         if (RemoveMembers(documentId))
@@ -108,6 +110,33 @@ public class TypeInfo : ITypeInfo
         DefinedElementIds.RemoveWhere(it => it.DocumentId == documentId);
         DefinedDocumentIds.Remove(documentId);
         return removeAll;
+    }
+
+    public void RemoveInherits(LuaTypeManager typeManager)
+    {
+        if (Supers is not null)
+        {
+            var newSupers = new List<LuaNamedType>();
+            newSupers.AddRange(Supers);
+            foreach (var super in newSupers)
+            {
+                var superTypeInfo = typeManager.FindTypeInfo(super);
+                if (superTypeInfo is { SubTypes: { } subTypes })
+                {
+                    for (var i = subTypes.Count - 1; i >= 0; i--)
+                    {
+                        if (typeManager.FindTypeInfo(subTypes[i]) is { } subTypeInfo && subTypeInfo == this)
+                        {
+                            subTypes.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        Supers = null;
+        SubTypes = null;
     }
 
     private bool RemoveMembers(LuaDocumentId documentId)

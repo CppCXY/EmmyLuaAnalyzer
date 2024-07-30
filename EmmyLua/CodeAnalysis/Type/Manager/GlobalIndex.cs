@@ -10,7 +10,7 @@ public class GlobalIndex
 
     private Dictionary<LuaDocumentId, HashSet<string>> GlobalLocations { get; } = new();
 
-    public void Remove(LuaDocumentId documentId)
+    public void Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         if (GlobalLocations.TryGetValue(documentId, out var globalNames))
         {
@@ -19,7 +19,7 @@ public class GlobalIndex
             {
                 if (GlobalInfos.TryGetValue(globalName, out var globalInfo))
                 {
-                    if (globalInfo.RemovePartial(documentId))
+                    if (globalInfo.RemovePartial(documentId, typeManager))
                     {
                         GlobalInfos.Remove(globalName);
                         toBeRemove.Add(globalName);
