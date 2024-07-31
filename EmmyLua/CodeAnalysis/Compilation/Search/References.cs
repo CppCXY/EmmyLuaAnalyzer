@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -14,6 +15,8 @@ public record ReferenceResult(
 
 public class References(SearchContext context)
 {
+    private HashSet<TypeInfo> TypeInfoGuard { get; } = new();
+
     public IEnumerable<ReferenceResult> FindReferences(LuaSymbol luaSymbol)
     {
         var referencesSet = new ReferencesSet();
@@ -81,8 +84,7 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr)?.IsReferenceTo(symbol) == true &&
-                indexExpr.KeyElement is { } keyElement)
+            if (IsReferenceTo(indexExpr, symbol) && indexExpr.KeyElement is { } keyElement)
             {
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
@@ -91,8 +93,7 @@ public class References(SearchContext context)
         var tableFields = context.Compilation.Db.QueryTableFieldReferences(fieldName, context);
         foreach (var tableField in tableFields)
         {
-            if (context.FindDeclaration(tableField)?.IsReferenceTo(symbol) == true &&
-                tableField.KeyElement is { } keyElement)
+            if (IsReferenceTo(tableField, symbol) && tableField.KeyElement is { } keyElement)
             {
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
@@ -277,6 +278,78 @@ public class References(SearchContext context)
         }
 
         return references;
+    }
+
+    public bool IsReferenceTo(LuaSyntaxElement element, LuaSymbol symbol)
+    {
+        var declarationSymbol = context.FindDeclaration(element);
+        if (declarationSymbol is null)
+        {
+            return false;
+        }
+
+        if (declarationSymbol.IsReferenceTo(symbol))
+        {
+            return true;
+        }
+
+        if (element is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
+        {
+            var parentSymbol = context.FindDeclaration(prefixExpr);
+            if (parentSymbol is null)
+            {
+                return false;
+            }
+
+            if (parentSymbol.Type is LuaNamedType namedParentType)
+            {
+                var parentTypeInfo = context.Compilation.TypeManager.FindTypeInfo(namedParentType);
+                if (parentTypeInfo is not null)
+                {
+                    return IsTypeInfoContainSymbol(parentTypeInfo, symbol);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsTypeInfoContainSymbol(TypeInfo typeInfo, LuaSymbol symbol)
+    {
+        if (!TypeInfoGuard.Add(typeInfo))
+        {
+            return false;
+        }
+
+        try
+        {
+            if (typeInfo.Declarations is not null &&
+                typeInfo.Declarations.TryGetValue(symbol.Name, out var childSymbol))
+            {
+                if (childSymbol.IsReferenceTo(symbol))
+                {
+                    return true;
+                }
+            }
+
+            if (typeInfo is { Supers: { } supers })
+            {
+                foreach (var super in supers)
+                {
+                    var superTypeInfo = context.Compilation.TypeManager.FindTypeInfo(super);
+                    if (superTypeInfo is not null && IsTypeInfoContainSymbol(superTypeInfo, symbol))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        finally
+        {
+            TypeInfoGuard.Remove(typeInfo);
+        }
     }
 }
 

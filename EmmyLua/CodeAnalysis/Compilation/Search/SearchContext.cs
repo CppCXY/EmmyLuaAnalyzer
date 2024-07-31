@@ -94,6 +94,11 @@ public class SearchContext
         return Declarations.FindDeclaration(element);
     }
 
+    public bool IsReferencesTo(LuaSyntaxElement element, LuaSymbol luaSymbol)
+    {
+        return References.IsReferenceTo(element, luaSymbol);
+    }
+
     public IEnumerable<LuaSymbol> GetDocumentLocalDeclarations(LuaDocumentId documentId)
     {
         return Compilation.Db.QueryDocumentLocalDeclarations(documentId);
