@@ -183,6 +183,16 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
                 AnalyzeSimpleTag(mappingSyntax);
                 break;
             }
+            case LuaDocTagNamespaceSyntax namespaceSyntax:
+            {
+                AnalyzeTagNamespace(namespaceSyntax);
+                break;
+            }
+            case LuaDocTagUsingSyntax usingSyntax:
+            {
+                AnalyzeTagUsing(usingSyntax);
+                break;
+            }
         }
     }
 

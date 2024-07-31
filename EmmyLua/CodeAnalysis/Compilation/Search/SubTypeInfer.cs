@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -13,21 +14,16 @@ public class SubTypeInfer(SearchContext context)
         False,
     }
 
-    record struct SubTypeKey(LuaType Left, LuaType Right);
+    record struct SubTypeKey(TypeInfo Left, TypeInfo Right);
 
-    public bool IsSubTypeOf(LuaType left, LuaType right)
+    public bool IsSubTypeOf(LuaType? left, LuaType? right)
     {
-        left = left.UnwrapType(context);
-        right = right.UnwrapType(context);
-        var key = new SubTypeKey(left, right);
-        if (SubTypeCaches.TryGetValue(key, out var result))
+        if (left is null || right is null)
         {
-            return result == SubTypeResult.True;
+            return false;
         }
 
-        SubTypeCaches[key] = SubTypeResult.NoAnswer;
         var result2 = InnerSubTypeOf(left, right);
-        SubTypeCaches[key] = result2 ? SubTypeResult.True : SubTypeResult.False;
         return result2;
     }
 
@@ -52,13 +48,61 @@ public class SubTypeInfer(SearchContext context)
 
     private bool IsSubTypeOfNamedType(LuaNamedType left, LuaNamedType right)
     {
-        if (left.Equals(right))
+        if (left.IsSameType(right, context))
         {
             return true;
         }
 
-        var supers = context.Compilation.Db.QuerySupers(left.Name);
-        return supers.Any(super => IsSubTypeOf(super, right));
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(left);
+        if (typeInfo is null)
+        {
+            return false;
+        }
+        var typeInfoRight = context.Compilation.TypeManager.FindTypeInfo(right);
+        if (typeInfoRight is null)
+        {
+            return false;
+        }
+        var key = new SubTypeKey(typeInfo, typeInfoRight);
+        if (SubTypeCaches.TryGetValue(key, out var result))
+        {
+            return result == SubTypeResult.True;
+        }
+
+        var judgeResult = false;
+        try
+        {
+            SubTypeCaches[key] = SubTypeResult.NoAnswer;
+            switch (typeInfo.Kind)
+            {
+                case NamedTypeKind.Alias or NamedTypeKind.Enum:
+                {
+                    judgeResult = typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right);
+                    break;
+                }
+                case NamedTypeKind.Class or NamedTypeKind.Interface:
+                {
+                    if (typeInfo.BaseType is not null && IsSubTypeOf(typeInfo.BaseType, right))
+                    {
+                        judgeResult = true;
+                        break;
+                    }
+
+                    if (typeInfo.Supers is not null)
+                    {
+                        judgeResult = typeInfo.Supers.Any(super => IsSubTypeOf(super, right));
+                    }
+
+                    break;
+                }
+            }
+
+            return judgeResult;
+        }
+        finally
+        {
+            SubTypeCaches[key] = judgeResult ? SubTypeResult.True : SubTypeResult.False;
+        }
     }
 
     private bool IsSubTypeOfUnionType(LuaUnionType left, LuaUnionType right)
@@ -87,7 +131,6 @@ public class SubTypeInfer(SearchContext context)
             return false;
         }
 
-        return !left.TupleDeclaration.Where((t, i) =>
-            !t.Type.SubTypeOf(right.TupleDeclaration[i].Type, context)).Any();
+        return !left.TupleDeclaration.Where((t, i) => !IsSubTypeOf(t.Type, right.TupleDeclaration[i].Type)).Any();
     }
 }

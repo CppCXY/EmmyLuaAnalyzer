@@ -1,7 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -63,16 +62,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
     private void ResolveType(UnResolved unResolved)
     {
-        if (unResolved is UnResolvedSymbol unResolvedDeclaration)
+        if (unResolved is UnResolvedSymbol unResolvedSymbol)
         {
-            var exprRef = unResolvedDeclaration.ExprRef;
+            var exprRef = unResolvedSymbol.ExprRef;
             if (exprRef is not null)
             {
                 var exprType = Context.Infer(exprRef.Expr);
-                if (!exprType.Equals(Builtin.Unknown))
+                if (!exprType.IsSameType(Builtin.Unknown, Context))
                 {
-                    MergeType(unResolvedDeclaration, exprType, exprRef.RetId);
+                    MergeType(unResolvedSymbol, exprRef.Expr, exprType, exprRef.RetId);
                 }
+            }
+            else if (unResolvedSymbol.LuaSymbol.Type is null)
+            {
+                unResolvedSymbol.LuaSymbol.Type = Builtin.Nil;
             }
         }
         else if (unResolved is UnResolvedForRangeParameter unResolvedForRangeParameter)
@@ -97,20 +100,25 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             for (var i = 0; i < unResolvedForRangeParameter.Parameters.Count; i++)
                             {
                                 var parameter = unResolvedForRangeParameter.Parameters[i];
-                                if (parameter.Type is LuaVariableRefType luaVariableRefType)
+                                if (parameter.Type is LuaElementType elementType)
                                 {
-                                    Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
-                                        multiReturnType.GetElementType(i));
+                                    if (Compilation.TypeManager.GetBaseType(elementType.Id) is null)
+                                    {
+                                        Compilation.TypeManager.SetBaseType(elementType.Id,
+                                            multiReturnType.GetElementType(i));
+                                    }
                                 }
                             }
                         }
                         else if (unResolvedForRangeParameter.Parameters.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
-                            if (firstDeclaration.Type is LuaVariableRefType luaVariableRefType)
+                            if (firstDeclaration.Type is LuaElementType elementType)
                             {
-                                Context.Compilation.Db.UpdateIdRelatedType(luaVariableRefType.Id,
-                                    returnType);
+                                if (Compilation.TypeManager.GetBaseType(elementType.Id) is null)
+                                {
+                                    Compilation.TypeManager.SetBaseType(elementType.Id, returnType);
+                                }
                             }
                         }
                     }
@@ -125,14 +133,8 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
-            var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Info.DeclarationType is not null)
-            {
-                declaration.Info = declaration.Info with
-                {
-                    DeclarationType = new LuaVariableRefType(declaration.UniqueId)
-                };
-            }
+            var declaration = unResolvedDeclaration.LuaSymbol;
+            declaration.Type ??= new LuaElementType(declaration.UniqueId);
         }
     }
 
@@ -140,13 +142,24 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
     {
         if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
-            var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            var declaration = unResolvedDeclaration.LuaSymbol;
+            if (declaration.Info.Ptr.ToNode(Context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
             {
-                var documentId = indexExpr.DocumentId;
                 var ty = Context.Infer(prefixExpr);
-                Compilation.Db.AddMember(documentId, ty, declaration);
-                Context.ClearMemberCache(ty);
+                if (ty is LuaNamedType namedType)
+                {
+                    Compilation.TypeManager.AddMemberImplementation(namedType, declaration);
+                }
+                else if (ty is LuaElementType elementType)
+                {
+                    Compilation.TypeManager.AddElementMember(elementType.Id, declaration);
+                }
+                else if (ty is GlobalNameType globalNameType)
+                {
+                    Compilation.TypeManager.AddGlobalMember(globalNameType.Name, declaration);
+                }
+
+                // Context.ClearMemberCache(ty);
             }
         }
     }
@@ -156,10 +169,10 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var idType = Context.Compilation.Db.QueryTypeFromId(id);
-            if (idType is LuaMethodType methodType)
+            var typeInfo = Compilation.TypeManager.FindTypeInfo(id);
+            if (typeInfo?.BaseType is LuaMethodType methodType)
             {
-                if (methodType.MainSignature.ReturnType.Equals(Builtin.Unknown))
+                if (methodType.MainSignature.ReturnType.IsSameType(Builtin.Unknown, Context))
                 {
                     var block = unResolvedMethod.Block;
                     var returnType = AnalyzeBlockReturns(block, out var _, analyzeContext);
@@ -187,28 +200,25 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             var callExpr = unResolvedClosureParameters.CallExpr;
             var prefixType = Context.Infer(callExpr.PrefixExpr);
             var callArgList = callExpr.ArgList?.ArgList.ToList() ?? [];
-            Context.FindMethodsForType(prefixType, type =>
+            foreach (var methodType1 in Context.FindCallableType(prefixType))
             {
-                var signature = Context.FindPerfectMatchSignature(type, callExpr, callArgList);
+                var signature = Context.FindPerfectMatchSignature(methodType1, callExpr, callArgList);
                 var paramIndex = unResolvedClosureParameters.Index;
-                if (paramIndex == -1) return;
+                if (paramIndex == -1) break;
                 var paramDeclaration = signature.Parameters.ElementAtOrDefault(paramIndex);
-                if (paramDeclaration is null) return;
+                if (paramDeclaration is null) break;
                 var closureParams = unResolvedClosureParameters.Parameters;
-                Context.FindMethodsForType(paramDeclaration.Type, methodType =>
+                if (Context.FindCallableType(paramDeclaration.Type).FirstOrDefault() is { } methodType2)
                 {
-                    var mainParams = methodType.MainSignature.Parameters;
+                    var mainParams = methodType2.MainSignature.Parameters;
                     for (var i = 0; i < closureParams.Count && i < mainParams.Count; i++)
                     {
                         var closureParam = closureParams[i];
                         var mainParam = mainParams[i];
-                        if (closureParam.Info.DeclarationType is null)
-                        {
-                            closureParam.Info = closureParam.Info with { DeclarationType = mainParam.Type };
-                        }
+                        Compilation.TypeManager.SetBaseType(closureParam.UniqueId, mainParam.Type ?? Builtin.Any);
                     }
-                });
-            });
+                }
+            }
         }
     }
 
@@ -235,38 +245,38 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                     {
                         case 0:
                         {
-                            returnType = returnType.Union(Builtin.Nil);
+                            returnType = returnType.Union(Builtin.Nil, Context);
                             break;
                         }
                         case >= 1:
                         {
                             var mainReturn = Context.Infer(rets[0]);
-                            if (mainReturn.Equals(Builtin.Unknown))
+                            if (mainReturn.IsSameType(Builtin.Unknown, Context))
                             {
                                 return returnType;
                             }
 
                             relatedExpr.Add(rets[0]);
-                            returnType = returnType.Union(mainReturn);
+                            returnType = returnType.Union(mainReturn, Context);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    returnType = returnType.Union(Builtin.Nil);
+                    returnType = returnType.Union(Builtin.Nil, Context);
                 }
             }
             else
             {
-                returnType = returnType.Union(Builtin.Nil);
+                returnType = returnType.Union(Builtin.Nil, Context);
             }
         }
 
-        return returnType;
+        return returnType.IsSameType(Builtin.Unknown, Context) ? Builtin.Nil : returnType;
     }
 
-    private void MergeType(UnResolvedSymbol unResolved, LuaType type, int retId)
+    private void MergeType(UnResolvedSymbol unResolved, LuaExprSyntax luaExpr, LuaType type, int retId)
     {
         if (type is LuaMultiReturnType returnType)
         {
@@ -277,41 +287,36 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             type = Builtin.Nil;
         }
 
-        var declaration = unResolved.LuaDeclaration;
+        var declaration = unResolved.LuaSymbol;
 
-        if (declaration.Info.DeclarationType is null)
+        if (declaration.Type is null)
         {
-            declaration.Info = declaration.Info with { DeclarationType = type };
+            if (declaration.IsLocal && (type.IsSameType(Builtin.Table, Context) ||
+                                        type.IsSameType(Builtin.UserData, Context)
+                ))
+            {
+                declaration.Type = new LuaElementType(declaration.UniqueId);
+                Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+            }
+            else
+            {
+                declaration.Type = type;
+            }
         }
         else
         {
-            var declarationType = unResolved.LuaDeclaration.Info.DeclarationType;
-            if (declarationType is LuaVariableRefType variableRefType)
+            var declarationType = unResolved.LuaSymbol.Type;
+            if (declarationType is LuaElementType elementType)
             {
-                Compilation.Db.UpdateIdRelatedType(variableRefType.Id, type);
+                Compilation.TypeManager.SetBaseType(elementType.Id, type);
             }
             else if (declarationType is GlobalNameType globalNameType)
             {
-                Compilation.Db.AddGlobalRelationType(declaration.DocumentId, globalNameType.Name, type);
+                Compilation.TypeManager.SetExprType(luaExpr.DocumentId, globalNameType, type);
             }
             else if (declarationType is LuaNamedType namedType)
             {
-                if (type is LuaTableLiteralType tableType)
-                {
-                    var members = Compilation.Db.QueryMembers(tableType).OfType<LuaDeclaration>();
-                    var documentId = declaration.DocumentId;
-
-                    foreach (var member in members)
-                    {
-                        Compilation.Db.AddMember(documentId, namedType, member);
-                    }
-
-                    Compilation.Db.UpdateIdRelatedType(tableType.TableExprPtr.UniqueId, namedType);
-                }
-                else if (type.IsExtensionType())
-                {
-                    Compilation.Db.AddSuper(declaration.DocumentId, namedType.Name, type);
-                }
+                Compilation.TypeManager.SetExprType(namedType, type);
             }
         }
     }

@@ -1,22 +1,23 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
 public class Declarations(SearchContext context)
 {
-    private Dictionary<SyntaxElementId, LuaDeclaration?> DeclarationCaches { get; } = new();
+    private Dictionary<SyntaxElementId, LuaSymbol?> DeclarationCaches { get; } = new();
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    public LuaSymbol? FindDeclaration(LuaSyntaxElement? element)
     {
         if (element is null)
         {
             return null;
         }
 
-        if (context.Features.Cache &&  DeclarationCaches.TryGetValue(element.UniqueId, out var declaration))
+        if (context.Features.Cache && DeclarationCaches.TryGetValue(element.UniqueId, out var declaration))
         {
             return declaration;
         }
@@ -31,7 +32,7 @@ public class Declarations(SearchContext context)
         return declaration;
     }
 
-    private LuaDeclaration? InnerDeclaration(LuaSyntaxElement? element)
+    private LuaSymbol? InnerDeclaration(LuaSyntaxElement? element)
     {
         switch (element)
         {
@@ -53,27 +54,27 @@ public class Declarations(SearchContext context)
             }
             case LuaDocNameTypeSyntax docNameType:
             {
-                return FindTypeDeclaration(docNameType.Name?.RepresentText);
+                return FindTypeDeclaration(docNameType.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocGenericTypeSyntax docGenericType:
             {
-                return FindTypeDeclaration(docGenericType.Name?.RepresentText);
+                return FindTypeDeclaration(docGenericType.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocTagClassSyntax docTagClass:
             {
-                return FindTypeDeclaration(docTagClass.Name?.RepresentText);
+                return FindTypeDeclaration(docTagClass.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocTagInterfaceSyntax docTagInterface:
             {
-                return FindTypeDeclaration(docTagInterface.Name?.RepresentText);
+                return FindTypeDeclaration(docTagInterface.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocTagAliasSyntax docTagAlias:
             {
-                return FindTypeDeclaration(docTagAlias.Name?.RepresentText);
+                return FindTypeDeclaration(docTagAlias.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocTagEnumSyntax docTagEnum:
             {
-                return FindTypeDeclaration(docTagEnum.Name?.RepresentText);
+                return FindTypeDeclaration(docTagEnum.Name?.RepresentText, element.DocumentId);
             }
             case LuaDocFieldSyntax docField:
             {
@@ -81,18 +82,22 @@ public class Declarations(SearchContext context)
             }
             case LuaDocTagNamedTypeSyntax docTagNamedType:
             {
-                return FindTypeDeclaration(docTagNamedType.Name?.RepresentText);
+                return FindTypeDeclaration(docTagNamedType.Name?.RepresentText, element.DocumentId);
             }
             case LuaParamDefSyntax or LuaLocalNameSyntax:
             {
                 return context.Compilation.Db.QueryLocalDeclaration(element);
+            }
+            case LuaDocTagParamSyntax docTagParam:
+            {
+                return FindDocParamDeclaration(docTagParam);
             }
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr)
+    private LuaSymbol? FindNameDeclaration(LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { Text: "self" })
         {
@@ -115,75 +120,130 @@ public class Declarations(SearchContext context)
 
         if (nameExpr.Name is { } name)
         {
-            return context.Compilation.Db.QueryGlobals(name.RepresentText);
+            return context.Compilation.TypeManager.GetGlobalSymbol(name.RepresentText);
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindTableFieldDeclaration(LuaTableFieldSyntax tableField)
+    private LuaSymbol? FindTableFieldDeclaration(LuaTableFieldSyntax tableField)
     {
         if (tableField is { ParentTable: { } parentTable, Name: { } name })
         {
-            var relatedType = context.Compilation.Db.QueryTypeFromId(parentTable.UniqueId) ??
-                              new LuaTableLiteralType(parentTable);
-            return context.FindMember(relatedType, name).FirstOrDefault();
+            var parentType = context.Infer(parentTable);
+            return context.FindMember(parentType, name);
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindIndexDeclaration(LuaIndexExprSyntax indexExpr)
+    private LuaSymbol? FindIndexDeclaration(LuaIndexExprSyntax indexExpr)
     {
         if (indexExpr.PrefixExpr is { } prefixExpr)
         {
             var prefixType = context.Infer(prefixExpr);
-            return context.FindMember(prefixType, indexExpr).FirstOrDefault();
+            return context.FindMember(prefixType, indexExpr);
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindTypeDeclaration(string? name)
+    private LuaSymbol? FindTypeDeclaration(string? name, LuaDocumentId documentId)
     {
         if (name is not null)
         {
-            return context.Compilation.Db.QueryNamedTypeDefinitions(name).FirstOrDefault();
+            var namedType = new LuaNamedType(documentId, name);
+            return context.Compilation.TypeManager.GetTypeDefinedSymbol(namedType);
         }
 
         return null;
     }
 
-    private LuaDeclaration? FindDocFieldDeclaration(LuaDocFieldSyntax docField)
+    private LuaSymbol? FindDocFieldDeclaration(LuaDocFieldSyntax docField)
     {
-        var parentType = context.Compilation.Db.QueryParentType(docField);
-        if (parentType is not null && docField.Name is { } name)
+        if (docField.Name is null)
         {
-            return context.FindMember(parentType, name).FirstOrDefault();
+            return null;
+        }
+
+        if (docField.Parent is LuaDocTagFieldSyntax tagFieldSyntax)
+        {
+            var firstNamedTag = tagFieldSyntax.PrevOfType<LuaDocTagNamedTypeSyntax>()
+                .FirstOrDefault();
+            if (firstNamedTag is { Name: { } name })
+            {
+                var namedType = new LuaNamedType(name.DocumentId, name.RepresentText);
+                return context.FindMember(namedType, docField.Name);
+            }
+        }
+        else if (docField.Parent is LuaDocTableTypeSyntax tableTypeSyntax)
+        {
+            if (tableTypeSyntax is { Parent: LuaDocTagNamedTypeSyntax tagNamedType })
+            {
+                if (tagNamedType is LuaDocTagAliasSyntax)
+                {
+                    return context.FindMember(tableTypeSyntax.UniqueId, docField.Name);
+                }
+
+                if (tagNamedType.Name is not null)
+                {
+                    var namedType = new LuaNamedType(tagNamedType.DocumentId, tagNamedType.Name.RepresentText);
+                    return context.FindMember(namedType, docField.Name);
+                }
+            }
+            else
+            {
+                return context.FindMember(tableTypeSyntax.UniqueId, docField.Name);
+            }
         }
 
         return null;
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaSymbol symbol)
     {
         if (nameExpr.Name is { Text: "self" })
         {
             return false;
         }
 
-        if (declaration.DocumentId != nameExpr.DocumentId)
+        if (symbol.DocumentId != nameExpr.DocumentId)
         {
             return false;
         }
 
         var closure = nameExpr.Ancestors.OfType<LuaClosureExprSyntax>().FirstOrDefault();
-        var element = declaration.Info.Ptr.ToNode(context);
+        var element = symbol.Info.Ptr.ToNode(context);
         if (closure is not null && element is not null)
         {
             return closure.Position > element.Position;
         }
 
         return false;
+    }
+
+    private LuaSymbol? FindDocParamDeclaration(LuaDocTagParamSyntax docTagParam)
+    {
+        if (docTagParam is
+            {
+                Name.RepresentText: { } docName, Parent: LuaCommentSyntax
+                {
+                    Owner: LuaFuncStatSyntax
+                    {
+                        ClosureExpr.ParamList.Params: { } paramList
+                    }
+                }
+            })
+        {
+            foreach (var paramElement in paramList)
+            {
+                if (paramElement.Name?.RepresentText == docName)
+                {
+                    return FindDeclaration(paramElement);
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
@@ -15,7 +16,9 @@ public class TypeNotFoundChecker(LuaCompilation compilation)
         {
             if (namedType.Name is { RepresentText: {} representText })
             {
-                if (Compilation.Db.QueryNamedTypeDefinitions(representText).FirstOrDefault() is null)
+                var type = new LuaNamedType(namedType.DocumentId, representText);
+                var typeInfo = Compilation.TypeManager.FindTypeInfo(type);
+                if (typeInfo is null)
                 {
                     context.Report(
                         DiagnosticCode.TypeNotFound,

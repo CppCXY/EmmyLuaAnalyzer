@@ -1,4 +1,5 @@
-﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+﻿using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.TypeHierarchy;
 using EmmyLua.LanguageServer.Framework.Server.Handler;
@@ -11,49 +12,6 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
 {
     private TypeHierarchyBuilder Builder { get; } = new();
 
-    // protected override TypeHierarchyRegistrationOptions CreateRegistrationOptions(TypeHierarchyCapability capability,
-    //     ClientCapabilities clientCapabilities)
-    // {
-    //     return new()
-    //     {
-    //     };
-    // }
-    //
-    // public override Task<Container<TypeHierarchyItem>?> Handle(TypeHierarchyPrepareParams request,
-    //     CancellationToken cancellationToken)
-    // {
-
-    // }
-    //
-    // public override Task<Container<TypeHierarchyItem>?> Handle(TypeHierarchySupertypesParams request,
-    //     CancellationToken cancellationToken)
-    // {
-    //     Container<TypeHierarchyItem>? result = null;
-    //     context.ReadyRead(() =>
-    //     {
-    //         if (request.Item.Data?.Type == JTokenType.String && request.Item.Data?.Value<string>() is { } name)
-    //         {
-    //             result = Builder.BuildSupers(context.LuaWorkspace.Compilation, name);
-    //         }
-    //     });
-    //
-    //     return Task.FromResult(result);
-    // }
-    //
-    // public override Task<Container<TypeHierarchyItem>?> Handle(TypeHierarchySubtypesParams request,
-    //     CancellationToken cancellationToken)
-    // {
-    //     Container<TypeHierarchyItem>? result = null;
-    //     context.ReadyRead(() =>
-    //     {
-    //         if (request.Item.Data?.Type == JTokenType.String && request.Item.Data?.Value<string>() is { } name)
-    //         {
-    //             result = Builder.BuildSubTypes(context.LuaWorkspace.Compilation, name);
-    //         }
-    //     });
-    //
-    //     return Task.FromResult(result);
-    // }
     protected override Task<TypeHierarchyResponse?> Handle(TypeHierarchyPrepareParams typeHierarchyPrepareParams,
         CancellationToken cancellationToken)
     {
@@ -89,7 +47,17 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
         {
             if (typeHierarchySupertypesParams.Item.Data?.Value is string str)
             {
-                result = new(Builder.BuildSupers(context.LuaProject.Compilation, str));
+                var parts = str.Split('|');
+                if (parts.Length != 2)
+                {
+                    return;
+                }
+
+                if (int.TryParse(parts[0], out var id))
+                {
+                    var namedType = new LuaNamedType(new(id), parts[1]);
+                    result = new TypeHierarchyResponse(Builder.BuildSupers(context.LuaProject.Compilation, namedType));
+                }
             }
         });
 
@@ -104,7 +72,17 @@ public class TypeHierarchyHandler(ServerContext context) : TypeHierarchyHandlerB
         {
             if (typeHierarchySubtypesParams.Item.Data?.Value is string str)
             {
-                result = new(Builder.BuildSubTypes(context.LuaProject.Compilation, str));
+                var parts = str.Split('|');
+                if (parts.Length != 2)
+                {
+                    return;
+                }
+
+                if (int.TryParse(parts[0], out var id))
+                {
+                    var namedType = new LuaNamedType(new(id), parts[1]);
+                    result = new(Builder.BuildSubTypes(context.LuaProject.Compilation, namedType));
+                }
             }
         });
 

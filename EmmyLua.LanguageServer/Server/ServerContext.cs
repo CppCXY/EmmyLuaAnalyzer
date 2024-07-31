@@ -72,7 +72,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
                     }
                 }
 
-                if (filesConfig.Encoding.Length > 0)
+                if (filesConfig.Encoding.Length > 0 && filesConfig.Encoding != "utf8")
                 {
                     SettingManager.WorkspaceEncoding = filesConfig.Encoding;
                 }

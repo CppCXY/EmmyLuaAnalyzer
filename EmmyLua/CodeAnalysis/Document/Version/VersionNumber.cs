@@ -20,7 +20,7 @@ public readonly record struct VersionNumber(ushort Major, ushort Minor, ushort P
             var build = parts.Length > 3 ? ushort.Parse(parts[3]) : (ushort)0;
             return new VersionNumber(major, minor, patch, build);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return new VersionNumber(0, 0, 0, 0);
         }

@@ -1,30 +1,38 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 
+namespace EmmyLua.CodeAnalysis.Type;
+
+// TODO use isSame
 public static class TypeExtension
 {
-    public static LuaType Union(this LuaType left, LuaType right)
+    public static LuaType Union(this LuaType left, LuaType? right, SearchContext context)
     {
-        if (left.Equals(right))
+        if (left.IsSameType(right, context))
+        {
+            return left;
+        }
+
+        if (right is null)
         {
             return left;
         }
 
         if (left is LuaUnionType leftUnionType)
         {
-            return UnionTypeMerge(leftUnionType, right);
+            return UnionTypeMerge(leftUnionType, right, context);
         }
 
         if (right is LuaUnionType rightUnionType)
         {
-            return UnionTypeMerge(rightUnionType, left);
+            return UnionTypeMerge(rightUnionType, left, context);
         }
 
-        if (left.Equals(Builtin.Unknown))
+        if (left.IsSameType(Builtin.Unknown, context))
         {
             return right;
         }
 
-        if (right.Equals(Builtin.Unknown))
+        if (right.IsSameType(Builtin.Unknown, context))
         {
             return left;
         }
@@ -32,9 +40,9 @@ public static class TypeExtension
         return new LuaUnionType(new List<LuaType> { left, right });
     }
 
-    public static LuaType Remove(this LuaType left, LuaType right)
+    public static LuaType Remove(this LuaType left, LuaType right, SearchContext context)
     {
-        if (left.Equals(right))
+        if (left.IsSameType(right, context))
         {
             return Builtin.Any;
         }
@@ -47,14 +55,14 @@ public static class TypeExtension
         return left;
     }
 
-    private static LuaUnionType UnionTypeMerge(LuaUnionType left, LuaType right)
+    private static LuaUnionType UnionTypeMerge(LuaUnionType left, LuaType right, SearchContext context)
     {
         var types = new List<LuaType>(left.UnionTypes);
         if (right is LuaUnionType rightUnionType)
         {
             types.AddRange(rightUnionType.UnionTypes);
         }
-        else if (right.Equals(Builtin.Unknown))
+        else if (right.IsSameType(Builtin.Unknown, context))
         {
             return left;
         }
@@ -79,14 +87,5 @@ public static class TypeExtension
         }
 
         return new LuaUnionType(types);
-    }
-
-    public static bool IsExtensionType(this LuaType type)
-    {
-        return type is LuaNamedType namedType && namedType.Name switch
-        {
-            "integer" or "number" or "thread" or "void" or "unknown" or "nil" or "any" => false,
-            _ => true,
-        };
     }
 }

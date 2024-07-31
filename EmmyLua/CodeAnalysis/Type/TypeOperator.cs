@@ -1,7 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Type;
+namespace EmmyLua.CodeAnalysis.Type;
 
 public enum TypeOperatorKind
 {
@@ -73,14 +73,14 @@ public static class TypeOperatorKindHelper
     };
 }
 
-public class TypeOperator(TypeOperatorKind kind, LuaDeclaration luaDeclaration)
+public class TypeOperator(TypeOperatorKind kind, LuaSymbol luaSymbol)
 {
     public TypeOperatorKind Kind { get; } = kind;
 
-    public LuaDeclaration LuaDeclaration { get; } = luaDeclaration;
+    public LuaSymbol LuaSymbol { get; } = luaSymbol;
 
     public virtual TypeOperator Instantiate(TypeSubstitution substitution) =>
-        new TypeOperator(Kind, LuaDeclaration.Instantiate(substitution));
+        new TypeOperator(Kind, LuaSymbol.Instantiate(substitution));
 
     public virtual string BelongTypeName => string.Empty;
 }
@@ -90,8 +90,8 @@ public class BinaryOperator(
     LuaType left,
     LuaType right,
     LuaType ret,
-    LuaDeclaration luaDeclaration)
-    : TypeOperator(kind, luaDeclaration)
+    LuaSymbol luaSymbol)
+    : TypeOperator(kind, luaSymbol)
 {
     public LuaType Left { get; } = left;
     public LuaType Right { get; } = right;
@@ -128,7 +128,7 @@ public class BinaryOperator(
 
     public override TypeOperator Instantiate(TypeSubstitution substitution) =>
         new BinaryOperator(Kind, Left.Instantiate(substitution), Right.Instantiate(substitution),
-            Ret.Instantiate(substitution), LuaDeclaration.Instantiate(substitution));
+            Ret.Instantiate(substitution), LuaSymbol.Instantiate(substitution));
 
     public override string BelongTypeName
     {
@@ -144,8 +144,8 @@ public class BinaryOperator(
     }
 }
 
-public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, LuaDeclaration luaDeclaration)
-    : TypeOperator(kind, luaDeclaration)
+public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, LuaSymbol luaSymbol)
+    : TypeOperator(kind, luaSymbol)
 {
     public LuaType Operand { get; } = operand;
     public LuaType Ret { get; } = ret;
@@ -161,7 +161,7 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
 
     public override TypeOperator Instantiate(TypeSubstitution substitution) =>
         new UnaryOperator(Kind, Operand.Instantiate(substitution), Ret.Instantiate(substitution),
-            LuaDeclaration.Instantiate(substitution));
+            LuaSymbol.Instantiate(substitution));
 
     public override string BelongTypeName
     {
@@ -177,8 +177,8 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
     }
 }
 
-public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaDeclaration luaDeclaration)
-    : TypeOperator(TypeOperatorKind.Index, luaDeclaration)
+public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaSymbol luaSymbol)
+    : TypeOperator(TypeOperatorKind.Index, luaSymbol)
 {
     public LuaType Type { get; } = type;
     public LuaType Key { get; } = key;
@@ -186,7 +186,7 @@ public class IndexOperator(LuaType type, LuaType key, LuaType ret, LuaDeclaratio
 
     public override TypeOperator Instantiate(TypeSubstitution substitution) =>
         new IndexOperator(Type.Instantiate(substitution), Key.Instantiate(substitution),
-            Ret.Instantiate(substitution), LuaDeclaration.Instantiate(substitution));
+            Ret.Instantiate(substitution), LuaSymbol.Instantiate(substitution));
 
     public override string BelongTypeName
     {

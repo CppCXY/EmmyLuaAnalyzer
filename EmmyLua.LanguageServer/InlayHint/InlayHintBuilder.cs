@@ -1,8 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.InlayHint;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Server.Render;
@@ -100,7 +100,7 @@ public class InlayHintBuilder
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (semanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr) is LuaMethodType method)
+        if (semanticModel.Context.Infer(callExpr.PrefixExpr) is LuaMethodType method)
         {
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
             var perfectSignature = semanticModel.Context.FindPerfectMatchSignature(method, callExpr, args);
@@ -211,7 +211,7 @@ public class InlayHintBuilder
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (semanticModel.Context.InferAndUnwrap(closureExpr) is LuaMethodType method)
+        if (semanticModel.Context.Infer(closureExpr) is LuaMethodType method)
         {
             var mainSignature = method.MainSignature;
             var parameterDic = new Dictionary<string, LuaType?>();
@@ -228,7 +228,12 @@ public class InlayHintBuilder
                 if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
-                    if (type is not null && !type.Equals(Builtin.Unknown))
+                    if (type is LuaElementType elementType)
+                    {
+                        type = semanticModel.Context.Compilation.TypeManager.GetBaseType(elementType.Id);
+                    }
+                    
+                    if (type is not null && !type.IsSameType(Builtin.Unknown, semanticModel.Context))
                     {
                         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                         {
@@ -257,7 +262,7 @@ public class InlayHintBuilder
         {
             if (document.GetLine(prefixExpr.Range.EndOffset) != document.GetLine(keyElement.Range.StartOffset))
             {
-                var type = semanticModel.Context.InferAndUnwrap(prefixExpr);
+                var type = semanticModel.Context.Infer(prefixExpr);
                 hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
                 {
                     Position = prefixExpr.Range.EndOffset.ToLspPosition(semanticModel.Document),
@@ -283,7 +288,7 @@ public class InlayHintBuilder
             return;
         }
 
-        var type = semanticModel.Context.InferAndUnwrap(localName);
+        var type = semanticModel.Context.Infer(localName);
         hints.Add(new Framework.Protocol.Message.InlayHint.InlayHint()
         {
             Position = localName.Range.EndOffset.ToLspPosition(semanticModel.Document),
@@ -305,8 +310,8 @@ public class InlayHintBuilder
                 ClosureExpr: { ParamList: { } paramList }
             })
         {
-            var prefixType = semanticModel.Context.InferAndUnwrap(prefixExpr);
-            var superMethod = semanticModel.Context.FindSuperMember(prefixType, name).FirstOrDefault();
+            var prefixType = semanticModel.Context.Infer(prefixExpr);
+            var superMethod = semanticModel.Context.FindSuperMember(prefixType, name);
             if (superMethod is { Info: { } info })
             {
                 var document = semanticModel.Document;

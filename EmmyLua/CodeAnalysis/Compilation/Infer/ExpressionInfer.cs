@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -27,7 +27,7 @@ public static class ExpressionInfer
 
     private static LuaType InferUnaryExpr(LuaUnaryExprSyntax unaryExpr, SearchContext context)
     {
-        var exprTy = context.Infer(unaryExpr.Expression).UnwrapType(context);
+        var exprTy = context.Infer(unaryExpr.Expression);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(unaryExpr.Operator);
         var op = context.GetBestMatchedUnaryOperator(opKind, exprTy);
 
@@ -89,27 +89,28 @@ public static class ExpressionInfer
         // or
         var lhs = binaryExpr.LeftExpr;
         var lty = context.Infer(lhs);
-        return rhs != null ? lty.Union(context.Infer(rhs)) : lty;
+        return rhs != null ? lty.Union(context.Infer(rhs), context) : lty;
     }
 
     private static LuaType GuessBinaryMathType(LuaBinaryExprSyntax binaryExpr, OperatorKind.BinaryOperator op,
         SearchContext context)
     {
-        var leftTy = context.InferAndUnwrap(binaryExpr.LeftExpr);
-        var rightTy = context.InferAndUnwrap(binaryExpr.RightExpr);
+        var leftTy = context.Infer(binaryExpr.LeftExpr);
+        var rightTy = context.Infer(binaryExpr.RightExpr);
         var opKind = TypeOperatorKindHelper.ToTypeOperatorKind(op);
         var bop = context.GetBestMatchedBinaryOperator(opKind, leftTy, rightTy);
         if (bop is not null)
         {
             return bop.Ret;
         }
+
         var bop2 = context.GetBestMatchedBinaryOperator(opKind, rightTy, leftTy);
         if (bop2 is not null)
         {
             return bop2.Ret;
         }
 
-        if (leftTy.Equals(Builtin.Integer) && rightTy.Equals(Builtin.Integer))
+        if (leftTy.SubTypeOf(Builtin.Integer, context) && rightTy.SubTypeOf(Builtin.Integer, context))
         {
             return Builtin.Integer;
         }
@@ -119,13 +120,34 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var methodType = context.Compilation.Db.QueryTypeFromId(closureExpr.UniqueId);
-        return methodType ?? Builtin.Unknown;
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        return typeInfo?.BaseType ?? Builtin.Unknown;
     }
 
     private static LuaType InferTableExpr(LuaTableExprSyntax tableExpr, SearchContext context)
     {
-        return new LuaTableLiteralType(tableExpr);
+        if (tableExpr.Parent is LuaLocalStatSyntax localStatSyntax)
+        {
+            var index = localStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
+            var localNameElement = localStatSyntax.NameList.ElementAtOrDefault(index);
+            var localType = context.Infer(localNameElement);
+            if (!localType.IsSameType(Builtin.Unknown, context))
+            {
+                return localType;
+            }
+        }
+        else if (tableExpr.Parent is LuaAssignStatSyntax assignStatSyntax)
+        {
+            var index = assignStatSyntax.ExprList.TakeWhile(expr => expr.UniqueId != tableExpr.UniqueId).Count();
+            var nameElement = assignStatSyntax.VarList.ElementAtOrDefault(index);
+            var globalType =  context.Infer(nameElement);
+            if (!globalType.IsSameType(Builtin.Unknown, context))
+            {
+                return globalType;
+            }
+        }
+
+        return new LuaElementType(tableExpr.UniqueId);
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)
@@ -165,7 +187,7 @@ public static class ExpressionInfer
             return ty;
         }
 
-        if (nameExpr.Name is { Text: "self"})
+        if (nameExpr.Name is { Text: "self" })
         {
             return InferSelf(nameExpr, context);
         }

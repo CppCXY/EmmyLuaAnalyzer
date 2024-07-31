@@ -1,7 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
 
 
@@ -44,8 +45,8 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         var activeParam = callArgList.ChildTokens(LuaTokenKind.TkComma)
             .Count(comma => comma.Position <= trigger.Position);
 
-        var prefixType = context.SemanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
-        context.SemanticModel.Context.FindMethodsForType(prefixType, methodType =>
+        var prefixType = context.SemanticModel.Context.Infer(callExpr.PrefixExpr);
+        foreach (var methodType in context.SemanticModel.Context.FindCallableType(prefixType))
         {
             var colonDefine = methodType.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
@@ -69,14 +70,14 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                 var paramType = param.Type;
                 if (paramType is LuaNamedType namedType)
                 {
-                    var namedTypeKind = namedType.GetTypeKind(context.SemanticModel.Context);
-                    if (namedTypeKind == NamedTypeKind.Alias)
+                    var typeInfo = context.SemanticModel.Compilation.TypeManager.FindTypeInfo(namedType);
+                    if (typeInfo?.Kind == NamedTypeKind.Alias)
                     {
-                        AddAliasParamCompletion(namedType, context);
+                        AddAliasParamCompletion(typeInfo, context);
                     }
-                    else if (namedTypeKind == NamedTypeKind.Enum)
+                    else if (typeInfo?.Kind == NamedTypeKind.Enum)
                     {
-                        AddEnumParamCompletion(namedType, context);
+                        AddEnumParamCompletion(typeInfo, context);
                     }
                 }
                 else if (paramType is LuaAggregateType aggregateType)
@@ -88,33 +89,34 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                     AddUnionTypeCompletion(unionType, context);
                 }
             }
-        });
+        }
     }
 
-    private void AddAliasParamCompletion(LuaNamedType namedType, CompleteContext context)
+    private void AddAliasParamCompletion(TypeInfo typeInfo, CompleteContext context)
     {
-        var originType = context.SemanticModel.Compilation.Db
-            .QueryAliasOriginTypes(namedType.Name);
-        if (originType is LuaAggregateType aggregateType)
+        var baseType = typeInfo.BaseType;
+        if (baseType is LuaAggregateType aggregateType)
         {
             AddAggregateTypeCompletion(aggregateType, context);
         }
-        else if (originType is LuaUnionType unionType)
+        else if (baseType is LuaUnionType unionType)
         {
             AddUnionTypeCompletion(unionType, context);
         }
     }
 
-    private void AddEnumParamCompletion(LuaNamedType namedType, CompleteContext context)
+    private void AddEnumParamCompletion(TypeInfo typeInfo, CompleteContext context)
     {
-        var members = context.SemanticModel.Compilation.Db
-            .QueryMembers(namedType);
-
-        foreach (var field in members)
+        if (typeInfo.Declarations is null)
+        {
+            return;
+        }
+        
+        foreach (var field in typeInfo.Declarations.Values)
         {
             context.Add(new CompletionItem
             {
-                Label = $"{namedType.Name}.{field.Name}",
+                Label = field.Name,
                 Kind = CompletionItemKind.EnumMember,
             });
         }
@@ -122,7 +124,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
 
     private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
     {
-        foreach (var declaration in aggregateType.Declarations.OfType<LuaDeclaration>())
+        foreach (var declaration in aggregateType.Declarations.OfType<LuaSymbol>())
         {
             if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
             {

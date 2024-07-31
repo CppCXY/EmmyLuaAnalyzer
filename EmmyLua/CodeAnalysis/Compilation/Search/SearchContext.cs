@@ -1,9 +1,9 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
@@ -18,6 +18,8 @@ public class SearchContext
 
     private Members Members { get; }
 
+    private IndexMembers IndexMembers { get; }
+
     private References References { get; }
 
     private Operators Operators { get; }
@@ -26,15 +28,19 @@ public class SearchContext
 
     private SubTypeInfer SubTypeInfer { get; }
 
+    private SameTypeInfer SameTypeInfer { get; }
+
     public SearchContext(LuaCompilation compilation, SearchContextFeatures features)
     {
         Compilation = compilation;
         Declarations = new Declarations(this);
         Members = new Members(this);
+        IndexMembers = new IndexMembers(this);
         References = new References(this);
         Operators = new Operators(this);
         ElementInfer = new ElementInfer(this);
         SubTypeInfer = new SubTypeInfer(this);
+        SameTypeInfer = new SameTypeInfer(this);
         Features = features;
     }
 
@@ -43,15 +49,10 @@ public class SearchContext
         return ElementInfer.Infer(element);
     }
 
-    public LuaType InferAndUnwrap(LuaSyntaxElement? element)
-    {
-        return Infer(element).UnwrapType(this);
-    }
-
-    public void ClearMemberCache(LuaType luaType)
-    {
-        Members.ClearMember(luaType);
-    }
+    // public void ClearMemberCache(LuaType luaType)
+    // {
+    //     // Members.ClearMember(luaType);
+    // }
 
     public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
     {
@@ -64,7 +65,7 @@ public class SearchContext
 
         var bestMatched = operators
             .OfType<BinaryOperator>()
-            .FirstOrDefault(it => it.Right.Equals(right));
+            .FirstOrDefault(it => it.Right.IsSameType(right, this));
         return bestMatched;
     }
 
@@ -79,26 +80,21 @@ public class SearchContext
         return operators.OfType<UnaryOperator>().FirstOrDefault();
     }
 
-    public IndexOperator? GetBestMatchedIndexOperator(LuaType type, LuaType key)
+    public IndexOperator? GetBestMatchedIndexOperator(LuaNamedType namedType, LuaNamedType key)
     {
-        if (type is not LuaNamedType namedType)
-        {
-            return null;
-        }
-
         var operators = Operators.GetOperators(TypeOperatorKind.Index, namedType);
         var bestMatched = operators
             .OfType<IndexOperator>()
-            .FirstOrDefault(it => it.Key.Equals(key));
+            .FirstOrDefault(it => it.Key.IsSameType(key, this));
         return bestMatched;
     }
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement? element)
+    public LuaSymbol? FindDeclaration(LuaSyntaxElement? element)
     {
         return Declarations.FindDeclaration(element);
     }
 
-    public IEnumerable<LuaDeclaration> GetDocumentLocalDeclarations(LuaDocumentId documentId)
+    public IEnumerable<LuaSymbol> GetDocumentLocalDeclarations(LuaDocumentId documentId)
     {
         return Compilation.Db.QueryDocumentLocalDeclarations(documentId);
     }
@@ -108,30 +104,38 @@ public class SearchContext
         return ExpressionShouldBeInfer.InferExprShouldBe(expr, this);
     }
 
-    public void FindMethodsForType(LuaType type, Action<LuaMethodType> action)
+    public List<LuaMethodType> FindCallableType(LuaType? type)
     {
-        type = type.UnwrapType(this);
+        var methods = new List<LuaMethodType>();
+        var action = new Action<LuaMethodType>(methods.Add);
         switch (type)
         {
             case LuaUnionType unionType:
             {
                 foreach (var t in unionType.UnionTypes)
                 {
-                    InnerFindMethods(t, action);
+                    InnerFindMethods(t, action, 0);
                 }
 
                 break;
             }
             default:
             {
-                InnerFindMethods(type, action);
+                InnerFindMethods(type, action, 0);
                 break;
             }
         }
+
+        return methods;
     }
 
-    private void InnerFindMethods(LuaType type, Action<LuaMethodType> action)
+    private void InnerFindMethods(LuaType? type, Action<LuaMethodType> action, int level)
     {
+        if (level > 3)
+        {
+            return;
+        }
+
         switch (type)
         {
             case LuaMethodType methodType:
@@ -142,11 +146,14 @@ public class SearchContext
             case LuaNamedType namedType:
             {
                 var founded = false;
-                var overloads = Compilation.Db.QueryTypeOverloads(namedType.Name);
-                foreach (var methodType in overloads)
+                var typeInfo = Compilation.TypeManager.FindTypeInfo(namedType);
+                if (typeInfo?.Overloads is { } overloads)
                 {
-                    founded = true;
-                    action(methodType);
+                    foreach (var stub in overloads)
+                    {
+                        founded = true;
+                        action(stub.MethodType);
+                    }
                 }
 
                 if (!founded && !Compilation.Project.Features.TypeCallStrict)
@@ -154,44 +161,61 @@ public class SearchContext
                     var luaMethod = new LuaMethodType(namedType, [], false);
                     action(luaMethod);
                 }
+
+                break;
+            }
+            case LuaElementType elementType:
+            {
+                var baseType = Compilation.TypeManager.GetBaseType(elementType.Id);
+                if (baseType is not null)
+                {
+                    InnerFindMethods(baseType, action, level + 1);
+                }
+
                 break;
             }
         }
     }
 
-    public IEnumerable<LuaDeclaration> GetMembers(LuaType type)
+    public List<LuaSymbol> GetMembers(LuaType type)
     {
-        return Members.GetMembers(type).GroupBy(m => m.Name).Select(g => g.First());
+        return Members.GetTypeMembers(type);
     }
 
-    public IEnumerable<LuaDeclaration> GetSuperMembers(LuaType type)
+    public LuaSymbol? FindMember(LuaType type, string name)
     {
-        return Members.GetSupersMembers(type).GroupBy(m => m.Name).Select(g => g.First());
+        return IndexMembers.FindTypeMember(type, name);
     }
 
-    public IEnumerable<LuaDeclaration> FindMember(LuaType type, string name)
+    public LuaSymbol? FindMember(SyntaxElementId id, string name)
     {
-        return Members.FindMember(type, name);
+        var elementType = new LuaElementType(id);
+        return IndexMembers.FindTypeMember(elementType, name);
     }
 
-    public IEnumerable<LuaDeclaration> FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
+    public LuaSymbol? FindMember(LuaType type, LuaIndexExprSyntax indexExpr)
     {
-        return Members.FindMember(type, indexExpr);
+        return IndexMembers.FindTypeMember(type, indexExpr);
     }
 
-    public IEnumerable<LuaDeclaration> FindSuperMember(LuaType type, string name)
+    public List<LuaSymbol> GetSuperMembers(LuaNamedType type)
     {
-        return Members.FindSuperMember(type, name);
+        return Members.GetSuperMembers(type);
     }
 
-    public IEnumerable<ReferenceResult> FindReferences(LuaDeclaration luaDeclaration)
+    public LuaSymbol? FindSuperMember(LuaType type, string name)
     {
-        return References.FindReferences(luaDeclaration);
+        return IndexMembers.FindSuperMember(type, name);
     }
 
-    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaDeclaration declaration)
+    public IEnumerable<ReferenceResult> FindReferences(LuaSymbol luaSymbol)
     {
-        return Declarations.IsUpValue(nameExpr, declaration);
+        return References.FindReferences(luaSymbol);
+    }
+
+    public bool IsUpValue(LuaNameExprSyntax nameExpr, LuaSymbol symbol)
+    {
+        return Declarations.IsUpValue(nameExpr, symbol);
     }
 
     public bool IsSubTypeOf(LuaType left, LuaType right)
@@ -199,7 +223,13 @@ public class SearchContext
         return SubTypeInfer.IsSubTypeOf(left, right);
     }
 
-    public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr, List<LuaExprSyntax> args)
+    public bool IsSameType(LuaType left, LuaType right)
+    {
+        return SameTypeInfer.IsSameType(left, right);
+    }
+
+    public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr,
+        List<LuaExprSyntax> args)
     {
         return MethodInfer.FindPerfectMatchSignature(methodType, callExpr, args, this);
     }

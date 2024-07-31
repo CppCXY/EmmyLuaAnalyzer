@@ -1,9 +1,9 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -17,6 +17,7 @@ public class AttachDeclarationAnalyzer(
         {
             AnalyzeGeneralDeclaration(attachedElement, tagSyntaxes);
             AnalyzeMethodDeclaration(attachedElement, tagSyntaxes);
+            AnalyzeForRangeDeclaration(attachedElement, tagSyntaxes);
         }
     }
 
@@ -31,7 +32,7 @@ public class AttachDeclarationAnalyzer(
                 {
                     case LuaDocTagDeprecatedSyntax:
                     {
-                        declaration.Feature |= DeclarationFeature.Deprecated;
+                        declaration.Feature |= SymbolFeature.Deprecated;
                         break;
                     }
                     case LuaDocTagVisibilitySyntax visibilitySyntax:
@@ -56,12 +57,12 @@ public class AttachDeclarationAnalyzer(
                     }
                     case LuaDocTagNodiscardSyntax:
                     {
-                        declaration.Feature |= DeclarationFeature.NoDiscard;
+                        declaration.Feature |= SymbolFeature.NoDiscard;
                         break;
                     }
                     case LuaDocTagAsyncSyntax:
                     {
-                        declaration.Feature |= DeclarationFeature.Async;
+                        declaration.Feature |= SymbolFeature.Async;
                         break;
                     }
                     case LuaDocTagMappingSyntax mappingSyntax:
@@ -85,11 +86,11 @@ public class AttachDeclarationAnalyzer(
             if (nameTypeDefine is { Name.RepresentText: { } name } &&
                 declarations.FirstOrDefault() is { } firstDeclaration)
             {
-                firstDeclaration.Info = firstDeclaration.Info with { DeclarationType = LuaNamedType.Create(name) };
+                var type = new LuaNamedType(declarationContext.DocumentId, name);
+                firstDeclaration.Type = type;
                 if (firstDeclaration.IsGlobal)
                 {
-                    searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, firstDeclaration.Name,
-                        firstDeclaration, true);
+                    declarationContext.TypeManager.SetGlobalTypeSymbol(firstDeclaration.Name, type);
                 }
 
                 return;
@@ -104,11 +105,14 @@ public class AttachDeclarationAnalyzer(
                 {
                     if (declarations.Count > i)
                     {
-                        declarations[i].Info = declarations[i].Info with { DeclarationType = luaTypeList[i] };
-                        if (declarations[i].IsGlobal)
+                        if (declarations[i].IsGlobal && declarations[i].Type is GlobalNameType globalNameType)
                         {
-                            searchContext.Compilation.Db.AddGlobal(declarationContext.DocumentId, declarations[i].Name,
-                                declarations[i], true);
+                            declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId,
+                                globalNameType, luaTypeList[i]);
+                        }
+                        else
+                        {
+                            declarations[i].Type = luaTypeList[i];
                         }
                     }
                 }
@@ -116,7 +120,7 @@ public class AttachDeclarationAnalyzer(
         }
     }
 
-    private IEnumerable<LuaDeclaration> FindDeclarations(LuaSyntaxElement element)
+    private IEnumerable<LuaSymbol> FindDeclarations(LuaSyntaxElement element)
     {
         switch (element)
         {
@@ -205,13 +209,13 @@ public class AttachDeclarationAnalyzer(
             return;
         }
 
-        var idType = declarationContext.Db.QueryTypeFromId(closureExpr.UniqueId);
-        if (idType is not LuaMethodType methodType)
+        var typeInfo = declarationContext.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        if (typeInfo?.BaseType is not LuaMethodType methodType)
         {
             return;
         }
 
-        var genericParams = new List<LuaDeclaration>();
+        var genericParams = new List<LuaSymbol>();
         var overloads = new List<LuaSignature>();
         var parameterDict = new Dictionary<string, ParameterInfo>();
         foreach (var docTagSyntax in docTagSyntaxes)
@@ -230,12 +234,10 @@ public class AttachDeclarationAnalyzer(
                 {
                     if (param is { Name: { } name })
                     {
-                        var declaration = new LuaDeclaration(
+                        var declaration = new LuaSymbol(
                             name.RepresentText,
-                            new GenericParamInfo(
-                                new(param),
-                                searchContext.Infer(param.Type)
-                            )
+                            searchContext.Infer(param.Type),
+                            new GenericParamInfo(new(param))
                         );
                         genericParams.Add(declaration);
                     }
@@ -282,10 +284,11 @@ public class AttachDeclarationAnalyzer(
                 {
                     declaration.Info = info with
                     {
-                        DeclarationType = parameterInfo.Type,
                         Nullable = parameterInfo.Nullable,
                         IsVararg = name == "..."
                     };
+
+                    declaration.Type = parameterInfo.Type;
                 }
             }
         }
@@ -306,6 +309,35 @@ public class AttachDeclarationAnalyzer(
                 methodType.ColonDefine);
         }
 
-        declarationContext.Db.UpdateIdRelatedType(closureExpr.UniqueId, methodType);
+        declarationContext.TypeManager.SetBaseType(closureExpr.UniqueId, methodType);
+    }
+
+    private void AnalyzeForRangeDeclaration(LuaSyntaxElement element, List<LuaDocTagSyntax> docTagSyntaxes)
+    {
+        if (element is not LuaForRangeStatSyntax forRangeStatSyntax)
+        {
+            return;
+        }
+
+        var parameterDict = new Dictionary<string, ParameterInfo>();
+        foreach (var paramSyntax in docTagSyntaxes.OfType<LuaDocTagParamSyntax>())
+        {
+            if (paramSyntax.Name is { RepresentText: { } name })
+            {
+                var type = searchContext.Infer(paramSyntax.Type);
+                var nullable = paramSyntax.Nullable;
+                parameterDict[name] = new ParameterInfo(nullable, type);
+            }
+        }
+
+        foreach (var paramDef in forRangeStatSyntax.IteratorNames)
+        {
+            var declaration = declarationContext.GetAttachedDeclaration(paramDef);
+            if (declaration?.Type is LuaElementType elementType &&
+                parameterDict.TryGetValue(declaration.Name, out var parameterInfo))
+            {
+                declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);
+            }
+        }
     }
 }

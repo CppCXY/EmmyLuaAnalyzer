@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -29,7 +29,7 @@ public static class ExpressionShouldBeInfer
 
         var prefixType = context.Infer(callExpr.PrefixExpr);
         LuaType exprType = Builtin.Unknown;
-        context.FindMethodsForType(prefixType, methodType =>
+        foreach(var methodType in context.FindCallableType(prefixType))
         {
             var colonDefine = methodType.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
@@ -50,9 +50,9 @@ public static class ExpressionShouldBeInfer
             if (activeParam >= 0 && activeParam < methodType.MainSignature.Parameters.Count)
             {
                 var param = methodType.MainSignature.Parameters[activeParam];
-                exprType = exprType.Union(param.Type);
+                exprType = exprType.Union(param.Type, context);
             }
-        });
+        }
 
         return exprType;
     }
@@ -68,7 +68,7 @@ public static class ExpressionShouldBeInfer
         var exprShouldType = InferExprShouldBe(tableExpr, context);
         if (tableField.Name is { } name)
         {
-            return context.FindMember(exprShouldType, name).FirstOrDefault()?.Type ?? Builtin.Unknown;
+            return context.FindMember(exprShouldType, name)?.Type ?? Builtin.Unknown;
         }
 
         return Builtin.Unknown;

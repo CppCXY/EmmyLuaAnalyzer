@@ -8,6 +8,7 @@ using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Type.Manager;
 using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation;
@@ -22,6 +23,8 @@ public class LuaCompilation
 
     public ProjectIndex Db { get; }
 
+    public LuaTypeManager TypeManager { get; }
+
     private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
 
     private List<LuaAnalyzer> Analyzers { get; }
@@ -34,6 +37,7 @@ public class LuaCompilation
     {
         Project = project;
         Db = new();
+        TypeManager = new LuaTypeManager(this);
         Analyzers =
         [
             new DeclarationAnalyzer(this),
@@ -84,6 +88,7 @@ public class LuaCompilation
         }
 
         Db.Remove(documentId);
+        TypeManager.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }
 
@@ -131,6 +136,7 @@ public class LuaCompilation
                     var document = Project.GetDocument(documentId);
                     if (document is not null && document.Text.Length < Project.Features.DontIndexMaxFileSize)
                     {
+                        Diagnostics.ClearDiagnostic(document.Id);
                         documents.Add(document);
                     }
                 }
@@ -144,7 +150,6 @@ public class LuaCompilation
 
                 foreach (var document in documents)
                 {
-                    Diagnostics.ClearDiagnostic(document.Id);
                     foreach (var diagnostic in document.SyntaxTree.Diagnostics)
                     {
                         Diagnostics.AddDiagnostic(document.Id, diagnostic);

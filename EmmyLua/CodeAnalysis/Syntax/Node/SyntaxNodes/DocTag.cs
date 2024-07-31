@@ -11,6 +11,8 @@ public class LuaDocTagSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(inde
 public abstract class LuaDocTagNamedTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
 {
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
+
+    public LuaDocAttributeSyntax? Attribute => FirstChild<LuaDocAttributeSyntax>();
 }
 
 public class LuaDocTagClassSyntax(int index, LuaSyntaxTree tree) : LuaDocTagNamedTypeSyntax(index, tree)

@@ -1,10 +1,9 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.SignatureHelp;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Markup;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
@@ -60,16 +59,15 @@ public class SignatureHelperBuilder
             callArgs = callArgs2;
         }
 
-        var parentType = semanticModel.Context.InferAndUnwrap(callExpr.PrefixExpr);
+        var parentType = semanticModel.Context.Infer(callExpr.PrefixExpr);
         var signatureInfos = new List<SignatureInformation>();
         var activeParameter = callArgs.ChildTokens(LuaTokenKind.TkComma)
             .Count(comma => comma.Position <= triggerToken.Position);
 
         var activeSignature = 0;
         var colonCall = callExpr.PrefixExpr is LuaIndexExprSyntax { IsColonIndex: true };
-
-
-        semanticModel.Context.FindMethodsForType(parentType, luaMethod =>
+        
+        foreach (var luaMethod in semanticModel.Context.FindCallableType(parentType))
         {
             var signatures = new List<LuaSignature>();
             if (luaMethod is LuaGenericMethodType genericMethodType)
@@ -97,8 +95,7 @@ public class SignatureHelperBuilder
                 renderBuilder,
                 config
             );
-        });
-
+        }
 
         return new SignatureHelp()
         {

@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -20,7 +20,7 @@ public record LuaExprRef(LuaExprSyntax Expr, int RetId = 0);
 public record UnResolved(ResolveState ResolvedState);
 
 public record UnResolvedSymbol(
-    LuaDeclaration LuaDeclaration,
+    LuaSymbol LuaSymbol,
     LuaExprRef? ExprRef,
     ResolveState ResolvedState)
     : UnResolved(ResolvedState);
@@ -32,11 +32,11 @@ public record UnResolvedSource(LuaDocumentId DocumentId, LuaBlockSyntax Block, R
     : UnResolved(ResolvedState);
 
 public record UnResolvedForRangeParameter(
-    List<LuaDeclaration> Parameters,
+    List<LuaSymbol> Parameters,
     List<LuaExprSyntax> ExprList)
     : UnResolved(ResolveState.UnResolvedType);
 
 public record UnResolvedClosureParameters(
-    List<LuaDeclaration> Parameters,
+    List<LuaSymbol> Parameters,
     LuaCallExprSyntax CallExpr,
     int Index) : UnResolved(ResolveState.UnResolvedParameters);

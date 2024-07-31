@@ -1,9 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -38,15 +38,15 @@ public partial class DeclarationWalker
 
             if (localName is { Name: { } name })
             {
-                var declaration = new LuaDeclaration(
+                var declaration = new LuaSymbol(
                     name.RepresentText,
+                    null,
                     new LocalInfo(
                         new(localName),
-                        new LuaVariableRefType(localName.UniqueId),
                         localName.Attribute?.IsConst ?? false,
                         localName.Attribute?.IsClose ?? false
                     ),
-                    DeclarationFeature.Local
+                    SymbolFeature.Local
                 );
                 declarationContext.AddLocalDeclaration(localName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, localName);
@@ -54,7 +54,7 @@ public partial class DeclarationWalker
                     declaration,
                     relatedExpr,
                     ResolveState.UnResolvedType
-                    );
+                );
                 declarationContext.AddUnResolved(unResolveDeclaration);
             }
         }
@@ -62,19 +62,20 @@ public partial class DeclarationWalker
 
     private void AnalyzeForRangeStat(LuaForRangeStatSyntax forRangeStatSyntax)
     {
-        var parameters = new List<LuaDeclaration>();
+        var parameters = new List<LuaSymbol>();
         foreach (var param in forRangeStatSyntax.IteratorNames)
         {
             if (param.Name is { } name)
             {
-                var declaration = new LuaDeclaration(
+                var declaration = new LuaSymbol(
                     name.RepresentText,
+                    new LuaElementType(param.UniqueId),
                     new ParamInfo(
                         new(param),
-                        new LuaVariableRefType(param.UniqueId),
                         false
                     ),
-                    DeclarationFeature.Local);
+                    SymbolFeature.Local);
+                declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
                 declarationContext.AddLocalDeclaration(param, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
                 parameters.Add(declaration);
@@ -89,14 +90,14 @@ public partial class DeclarationWalker
     {
         if (forStatSyntax is { IteratorName.Name: { } name })
         {
-            var declaration = new LuaDeclaration(
+            var declaration = new LuaSymbol(
                 name.RepresentText,
+                Builtin.Integer,
                 new ParamInfo(
                     new(forStatSyntax.IteratorName),
-                    Builtin.Integer,
                     false
                 ),
-                DeclarationFeature.Local);
+                SymbolFeature.Local);
             declarationContext.AddReference(ReferenceKind.Definition, declaration, forStatSyntax.IteratorName);
             declarationContext.AddLocalDeclaration(forStatSyntax.IteratorName, declaration);
         }
@@ -138,23 +139,21 @@ public partial class DeclarationWalker
                         var prevDeclaration = declarationContext.FindLocalDeclaration(nameExpr);
                         if (prevDeclaration is null)
                         {
-                            var declaration = new LuaDeclaration(
+                            var declaration = new LuaSymbol(
                                 name.RepresentText,
-                                new GlobalInfo(
-                                    new(nameExpr),
-                                    new GlobalNameType(name.RepresentText)
-                                ),
-                                DeclarationFeature.Global
+                                new GlobalNameType(name.RepresentText),
+                                new GlobalInfo(new(nameExpr)),
+                                SymbolFeature.Global
                             );
+                            declarationContext.TypeManager.AddGlobal(name.RepresentText, declaration);
                             declarationContext.AddLocalDeclaration(nameExpr, declaration);
                             declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                            var unResolveDeclaration =  new UnResolvedSymbol(
+                            var unResolveDeclaration = new UnResolvedSymbol(
                                 declaration,
                                 relatedExpr,
                                 ResolveState.UnResolvedType
-                                );
+                            );
                             declarationContext.AddUnResolved(unResolveDeclaration);
-                            declarationContext.Db.AddGlobal(DocumentId, name.RepresentText, declaration, false);
                         }
                         else
                         {
@@ -171,22 +170,16 @@ public partial class DeclarationWalker
                         var valueExprPtr = relatedExpr?.RetId == 0
                             ? new(relatedExpr.Expr)
                             : LuaElementPtr<LuaExprSyntax>.Empty;
-                        var declaration = new LuaDeclaration(
+                        var declaration = new LuaSymbol(
                             name,
-                            new IndexInfo(
-                                new(indexExpr),
-                                valueExprPtr,
-                                null
-                            )
+                            null,
+                            new IndexInfo(new(indexExpr), valueExprPtr)
                         );
                         declarationContext.AddAttachedDeclaration(varExpr, declaration);
                         var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,
                             ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
                         declarationContext.AddUnResolved(unResolveDeclaration);
                     }
-                    // else if (indexExpr is { IndexKeyExpr: { } indexKeyExpr })
-                    // {
-                    // }
 
                     break;
                 }

@@ -18,7 +18,7 @@
 --- clean: strings can contain any 8-bit value, including embedded zeros
 --- ('`\0`'). Lua is also encoding-agnostic; it makes no assumptions about
 --- the contents of a string.
----@class string
+---@class (partial) string
 string = {}
 
 ---

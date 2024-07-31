@@ -1,10 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Scope;
+﻿using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
@@ -30,10 +30,10 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 
     public IEnumerable<ReferenceResult> FindImplementations(LuaSyntaxElement element)
     {
-        // var declaration = Context.FindDeclaration(element);
-        // if (declaration is not null)
+        // var symbol = Context.FindDeclaration(element);
+        // if (symbol is not null)
         // {
-        //     return Context.FindImplementations(declaration);
+        //     return Context.FindImplementations(symbol);
         // }
 
         return [];
@@ -44,14 +44,20 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
         return Compilation.GetDiagnostics(Document.Id, Context);
     }
 
-    public IEnumerable<LuaDeclaration> GetGlobals()
+    public IEnumerable<LuaSymbol> GetGlobals()
     {
-        return Compilation.Db.QueryAllGlobal();
+        foreach (var globalInfo in Compilation.TypeManager.GetAllGlobalInfos())
+        {
+            if (globalInfo.MainLuaSymbol is { } luaSymbol)
+            {
+                yield return luaSymbol;
+            }
+        }
     }
 
-    public IEnumerable<LuaDeclaration> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
+    public IEnumerable<LuaSymbol> GetDeclarationsBefore(LuaSyntaxElement beforeToken)
     {
-        var result = new List<LuaDeclaration>();
+        var result = new List<LuaSymbol>();
         var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
         if (Compilation.Db.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
         {

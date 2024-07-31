@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Scope;
 
 public record DeclarationNodeBase(int Position);
 
-public record DeclarationNode(int Position, LuaDeclaration Declaration)
+public record DeclarationNode(int Position, LuaSymbol Symbol)
     : DeclarationNodeBase(Position);
 
 public record DeclarationNodeBaseContainer(
@@ -52,17 +52,17 @@ public record DeclarationScope(
 {
     public DeclarationScope? ParentScope => Parent as DeclarationScope;
 
-    public virtual ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
+    public virtual ScopeFoundState WalkOver(Func<LuaSymbol, ScopeFoundState> process)
     {
         return ScopeFoundState.NotFounded;
     }
 
-    public virtual void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
+    public virtual void WalkUp(int position, int level, Func<LuaSymbol, ScopeFoundState> process)
     {
         var curIndex = Children.FindLastIndex(it => it.Position < position);
         for (var i = curIndex; i >= 0; i--)
         {
-            if (Children[i] is DeclarationNode { Declaration: { } declaration } &&
+            if (Children[i] is DeclarationNode { Symbol: { } declaration } &&
                 process(declaration) == ScopeFoundState.Founded)
             {
                 return;
@@ -90,12 +90,12 @@ public record DeclarationScope(
         return ScopeFoundState.NotFounded;
     }
 
-    public LuaDeclaration? FindNameDeclaration(LuaNameExprSyntax nameExpr)
+    public LuaSymbol? FindNameDeclaration(LuaNameExprSyntax nameExpr)
     {
         if (nameExpr.Name is { } name)
         {
             var nameText = name.RepresentText;
-            LuaDeclaration? result = null;
+            LuaSymbol? result = null;
             var position = nameExpr.Position;
             if (nameExpr.Ancestors.OfType<LuaStatSyntax>().FirstOrDefault() is LuaLocalStatSyntax
                 {
@@ -122,11 +122,11 @@ public record DeclarationScope(
         return null;
     }
 
-    public LuaDeclaration? FindDeclaration(LuaSyntaxElement element)
+    public LuaSymbol? FindDeclaration(LuaSyntaxElement element)
     {
         var position = element.Position;
         var symbolNode = Children.FirstOrDefault(it => it.Position == position);
-        if (symbolNode is DeclarationNode { Declaration: { } result })
+        if (symbolNode is DeclarationNode { Symbol: { } result })
         {
             return result;
         }
@@ -134,7 +134,7 @@ public record DeclarationScope(
         return null;
     }
 
-    public IEnumerable<LuaDeclaration> Descendants
+    public IEnumerable<LuaSymbol> Descendants
     {
         get
         {
@@ -144,7 +144,7 @@ public record DeclarationScope(
             {
                 var node = stack.Pop();
                 // ReSharper disable once InvertIf
-                if (node is DeclarationNode { Declaration: { } declaration })
+                if (node is DeclarationNode { Symbol: { } declaration })
                 {
                     yield return declaration;
                 }
@@ -179,12 +179,12 @@ public record LocalStatDeclarationScope(
     DeclarationNodeBaseContainer? Parent = null)
     : DeclarationScope(Position, Children, Parent)
 {
-    public override ScopeFoundState WalkOver(Func<LuaDeclaration, ScopeFoundState> process)
+    public override ScopeFoundState WalkOver(Func<LuaSymbol, ScopeFoundState> process)
     {
         return ProcessNode(process);
     }
 
-    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaSymbol, ScopeFoundState> process)
     {
         ParentScope?.WalkUp(Position, level, process);
     }
@@ -196,7 +196,7 @@ public record RepeatStatDeclarationScope(
     DeclarationNodeBaseContainer? Parent = null)
     : DeclarationScope(Position, Children, Parent)
 {
-    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaSymbol, ScopeFoundState> process)
     {
         if (Children.FirstOrDefault() is DeclarationScope scope && level == 0)
         {
@@ -215,7 +215,7 @@ public record ForRangeStatDeclarationScope(
     DeclarationNodeBaseContainer? Parent = null)
     : DeclarationScope(Position, Children, Parent)
 {
-    public override void WalkUp(int position, int level, Func<LuaDeclaration, ScopeFoundState> process)
+    public override void WalkUp(int position, int level, Func<LuaSymbol, ScopeFoundState> process)
     {
         if (level == 0)
         {

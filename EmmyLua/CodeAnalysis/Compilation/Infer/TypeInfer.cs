@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -45,7 +45,7 @@ public static class TypeInfer
 
     private static LuaType InferTableType(LuaDocTableTypeSyntax tableType, SearchContext context)
     {
-        return new LuaDocTableType(tableType);
+        return new LuaElementType(tableType.UniqueId);
     }
 
     private static LuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)
@@ -82,7 +82,7 @@ public static class TypeInfer
 
     private static LuaType InferFuncType(LuaDocFuncTypeSyntax funcType, SearchContext context)
     {
-        var typedParameters = new List<LuaDeclaration>();
+        var typedParameters = new List<LuaSymbol>();
         foreach (var typedParam in funcType.ParamList)
         {
             if (typedParam is { Name: { } name, Nullable: { } nullable })
@@ -90,17 +90,20 @@ public static class TypeInfer
                 var type = context.Infer(typedParam.Type);
                 if (nullable)
                 {
-                    type = type.Union(Builtin.Nil);
+                    type = type.Union(Builtin.Nil, context);
                 }
 
-                var paramDeclaration = new LuaDeclaration(name.RepresentText,
-                    new ParamInfo(new(typedParam), type, false));
+                var paramDeclaration = new LuaSymbol(
+                    name.RepresentText,
+                    type,
+                    new ParamInfo(new(typedParam), false));
                 typedParameters.Add(paramDeclaration);
             }
             else if (typedParam is { VarArgs: { } varArgs })
             {
-                var paramDeclaration = new LuaDeclaration("...",
-                    new ParamInfo(new(typedParam), context.Infer(typedParam.Type), true));
+                var paramDeclaration = new LuaSymbol("...",
+                    context.Infer(typedParam.Type),
+                    new ParamInfo(new(typedParam), true));
                 typedParameters.Add(paramDeclaration);
             }
         }
@@ -123,13 +126,7 @@ public static class TypeInfer
     {
         if (nameType.Name is { RepresentText: { } name })
         {
-            var builtInType = Builtin.FromName(name);
-            if (builtInType is not null)
-            {
-                return builtInType;
-            }
-
-            return new LuaNamedType(name);
+            return new LuaNamedType(nameType.DocumentId, name);
         }
 
         return Builtin.Unknown;
@@ -147,11 +144,14 @@ public static class TypeInfer
         var tupleMembers = tupleType.TypeList
             .Select((it, i) =>
                 // lua from 1 start
-                new LuaDeclaration($"[{i + 1}]", new TupleMemberInfo(
-                    i + 1, context.Infer(it), new(it)
-                ))
+                new LuaSymbol(
+                    $"[{i + 1}]",
+                    context.Infer(it),
+                    new TupleMemberInfo(
+                        i + 1, new(it)
+                    )
+                )
             )
-            .Cast<LuaDeclaration>()
             .ToList();
         return new LuaTupleType(tupleMembers);
     }
@@ -161,7 +161,7 @@ public static class TypeInfer
         var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
         if (genericType is { Name: { } name })
         {
-            return new LuaGenericType(name.RepresentText, typeArgs);
+            return new LuaGenericType(genericType.DocumentId, name.RepresentText, typeArgs);
         }
 
         return Builtin.Unknown;
@@ -171,7 +171,7 @@ public static class TypeInfer
     {
         if (variadicType is { Name: { } name })
         {
-            return new LuaVariadicType(new LuaNamedType(name.RepresentText));
+            return new LuaVariadicType(new LuaNamedType(variadicType.DocumentId, name.RepresentText));
         }
 
         return new LuaVariadicType(Builtin.Unknown);
@@ -191,9 +191,11 @@ public static class TypeInfer
     {
         var declarations = aggregateType.TypeList
             .Select((it, i) =>
-                new LuaDeclaration(string.Empty, new AggregateMemberInfo(
-                    new(it), context.Infer(it)
-                ))
+                new LuaSymbol(
+                    string.Empty,
+                    context.Infer(it),
+                    new AggregateMemberInfo(new(it))
+                )
             )
             .ToList();
         return new LuaAggregateType(declarations);

@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -16,17 +16,18 @@ public static class CallExprInfer
             return InferRequire(callExpr, context);
         }
 
-        var luaType = context.InferAndUnwrap(prefixExpr);
+        var luaType = context.Infer(prefixExpr);
         var args = callExpr.ArgList?.ArgList.ToList() ?? [];
-        context.FindMethodsForType(luaType, luaMethod =>
+        foreach(var luaMethod in context.FindCallableType(luaType))
         {
             var perfectSig = MethodInfer.FindPerfectMatchSignature(luaMethod, callExpr, args, context);
             if (perfectSig.ReturnType is { } retTy)
             {
                 // ReSharper disable once AccessToModifiedClosure
-                returnType = returnType.Union(retTy);
+                returnType = returnType.Union(retTy, context);
+                break;
             }
-        });
+        }
 
         // TODO: use config enable this feature
         // if (returnType.Equals(Builtin.Unknown) && prefixExpr is LuaIndexExprSyntax indexExpr)

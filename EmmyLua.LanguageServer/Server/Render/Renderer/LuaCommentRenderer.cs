@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.LanguageServer.Server.Render.Renderer;
@@ -22,9 +22,9 @@ public static class LuaCommentRenderer
         }
     }
 
-    public static void RenderDeclarationStatComment(LuaDeclaration declaration, LuaRenderContext renderContext)
+    public static void RenderDeclarationStatComment(LuaSymbol symbol, LuaRenderContext renderContext)
     {
-        var declarationElement = declaration.Info.Ptr.ToNode(renderContext.SearchContext);
+        var declarationElement = symbol.Info.Ptr.ToNode(renderContext.SearchContext);
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
         RenderCommentDescription(comments, renderContext);
@@ -36,9 +36,9 @@ public static class LuaCommentRenderer
         RenderCommentDescription(comments, renderContext);
     }
 
-    public static void RenderParamComment(LuaDeclaration paramDeclaration, LuaRenderContext renderContext)
+    public static void RenderParamComment(LuaSymbol paramSymbol, LuaRenderContext renderContext)
     {
-        var declarationElement = paramDeclaration.Info.Ptr.ToNode(renderContext.SearchContext);
+        var declarationElement = paramSymbol.Info.Ptr.ToNode(renderContext.SearchContext);
         var comments =
             declarationElement?.AncestorsAndSelf.OfType<LuaStatSyntax>().FirstOrDefault()?.Comments;
         if (comments is null)
@@ -49,7 +49,7 @@ public static class LuaCommentRenderer
         var tagParams = comments.SelectMany(it => it.DocList).OfType<LuaDocTagParamSyntax>();
         foreach (var tagParam in tagParams)
         {
-            if (tagParam.Name?.RepresentText == paramDeclaration.Name && tagParam.Description != null)
+            if (tagParam.Name?.RepresentText == paramSymbol.Name && tagParam.Description != null)
             {
                 // renderContext.AddSeparator();
                 renderContext.AppendLine();

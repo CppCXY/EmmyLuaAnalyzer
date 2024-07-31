@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 
@@ -25,7 +25,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
             {
                 foreach (var (state, exprs) in dict)
                 {
-                    var allResolved = exprs.Select(context.Infer).All(ty => !ty.Equals(Builtin.Unknown));
+                    var allResolved = exprs.Select(context.Infer).All(ty => !ty.IsSameType(Builtin.Unknown, context));
                     if (allResolved)
                     {
                         OnResolved?.Invoke(unResolved, state);
@@ -137,7 +137,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
             if (exprRef is not null)
             {
                 var exprType = context.Infer(exprRef.Expr);
-                if (!exprType.Equals(Builtin.Unknown))
+                if (!exprType.IsSameType(Builtin.Unknown, context))
                 {
                     OnResolved?.Invoke(unResolved, ResolveState.UnResolvedType);
                 }
@@ -157,7 +157,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
                 {
                     var iterExpr = exprList.First();
                     var iterType = context.Infer(iterExpr);
-                    if (!iterType.Equals(Builtin.Unknown))
+                    if (!iterType.IsSameType(Builtin.Unknown, context))
                     {
                         OnResolved?.Invoke(unResolved, ResolveState.UnResolvedType);
                     }
@@ -182,17 +182,17 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
     {
         if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
-            var declaration = unResolvedDeclaration.LuaDeclaration;
-            if (declaration.Info.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr } indexExpr)
+            var declaration = unResolvedDeclaration.LuaSymbol;
+            if (declaration.Info.Ptr.ToNode(context) is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
             {
                 var ty = context.Infer(prefixExpr);
-                if (ty.Equals(Builtin.Unknown))
+                if (!ty.IsSameType(Builtin.Unknown, context))
                 {
-                    AddDependency(unResolved, ResolveState.UnResolvedIndex, prefixExpr);
+                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedIndex);
                 }
                 else
                 {
-                    OnResolved?.Invoke(unResolved, ResolveState.UnResolvedIndex);
+                    AddDependency(unResolved, ResolveState.UnResolvedIndex, prefixExpr);
                 }
             }
         }
@@ -203,18 +203,19 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var idType = context.Compilation.Db.QueryTypeFromId(id);
-            if (idType is LuaMethodType methodType)
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(id);
+            if (typeInfo?.BaseType is LuaMethodType methodType)
             {
                 var retType = methodType.MainSignature.ReturnType;
-                if (!retType.Equals(Builtin.Unknown))
+                if (!retType.IsSameType(Builtin.Unknown, context))
                 {
                     OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
-                    return;
                 }
-
-                var block = unResolvedMethod.Block;
-                AnalyzeBlockReturns(block, unResolved);
+                else
+                {
+                    var block = unResolvedMethod.Block;
+                    AnalyzeBlockReturns(block, unResolved);
+                }
             }
         }
         else if (unResolved is UnResolvedSource unResolvedSource)
@@ -229,13 +230,13 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
         if (unResolved is UnResolvedClosureParameters { CallExpr.PrefixExpr: { } prefixExpr })
         {
             var prefixType = context.Infer(prefixExpr);
-            if (prefixType.Equals(Builtin.Unknown))
+            if (!prefixType.IsSameType(Builtin.Unknown, context))
             {
-                AddDependency(unResolved, ResolveState.UnResolvedParameters, prefixExpr);
+                OnResolved?.Invoke(unResolved, ResolveState.UnResolvedParameters);
             }
             else
             {
-                OnResolved?.Invoke(unResolved, ResolveState.UnResolvedParameters);
+                AddDependency(unResolved, ResolveState.UnResolvedParameters, prefixExpr);
             }
         }
     }
@@ -266,7 +267,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
                         case >= 1:
                         {
                             var mainReturn = context.Infer(rets[0]);
-                            if (mainReturn.Equals(Builtin.Unknown))
+                            if (mainReturn.IsSameType(Builtin.Unknown, context))
                             {
                                 canResolve = false;
                                 AddDependency(unResolved, ResolveState.UnResolveReturn, rets[0]);

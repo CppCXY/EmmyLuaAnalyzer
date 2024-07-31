@@ -1,7 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
@@ -285,15 +285,18 @@ public static class MethodInfer
         int matchedParam,
         SearchContext context)
     {
-        var newParameters = new List<LuaDeclaration>();
+        var newParameters = new List<LuaSymbol>();
         if (skipParam == 1)
         {
             if (args.Count > 0 && callExpr.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } callSelf })
             {
                 var prefixType = context.Infer(callSelf);
                 var parameterType = signature.Parameters[0].Type;
-                GenericInfer.InferByType(parameterType, prefixType, substitution,
-                    context);
+                if (parameterType is not null)
+                {
+                    GenericInfer.InferByType(parameterType, prefixType, substitution,
+                        context);
+                }
             }
 
             newParameters.Add(signature.Parameters[0].Instantiate(substitution));
@@ -311,7 +314,8 @@ public static class MethodInfer
             var parameter = signature.Parameters[i + paramStart];
             if (parameter is
                 {
-                    Info: ParamInfo { IsVararg: true, DeclarationType: LuaExpandType expandType }
+                    Type: LuaExpandType expandType,
+                    Info: ParamInfo { IsVararg: true }
                 })
             {
                 var varargs = args[(i + argStart)..];
@@ -321,8 +325,11 @@ public static class MethodInfer
             {
                 var arg = args[i + argStart];
                 var parameterType = parameter.Type;
-                GenericInfer.InferByExpr(parameterType, arg, substitution,
-                    context);
+                if (parameterType is not null)
+                {
+                    GenericInfer.InferByExpr(parameterType, arg, substitution,
+                        context);
+                }
             }
         }
 
