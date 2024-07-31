@@ -21,6 +21,8 @@ public class ProjectIndex
 
     private MultiIndex<string, LuaElementPtr<LuaIndexExprSyntax>> MultiIndexExpr { get; } = new();
 
+    private MultiIndex<string, LuaElementPtr<LuaTableFieldSyntax>> TableField { get; } = new();
+
     private MultiIndex<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameType { get; } = new();
 
     private InFileIndex<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
@@ -101,6 +103,14 @@ public class ProjectIndex
         MappingName.Update(id.DocumentId, id, name);
     }
 
+    public void AddTableField(LuaDocumentId documentId, LuaTableFieldSyntax tableField)
+    {
+        if (tableField.Name is { } name)
+        {
+            TableField.Add(documentId, name, new(tableField));
+        }
+    }
+
     #endregion
 
     #region Query
@@ -148,6 +158,17 @@ public class ProjectIndex
         }
     }
 
+    public IEnumerable<LuaTableFieldSyntax> QueryTableFieldReferences(string fieldName, SearchContext context)
+    {
+        foreach (var ptr in TableField.Query(fieldName))
+        {
+            if (ptr.ToNode(context) is { } node)
+            {
+                yield return node;
+            }
+        }
+    }
+
     public IEnumerable<LuaNameExprSyntax> QueryNameExprReferences(string name, SearchContext context)
     {
         foreach (var ptr in NameExpr.Query(name))
@@ -159,15 +180,9 @@ public class ProjectIndex
         }
     }
 
-    public IEnumerable<LuaDocNameTypeSyntax> QueryNamedTypeReferences(string name, SearchContext context)
+    public IEnumerable<LuaElementPtr<LuaDocNameTypeSyntax>> QueryAllNamedType()
     {
-        foreach (var ptr in NameType.Query(name))
-        {
-            if (ptr.ToNode(context) is { } node)
-            {
-                yield return node;
-            }
-        }
+        return NameType.QueryAll();
     }
 
     public IEnumerable<LuaElementPtr<LuaExprSyntax>> QueryModuleReturns(LuaDocumentId documentId)

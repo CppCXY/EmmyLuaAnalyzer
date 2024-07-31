@@ -12,6 +12,7 @@ using EmmyLua.LanguageServer.ExecuteCommand;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Server;
 using EmmyLua.LanguageServer.Hover;
+using EmmyLua.LanguageServer.Implementation;
 using EmmyLua.LanguageServer.InlayHint;
 using EmmyLua.LanguageServer.InlineValues;
 using EmmyLua.LanguageServer.References;
@@ -85,5 +86,6 @@ ls.AddHandler(new ReferencesHandler(serverContext));
 ls.AddHandler(new SignatureHelperHandler(serverContext));
 ls.AddHandler(new SemanticTokenHandler(serverContext));
 ls.AddHandler(new TypeHierarchyHandler(serverContext));
+ls.AddHandler(new ImplementationHandler(serverContext));
 
 await ls.Run();

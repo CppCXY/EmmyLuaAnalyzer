@@ -88,6 +88,10 @@ public class Declarations(SearchContext context)
             {
                 return context.Compilation.Db.QueryLocalDeclaration(element);
             }
+            case LuaDocTagParamSyntax docTagParam:
+            {
+                return FindDocParamDeclaration(docTagParam);
+            }
         }
 
         return null;
@@ -216,5 +220,30 @@ public class Declarations(SearchContext context)
         }
 
         return false;
+    }
+
+    private LuaSymbol? FindDocParamDeclaration(LuaDocTagParamSyntax docTagParam)
+    {
+        if (docTagParam is
+            {
+                Name.RepresentText: { } docName, Parent: LuaCommentSyntax
+                {
+                    Owner: LuaFuncStatSyntax
+                    {
+                        ClosureExpr.ParamList.Params: { } paramList
+                    }
+                }
+            })
+        {
+            foreach (var paramElement in paramList)
+            {
+                if (paramElement.Name?.RepresentText == docName)
+                {
+                    return FindDeclaration(paramElement);
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -3,10 +3,14 @@ using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
-public record ReferenceResult(LuaLocation Location, LuaSyntaxElement Element, ReferenceKind Kind = ReferenceKind.Unknown);
+public record ReferenceResult(
+    LuaLocation Location,
+    LuaSyntaxElement Element,
+    ReferenceKind Kind = ReferenceKind.Unknown);
 
 public class References(SearchContext context)
 {
@@ -16,15 +20,16 @@ public class References(SearchContext context)
 
         var results = luaSymbol.Info switch
         {
-            LocalInfo localInfo => LocalReferences(luaSymbol, localInfo),
+            LocalInfo => LocalReferences(luaSymbol),
             GlobalInfo => GlobalReferences(luaSymbol),
+            ParamInfo paramInfo => ParameterReferences(luaSymbol, paramInfo),
             MethodInfo methodInfo => MethodReferences(luaSymbol, methodInfo),
             DocFieldInfo docFieldInfo => DocFieldReferences(luaSymbol, docFieldInfo),
             EnumFieldInfo enumFieldInfo => EnumFieldReferences(luaSymbol, enumFieldInfo),
             TableFieldInfo tableFieldInfo => TableFieldReferences(luaSymbol, tableFieldInfo),
+
             TupleMemberInfo tupleMemberInfo => TupleMemberReferences(luaSymbol, tupleMemberInfo),
             NamedTypeInfo namedTypeInfo => NamedTypeReferences(luaSymbol, namedTypeInfo),
-            ParamInfo paramInfo => ParameterReferences(luaSymbol, paramInfo),
             IndexInfo indexInfo => IndexExprReferences(luaSymbol, indexInfo),
             _ => []
         };
@@ -38,7 +43,7 @@ public class References(SearchContext context)
         return referencesSet.GetReferences();
     }
 
-    private IEnumerable<ReferenceResult> LocalReferences(LuaSymbol symbol, ISymbolInfo info)
+    private IEnumerable<ReferenceResult> LocalReferences(LuaSymbol symbol)
     {
         var references = new List<ReferenceResult>();
         var luaReferences = context.Compilation.Db.QueryLocalReferences(symbol);
@@ -76,7 +81,18 @@ public class References(SearchContext context)
         var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
-            if (context.FindDeclaration(indexExpr)?.IsReferenceTo(symbol) == true && indexExpr.KeyElement is { } keyElement)
+            if (context.FindDeclaration(indexExpr)?.IsReferenceTo(symbol) == true &&
+                indexExpr.KeyElement is { } keyElement)
+            {
+                references.Add(new ReferenceResult(keyElement.Location, keyElement));
+            }
+        }
+
+        var tableFields = context.Compilation.Db.QueryTableFieldReferences(fieldName, context);
+        foreach (var tableField in tableFields)
+        {
+            if (context.FindDeclaration(tableField)?.IsReferenceTo(symbol) == true &&
+                tableField.KeyElement is { } keyElement)
             {
                 references.Add(new ReferenceResult(keyElement.Location, keyElement));
             }
@@ -91,7 +107,7 @@ public class References(SearchContext context)
         {
             case { IsLocal: true }:
             {
-                return LocalReferences(symbol, methodInfo);
+                return LocalReferences(symbol);
             }
             case { IsGlobal: true }:
             {
@@ -182,17 +198,25 @@ public class References(SearchContext context)
 
     private IEnumerable<ReferenceResult> NamedTypeReferences(LuaSymbol symbol, NamedTypeInfo info)
     {
-        var name = symbol.Name;
+        if (symbol.Type is not LuaNamedType namedType)
+        {
+            return [];
+        }
+
         var references = new List<ReferenceResult>();
         if (info.TypeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new ReferenceResult(typeName.Location, typeName));
-            var nameTypes = context.Compilation.Db.QueryNamedTypeReferences(name, context);
-            foreach (var nameType in nameTypes)
+            var nameTypePtrList = context.Compilation.Db.QueryAllNamedType();
+            foreach (var nameTypePtr in nameTypePtrList)
             {
-                if (context.FindDeclaration(nameType) == symbol && nameType.Name is { } name2)
+                if (nameTypePtr.ToNode(context) is { Name.RepresentText: { } name, DocumentId: { } documentId } element)
                 {
-                    references.Add(new ReferenceResult(name2.Location, name2));
+                    var namedType2 = new LuaNamedType(documentId, name);
+                    if (namedType.IsSameType(namedType2, context))
+                    {
+                        references.Add(new ReferenceResult(element.Location, element));
+                    }
                 }
             }
         }
@@ -211,7 +235,7 @@ public class References(SearchContext context)
                 references.Add(luaReference);
             }
 
-            references.AddRange(LocalReferences(symbol, info));
+            references.AddRange(LocalReferences(symbol));
         }
         else if (info.TypedParamPtr.ToNode(context) is { Name: { } typedParamName })
         {

@@ -26,6 +26,7 @@ public partial class DeclarationWalker
                     ResolveState.UnResolvedType
                 );
                 declarationContext.AddUnResolved(unResolveDeclaration);
+                declarationContext.Db.AddTableField(DocumentId, fieldSyntax);
             }
         }
 

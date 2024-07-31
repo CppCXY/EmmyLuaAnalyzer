@@ -81,6 +81,8 @@ public class TypeInfo : ITypeInfo
 
     public bool Exact => Attribute.HasFlag(LuaTypeAttribute.Exact);
 
+    public bool Global => Attribute.HasFlag(LuaTypeAttribute.Global);
+
     public bool RemovePartial(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
         var removeAll = true;
