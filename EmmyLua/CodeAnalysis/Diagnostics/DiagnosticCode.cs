@@ -85,7 +85,7 @@ public static class DiagnosticCodeHelper
             DiagnosticCode.MissingReturn => true,
             DiagnosticCode.TypeNotMatch => true,
             DiagnosticCode.MissingParameter => true,
-            DiagnosticCode.InjectFieldFail => true,
+            DiagnosticCode.InjectFieldFail => false,
             DiagnosticCode.UnreachableCode => true,
             DiagnosticCode.Unused => true,
             DiagnosticCode.UndefinedGlobal => true,

@@ -42,7 +42,6 @@ public class References(SearchContext context)
             referencesSet.AddReference(result);
         }
 
-
         return referencesSet.GetReferences();
     }
 
