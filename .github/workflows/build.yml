@@ -27,6 +27,11 @@ jobs:
       with:
         dotnet-version: 9.0.x
         pre-release: true
+    - name: setup arm64
+      if: matrix.target == 'linux-arm64'
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     - name: Build
       run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
     - name: Upload
@@ -51,7 +56,7 @@ jobs:
       run: |
         chmod +x EmmyLua.LanguageServer-linux-x64/EmmyLua.LanguageServer
         tar -czf EmmyLua.LanguageServer-linux-x64.tar.gz -C EmmyLua.LanguageServer-linux-x64 .
-        
+
     - name: tar linux-arm64
       run: |
         chmod +x EmmyLua.LanguageServer-linux-arm64/EmmyLua.LanguageServer
