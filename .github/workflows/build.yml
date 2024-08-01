@@ -27,14 +27,14 @@ jobs:
       with:
         dotnet-version: 9.0.x
         pre-release: true
-    - name: setup arm64
-      if: matrix.target == 'linux-arm64'
-      run: |
-        sudo apt-get update
-        sudo apt-get install clang gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-        sudo apt-get install zlib1g-dev:aarch64-linux-gnu
-    - name: Build
+    - name: Build-General
+      if: matrix.target != 'linux-arm64'
       run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
+    - name: Build-Linux-Arm64
+      if: matrix.target == 'linux-arm64'
+      run: | 
+        dotnet tool install --global dotnet-cross
+        dotnet cross publish EmmyLua.LanguageServer -r linux-arm64 -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
     - name: Upload
       uses: actions/upload-artifact@v3
       with: 
