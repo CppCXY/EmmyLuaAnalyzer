@@ -29,13 +29,13 @@ jobs:
         pre-release: true
     - name: Build-General
       if: matrix.target != 'linux-musl-x64'
-      run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
+      run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
     # enable for donet9 support
     - name: Build-Linux-Arm64
       if: matrix.target == 'linux-musl-x64'
       run: | 
         dotnet tool install --global dotnet-cross
-        dotnet cross publish EmmyLua.LanguageServer -r linux-musl-x64 -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
+        dotnet cross publish EmmyLua.LanguageServer -r linux-musl-x64 -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
     - name: Upload
       uses: actions/upload-artifact@v3
       with: 
