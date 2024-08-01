@@ -2,7 +2,6 @@
 
 namespace EmmyLua.CodeAnalysis.Type;
 
-// TODO use isSame
 public static class TypeExtension
 {
     public static LuaType Union(this LuaType left, LuaType? right, SearchContext context)
@@ -86,6 +85,10 @@ public static class TypeExtension
             types.Remove(right);
         }
 
+        if (types.Count == 0)
+        {
+            return types[0];
+        }
         return new LuaUnionType(types);
     }
 }

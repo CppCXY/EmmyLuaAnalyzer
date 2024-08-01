@@ -6,7 +6,8 @@ namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
 public class UndefinedFieldChecker(LuaCompilation compilation)
     : DiagnosticCheckerBase(compilation, [
-        DiagnosticCode.UndefinedField
+        DiagnosticCode.UndefinedField,
+        DiagnosticCode.InjectFieldFail
     ])
 {
     public override void Check(DiagnosticContext context)
@@ -21,8 +22,20 @@ public class UndefinedFieldChecker(LuaCompilation compilation)
             }
 
             var luaSymbol = context.SearchContext.FindMember(prefixType, indexExpr);
-            if (luaSymbol is null && indexExpr.KeyElement is {} keyElement)
+            if (luaSymbol is null && indexExpr.KeyElement is { } keyElement)
             {
+                if (indexExpr.Parent is LuaAssignStatSyntax { Assign: { } assign }
+                    && assign.Position > indexExpr.Position
+                   )
+                {
+                    context.Report(
+                        DiagnosticCode.InjectFieldFail,
+                        $"Inject field fail {indexExpr.Name}",
+                        keyElement.Range
+                    );
+                    continue;
+                }
+
                 context.Report(
                     DiagnosticCode.UndefinedField,
                     $"Undefined field {indexExpr.Name}",

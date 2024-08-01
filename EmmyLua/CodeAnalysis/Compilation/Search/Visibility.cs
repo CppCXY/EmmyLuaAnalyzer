@@ -38,6 +38,10 @@ public class Visibility(SearchContext context)
         }
 
         var prefixType = context.Infer(indexExpr.PrefixExpr);
+        if (prefixType is LuaUnionType unionType)
+        {
+            prefixType = unionType.Remove(Builtin.Nil, context);
+        }
 
         foreach (var luaFuncStat in luaFuncStats)
         {
