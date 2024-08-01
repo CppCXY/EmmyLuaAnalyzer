@@ -32,6 +32,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install clang gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+        sudo apt-get install zlib1g-dev:aarch64-linux-gnu
     - name: Build
       run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/${{ matrix.platform }} --sc /p:DebugType=None
     - name: Upload
