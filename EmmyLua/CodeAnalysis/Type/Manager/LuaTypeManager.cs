@@ -187,6 +187,12 @@ public class LuaTypeManager(LuaCompilation compilation)
             {
                 AddMemberImplementations(namedType, members.Values);
             }
+
+            var typeInfo = FindTypeInfo(namedType);
+            if (typeInfo is not null)
+            {
+                typeInfo.Attribute |= LuaTypeAttribute.Global;
+            }
         }
     }
 
@@ -266,7 +272,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         typeInfo.Implements ??= new();
         foreach (var member in members)
         {
-            if (typeInfo.IsDefinedInDocument(member.DocumentId))
+            if (typeInfo.IsDefinedInDocument(member.DocumentId) || typeInfo.Global)
             {
                 if (typeInfo.Exact)
                 {
