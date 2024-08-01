@@ -15,7 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, target: linux-x64, platform: linux-x64 }
+          - { os: ubuntu-20.04, target: linux-x64, platform: linux-x64 }
+          - { os: ubuntu-20.04, target: linux-arm64, platform: linux-x64 }
           - { os: macos-latest, target: osx-x64, platform: darwin-x64 }
           - { os: macos-latest, target: osx-arm64, platform: darwin-arm64 }
           - { os: windows-latest, target: win-x64, platform: win32-x64}
@@ -31,7 +32,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v3
       with: 
-        name: ${{ matrix.platform }}
+        name: EmmyLua.LanguageServer-${{ matrix.platform }}
         path: ${{ github.workspace }}/artifact/
 
   publish:
@@ -44,23 +45,28 @@ jobs:
     - name: zip win32-x64
       uses: TheDoctor0/zip-release@v0.2.1
       with:
-        filename: win32-x64.zip
-        path: win32-x64
-    - name: zip linux-x64
-      uses: TheDoctor0/zip-release@v0.2.1
-      with:
-        filename: linux-x64.zip
-        path: linux-x64
+        filename: EmmyLua.LanguageServer-win32-x64.zip
+        path: EmmyLua.LanguageServer-win32-x64
+    - name: tar linux-x64
+      run: |
+        chmod +x EmmyLua.LanguageServer-linux-x64/EmmyLua.LanguageServer
+        tar -czf EmmyLua.LanguageServer-linux-x64.tar.gz -C EmmyLua.LanguageServer-linux-x64 .
+        
+    - name: tar linux-arm64
+      run: |
+        chmod +x EmmyLua.LanguageServer-linux-arm64/EmmyLua.LanguageServer
+        tar -czf EmmyLua.LanguageServer-linux-arm64.tar.gz -C EmmyLua.LanguageServer-linux-arm64 .
+
     - name: zip darwin-x64
       uses: TheDoctor0/zip-release@v0.2.1
       with:
-        filename: darwin-x64.zip
-        path: darwin-x64
+        filename: EmmyLua.LanguageServer-darwin-x64.zip
+        path: EmmyLua.LanguageServer-darwin-x64
     - name: zip darwin-arm64
       uses: TheDoctor0/zip-release@v0.2.1
       with:
-        filename: darwin-arm64.zip
-        path: darwin-arm64
+        filename: EmmyLua.LanguageServer-darwin-arm64.zip
+        path: EmmyLua.LanguageServer-darwin-arm64
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
@@ -68,8 +74,8 @@ jobs:
         draft: false
         generate_release_notes: true
         files: |
-          linux-x64.zip
-          darwin-x64.zip
-          darwin-arm64.zip
-          win32-x64.zip
+          EmmyLua.LanguageServer-linux-x64.zip
+          EmmyLua.LanguageServer-darwin-x64.zip
+          EmmyLua.LanguageServer-darwin-arm64.zip
+          EmmyLua.LanguageServer-win32-x64.zip
         token: ${{ secrets.RELEASE }}
