@@ -1,6 +1,12 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 
-public class Implements
+namespace EmmyLua.CodeAnalysis.Compilation.Search;
+
+public class Implements(SearchContext context)
 {
-    
+    public LuaSymbol? FindImplement(LuaSyntaxElement element)
+    {
+        return null;
+    }
 }

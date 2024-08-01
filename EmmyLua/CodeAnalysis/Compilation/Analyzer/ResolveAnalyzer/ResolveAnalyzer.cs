@@ -287,6 +287,11 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
             type = Builtin.Nil;
         }
 
+        if (luaExpr is LuaTableExprSyntax tableExprSyntax)
+        {
+            type = new LuaElementType(tableExprSyntax.UniqueId);
+        }
+
         var declaration = unResolved.LuaSymbol;
 
         if (declaration.Type is null)

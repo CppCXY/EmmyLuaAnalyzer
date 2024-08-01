@@ -26,6 +26,10 @@ public class SearchContext
 
     private ElementInfer ElementInfer { get; }
 
+    private Implements Implements { get; }
+
+    private Visibility Visibility { get; }
+
     private SubTypeInfer SubTypeInfer { get; }
 
     private SameTypeInfer SameTypeInfer { get; }
@@ -41,6 +45,8 @@ public class SearchContext
         ElementInfer = new ElementInfer(this);
         SubTypeInfer = new SubTypeInfer(this);
         SameTypeInfer = new SameTypeInfer(this);
+        Implements = new Implements(this);
+        Visibility = new Visibility(this);
         Features = features;
     }
 
@@ -226,6 +232,11 @@ public class SearchContext
     public bool IsSameType(LuaType left, LuaType right)
     {
         return SameTypeInfer.IsSameType(left, right);
+    }
+
+    public bool IsVisible(LuaSyntaxElement element, LuaSymbol symbol)
+    {
+        return Visibility.CheckVisible(element, symbol);
     }
 
     public LuaSignature FindPerfectMatchSignature(LuaMethodType methodType, LuaCallExprSyntax callExpr,

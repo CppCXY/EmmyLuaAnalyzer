@@ -73,6 +73,16 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
 
         return this;
     }
+    
+    public CompletionItemBuilder WithCheckVisible(LuaIndexExprSyntax indexExpr,LuaSymbol symbol)
+    {
+        if (!Disable && !CompleteContext.SemanticModel.Context.IsVisible(indexExpr, symbol))
+        {
+            Disable = true;
+        }
+
+        return this;
+    }
 
     public CompletionItemBuilder WithColon(bool colon)
     {

@@ -68,6 +68,7 @@ public class MemberProvider : ICompleteProviderBase
                 .WithData(member.RelationInformation)
                 .WithDotCheckBracketLabel(indexExpr)
                 .WithCheckDeclaration(member)
+                .WithCheckVisible(indexExpr, member)
                 .AddToContext();
         }
     }
@@ -141,6 +142,7 @@ public class MemberProvider : ICompleteProviderBase
                 context.CreateCompletion(member.Name, member.Type)
                     .WithData(member.RelationInformation)
                     .WithCheckDeclaration(member)
+                    .WithCheckVisible(indexExpr, member)
                     .AddToContext();
             }
         }
@@ -164,6 +166,7 @@ public class MemberProvider : ICompleteProviderBase
                     context.CreateCompletion(label, member.Type)
                         .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
+                        .WithCheckVisible(indexExpr, member)
                         .AddToContext();
                 }
                 else
@@ -171,6 +174,7 @@ public class MemberProvider : ICompleteProviderBase
                     context.CreateCompletion($"\"{member.Name}\"", member.Type)
                         .WithData(member.RelationInformation)
                         .WithCheckDeclaration(member)
+                        .WithCheckVisible(indexExpr, member)
                         .AddToContext();
                 }
             }
