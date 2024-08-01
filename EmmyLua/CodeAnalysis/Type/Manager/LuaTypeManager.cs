@@ -187,12 +187,6 @@ public class LuaTypeManager(LuaCompilation compilation)
             {
                 AddMemberImplementations(namedType, members.Values);
             }
-
-            var typeInfo = FindTypeInfo(namedType);
-            if (typeInfo is not null)
-            {
-                typeInfo.Attribute |= LuaTypeAttribute.Global;
-            }
         }
     }
 

@@ -150,7 +150,7 @@ public class LuaSymbol(
 
     public bool IsReferenceTo(LuaSymbol other)
     {
-        return Info.Ptr.ElementId == other.Info.Ptr.ElementId;
+        return Info.Ptr.UniqueId == other.Info.Ptr.UniqueId;
     }
 
     public override string ToString()
