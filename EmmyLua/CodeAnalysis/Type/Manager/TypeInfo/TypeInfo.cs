@@ -75,7 +75,7 @@ public class TypeInfo : ITypeInfo
 
     public NamedTypeKind Kind { get; init; } = NamedTypeKind.None;
 
-    public LuaTypeAttribute Attribute { get; init; } = LuaTypeAttribute.None;
+    public LuaTypeAttribute Attribute { get; set; } = LuaTypeAttribute.None;
 
     public bool Partial => Attribute.HasFlag(LuaTypeAttribute.Partial);
 

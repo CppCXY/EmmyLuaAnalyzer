@@ -177,6 +177,12 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             globalTypeInfo.MainDocumentId = namedType.DocumentId;
             GlobalProxyTypes.Add(namedType.DocumentId, name, namedType);
+            var typeInfo = FindTypeInfo(namedType);
+            if (typeInfo is not null)
+            {
+                typeInfo.Attribute |= LuaTypeAttribute.Global;
+            }
+
             if (globalTypeInfo.Declarations is { } members)
             {
                 AddMemberImplementations(namedType, members.Values);
@@ -241,7 +247,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         typeInfo.Declarations ??= new();
         foreach (var member in members)
         {
-            if (typeInfo.IsDefinedInDocument(member.DocumentId))
+            if (typeInfo.IsDefinedInDocument(member.DocumentId) || typeInfo.Global)
             {
                 typeInfo.Declarations[member.Name] = member;
             }
@@ -286,7 +292,7 @@ public class LuaTypeManager(LuaCompilation compilation)
             return;
         }
 
-        if (typeInfo.IsDefinedInDocument(member.DocumentId))
+        if (typeInfo.IsDefinedInDocument(member.DocumentId) || typeInfo.Global)
         {
             typeInfo.Declarations ??= new();
             typeInfo.Implements ??= new();
