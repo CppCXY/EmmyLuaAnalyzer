@@ -71,6 +71,22 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             }
         }
 
+        if (symbol.Info is NamespaceInfo)
+        {
+            Kind = CompletionItemKind.Module;
+        }
+        else if (symbol.Info is NamedTypeInfo { Kind: { } kind })
+        {
+            Kind = kind switch
+            {
+                NamedTypeKind.Class => CompletionItemKind.Class,
+                NamedTypeKind.Enum => CompletionItemKind.Enum,
+                NamedTypeKind.Interface => CompletionItemKind.Interface,
+                NamedTypeKind.Alias => CompletionItemKind.Reference,
+                _ => Kind
+            };
+        }
+
         return this;
     }
     

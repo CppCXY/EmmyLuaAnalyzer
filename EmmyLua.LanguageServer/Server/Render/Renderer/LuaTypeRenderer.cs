@@ -513,6 +513,16 @@ public static class LuaTypeRenderer
 
     private static void RenderGeneric(LuaGenericType genericType, LuaRenderContext renderContext, int level)
     {
+        if (genericType.Name == "namespace")
+        {
+            renderContext.Append("namespace");
+            if (genericType.GenericArgs.FirstOrDefault() is LuaStringLiteralType namespaceString)
+            {
+                renderContext.Append($" {namespaceString.Content}");
+            }
+            return;
+        }
+        
         renderContext.Append(genericType.Name);
         renderContext.Append('<');
         for (var i = 0; i < genericType.GenericArgs.Count; i++)

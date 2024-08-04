@@ -17,22 +17,7 @@ public static class Builtin
 
     public static LuaNamedType Self { get; } = new(LuaDocumentId.VirtualDocumentId, "self");
 
-    public static LuaNamedType? FromName(string name)
-    {
-        return name switch
-        {
-            "unknown" => Unknown,
-            "any" => Any,
-            "nil" or "void" => Nil,
-            "boolean" or "bool" => Boolean,
-            "number" => Number,
-            "integer" or "int" => Integer,
-            "string" => String,
-            "table" => Table,
-            "thread" => Thread,
-            "userdata" => UserData,
-            "self" => Self,
-            _ => null,
-        };
-    }
+    public static LuaNamedType Global { get; } = new(LuaDocumentId.VirtualDocumentId, "global");
+
+    public static LuaNamedType Namespace { get; } = new(LuaDocumentId.VirtualDocumentId, "namespace");
 }

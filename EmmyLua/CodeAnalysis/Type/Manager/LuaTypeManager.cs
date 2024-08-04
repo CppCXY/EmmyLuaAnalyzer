@@ -233,6 +233,7 @@ public class LuaTypeManager(LuaCompilation compilation)
                 leftTypeInfo.SubTypes.Add(right);
             }
         }
+
         WaitBuildSubtypes.Clear();
     }
 
@@ -289,6 +290,12 @@ public class LuaTypeManager(LuaCompilation compilation)
         var typeInfo = FindTypeInfo(type);
         if (typeInfo is null)
         {
+            return;
+        }
+
+        if (IsSameType(type, Builtin.Global))
+        {
+            AddGlobal(member.Name, member);
             return;
         }
 
@@ -499,15 +506,8 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     public record struct NamespaceOrType(string Name, bool IsNamespace, NamedTypeKind Kind, SyntaxElementId Id);
 
-    public IEnumerable<NamespaceOrType> GetNamespaceOrTypeInfos(string prefix, LuaDocumentId documentId)
+    public IEnumerable<NamespaceOrType> GetNamespaceOrTypeInfos(string prefixNamespace, LuaDocumentId documentId)
     {
-        var prefixNamespace = string.Empty;
-        var dotIndex = prefix.LastIndexOf('.');
-        if (dotIndex != -1)
-        {
-            prefixNamespace = prefix[..dotIndex];
-        }
-
         if (documentId != LuaDocumentId.VirtualDocumentId)
         {
             if (NamespaceIndices.TryGetValue(documentId, out var namespaceIndex))
@@ -564,6 +564,20 @@ public class LuaTypeManager(LuaCompilation compilation)
                 );
             }
         }
+    }
+
+    public NamespaceOrType? FindNamespaceOrType(string fullName, string member)
+    {
+        if (RootNamespace.FindNamespaceOrType(fullName) is { } namespaceInfo)
+        {
+            if (namespaceInfo.FindNamespaceOrType(member) is { } child)
+            {
+                return new NamespaceOrType(member, child.TypeInfo is null, child.TypeInfo?.Kind ?? NamedTypeKind.None,
+                    child.TypeInfo?.MainElementId ?? SyntaxElementId.Empty);
+            }
+        }
+
+        return null;
     }
 
     public bool IsSameType(LuaNamedType left, LuaNamedType right)

@@ -1,4 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
@@ -26,6 +28,11 @@ public class IndexMembers(SearchContext context)
 
     private LuaSymbol? FindNamedTypeMember(LuaNamedType namedType, string name)
     {
+        if (namedType.IsSameType(Builtin.Global, context))
+        {
+            return context.Compilation.TypeManager.GetGlobalSymbol(name);
+        }
+
         var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
         if (typeInfo is null)
         {
@@ -224,6 +231,51 @@ public class IndexMembers(SearchContext context)
 
     private LuaSymbol? FindGenericTypeMember(LuaGenericType genericType, string name)
     {
+        if (genericType.Name == "table")
+        {
+            if (name.StartsWith('[') && genericType.GenericArgs.FirstOrDefault() is { } numberType
+                                     && (numberType.IsSameType(Builtin.Number, context) ||
+                                         numberType.IsSameType(Builtin.Integer, context)))
+            {
+                return new LuaSymbol(string.Empty, genericType.GenericArgs.ElementAtOrDefault(1), new VirtualInfo());
+            }
+            else if (genericType.GenericArgs.FirstOrDefault() is { } stringType &&
+                     stringType.IsSameType(Builtin.String, context))
+            {
+                return new LuaSymbol(string.Empty, genericType.GenericArgs.ElementAtOrDefault(1), new VirtualInfo());
+            }
+        }
+        else if (genericType.Name == "namespace" &&
+                 genericType.GenericArgs.FirstOrDefault() is LuaStringLiteralType namespaceString)
+        {
+            var namespaceOrTypeInfo =
+                context.Compilation.TypeManager.FindNamespaceOrType(namespaceString.Content, name);
+            if (!namespaceOrTypeInfo.HasValue)
+            {
+                return null;
+            }
+
+            if (namespaceOrTypeInfo.Value.IsNamespace)
+            {
+                var namespaceType = new LuaGenericType(LuaDocumentId.VirtualDocumentId, "namespace", [
+                    new LuaStringLiteralType($"{namespaceString.Content}.{name}")
+                ]);
+                return new LuaSymbol(name,
+                    namespaceType,
+                    new NamespaceInfo()
+                );
+            }
+            else
+            {
+                var namedType = new LuaNamedType(LuaDocumentId.VirtualDocumentId,
+                    $"{namespaceString.Content}.{name}");
+                return new LuaSymbol(name, namedType, new NamedTypeInfo(
+                    new LuaElementPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Value.Id),
+                    namespaceOrTypeInfo.Value.Kind
+                ));
+            }
+        }
+
         var typeInfo = context.Compilation.TypeManager.FindTypeInfo(genericType);
         if (typeInfo is null)
         {

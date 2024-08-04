@@ -1,4 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
@@ -25,6 +28,20 @@ public class Members(SearchContext context)
 
     private List<LuaSymbol> GetNamedTypeMembers(LuaNamedType namedType)
     {
+        if (namedType.IsSameType(Builtin.Global, context))
+        {
+            var list = new List<LuaSymbol>();
+            foreach (var globalInfo in context.Compilation.TypeManager.GetAllGlobalInfos())
+            {
+                if (globalInfo.MainLuaSymbol is { } mainLuaSymbol)
+                {
+                    list.Add(mainLuaSymbol);
+                }
+            }
+
+            return list;
+        }
+
         var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
         if (typeInfo is null)
         {
@@ -224,6 +241,37 @@ public class Members(SearchContext context)
         {
             return [];
         }
+        else if (genericType.Name == "namespace" &&
+                 genericType.GenericArgs.FirstOrDefault() is LuaStringLiteralType namespaceString)
+        {
+            var namespaces = new List<LuaSymbol>();
+            var namespaceOrTypeIndexs = context.Compilation.TypeManager.GetNamespaceOrTypeInfos(
+                namespaceString.Content, LuaDocumentId.VirtualDocumentId);
+            foreach (var namespaceOrTypeInfo in namespaceOrTypeIndexs)
+            {
+                if (namespaceOrTypeInfo.IsNamespace)
+                {
+                    var namespaceType = new LuaGenericType(LuaDocumentId.VirtualDocumentId, "namespace", [
+                        new LuaStringLiteralType($"{namespaceString.Content}.{namespaceOrTypeInfo.Name}")
+                    ]);
+                    namespaces.Add(new LuaSymbol(namespaceOrTypeInfo.Name,
+                        namespaceType,
+                        new NamespaceInfo()
+                    ));
+                }
+                else
+                {
+                    var namedType = new LuaNamedType(LuaDocumentId.VirtualDocumentId,
+                        $"{namespaceString.Content}.{namespaceOrTypeInfo.Name}");
+                    namespaces.Add(new LuaSymbol(namespaceOrTypeInfo.Name, namedType, new NamedTypeInfo(
+                        new LuaElementPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Id),
+                        namespaceOrTypeInfo.Kind
+                    )));
+                }
+            }
+
+            return namespaces;
+        }
 
         var typeInfo = context.Compilation.TypeManager.FindTypeInfo(genericType);
         if (typeInfo is null)
@@ -247,7 +295,7 @@ public class Members(SearchContext context)
                 {
                     for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
                     {
-                        substitute.Add(typeInfo.GenericParams[i].Name , genericArgs[i], true);
+                        substitute.Add(typeInfo.GenericParams[i].Name, genericArgs[i], true);
                     }
                 }
 
@@ -327,6 +375,4 @@ public class Members(SearchContext context)
 
         return members.Values.ToList();
     }
-
-
 }

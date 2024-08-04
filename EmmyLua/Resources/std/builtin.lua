@@ -101,3 +101,5 @@
 ---@class self
 
 ---@class integer : number
+
+---@class namespace<T: string>

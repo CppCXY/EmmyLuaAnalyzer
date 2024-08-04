@@ -97,8 +97,14 @@ public class DocProvider : ICompleteProviderBase
 
     private void AddTypeNameCompletion(string prefix, CompleteContext context)
     {
+        var prefixNamespace = string.Empty;
+        var dotIndex = prefix.LastIndexOf('.');
+        if (dotIndex != -1)
+        {
+            prefixNamespace = prefix[..dotIndex];
+        }
         var namespaceOrTypes =
-            context.SemanticModel.Compilation.TypeManager.GetNamespaceOrTypeInfos(prefix,
+            context.SemanticModel.Compilation.TypeManager.GetNamespaceOrTypeInfos(prefixNamespace,
                 context.SemanticModel.Document.Id);
         foreach (var namespaceOrType in namespaceOrTypes)
         {

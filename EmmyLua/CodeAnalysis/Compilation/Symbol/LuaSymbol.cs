@@ -277,3 +277,5 @@ public record VirtualInfo : ISymbolInfo
 {
     public LuaElementPtr<LuaSyntaxElement> Ptr => LuaElementPtr<LuaSyntaxElement>.Empty;
 }
+
+public record NamespaceInfo : VirtualInfo;
