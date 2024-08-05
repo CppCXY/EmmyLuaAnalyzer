@@ -166,7 +166,7 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
                 {
                     if (i + 1 < finish)
                     {
-                        var element = Tree.GetElement(i);
+                        var element = Tree.GetElement(i + 1);
                         if (element is LuaDocTypeSyntax typeSyntax)
                         {
                             return typeSyntax;

@@ -220,7 +220,7 @@ public class LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(i
                 {
                     if (i + 1 < finish)
                     {
-                        var element = Tree.GetElement(i);
+                        var element = Tree.GetElement(i + 1);
                         if (element is LuaExprSyntax exprSyntax)
                         {
                             return exprSyntax;

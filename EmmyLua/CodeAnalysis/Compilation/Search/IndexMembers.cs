@@ -354,6 +354,10 @@ public class IndexMembers(SearchContext context)
         {
             return new LuaSymbol(string.Empty, arrayType.BaseType, new VirtualInfo());
         }
+        else if (type is LuaGenericType genericType)
+        {
+            return FindGenericTypeMember(genericType, indexExpr);
+        }
         else if (type is LuaNamedType namedType && indexExpr.IndexKeyExpr is { } indexKeyExpr)
         {
             var keyType = context.Infer(indexKeyExpr);
@@ -421,6 +425,28 @@ public class IndexMembers(SearchContext context)
             finally
             {
                 _visitedTypes.Remove(typeInfo);
+            }
+        }
+
+        return null;
+    }
+
+    private LuaSymbol? FindGenericTypeMember(LuaGenericType type, LuaIndexExprSyntax indexExpr)
+    {
+        if (type.Name == "table")
+        {
+            if (type.GenericArgs.Count != 2)
+            {
+                return null;
+            }
+
+            if (indexExpr.IndexKeyExpr is { } indexKeyExpr)
+            {
+                var keyType = context.Infer(indexKeyExpr);
+                if (keyType.SubTypeOf(type.GenericArgs[0], context))
+                {
+                    return new LuaSymbol(string.Empty, type.GenericArgs[1], new VirtualInfo());
+                }
             }
         }
 

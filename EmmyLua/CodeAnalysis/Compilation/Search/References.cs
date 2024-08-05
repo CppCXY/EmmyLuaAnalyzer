@@ -68,7 +68,7 @@ public class References(SearchContext context)
 
         foreach (var nameExpr in nameExprs)
         {
-            if (context.FindDeclaration(nameExpr) == symbol)
+            if (IsReferenceTo(nameExpr, symbol))
             {
                 references.Add(new ReferenceResult(nameExpr.Location, nameExpr));
             }
