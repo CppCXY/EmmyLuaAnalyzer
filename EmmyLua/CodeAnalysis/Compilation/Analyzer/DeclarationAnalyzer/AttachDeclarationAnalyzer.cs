@@ -75,6 +75,16 @@ public class AttachDeclarationAnalyzer(
 
                         break;
                     }
+                    case LuaDocTagSourceSyntax sourceSyntax:
+                    {
+                        if (sourceSyntax.Source is { Value: { } source })
+                        {
+                            declaration.Feature |= SymbolFeature.Source;
+                            declarationContext.Db.AddSource(declaration.UniqueId, source);
+                        }
+
+                        break;
+                    }
                 }
             }
         }

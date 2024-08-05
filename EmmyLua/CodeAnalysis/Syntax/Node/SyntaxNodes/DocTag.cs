@@ -186,3 +186,8 @@ public class LuaDocTagUsingSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSynt
 {
     public LuaNameToken? Using => FirstChild<LuaNameToken>();
 }
+
+public class LuaDocTagSourceSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree)
+{
+    public LuaStringToken? Source => FirstChild<LuaStringToken>();
+}

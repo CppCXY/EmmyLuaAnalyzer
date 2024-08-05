@@ -21,6 +21,7 @@ public enum SymbolFeature
     Global = 0x04,
     NoDiscard = 0x08,
     Async = 0x10,
+    Source = 0x20,
 }
 
 public enum SymbolVisibility
@@ -56,6 +57,8 @@ public class LuaSymbol(
     public bool IsAsync => Feature.HasFlag(SymbolFeature.Async);
 
     public bool IsNoDiscard => Feature.HasFlag(SymbolFeature.NoDiscard);
+
+    public bool HasSource => Feature.HasFlag(SymbolFeature.Source);
 
     public SymbolVisibility Visibility { get; internal set; } = visibility;
 
@@ -132,6 +135,30 @@ public class LuaSymbol(
 
     public virtual LuaLocation? GetLocation(SearchContext context)
     {
+        if (HasSource)
+        {
+            var source = context.Compilation.Db.QuerySource(UniqueId);
+            if (source is not null)
+            {
+                var parts = source.Split('#');
+                var uri = string.Empty;
+                var line = 0;
+                if (parts.Length == 2)
+                {
+                    uri = parts[0];
+                    if (!int.TryParse(parts[1], out line))
+                    {
+                        return null;
+                    }
+                }
+
+                if (uri.Length > 0)
+                {
+                    return new LuaLocation(line, 0, line, 0, uri);
+                }
+            }
+        }
+
         var document = context.Compilation.Project.GetDocument(Info.Ptr.DocumentId);
         if (document is not null)
         {

@@ -31,6 +31,8 @@ public class ProjectIndex
 
     private Dictionary<LuaDocumentId, LuaDeclarationTree> DocumentDeclarationTrees { get; } = new();
 
+    private InFileIndex<SyntaxElementId, string> Source { get; } = new();
+
     private UniqueIndex<SyntaxElementId, string> MappingName { get; } = new();
 
     public void Remove(LuaDocumentId documentId)
@@ -43,6 +45,7 @@ public class ProjectIndex
         InFiledReferences.Remove(documentId);
         InFiledDeclarations.Remove(documentId);
         DocumentDeclarationTrees.Remove(documentId);
+        Source.Remove(documentId);
     }
 
     #region Add
@@ -109,6 +112,11 @@ public class ProjectIndex
         {
             TableField.Add(documentId, name, new(tableField));
         }
+    }
+
+    public void AddSource(SyntaxElementId id, string source)
+    {
+        Source.Add(id.DocumentId, id, source);
     }
 
     #endregion
@@ -193,6 +201,11 @@ public class ProjectIndex
     public string? QueryMapping(SyntaxElementId id)
     {
         return MappingName.Query(id);
+    }
+
+    public string? QuerySource(SyntaxElementId id)
+    {
+        return Source.Query(id);
     }
 
     #endregion

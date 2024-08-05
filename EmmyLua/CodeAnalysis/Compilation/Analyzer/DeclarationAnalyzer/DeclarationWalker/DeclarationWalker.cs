@@ -193,6 +193,11 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
                 AnalyzeTagUsing(usingSyntax);
                 break;
             }
+            case LuaDocTagSourceSyntax sourceSyntax:
+            {
+                AnalyzeTagSource(sourceSyntax);
+                break;
+            }
         }
     }
 

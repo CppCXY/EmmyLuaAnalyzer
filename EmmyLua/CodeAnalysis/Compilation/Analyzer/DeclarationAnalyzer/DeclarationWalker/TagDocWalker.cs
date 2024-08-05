@@ -288,6 +288,11 @@ public partial class DeclarationWalker
         }
     }
 
+    private void AnalyzeTagSource(LuaDocTagSourceSyntax sourceSyntax)
+    {
+        declarationContext.AttachDoc(sourceSyntax);
+    }
+
     private void AnalyzeSimpleTag(LuaDocTagSyntax tagSyntax)
     {
         declarationContext.AttachDoc(tagSyntax);

@@ -114,6 +114,7 @@ public enum LuaTokenKind : ushort
     TkTagMapping, // mapping
     TkTagNamespace, // namespace
     TkTagUsing, // using
+    TkTagSource, // source
 
     TkDocOr, // |
     TkDocContinue, // ---

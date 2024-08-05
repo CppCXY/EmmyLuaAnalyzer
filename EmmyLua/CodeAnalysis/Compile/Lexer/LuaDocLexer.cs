@@ -58,6 +58,7 @@ public class LuaDocLexer(LuaDocument document)
             "mapping" => LuaTokenKind.TkTagMapping,
             "namespace" => LuaTokenKind.TkTagNamespace,
             "using" => LuaTokenKind.TkTagUsing,
+            "source" => LuaTokenKind.TkTagSource,
             _ => LuaTokenKind.TkTagOther
         };
     }

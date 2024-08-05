@@ -107,6 +107,10 @@ public static class TagParser
             {
                 return TagUsing(p);
             }
+            case LuaTokenKind.TkTagSource:
+            {
+                return TagSource(p);
+            }
             case LuaTokenKind.TkTagMeta:
             {
                 return SimpleTag(p, LuaSyntaxKind.DocMeta);
@@ -791,6 +795,22 @@ public static class TagParser
         catch (UnexpectedTokenException e)
         {
             return m.Fail(p, LuaSyntaxKind.DocUsing, e.Message);
+        }
+    }
+
+    private static CompleteMarker TagSource(LuaDocParser p)
+    {
+        p.SetState(LuaDocLexerState.Normal);
+        var m = p.Marker();
+        p.Bump();
+        try
+        {
+            p.Expect(LuaTokenKind.TkString);
+            return m.Complete(p, LuaSyntaxKind.DocSource);
+        }
+        catch (UnexpectedTokenException e)
+        {
+            return m.Fail(p, LuaSyntaxKind.DocSource, e.Message);
         }
     }
 
