@@ -142,19 +142,36 @@ public class LuaSymbol(
             {
                 var parts = source.Split('#');
                 var uri = string.Empty;
+                var lineColStr = string.Empty;
                 var line = 0;
+                var col = 0;
                 if (parts.Length == 2)
                 {
                     uri = parts[0];
-                    if (!int.TryParse(parts[1], out line))
+                    lineColStr = parts[1];
+                    if (lineColStr.StartsWith('L'))
                     {
-                        return null;
+                        lineColStr = lineColStr[1..];
                     }
+                }
+
+                if (lineColStr.IndexOf(':') > 0)
+                {
+                    var lineCol = lineColStr.Split(':');
+                    if (lineCol.Length == 2 && int.TryParse(lineCol[0], out var l) && int.TryParse(lineCol[1], out var c))
+                    {
+                        line = l;
+                        col = c;
+                    }
+                }
+                else if (int.TryParse(lineColStr, out var l))
+                {
+                    line = l;
                 }
 
                 if (uri.Length > 0)
                 {
-                    return new LuaLocation(line, 0, line, 0, uri);
+                    return new LuaLocation(line, col, line, col + 1, uri);
                 }
             }
         }
