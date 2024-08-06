@@ -319,6 +319,16 @@ public partial class DeclarationWalker
                             attribute |= LuaTypeAttribute.Exact;
                             break;
                         }
+                        case "global":
+                        {
+                            attribute |= LuaTypeAttribute.Global;
+                            break;
+                        }
+                        case "key":
+                        {
+                            attribute |= LuaTypeAttribute.Key;
+                            break;
+                        }
                     }
                 }
             }

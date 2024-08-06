@@ -7,4 +7,5 @@ public enum LuaTypeAttribute
     Partial = 0x01,
     Exact = 0x02,
     Global = 0x04,
+    Key = 0x08,
 }

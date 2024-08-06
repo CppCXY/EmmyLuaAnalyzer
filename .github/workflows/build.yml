@@ -26,7 +26,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
-        pre-release: true
     - name: Build-General
       if: matrix.target != 'linux-musl-x64'
       run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None

@@ -111,14 +111,28 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         {
             return;
         }
-        
-        foreach (var field in typeInfo.Declarations.Values)
+
+        if (typeInfo.KeyEnum)
         {
-            context.Add(new CompletionItem
+            foreach (var field in typeInfo.Declarations.Values)
             {
-                Label = field.Name,
-                Kind = CompletionItemKind.EnumMember,
-            });
+                context.Add(new CompletionItem
+                {
+                    Label = field.Name,
+                    Kind = CompletionItemKind.EnumMember,
+                });
+            }
+        }
+        else
+        {
+            foreach (var field in typeInfo.Declarations.Values)
+            {
+                context.Add(new CompletionItem
+                {
+                    Label = $"{typeInfo.Name}.{field.Name}",
+                    Kind = CompletionItemKind.EnumMember,
+                });
+            }
         }
     }
 
