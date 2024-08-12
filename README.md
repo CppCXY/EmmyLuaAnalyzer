@@ -15,19 +15,15 @@ The EmmyLuaAnalyzer project is a static analyzer and language service for the Lu
 
 ## Documentation
 
-- TODO
+[.emmyrc.json config](./docs/.emmyrc.json_EN.md)
 
 ## Usage
 
 ### Use EmmyLuaAnalyzer's analysis core through nuget
 TODO
 
-### Use EmmyLuaAnalyzer's language service through the VSCode plugin
-You can currently use EmmyLuaAnalyzer's language service by checking `Use EmmyLuaAnalyzer` in VSCode-EmmyLua.
-
-## Testing
-
-Currently in beta, everyone is welcome to test and make suggestions. There is still a lot of work in progress and needs to be improved.
+### Use EmmyLuaAnalyzer's language server through the VSCode plugin
+You can currently use EmmyLuaAnalyzer's language server by install `VSCode-EmmyLua`.
 
 ## LICENSE
 

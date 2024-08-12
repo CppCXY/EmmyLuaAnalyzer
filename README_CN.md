@@ -15,7 +15,7 @@ EmmyLuaAnalyzer 项目是使用C#实现的 Lua 语言的静态分析器和语言
 
 ## 文档
 
-- TODO
+[.emmyrc.json config](./docs/.emmyrc.json_CN.md)
 
 ## 使用
 
@@ -23,11 +23,8 @@ EmmyLuaAnalyzer 项目是使用C#实现的 Lua 语言的静态分析器和语言
 TODO
 
 ### 通过VSCode插件使用EmmyLuaAnalyzer的语言服务
-当前可以通过在VSCode-EmmyLua中勾选`Use EmmyLuaAnalyzer`来使用EmmyLuaAnalyzer的语言服务
 
-## 测试
-
-当前处于测试版，欢迎大家测试并提出建议, 有很多工作还在进行中，还需要完善
+当前可以通过使用VSCode-EmmyLua或者intellij-EmmyLua2使用该语言服务
 
 ## LICENSE
 
