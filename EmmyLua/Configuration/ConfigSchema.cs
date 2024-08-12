@@ -51,7 +51,7 @@ public class Completion
     public string AutoRequireFunction { get; set; } = "require";
 
     [JsonPropertyName("autoRequireNamingConvention")]
-    public FilenameConvention AutoRequireFilenameConvention { get; set; } = FilenameConvention.SnakeCase;
+    public FilenameConvention AutoRequireNamingConvention { get; set; } = FilenameConvention.SnakeCase;
 
     [JsonPropertyName("callSnippet")]
     public bool CallSnippet { get; set; } = false;

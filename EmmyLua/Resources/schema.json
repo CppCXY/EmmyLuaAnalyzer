@@ -78,7 +78,8 @@
               "no-discard",
               "disable-global-define",
               "undefined-field",
-              "local-const-reassign"
+              "local-const-reassign",
+              "duplicate-type"
             ]
           }
         },
@@ -178,6 +179,9 @@
             "local-const-reassign": {
               "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
             },
+            "duplicate-type": {
+              "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
+            },
             "*": {
               "$ref": "#/definitions/Diagnostics/properties/severity/properties/none"
             }
@@ -209,7 +213,8 @@
               "no-discard",
               "disable-global-define",
               "undefined-field",
-              "local-const-reassign"
+              "local-const-reassign",
+              "duplicate-type"
             ]
           }
         }

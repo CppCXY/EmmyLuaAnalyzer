@@ -54,7 +54,7 @@ public class AutoRequire : ICommandBase
 
             var module = executor.Context.LuaProject.ModuleManager.GetModuleInfo(needRequireId);
             if (module is null) return;
-            var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireFilenameConvention
+            var convention = executor.Context.SettingManager.Setting?.Completion.AutoRequireNamingConvention
                              ?? FilenameConvention.SnakeCase;
             var id = FilenameConverter.ConvertToIdentifier(module.Name, convention);
             var requireFunction = executor.Context.SettingManager

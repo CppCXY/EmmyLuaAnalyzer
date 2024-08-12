@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.Serialization;
 using EmmyLua.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
+using Newtonsoft.Json.Serialization;
 
 
 namespace Util.Gen.Generator;
@@ -12,11 +14,30 @@ public class SchemaGenerator : IGenerator
     public void Generate(string projectRoot)
     {
         var generator = new JSchemaGenerator();
+        
+        generator.ContractResolver = new RequiredPropertiesContractResolver()
+        {
+            NamingStrategy = new CamelCaseNamingStrategy()
+        };
         generator.GenerationProviders.Add(new StringEnumGenerationProvider());
         generator.GenerationProviders.Add(new EnumKeyDictionaryGenerationProvider());
         var schema = generator.Generate(typeof(Setting));
         var filePath = Path.Combine(projectRoot, "EmmyLua/Resources", "schema.json");
         File.WriteAllText(filePath, schema.ToString());
+    }
+}
+
+public class RequiredPropertiesContractResolver : DefaultContractResolver
+{
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+        var property = base.CreateProperty(member, memberSerialization);
+        property.Required = Required.Default;
+        if (property.PropertyName == "schema")
+        {
+            property.PropertyName = "$schema";
+        }
+        return property;
     }
 }
 

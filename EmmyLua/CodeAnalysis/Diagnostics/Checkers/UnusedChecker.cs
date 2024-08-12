@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+
 namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
 public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(compilation, [DiagnosticCode.Unused])
@@ -11,6 +12,11 @@ public class UnusedChecker(LuaCompilation compilation) : DiagnosticCheckerBase(c
         {
             if (luaDeclaration.IsLocal && context.SearchContext.FindReferences(luaDeclaration).Count() <= 1)
             {
+                if (luaDeclaration.Name == "_")
+                {
+                    continue;
+                }
+
                 if (luaDeclaration.Info.Ptr.ToNode(context.SearchContext) is { } node)
                 {
                     context.Report(
