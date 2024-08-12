@@ -148,19 +148,20 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                     detail = string.Join("\n", details.Select(d => d.RepresentText.Trim('#', '@')));
                 }
 
-                if (literalType is { IsString: true, String: { } stringLiteral })
+                if (literalType is { IsString: true, String: { Value: { } label } stringLiteral })
                 {
-                    var label = stringLiteral.RepresentText;
                     // compact emmylua old alias
-                    if (declaration.Type is LuaStringLiteralType stringLiteralType
-                        && (stringLiteralType.Content.StartsWith('\'') || stringLiteralType.Content.StartsWith('"')))
-                    {
-                        label = stringLiteralType.Content;
-                    }
+                    label = label.Trim('\'', '\"');
 
                     if (context.TriggerToken is not LuaStringToken)
                     {
-                        label = $"\"{label}\"";
+                        var quote = "\'";
+                        if (stringLiteral.RepresentText.StartsWith('\"'))
+                        {
+                            quote = "\"";
+                        }
+                        
+                        label = $"{quote}{label}{quote}";
                     }
 
                     context.Add(new CompletionItem

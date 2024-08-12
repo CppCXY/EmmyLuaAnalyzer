@@ -10,14 +10,6 @@ public class GlobalProvider : ICompleteProviderBase
         {
             AddGlobalCompletion(context);
         }
-        // else if (context.TriggerToken is LuaWhitespaceToken)
-        // {
-        //     AddGlobalCompletion(context);
-        // }
-        // else if (context.TriggerToken is { Kind: LuaTokenKind.TkEndOfLine })
-        // {
-        //     AddGlobalCompletion(context);
-        // }
     }
 
     private void AddGlobalCompletion(CompleteContext context)

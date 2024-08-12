@@ -63,6 +63,11 @@ public class KeywordsProvider : ICompleteProviderBase
             var blockIndentText = string.Empty;
             if (loopStat.FirstChild<LuaBlockSyntax>()?.StatList.LastOrDefault() is { } lastStat)
             {
+                if (lastStat is LuaLabelStatSyntax { Name.Text: "continue"})
+                {
+                    return null;
+                }
+                
                 var indentToken = lastStat.GetPrevSibling();
                 if (indentToken is LuaWhitespaceToken
                     {
