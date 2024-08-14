@@ -1,4 +1,6 @@
-﻿using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
+﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.LanguageServer.Formatting;
+using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.Registration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile;
@@ -22,6 +24,12 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
                 try
                 {
                     var fileSystemPath = fileEvent.Uri.FileSystemPath;
+                    if (IsEditorConfigFile(fileSystemPath))
+                    {
+                        UpdateEditorConfigFile(fileSystemPath);
+                        return Task.CompletedTask;
+                    }
+                    
                     if (context.LuaProject.IsExclude(fileSystemPath))
                     {
                         return Task.CompletedTask;
@@ -52,7 +60,55 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
     private Task UpdateManyFileEventAsync(List<FileEvent> fileEvents,
         CancellationToken cancellationToken)
     {
-        context.UpdateManyDocuments(fileEvents, cancellationToken);
+        var documentIds = new List<LuaDocumentId>();
+        context.ReadyWrite(() =>
+        {
+            context.LuaProject.Compilation.BulkUpdate(() =>
+            {
+                foreach (var fileEvent in fileEvents)
+                {
+                    switch (fileEvent)
+                    {
+                        case { Type: FileChangeType.Created }:
+                        case { Type: FileChangeType.Changed }:
+                        {
+                            var filePath = fileEvent.Uri.FileSystemPath;
+                            if (IsEditorConfigFile(filePath))
+                            {
+                                UpdateEditorConfigFile(filePath);
+                                continue;
+                            }
+                            
+                            if (context.LuaProject.IsExclude(filePath))
+                            {
+                                continue;
+                            }
+
+                            var uri = fileEvent.Uri.UnescapeUri;
+                            var fileText = File.ReadAllText(filePath);
+                            context.LuaProject.UpdateDocumentByUri(uri, fileText);
+                            var documentId = context.LuaProject.GetDocumentIdByUri(uri);
+                            if (documentId.HasValue)
+                            {
+                                documentIds.Add(documentId.Value);
+                            }
+
+                            break;
+                        }
+                        case { Type: FileChangeType.Deleted }:
+                        {
+                            context.LuaProject.RemoveDocumentByUri(fileEvent.Uri.UnescapeUri);
+                            break;
+                        }
+                    }
+                }
+            });
+        });
+
+        foreach (var documentId in documentIds)
+        {
+            context.PushDocumentDiagnostics(documentId);
+        }
         return Task.CompletedTask;
     }
 
@@ -85,6 +141,11 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
                 {
                     GlobalPattern = "**/*.lua",
                     Kind = WatchKind.Create | WatchKind.Change | WatchKind.Delete
+                },
+                new ()
+                {
+                    GlobalPattern = "**/.editorconfig",
+                    Kind = WatchKind.Create | WatchKind.Change | WatchKind.Delete
                 }
             ]
         };
@@ -101,5 +162,20 @@ public class DidChangeWatchedFilesHandler(ServerContext context)
                 }
             ]
         });
+    }
+    
+    private bool IsEditorConfigFile(string fileSystemPath)
+    {
+        return Path.GetFileName(fileSystemPath) == ".editorconfig";
+    }
+    
+    private void UpdateEditorConfigFile(string fileSystemPath)
+    {
+        var directory = Path.GetDirectoryName(fileSystemPath);
+        if (directory is not null)
+        {
+            var workspace = Path.GetFullPath(directory);
+            FormattingNativeApi.UpdateCodeStyle(workspace, fileSystemPath);
+        }
     }
 }

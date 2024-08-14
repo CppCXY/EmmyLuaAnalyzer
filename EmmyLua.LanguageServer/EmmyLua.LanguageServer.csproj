@@ -21,11 +21,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EmmyLua\EmmyLua.csproj" />
+        <ProjectReference Include="..\EmmyLua\EmmyLua.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.5.1" />
+        <PackageReference Include="EmmyLua.LanguageServer.Framework" Version="0.6.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Formatting\Dll\**" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
+﻿using System.Text.Json;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
 using EmmyLua.CodeAnalysis.Document;
@@ -8,8 +7,8 @@ using EmmyLua.Configuration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Client.PublishDiagnostics;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Configuration;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
-using EmmyLua.LanguageServer.Framework.Protocol.Message.WorkspaceWatchedFile.Watch;
 using EmmyLua.LanguageServer.Server.ClientConfig;
+using EmmyLua.LanguageServer.Server.Editorconfig;
 using EmmyLua.LanguageServer.Server.Monitor;
 using EmmyLua.LanguageServer.Server.Resource;
 using EmmyLua.LanguageServer.Util;
@@ -39,9 +38,8 @@ public class ServerContext(Framework.Server.LanguageServer server)
     public ResourceManager ResourceManager { get; } = new();
 
     private CancellationTokenSource? WorkspaceCancellationTokenSource { get; set; } = null;
-
-    private ConcurrentDictionary<LuaDocumentId, CancellationTokenSource> DocumentCancellationTokenSources { get; } =
-        new();
+    
+    private EditorconfigWatcher EditorconfigWatcher { get; } = new();
 
     public async Task StartServerAsync(InitializeParams initializeParams)
     {
@@ -113,12 +111,14 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         {
                             ExternalWorkspacePaths.Add(path);
                             LuaProject.LoadWorkspace(path);
+                            EditorconfigWatcher.LoadWorkspaceEditorconfig(path);
                         }
                     }
                 }
                 // TODO: read config from initializeOptions
 
                 LuaProject.LoadMainWorkspace(MainWorkspacePath);
+                EditorconfigWatcher.LoadWorkspaceEditorconfig(MainWorkspacePath);
                 ResourceManager.Config = SettingManager.GetResourceConfig();
                 WorkspaceCancellationTokenSource = new CancellationTokenSource();
                 PushWorkspaceDiagnostics();
@@ -159,13 +159,6 @@ public class ServerContext(Framework.Server.LanguageServer server)
             LockSlim.ExitReadLock();
         }
     }
-    
-    // public async Task<WorkspaceReady> ReadyWorkspaceAsync()
-    // {
-    //     var ready = new WorkspaceReady();
-    //     // await ready.InitAsync(this);
-    //     return ready;
-    // }
 
     public SemanticModel? GetSemanticModel(string uri)
     {
@@ -298,58 +291,12 @@ public class ServerContext(Framework.Server.LanguageServer server)
         }
     }
 
-    public void UpdateManyDocuments(List<FileEvent> fileEvents, CancellationToken cancellationToken)
-    {
-        var documentIds = new List<LuaDocumentId>();
-        ReadyWrite(() =>
-        {
-            LuaProject.Compilation.BulkUpdate(() =>
-            {
-                foreach (var fileEvent in fileEvents)
-                {
-                    switch (fileEvent)
-                    {
-                        case { Type: FileChangeType.Created }:
-                        case { Type: FileChangeType.Changed }:
-                        {
-                            if (LuaProject.IsExclude(fileEvent.Uri.FileSystemPath))
-                            {
-                                continue;
-                            }
-
-                            var uri = fileEvent.Uri.UnescapeUri;
-                            var fileText = File.ReadAllText(fileEvent.Uri.FileSystemPath);
-                            LuaProject.UpdateDocumentByUri(uri, fileText);
-                            var documentId = LuaProject.GetDocumentIdByUri(uri);
-                            if (documentId.HasValue)
-                            {
-                                documentIds.Add(documentId.Value);
-                            }
-
-                            break;
-                        }
-                        case { Type: FileChangeType.Deleted }:
-                        {
-                            LuaProject.RemoveDocumentByUri(fileEvent.Uri.UnescapeUri);
-                            break;
-                        }
-                    }
-                }
-            });
-        });
-
-        foreach (var documentId in documentIds)
-        {
-            PushDocumentDiagnostics(documentId);
-        }
-    }
-
     public void RemoveDocument(string uri)
     {
         ReadyWrite(() => { LuaProject.RemoveDocumentByUri(uri); });
     }
 
-    private void PushDocumentDiagnostics(LuaDocumentId documentId)
+    public void PushDocumentDiagnostics(LuaDocumentId documentId)
     {
         LockSlim.EnterReadLock();
         try

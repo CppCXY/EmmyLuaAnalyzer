@@ -98,4 +98,6 @@ public sealed class LuaDocument
         LineIndex = LineIndex.Parse(text);
         Text = text;
     }
+
+    public int TotalLine => LineIndex.TotalLine;
 }

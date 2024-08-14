@@ -9,6 +9,7 @@ using EmmyLua.LanguageServer.DocumentLink;
 using EmmyLua.LanguageServer.DocumentRender;
 using EmmyLua.LanguageServer.DocumentSymbol;
 using EmmyLua.LanguageServer.ExecuteCommand;
+using EmmyLua.LanguageServer.Formatting;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Initialize;
 using EmmyLua.LanguageServer.Framework.Server;
 using EmmyLua.LanguageServer.Hover;
@@ -87,5 +88,6 @@ ls.AddHandler(new SignatureHelperHandler(serverContext));
 ls.AddHandler(new SemanticTokenHandler(serverContext));
 ls.AddHandler(new TypeHierarchyHandler(serverContext));
 ls.AddHandler(new ImplementationHandler(serverContext));
+ls.AddHandler(new FormattingHandler(serverContext));
 
 await ls.Run();
