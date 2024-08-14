@@ -38,7 +38,7 @@ public class ServerContext(Framework.Server.LanguageServer server)
     public ResourceManager ResourceManager { get; } = new();
 
     private CancellationTokenSource? WorkspaceCancellationTokenSource { get; set; } = null;
-    
+
     private EditorconfigWatcher EditorconfigWatcher { get; } = new();
 
     public async Task StartServerAsync(InitializeParams initializeParams)
@@ -85,24 +85,45 @@ public class ServerContext(Framework.Server.LanguageServer server)
         LockSlim.EnterWriteLock();
         try
         {
-            var rootPath = string.Empty;
             if (initializeParams.RootUri is { } rootUri)
             {
-                rootPath = rootUri.FileSystemPath;
+                var rootPath = rootUri.FileSystemPath;
+                MainWorkspacePath = rootPath;
             }
 
-            if (rootPath.Length > 0)
+            SettingManager.SupportMultiEncoding();
+            if (MainWorkspacePath.Length == 0)
             {
-                MainWorkspacePath = rootPath;
+                if (initializeParams.WorkspaceFolders is { } workspaceFolders)
+                {
+                    foreach (var workspaceFolder in workspaceFolders)
+                    {
+                        var path = workspaceFolder.Uri.FileSystemPath;
+                        var emmyrcPath = Path.Combine(path, SettingManager.ConfigName);
+                        if (File.Exists(emmyrcPath))
+                        {
+                            MainWorkspacePath = path;
+                            break;
+                        }
+                    }
+                    
+                    if (MainWorkspacePath.Length == 0 && workspaceFolders.Count > 0)
+                    {
+                        MainWorkspacePath = workspaceFolders[0].Uri.FileSystemPath;
+                    }
+                }
+            }
+
+            if (MainWorkspacePath.Length > 0)
+            {
                 LuaProject.Monitor = Monitor;
-                SettingManager.SupportMultiEncoding();
                 SettingManager.Watch(MainWorkspacePath);
                 SettingManager.OnSettingChanged += OnConfigChanged;
                 SettingManager.WorkspaceExtensions = Extensions;
                 LuaProject.MainWorkspacePath = MainWorkspacePath;
                 LuaProject.Features = SettingManager.GetLuaFeatures();
                 LuaProject.InitStdLib();
-                if (IsVscode && initializeParams.WorkspaceFolders is { } workspaceFolders)
+                if (initializeParams.WorkspaceFolders is { } workspaceFolders)
                 {
                     foreach (var workspaceFolder in workspaceFolders)
                     {
@@ -115,7 +136,6 @@ public class ServerContext(Framework.Server.LanguageServer server)
                         }
                     }
                 }
-                // TODO: read config from initializeOptions
 
                 LuaProject.LoadMainWorkspace(MainWorkspacePath);
                 EditorconfigWatcher.LoadWorkspaceEditorconfig(MainWorkspacePath);
