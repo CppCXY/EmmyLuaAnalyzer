@@ -17,8 +17,7 @@
 
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <!-- 发布配置：不生成PDB文件 -->
-        <DebugType>none</DebugType>
-        <DebugSymbols>false</DebugSymbols>
+        <StripSymbols>true</StripSymbols>
     </PropertyGroup>
 
     <ItemGroup>
