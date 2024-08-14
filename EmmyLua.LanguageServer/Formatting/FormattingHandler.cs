@@ -27,6 +27,11 @@ public class FormattingHandler(ServerContext context) : DocumentFormattingHandle
                 var formattedCode = Builder.Format(semanticModel.Document.Text, filePath);
                 if (formattedCode.Length > 0)
                 {
+                    if (!context.IsVscode)
+                    {
+                        formattedCode = formattedCode.Replace("\r\n", "\n");
+                    }
+                    
                     response = new DocumentFormattingResponse(new TextEdit()
                     {
                         Range = new DocumentRange(
@@ -63,6 +68,11 @@ public class FormattingHandler(ServerContext context) : DocumentFormattingHandle
 
                 if (formattedCode.Length > 0)
                 {
+                    if (!context.IsVscode)
+                    {
+                        formattedCode = formattedCode.Replace("\r\n", "\n");
+                    }
+                    
                     response = new DocumentFormattingResponse(new TextEdit()
                     {
                         Range = new DocumentRange(
