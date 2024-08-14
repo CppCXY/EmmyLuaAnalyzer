@@ -26,8 +26,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
-    - name: Build-General
-      if: matrix.target != 'linux-musl-x64'
+    - name: Build-Win And Linux
+      if: matrix.target == 'linux-x64' || matrix.target == 'win-x64'
       run: dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
     # enable for donet9 support
     - name: Build-Linux-Arm64
@@ -35,6 +35,11 @@ jobs:
       run: | 
         dotnet tool install --global dotnet-cross
         dotnet cross publish EmmyLua.LanguageServer -r linux-musl-x64 -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
+    - name: Build-Maxos
+      if: matrix.target == 'osx-arm64' || matrix.target == 'osx-x64'
+      run: |
+        dotnet publish EmmyLua.LanguageServer -r osx-arm64 -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
+        rm -rf ${{ github.workspace }}/artifact/EmmyLua.LanguageServer-${{ matrix.platform }}/EmmyLua.LanguageServer.dSYM
     - name: Upload
       uses: actions/upload-artifact@v3
       with: 
