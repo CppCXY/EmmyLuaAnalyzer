@@ -327,3 +327,23 @@ public class GlobalNameType(string name)
 {
     public string Name { get; } = name;
 }
+
+public class InstanceType(LuaType baseType)
+    : LuaType
+{
+    public LuaType BaseType { get; } = baseType;
+
+    public override LuaType Instantiate(TypeSubstitution substitution)
+    {
+        var newBaseType = BaseType.Instantiate(substitution);
+        return new InstanceType(newBaseType);
+    }
+}
+
+public class EnumInstanceType(LuaNamedType enumType, LuaType? baseType)
+    : LuaType
+{
+    public LuaNamedType EnumType { get; } = enumType;
+
+    public LuaType BaseType { get; } = baseType ?? Builtin.Integer;
+}

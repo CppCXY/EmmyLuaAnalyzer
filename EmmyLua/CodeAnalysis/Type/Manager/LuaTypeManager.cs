@@ -594,4 +594,9 @@ public class LuaTypeManager(LuaCompilation compilation)
 
         return FindTypeInfo(left) == FindTypeInfo(right);
     }
+
+    public bool HasNamespace(LuaDocumentId documentId)
+    {
+        return NamespaceIndices.ContainsKey(documentId);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.DocumentSymbol;
 using EmmyLua.LanguageServer.Server;
 using EmmyLua.LanguageServer.Util;
@@ -16,44 +17,35 @@ public class WorkspaceSymbolBuilder
         {
             var luaProject = context.LuaProject;
             var searchContext = new SearchContext(luaProject.Compilation, new SearchContextFeatures());
-            var globals = context.LuaProject.Compilation.TypeManager.GetAllGlobalInfos();
-            foreach (var global in globals)
+            var namedElements = context.LuaProject.Compilation.Db.QueryNamedElements(searchContext);
+            foreach (var pair in namedElements)
             {
-                if (global.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                var name = pair.Item1;
+                if (name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var globalSymbol = global.MainLuaSymbol;
-                    if (globalSymbol is not null)
+                    var elementIds = pair.Item2;
+                    foreach (var elementId in elementIds)
                     {
-                        var location = globalSymbol.GetLocation(searchContext)?.ToLspLocation();
-                        result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
+                        var document = luaProject.GetDocument(elementId.DocumentId);
+                        if (document is not null)
                         {
-                            Name = global.Name,
-                            Kind = ToSymbolKind(globalSymbol.Type),
-                            Location = location
-                        });
+                            var ptr = new LuaElementPtr<LuaSyntaxElement>(elementId);
+                            if (ptr.ToNode(document) is { } node)
+                            {
+                                var location = node.Location.ToLspLocation();
+                                var declaration = searchContext.FindDeclaration(node);
+                                result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
+                                {
+                                    Name = name,
+                                    Kind = ToSymbolKind(declaration),
+                                    Location = location
+                                });
+                            }
+                        }
                     }
                 }
             }
-            
-            // var members = context.LuaProject.Compilation.TypeManager.GetAllTypeMembers();
-            // foreach (var member in members)
-            // {
-            //     if (member.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
-            //     {
-            //         cancellationToken.ThrowIfCancellationRequested();
-            //         var document = luaProject.GetDocument(member.DocumentId);
-            //         if (document is not null && member.Info.Ptr.ToNode(document) is { } node)
-            //         {
-            //             result.Add(new Framework.Protocol.Message.WorkspaceSymbol.WorkspaceSymbol()
-            //             {
-            //                 Name = member.Name,
-            //                 Kind = ToSymbolKind(member.Type),
-            //                 Location = node.Range.ToLspLocation(document)
-            //             });
-            //         }
-            //     }
-            // }
 
             return result;
         }
@@ -63,12 +55,13 @@ public class WorkspaceSymbolBuilder
         }
     }
 
-    private static SymbolKind ToSymbolKind(LuaType? type)
+    private static SymbolKind ToSymbolKind(LuaSymbol? luaSymbol)
     {
-        return type switch
+        return luaSymbol?.Info switch
         {
-            LuaNamedType => SymbolKind.Variable,
-            LuaMethodType => SymbolKind.Method,
+            MethodInfo => SymbolKind.Method,
+            ParamInfo => SymbolKind.TypeParameter,
+            NamedTypeInfo => SymbolKind.Class,
             _ => SymbolKind.Variable
         };
     }

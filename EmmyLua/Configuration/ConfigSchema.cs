@@ -40,6 +40,9 @@ public class Setting
 
     [JsonPropertyName("strict")]
     public Strict Strict { get; set; } = new();
+
+    [JsonPropertyName("semanticTokens")]
+    public SemanticTokens SemanticTokens { get; set; } = new();
 }
 
 public class Completion
@@ -257,4 +260,10 @@ public class Signature
 {
     [JsonPropertyName("detailSignatureHelper")]
     public bool DetailSignatureHelper { get; set; } = false;
+}
+
+public class SemanticTokens
+{
+    [JsonPropertyName("enable")]
+    public bool Enable { get; set; } = true;
 }

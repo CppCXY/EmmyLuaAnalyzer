@@ -101,5 +101,8 @@
 ---@class self
 
 ---@class integer : number
+---@alias int integer
 
 ---@class namespace<T: string>
+
+---@class instance<T> : T

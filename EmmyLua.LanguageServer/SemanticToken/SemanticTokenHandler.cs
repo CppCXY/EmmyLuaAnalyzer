@@ -16,6 +16,11 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
     {
         var uri = semanticTokensParams.TextDocument.Uri.UnescapeUri;
         SemanticTokens? semanticTokens = null;
+        if (!context.SettingManager.Setting.SemanticTokens.Enable)
+        {
+            return Task.FromResult(semanticTokens);
+        }
+
         context.ReadyRead(() =>
         {
             var semanticModel = context.LuaProject.Compilation.GetSemanticModel(uri);
@@ -49,7 +54,8 @@ public class SemanticTokenHandler(ServerContext context) : SemanticTokensHandler
             {
                 semanticTokens = new()
                 {
-                    Data = Analyzer.TokenizeByRange(semanticModel, context.IsVscode, semanticTokensRangeParams.Range, cancellationToken)
+                    Data = Analyzer.TokenizeByRange(semanticModel, context.IsVscode, semanticTokensRangeParams.Range,
+                        cancellationToken)
                 };
             }
         });

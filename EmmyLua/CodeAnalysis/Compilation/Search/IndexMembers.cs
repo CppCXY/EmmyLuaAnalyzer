@@ -78,7 +78,8 @@ public class IndexMembers(SearchContext context)
                     {
                         if (declarations.TryGetValue(name, out var symbol))
                         {
-                            return new LuaSymbol(symbol.Name, typeInfo.BaseType ?? symbol.Type, symbol.Info);
+                            var enumMemberType = new EnumInstanceType(namedType, typeInfo.BaseType ?? symbol.Type);
+                            return symbol.WithType(enumMemberType);
                         }
                     }
 
@@ -374,6 +375,14 @@ public class IndexMembers(SearchContext context)
                     return new LuaSymbol(string.Empty, op.Ret, new VirtualInfo());
                 }
             }
+            else if (keyType is EnumInstanceType { EnumType: { } enumType })
+            {
+                var op = context.GetBestMatchedIndexOperator(namedType, enumType);
+                if (op is not null)
+                {
+                    return new LuaSymbol(string.Empty, op.Ret, new VirtualInfo());
+                }
+            }
 
             return null;
         }
@@ -443,7 +452,14 @@ public class IndexMembers(SearchContext context)
             if (indexExpr.IndexKeyExpr is { } indexKeyExpr)
             {
                 var keyType = context.Infer(indexKeyExpr);
-                if (keyType.SubTypeOf(type.GenericArgs[0], context))
+                if (keyType is EnumInstanceType { EnumType: { } enumType })
+                {
+                    if (enumType.SubTypeOf(type.GenericArgs[0], context))
+                    {
+                        return new LuaSymbol(string.Empty, type.GenericArgs[1], new VirtualInfo());
+                    }
+                }
+                else if (keyType.SubTypeOf(type.GenericArgs[0], context))
                 {
                     return new LuaSymbol(string.Empty, type.GenericArgs[1], new VirtualInfo());
                 }

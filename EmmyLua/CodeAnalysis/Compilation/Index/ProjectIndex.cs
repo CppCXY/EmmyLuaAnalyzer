@@ -208,5 +208,36 @@ public class ProjectIndex
         return Source.Query(id);
     }
 
+    public IEnumerable<(string, List<SyntaxElementId>)> QueryNamedElements(SearchContext context)
+    {
+        foreach (var pair in NameExpr.QueryAllWithKey())
+        {
+            var name = pair.Key;
+            var elements = pair.Value.Select(it => it.Element.UniqueId).ToList();
+            yield return (name, elements);
+        }
+
+        foreach (var pair in TableField.QueryAllWithKey())
+        {
+            var name = pair.Key;
+            var elements = pair.Value.Select(it => it.Element.UniqueId).ToList();
+            yield return (name, elements);
+        }
+
+        foreach (var pair in NameType.QueryAllWithKey())
+        {
+            var name = pair.Key;
+            var elements = pair.Value.Select(it => it.Element.UniqueId).ToList();
+            yield return (name, elements);
+        }
+
+        foreach (var pair in MultiIndexExpr.QueryAllWithKey())
+        {
+            var name = pair.Key;
+            var elements = pair.Value.Select(it => it.Element.UniqueId).ToList();
+            yield return (name, elements);
+        }
+    }
+
     #endregion
 }

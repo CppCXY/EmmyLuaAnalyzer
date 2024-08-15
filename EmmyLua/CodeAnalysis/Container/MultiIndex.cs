@@ -5,7 +5,7 @@ namespace EmmyLua.CodeAnalysis.Container;
 public class MultiIndex<TKey, TStubElement>
     where TKey : notnull
 {
-    record struct ElementIndex(LuaDocumentId DocumentId, TStubElement Element);
+    public record struct ElementIndex(LuaDocumentId DocumentId, TStubElement Element);
 
     private readonly Dictionary<TKey, List<ElementIndex>> _indexMap = new();
 
@@ -50,6 +50,14 @@ public class MultiIndex<TKey, TStubElement>
 
     public IEnumerable<TStubElement> QueryAll() =>
         _indexMap.Values.SelectMany(it => it.Select(element => element.Element));
+
+    public IEnumerable<KeyValuePair<TKey, List<ElementIndex>>> QueryAllWithKey()
+    {
+        foreach (var pair in _indexMap)
+        {
+            yield return pair;
+        }
+    }
 
     public bool ContainsKey(TKey key) => _indexMap.ContainsKey(key);
 }

@@ -161,6 +161,12 @@ public static class TypeInfer
         var typeArgs = genericType.GenericArgs.Select(context.Infer).ToList();
         if (genericType is { Name: { } name })
         {
+            var nameText = name.RepresentText;
+            if (nameText == "instance" && typeArgs.FirstOrDefault() is { } firstType)
+            {
+                return new InstanceType(firstType);
+            }
+
             return new LuaGenericType(genericType.DocumentId, name.RepresentText, typeArgs);
         }
 

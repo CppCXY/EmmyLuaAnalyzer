@@ -310,6 +310,20 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
                 Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, type);
             }
+            else if (type is LuaElementType elementType)
+            {
+                // same file use ref
+                if (elementType.Id.DocumentId == declaration.DocumentId)
+                {
+                    declaration.Type = elementType;
+                }
+                else
+                {
+                    declaration.Type = new LuaElementType(declaration.UniqueId);
+                    Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+                    Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, elementType);
+                }
+            }
             else
             {
                 declaration.Type = type;

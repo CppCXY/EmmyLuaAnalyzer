@@ -63,7 +63,7 @@ public class SnippetBuilder(string label, CompleteContext completeContext)
             InsertTextMode = InsertTextMode.AdjustIndentation,
             TextEdit = TextEdit,
             AdditionalTextEdits = AdditionalTextEdit,
-            Kind = CompletionItemKind.Event,
+            Kind = CompletionItemKind.Snippet,
             InsertTextFormat = InsertTextFormat.Snippet,
         });
     }

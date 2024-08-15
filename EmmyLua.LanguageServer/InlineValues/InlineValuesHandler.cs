@@ -20,7 +20,11 @@ public class InlineValuesHandler(ServerContext context): InlineValueHandlerBase
             var semanticModel = context.GetSemanticModel(uri);
             if (semanticModel is not null)
             {
-                var result =  Builder.Build(semanticModel, inlineValueParams.Range);
+                var range = inlineValueParams.Range;
+                var stopRangePosition = inlineValueParams.Context.StoppedLocation.End;
+                var validRange = range with { End = stopRangePosition };
+                
+                var result =  Builder.Build(semanticModel, validRange);
                 container = new InlineValueResponse(result);
             }
         });

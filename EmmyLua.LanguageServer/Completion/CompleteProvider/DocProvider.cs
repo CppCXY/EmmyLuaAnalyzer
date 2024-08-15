@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using System.Text;
+using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
@@ -24,6 +25,7 @@ public class DocProvider : ICompleteProviderBase
             case { Kind: LuaTokenKind.TkDocStart or LuaTokenKind.TkTagOther }:
             {
                 AddTagCompletion(context);
+                AddTagParamReturn(context);
                 break;
             }
             case LuaNameToken { Parent: LuaDocTagParamSyntax paramSyntax }:
@@ -69,6 +71,59 @@ public class DocProvider : ICompleteProviderBase
         context.StopHere();
     }
 
+    private void AddTagParamReturn(CompleteContext context)
+    {
+        var commentSyntax = context.TriggerToken?.Ancestors.OfType<LuaCommentSyntax>().FirstOrDefault();
+        if (commentSyntax is null)
+        {
+            return;
+        }
+
+        var funcStat = commentSyntax.Owner as LuaFuncStatSyntax;
+        if (funcStat is null)
+        {
+            return;
+        }
+
+        var paramList = funcStat.ClosureExpr?.ParamList;
+        if (paramList is not null)
+        {
+            var paramNameList = new List<string>();
+            foreach (var param in paramList.Params)
+            {
+                if (param.IsVarArgs)
+                {
+                    paramNameList.Add("...");
+                }
+                else
+                {
+                    paramNameList.Add(param.Name?.RepresentText ?? "");
+                }
+            }
+
+            var sb = new StringBuilder();
+            for (var i = 0; i < paramNameList.Count; i++)
+            {
+                var paramName = paramNameList[i];
+                if (i == 0)
+                {
+                    sb.Append($"param {paramName} ${{{i + 1}:any}}\n");
+                }
+                else
+                {
+                    sb.Append($"---@param {paramName} ${{{i + 1}:any}}\n");
+                }
+            }
+
+            sb.Append("---@return ${0:any}");
+
+            context.CreateSnippet("param;@return")
+                .WithDetail(" ( ... )")
+                .WithInsertText(sb.ToString())
+                .AddToContext();
+        }
+    }
+
     private void AddParamNameCompletion(LuaDocTagParamSyntax paramSyntax, CompleteContext context)
     {
         var comment = paramSyntax.Ancestors.OfType<LuaCommentSyntax>().FirstOrDefault();
@@ -103,6 +158,7 @@ public class DocProvider : ICompleteProviderBase
         {
             prefixNamespace = prefix[..dotIndex];
         }
+
         var namespaceOrTypes =
             context.SemanticModel.Compilation.TypeManager.GetNamespaceOrTypeInfos(prefixNamespace,
                 context.SemanticModel.Document.Id);
