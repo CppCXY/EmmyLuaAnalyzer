@@ -48,6 +48,7 @@ public class LuaFeatures
 
     public bool InitStdLib { get; set; } = true;
 
+    // Invalid config
     public int DontIndexMaxFileSize { get; set; } = 1048576; // 1MB
 
     public Encoding Encoding { get; set; } = Encoding.UTF8;

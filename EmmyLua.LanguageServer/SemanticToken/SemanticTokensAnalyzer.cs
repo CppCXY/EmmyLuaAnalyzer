@@ -73,7 +73,9 @@ public class SemanticTokensAnalyzer
         var syntaxTree = document.SyntaxTree;
         try
         {
-            foreach (var nodeOrToken in syntaxTree.SyntaxRoot.DescendantsWithToken)
+            var commentNodeOrToken = syntaxTree.SyntaxRoot.Descendants.OfType<LuaCommentSyntax>()
+                .SelectMany(it => it.DescendantsWithToken);
+            foreach (var nodeOrToken in commentNodeOrToken)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -119,11 +121,6 @@ public class SemanticTokensAnalyzer
             var sourceRange = range.ToSourceRange(document);
             foreach (var nodeOrToken in syntaxTree.SyntaxRoot.DescendantsInRange(sourceRange))
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return [];
-                }
-
                 switch (nodeOrToken)
                 {
                     case LuaSyntaxToken token:
@@ -137,6 +134,11 @@ public class SemanticTokensAnalyzer
                         break;
                     }
                 }
+            }
+            
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return [];
             }
         }
         catch (OperationCanceledException)
@@ -156,65 +158,19 @@ public class SemanticTokensAnalyzer
         var tokenKind = token.Kind;
         switch (tokenKind)
         {
-            case LuaTokenKind.TkLocal:
-            {
-                if (isVscode)
-                {
-                    return;
-                }
-
-                builder.Push(token, SemanticTokenTypes.Keyword);
-                break;
-            }
-            case LuaTokenKind.TkIf:
-            case LuaTokenKind.TkElse:
-            case LuaTokenKind.TkElseIf:
-            case LuaTokenKind.TkEnd:
-            case LuaTokenKind.TkFor:
-            case LuaTokenKind.TkFunction:
-            case LuaTokenKind.TkIn:
-            case LuaTokenKind.TkRepeat:
-            case LuaTokenKind.TkReturn:
-            case LuaTokenKind.TkThen:
-            case LuaTokenKind.TkUntil:
-            case LuaTokenKind.TkGoto:
-            case LuaTokenKind.TkWhile:
-            case LuaTokenKind.TkBreak:
-            case LuaTokenKind.TkDo:
-            case LuaTokenKind.TkAnd:
-            case LuaTokenKind.TkOr:
-            {
-                builder.Push(token, SemanticTokenTypes.Keyword);
-                break;
-            }
             case LuaTokenKind.TkString:
             case LuaTokenKind.TkLongString:
             {
                 builder.Push(token, SemanticTokenTypes.String);
                 break;
             }
+            case LuaTokenKind.TkDocOr:
             case LuaTokenKind.TkConcat:
             case LuaTokenKind.TkEq:
             case LuaTokenKind.TkNe:
             case LuaTokenKind.TkLe:
             case LuaTokenKind.TkGe:
-            case LuaTokenKind.TkShl:
-            case LuaTokenKind.TkShr:
-            case LuaTokenKind.TkBitXor:
-            case LuaTokenKind.TkBitAnd:
-            case LuaTokenKind.TkBitOr:
-            case LuaTokenKind.TkPlus:
-            case LuaTokenKind.TkMinus:
-            case LuaTokenKind.TkMul:
-            case LuaTokenKind.TkDiv:
-            case LuaTokenKind.TkMod:
-            case LuaTokenKind.TkPow:
-            case LuaTokenKind.TkLen:
-            case LuaTokenKind.TkIDiv:
             case LuaTokenKind.TkDocMatch:
-            case LuaTokenKind.TkColon:
-            case LuaTokenKind.TkDbColon:
-            case LuaTokenKind.TkSemicolon:
             case LuaTokenKind.TkLeftBracket:
             case LuaTokenKind.TkRightBracket:
             case LuaTokenKind.TkLeftParen:
@@ -223,7 +179,6 @@ public class SemanticTokensAnalyzer
             case LuaTokenKind.TkRightBrace:
             case LuaTokenKind.TkDots:
             case LuaTokenKind.TkComma:
-            case LuaTokenKind.TkAssign:
             case LuaTokenKind.TkDot:
             {
                 builder.Push(token, SemanticTokenTypes.Operator);
@@ -275,7 +230,7 @@ public class SemanticTokensAnalyzer
             {
                 if (!isVscode)
                 {
-                    builder.Push(token, SemanticTokenTypes.Keyword, SemanticTokenModifiers.Documentation);
+                    builder.Push(token, SemanticTokenTypes.Decorator, SemanticTokenModifiers.Documentation);
                 }
 
                 break;

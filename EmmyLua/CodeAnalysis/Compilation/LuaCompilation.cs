@@ -134,7 +134,7 @@ public class LuaCompilation
                 foreach (var documentId in DirtyDocumentIds)
                 {
                     var document = Project.GetDocument(documentId);
-                    if (document is not null && document.Text.Length < Project.Features.DontIndexMaxFileSize)
+                    if (document is not null)
                     {
                         Diagnostics.ClearDiagnostic(document.Id);
                         documents.Add(document);
