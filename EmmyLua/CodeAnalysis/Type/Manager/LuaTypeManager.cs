@@ -293,7 +293,7 @@ public class LuaTypeManager(LuaCompilation compilation)
             return;
         }
 
-        if (IsSameType(type, Builtin.Global))
+        if (type.Name == "global")
         {
             AddGlobal(member.Name, member);
             return;
@@ -578,21 +578,6 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
 
         return null;
-    }
-
-    public bool IsSameType(LuaNamedType left, LuaNamedType right)
-    {
-        if (left.DocumentId == right.DocumentId)
-        {
-            return left.Name == right.Name;
-        }
-        else if (!NamespaceIndices.ContainsKey(left.DocumentId) &&
-                 !NamespaceIndices.ContainsKey(right.DocumentId))
-        {
-            return left.Name == right.Name;
-        }
-
-        return FindTypeInfo(left) == FindTypeInfo(right);
     }
 
     public bool HasNamespace(LuaDocumentId documentId)

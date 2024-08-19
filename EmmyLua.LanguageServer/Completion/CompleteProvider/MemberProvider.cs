@@ -63,13 +63,38 @@ public class MemberProvider : ICompleteProviderBase
         var colon = indexExpr.IsColonIndex;
         foreach (var member in context.SemanticModel.Context.GetMembers(prefixType))
         {
-            context.CreateCompletion(member.Name, member.Type)
-                .WithColon(colon)
-                .WithData(member.RelationInformation)
-                .WithDotCheckBracketLabel(indexExpr)
-                .WithCheckDeclaration(member)
-                .WithCheckVisible(indexExpr, member)
-                .AddToContext();
+            if (member.Name.StartsWith("["))
+            {
+                var label = member.Name[1..^1];
+                var parent = context.TriggerToken.Parent;
+                var dotToken = parent.FirstChildToken(LuaTokenKind.TkDot);
+                if (dotToken is not null)
+                {
+                    var additionalTextEdit = new AnnotatedTextEdit()
+                    {
+                        NewText = string.Empty,
+                        Range = dotToken.Range.ToLspRange(context.SemanticModel.Document)
+                    };
+
+                    context.CreateCompletion(label, member.Type)
+                        .WithInsertText(member.Name)
+                        .WithData(member.RelationInformation)
+                        .WithAdditionalTextEdit(additionalTextEdit)
+                        .WithCheckDeclaration(member)
+                        .WithCheckVisible(indexExpr, member)
+                        .AddToContext();
+                }
+            }
+            else
+            {
+                context.CreateCompletion(member.Name, member.Type)
+                    .WithColon(colon)
+                    .WithData(member.RelationInformation)
+                    .WithDotCheckBracketLabel(indexExpr)
+                    .WithCheckDeclaration(member)
+                    .WithCheckVisible(indexExpr, member)
+                    .AddToContext();
+            }
         }
     }
 

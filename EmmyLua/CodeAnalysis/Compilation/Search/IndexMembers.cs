@@ -112,10 +112,21 @@ public class IndexMembers(SearchContext context)
                 }
             }
 
-            var op = context.GetBestMatchedIndexOperator(namedType, Builtin.String);
-            if (op is not null)
+            if (name.StartsWith('['))
             {
-                return new LuaSymbol(name, op.Ret, new VirtualInfo());
+                var op = context.GetBestMatchedIndexOperator(namedType, Builtin.Integer);
+                if (op is not null)
+                {
+                    return new LuaSymbol(name, op.Ret, new VirtualInfo());
+                }
+            }
+            else
+            {
+                var op = context.GetBestMatchedIndexOperator(namedType, Builtin.String);
+                if (op is not null)
+                {
+                    return new LuaSymbol(name, op.Ret, new VirtualInfo());
+                }
             }
 
             return null;

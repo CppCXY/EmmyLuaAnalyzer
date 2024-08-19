@@ -6,6 +6,7 @@ using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
 using EmmyLua.LanguageServer.Framework.Protocol.Model;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Kind;
+using EmmyLua.LanguageServer.Framework.Protocol.Model.TextEdit;
 using EmmyLua.LanguageServer.Framework.Protocol.Model.Union;
 
 namespace EmmyLua.LanguageServer.Completion;
@@ -26,6 +27,8 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
 
     private TextEditOrInsertReplaceEdit? TextOrReplaceEdit { get; set; }
 
+    private List<AnnotatedTextEdit>? AdditionalTextEdit { get; set; }
+    
     private bool Colon { get; set; } = false;
 
     private bool Disable { get; set; } = false;
@@ -132,6 +135,12 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
         return this;
     }
 
+    public CompletionItemBuilder WithAdditionalTextEdit(AnnotatedTextEdit textEdit)
+    {
+        AdditionalTextEdit = [textEdit];
+        return this;
+    }
+
     public CompletionItemBuilder WithTextEditOrReplaceEdit(TextEditOrInsertReplaceEdit textOrReplaceEdit)
     {
         TextOrReplaceEdit = textOrReplaceEdit;
@@ -178,7 +187,8 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
                         InsertText = InsertText,
                         Data = Data!,
                         Command = Command,
-                        TextEdit = TextOrReplaceEdit
+                        TextEdit = TextOrReplaceEdit,
+                        AdditionalTextEdits = AdditionalTextEdit,
                     };
                     if (IsDeprecated)
                     {
@@ -292,6 +302,7 @@ public class CompletionItemBuilder(string label, LuaType type, CompleteContext c
             InsertText = InsertText,
             Data = Data!,
             Command = Command,
+            AdditionalTextEdits = AdditionalTextEdit,
             TextEdit = TextOrReplaceEdit
         };
 

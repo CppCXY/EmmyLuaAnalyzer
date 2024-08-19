@@ -327,6 +327,17 @@
         }
       }
     },
+    "SemanticTokens": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enable": {
+          "type": "boolean"
+        }
+      }
+    },
     "Signature": {
       "type": [
         "object",
@@ -452,6 +463,9 @@
     },
     "strict": {
       "$ref": "#/definitions/Strict"
+    },
+    "semanticTokens": {
+      "$ref": "#/definitions/SemanticTokens"
     }
   }
 }

@@ -18,12 +18,21 @@ public static class Fields
                 p.Accept(LuaTokenKind.TkDocVisibility);
                 p.SetState(LuaDocLexerState.Normal);
             }
+
             switch (p.Current)
             {
                 case LuaTokenKind.TkLeftBracket:
                 {
                     p.Bump();
-                    TypesParser.Type(p);
+                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkInt)
+                    {
+                        p.Bump();
+                    }
+                    else
+                    {
+                        TypesParser.Type(p);
+                    }
+
                     p.Expect(LuaTokenKind.TkRightBracket);
                     break;
                 }
