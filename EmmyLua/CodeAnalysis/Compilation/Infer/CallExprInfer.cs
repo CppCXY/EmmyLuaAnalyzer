@@ -16,9 +16,9 @@ public static class CallExprInfer
             return InferRequire(callExpr, context);
         }
 
-        var luaType = context.Infer(prefixExpr);
+        var parentType = context.Infer(prefixExpr);
         var args = callExpr.ArgList?.ArgList.ToList() ?? [];
-        foreach(var luaMethod in context.FindCallableType(luaType))
+        foreach (var luaMethod in context.FindCallableType(parentType))
         {
             var perfectSig = MethodInfer.FindPerfectMatchSignature(luaMethod, callExpr, args, context);
             if (perfectSig.ReturnType is { } retTy)
@@ -39,7 +39,7 @@ public static class CallExprInfer
         //     }
         // }
 
-        return UnwrapReturn(callExpr, context, returnType, 0);
+        return UnwrapReturn(callExpr, context, returnType, parentType, 0);
     }
 
     /// <summary>
@@ -48,36 +48,35 @@ public static class CallExprInfer
     /// <param name="callExprSyntax"></param>
     /// <param name="context"></param>
     /// <param name="ret"></param>
+    /// <param name="parentType"></param>
     /// <param name="level"></param>
     /// <returns></returns>
     private static LuaType UnwrapReturn(
         LuaCallExprSyntax callExprSyntax,
         SearchContext context,
         LuaType ret,
+        LuaType parentType,
         int level = 0)
     {
         switch (ret)
         {
             case LuaUnionType unionType:
             {
-                return UnwrapUnion(unionType, callExprSyntax, context, level);
+                return UnwrapUnion(unionType, callExprSyntax, context, parentType, level);
             }
             case LuaMultiReturnType multiRetType:
             {
-                return UnwrapMultiReturn(multiRetType, callExprSyntax, context, level);
+                return UnwrapMultiReturn(multiRetType, callExprSyntax, context, parentType, level);
             }
             case LuaVariadicType variadicType:
             {
-                return UnwrapVariadicType(variadicType, callExprSyntax, context, level);
+                return UnwrapVariadicType(variadicType, callExprSyntax, context, parentType, level);
             }
             case LuaNamedType namedType:
             {
                 if (namedType.Name == "self")
                 {
-                    if (callExprSyntax.PrefixExpr is LuaIndexExprSyntax { PrefixExpr: { } prefixExpr })
-                    {
-                        return context.Infer(prefixExpr);
-                    }
+                    return parentType;
                 }
 
                 break;
@@ -87,20 +86,21 @@ public static class CallExprInfer
         return ret;
     }
 
-    private static LuaType UnwrapUnion(LuaUnionType unionType, LuaCallExprSyntax callExprSyntax, SearchContext context,
-        int level)
+    private static LuaType UnwrapUnion(LuaUnionType unionType, LuaCallExprSyntax callExprSyntax,
+        SearchContext context, LuaType parentType, int level)
     {
         if (level > 0)
         {
             return unionType;
         }
 
-        var types = unionType.UnionTypes.Select(t => UnwrapReturn(callExprSyntax, context, t, level)).ToList();
+        var types = unionType.UnionTypes.Select(t => UnwrapReturn(callExprSyntax, context, t, parentType, level))
+            .ToList();
         return new LuaUnionType(types);
     }
 
     private static LuaType UnwrapMultiReturn(LuaMultiReturnType multiReturnType, LuaCallExprSyntax callExprSyntax,
-        SearchContext context, int level)
+        SearchContext context, LuaType parentType, int level)
     {
         if (level > 0)
         {
@@ -109,11 +109,11 @@ public static class CallExprInfer
 
         var retType = IsLastCallExpr(callExprSyntax) ? multiReturnType : multiReturnType.GetElementType(0);
 
-        return UnwrapReturn(callExprSyntax, context, retType, level + 1);
+        return UnwrapReturn(callExprSyntax, context, retType, parentType,level + 1);
     }
 
     private static LuaType UnwrapVariadicType(LuaVariadicType variadicType, LuaCallExprSyntax callExprSyntax,
-        SearchContext context, int level)
+        SearchContext context, LuaType parentType, int level)
     {
         if (level > 1)
         {

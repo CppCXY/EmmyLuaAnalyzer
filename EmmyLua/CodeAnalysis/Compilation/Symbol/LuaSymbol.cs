@@ -320,6 +320,17 @@ public record AggregateMemberInfo(
 public record VirtualInfo : ISymbolInfo
 {
     public LuaElementPtr<LuaSyntaxElement> Ptr => LuaElementPtr<LuaSyntaxElement>.Empty;
+
+    public static LuaSymbol CreateVirtualSymbol(string name, LuaType? type, SymbolFeature feature = SymbolFeature.None,
+        SymbolVisibility visibility = SymbolVisibility.Public)
+    {
+        return new LuaSymbol(name, type, new VirtualInfo(), feature, visibility);
+    }
+
+    public static LuaSymbol CreateTypeSymbol(LuaType? type)
+    {
+        return new LuaSymbol(string.Empty, type, new VirtualInfo());
+    }
 }
 
 public record NamespaceInfo : VirtualInfo;

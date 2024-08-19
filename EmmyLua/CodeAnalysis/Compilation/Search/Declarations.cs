@@ -46,7 +46,7 @@ public class Declarations(SearchContext context)
             }
             case LuaCallExprSyntax callExpr:
             {
-                return InnerDeclaration(callExpr.PrefixExpr);
+                return FindCallDeclaration(callExpr);
             }
             case LuaTableFieldSyntax tableField:
             {
@@ -242,6 +242,17 @@ public class Declarations(SearchContext context)
                     return FindDeclaration(paramElement);
                 }
             }
+        }
+
+        return null;
+    }
+
+    private LuaSymbol? FindCallDeclaration(LuaCallExprSyntax callExpr)
+    {
+        if (callExpr.PrefixExpr is { } prefixExpr)
+        {
+            var prefixType = context.Infer(prefixExpr);
+            return VirtualInfo.CreateTypeSymbol(prefixType);
         }
 
         return null;
