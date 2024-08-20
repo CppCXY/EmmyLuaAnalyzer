@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.LanguageServer.Server.Render.Renderer;
 
@@ -225,7 +226,7 @@ public static class LuaTypeRenderer
                 RenderType(variadicType.BaseType, renderContext);
                 break;
             }
-            case LuaExpandType expandType:
+            case LuaExpandTemplate expandType:
             {
                 renderContext.Append(expandType.Name);
                 renderContext.Append("...");
@@ -236,7 +237,7 @@ public static class LuaTypeRenderer
                 RenderNamedType(namedType, renderContext, level);
                 break;
             }
-            case LuaTemplateType templateType:
+            case LuaStringTemplate templateType:
             {
                 renderContext.Append($"{templateType.PrefixName}<{templateType.TemplateName}>");
                 break;
@@ -377,14 +378,14 @@ public static class LuaTypeRenderer
     private static void RenderTupleType(LuaTupleType tupleType, LuaRenderContext renderContext, int level)
     {
         renderContext.Append('[');
-        for (var i = 0; i < tupleType.TupleDeclaration.Count; i++)
+        for (var i = 0; i < tupleType.TypeList.Count; i++)
         {
             if (i > 0)
             {
                 renderContext.Append(',');
             }
 
-            InnerRenderType(tupleType.TupleDeclaration[i].Type, renderContext, level + 1);
+            InnerRenderType(tupleType.TypeList[i].Type, renderContext, level + 1);
         }
 
         renderContext.Append(']');

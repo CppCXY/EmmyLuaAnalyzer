@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -35,8 +36,8 @@ public class SubTypeInfer(SearchContext context)
                 return IsSubTypeOfNamedType(leftNamedType, rightNamedType);
             case (LuaUnionType leftUnionType, LuaUnionType rightUnionType):
                 return IsSubTypeOfUnionType(leftUnionType, rightUnionType);
-            case (LuaAggregateType leftAggregateType, LuaAggregateType rightAggregateType):
-                return IsSubTypeOfAggregateType(leftAggregateType, rightAggregateType);
+            // case (LuaAggregateType leftAggregateType, LuaAggregateType rightAggregateType):
+            //     return IsSubTypeOfAggregateType(leftAggregateType, rightAggregateType);
             case (LuaTupleType leftTupleType, LuaTupleType rightTupleType):
                 return IsSubTypeOfTupleType(leftTupleType, rightTupleType);
             case (LuaArrayType leftArrayType, LuaArrayType rightArrayType):
@@ -110,27 +111,27 @@ public class SubTypeInfer(SearchContext context)
         return left.UnionTypes.All(leftType => right.UnionTypes.Any(rightType => IsSubTypeOf(leftType, rightType)));
     }
 
-    private bool IsSubTypeOfAggregateType(LuaAggregateType left, LuaAggregateType right)
-    {
-        var count = Math.Min(left.Declarations.Count, right.Declarations.Count);
-        for (var i = 0; i < count; ++i)
-        {
-            if (!IsSubTypeOf(left.Declarations[i].Type, right.Declarations[i].Type))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    // private bool IsSubTypeOfAggregateType(LuaAggregateType left, LuaAggregateType right)
+    // {
+    //     var count = Math.Min(left.Declarations.Count, right.Declarations.Count);
+    //     for (var i = 0; i < count; ++i)
+    //     {
+    //         if (!IsSubTypeOf(left.Declarations[i].Type, right.Declarations[i].Type))
+    //         {
+    //             return false;
+    //         }
+    //     }
+    //
+    //     return true;
+    // }
 
     private bool IsSubTypeOfTupleType(LuaTupleType left, LuaTupleType right)
     {
-        if (left.TupleDeclaration.Count != right.TupleDeclaration.Count)
+        if (left.TypeList.Count != right.TypeList.Count)
         {
             return false;
         }
 
-        return !left.TupleDeclaration.Where((t, i) => !IsSubTypeOf(t.Type, right.TupleDeclaration[i].Type)).Any();
+        return !left.TypeList.Where((t, i) => !IsSubTypeOf(t, right.TypeList[i])).Any();
     }
 }

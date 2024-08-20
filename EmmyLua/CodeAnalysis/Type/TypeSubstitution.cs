@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Type;
 
@@ -6,11 +7,11 @@ public class TypeSubstitution
 {
     private Dictionary<string, LuaType> TypeMap { get; } = new();
 
-    private Dictionary<string, LuaType> Template { get; } = new();
+    private Dictionary<string, LuaTypeTemplate> Template { get; } = new();
 
     private Dictionary<string, List<LuaSymbol>> SpreadParameters { get; } = new();
 
-    public void SetTemplate(Dictionary<string, LuaType> defaultTypeMap)
+    public void SetTemplate(Dictionary<string, LuaTypeTemplate> defaultTypeMap)
     {
         foreach (var (key, value) in defaultTypeMap)
         {

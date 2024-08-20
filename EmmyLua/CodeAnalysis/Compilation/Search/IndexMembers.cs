@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -221,7 +222,7 @@ public class IndexMembers(SearchContext context)
         {
             if (int.TryParse(name[1..^1], out var result))
             {
-                return tupleType.TupleDeclaration.ElementAtOrDefault(result - 1);
+                return VirtualInfo.CreateTypeSymbol(tupleType.TypeList.ElementAtOrDefault(result - 1));
             }
         }
 
@@ -249,12 +250,12 @@ public class IndexMembers(SearchContext context)
                                      && (numberType.IsSameType(Builtin.Number, context) ||
                                          numberType.IsSameType(Builtin.Integer, context)))
             {
-                return new LuaSymbol(string.Empty, genericType.GenericArgs.ElementAtOrDefault(1), new VirtualInfo());
+                return VirtualInfo.CreateTypeSymbol(genericType.GenericArgs.ElementAtOrDefault(1));
             }
             else if (genericType.GenericArgs.FirstOrDefault() is { } stringType &&
                      stringType.IsSameType(Builtin.String, context))
             {
-                return new LuaSymbol(string.Empty, genericType.GenericArgs.ElementAtOrDefault(1), new VirtualInfo());
+                return VirtualInfo.CreateTypeSymbol(genericType.GenericArgs.ElementAtOrDefault(1));
             }
         }
         else if (genericType.Name == "namespace" &&

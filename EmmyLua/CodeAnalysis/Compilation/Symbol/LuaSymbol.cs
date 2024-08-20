@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
@@ -319,17 +320,19 @@ public record AggregateMemberInfo(
 
 public record VirtualInfo : ISymbolInfo
 {
+    private static VirtualInfo Default { get; } = new();
+
     public LuaElementPtr<LuaSyntaxElement> Ptr => LuaElementPtr<LuaSyntaxElement>.Empty;
 
     public static LuaSymbol CreateVirtualSymbol(string name, LuaType? type, SymbolFeature feature = SymbolFeature.None,
         SymbolVisibility visibility = SymbolVisibility.Public)
     {
-        return new LuaSymbol(name, type, new VirtualInfo(), feature, visibility);
+        return new LuaSymbol(name, type, Default, feature, visibility);
     }
 
     public static LuaSymbol CreateTypeSymbol(LuaType? type)
     {
-        return new LuaSymbol(string.Empty, type, new VirtualInfo());
+        return new LuaSymbol(string.Empty, type, Default);
     }
 }
 

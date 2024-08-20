@@ -16,6 +16,7 @@ EmmyLuaAnalyzer 项目是使用C#实现的 Lua 语言的静态分析器和语言
 ## 文档
 
 [.emmyrc.json config](./docs/.emmyrc.json_CN.md)
+[emmylua doc](./docs/emmylua_doc_CN.md)
 
 ## 使用
 

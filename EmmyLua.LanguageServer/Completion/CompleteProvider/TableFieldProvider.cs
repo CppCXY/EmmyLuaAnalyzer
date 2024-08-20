@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 using EmmyLua.LanguageServer.Completion.CompletionData;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;
 

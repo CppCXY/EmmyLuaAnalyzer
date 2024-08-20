@@ -53,6 +53,43 @@ public partial class DeclarationWalker
         }
     }
 
+    // private void AnalyzeArrayTableExpr(LuaArrayTableExprSyntax arrayTableExprSyntax)
+    // {
+    //     if (IsIgnoreTable(arrayTableExprSyntax))
+    //     {
+    //         return;
+    //     }
+    //
+    //     declarationContext.TypeManager.AddDocumentElementType(arrayTableExprSyntax.UniqueId);
+    //     var fields = new List<LuaSymbol>();
+    //     var fieldList = arrayTableExprSyntax.FieldList.ToList();
+    //     for (var i = 0; i < fieldList.Count; i++)
+    //     {
+    //         var fieldSyntax = fieldList[i];
+    //         if (fieldSyntax is { Value: { } value })
+    //         {
+    //             var declaration = new LuaSymbol(
+    //                 null,
+    //                 null,
+    //                 new TableFieldInfo(new(fieldSyntax)));
+    //             declarationContext.AddAttachedDeclaration(fieldSyntax, declaration);
+    //             fields.Add(declaration);
+    //             var unResolveDeclaration = new UnResolvedSymbol(
+    //                 declaration,
+    //                 new LuaExprRef(value),
+    //                 ResolveState.UnResolvedType
+    //             );
+    //             declarationContext.AddUnResolved(unResolveDeclaration);
+    //             declarationContext.Db.AddTableField(DocumentId, fieldSyntax);
+    //         }
+    //     }
+    //
+    //     if (fields.Count > 0)
+    //     {
+    //         declarationContext.TypeManager.AddElementMembers(arrayTableExprSyntax.UniqueId, fields);
+    //     }
+    // }
+
     private bool IsIgnoreTable(LuaTableExprSyntax tableExprSyntax)
     {
         if (TableIgnoreRanges.Count == 0)

@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -225,7 +226,7 @@ public class AttachDeclarationAnalyzer(
             return;
         }
 
-        var genericParams = new List<LuaSymbol>();
+        var genericParams = new List<LuaTypeTemplate>();
         var overloads = new List<LuaSignature>();
         var parameterDict = new Dictionary<string, ParameterInfo>();
         foreach (var docTagSyntax in docTagSyntaxes)
@@ -244,12 +245,8 @@ public class AttachDeclarationAnalyzer(
                 {
                     if (param is { Name: { } name })
                     {
-                        var declaration = new LuaSymbol(
-                            name.RepresentText,
-                            searchContext.Infer(param.Type),
-                            new GenericParamInfo(new(param))
-                        );
-                        genericParams.Add(declaration);
+                        genericParams.Add(new LuaTypeTemplate(name.RepresentText,
+                            searchContext.Infer(param.Type)));
                     }
                 }
             }

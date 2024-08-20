@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
@@ -228,7 +229,7 @@ public static class MethodInfer
         LuaSignature signature,
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        Dictionary<string, LuaType> genericParams,
+        Dictionary<string, LuaTypeTemplate> genericParams,
         bool colonDefine,
         SearchContext context)
     {
@@ -314,7 +315,7 @@ public static class MethodInfer
             var parameter = signature.Parameters[i + paramStart];
             if (parameter is
                 {
-                    Type: LuaExpandType expandType,
+                    Type: LuaExpandTemplate expandType,
                     Info: ParamInfo { IsVararg: true }
                 })
             {
@@ -337,7 +338,7 @@ public static class MethodInfer
         var newReturnType = signature.ReturnType.Instantiate(substitution);
         foreach (var parameter in signature.Parameters)
         {
-            if (parameter.Type is LuaExpandType expandType)
+            if (parameter.Type is LuaExpandTemplate expandType)
             {
                 newParameters.AddRange(substitution.GetSpreadParameters(expandType.Name));
             }

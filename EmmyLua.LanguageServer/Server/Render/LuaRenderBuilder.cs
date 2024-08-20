@@ -5,6 +5,7 @@ using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 using EmmyLua.LanguageServer.Server.Render.Renderer;
 
 namespace EmmyLua.LanguageServer.Server.Render;

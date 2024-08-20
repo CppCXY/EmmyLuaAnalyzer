@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
@@ -230,9 +231,7 @@ public class Members(SearchContext context)
 
     private List<LuaSymbol> GetTupleTypeMembers(LuaTupleType tupleType)
     {
-        var members = new List<LuaSymbol>();
-        members.AddRange(tupleType.TupleDeclaration);
-        return members;
+        return tupleType.TypeList.Select(VirtualInfo.CreateTypeSymbol).ToList();
     }
 
     private List<LuaSymbol> GetGenericTypeMembers(LuaGenericType genericType)

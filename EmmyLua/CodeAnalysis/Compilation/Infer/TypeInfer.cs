@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -144,13 +145,7 @@ public static class TypeInfer
         var tupleMembers = tupleType.TypeList
             .Select((it, i) =>
                 // lua from 1 start
-                new LuaSymbol(
-                    $"[{i + 1}]",
-                    context.Infer(it),
-                    new TupleMemberInfo(
-                        i + 1, new(it)
-                    )
-                )
+                context.Infer(it)
             )
             .ToList();
         return new LuaTupleType(tupleMembers);
@@ -187,7 +182,7 @@ public static class TypeInfer
     {
         if (expandType is { Name: { } name })
         {
-            return new LuaExpandType(name.RepresentText);
+            return new LuaExpandTemplate(name.RepresentText);
         }
 
         return Builtin.Unknown;
@@ -195,16 +190,17 @@ public static class TypeInfer
 
     private static LuaType InferAggregateType(LuaDocAggregateTypeSyntax aggregateType, SearchContext context)
     {
-        var declarations = aggregateType.TypeList
-            .Select((it, i) =>
-                new LuaSymbol(
-                    string.Empty,
-                    context.Infer(it),
-                    new AggregateMemberInfo(new(it))
-                )
-            )
-            .ToList();
-        return new LuaAggregateType(declarations);
+        // var declarations = aggregateType.TypeList
+        //     .Select((it, i) =>
+        //         new LuaSymbol(
+        //             string.Empty,
+        //             context.Infer(it),
+        //             new AggregateMemberInfo(new(it))
+        //         )
+        //     )
+        //     .ToList();
+        // return new LuaAggregateType(declarations);
+        return Builtin.Unknown;
     }
 
     private static LuaType InferTemplateType(LuaDocTemplateTypeSyntax templateType, SearchContext context)
@@ -212,7 +208,7 @@ public static class TypeInfer
         var prefixName = templateType.PrefixName?.RepresentText ?? string.Empty;
         if (templateType.TemplateName?.Name is { } name)
         {
-            return new LuaTemplateType(prefixName, name);
+            return new LuaStringTemplate(prefixName, name);
         }
 
         return Builtin.Unknown;

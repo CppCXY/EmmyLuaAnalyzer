@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
