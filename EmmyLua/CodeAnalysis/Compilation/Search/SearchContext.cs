@@ -56,11 +56,6 @@ public class SearchContext
         return ElementInfer.Infer(element);
     }
 
-    // public void ClearMemberCache(LuaType luaType)
-    // {
-    //     // Members.ClearMember(luaType);
-    // }
-
     public BinaryOperator? GetBestMatchedBinaryOperator(TypeOperatorKind kind, LuaType left, LuaType right)
     {
         if (left is not LuaNamedType namedType)

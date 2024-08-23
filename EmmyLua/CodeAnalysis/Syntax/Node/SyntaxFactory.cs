@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
@@ -84,10 +84,14 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypeParen => new LuaDocParenTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeLiteral => new LuaDocLiteralTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeName => new LuaDocNameTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeConditional => new LuaDocConditionalTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeKeyOf => new LuaDocKeyOfTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeTypeOf => new LuaDocTypeOfTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeMapped => new LuaDocMappedTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeIndexAccess => new LuaDocIndexAccessTypeSyntax(index, tree),
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(index, tree),
                 LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(index, tree),
-                LuaSyntaxKind.TypeAggregate => new LuaDocAggregateTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeTemplate => new LuaDocTemplateTypeSyntax(index, tree),
                 LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(index, tree),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(index, tree),

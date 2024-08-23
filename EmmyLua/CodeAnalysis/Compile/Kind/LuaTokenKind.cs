@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿namespace EmmyLua.CodeAnalysis.Compile.Kind;
 
 public enum LuaTokenKind : ushort
 {
@@ -117,6 +117,12 @@ public enum LuaTokenKind : ushort
     TkTagSource, // source
 
     TkDocOr, // |
+    TkDocAnd, // &
+    TkDocKeyOf, // keyof
+    TkDocTypeOf, // typeof
+    TkDocExtends, // extends
+    TkDocIn, // in
+    TkDocInfer, // infer
     TkDocContinue, // ---
     TkDocDetail, // a description
     TkNullable, // '?'

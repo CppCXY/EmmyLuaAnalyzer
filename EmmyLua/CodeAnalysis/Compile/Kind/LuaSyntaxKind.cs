@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿namespace EmmyLua.CodeAnalysis.Compile.Kind;
 
 public enum LuaSyntaxKind : ushort
 {
@@ -85,7 +85,12 @@ public enum LuaSyntaxKind : ushort
     // doc Type
     TypeArray,
     TypeUnion,
-    TypeAggregate,
+    TypeIntersection,
+    TypeKeyOf,
+    TypeTypeOf,
+    TypeConditional,
+    TypeIndexAccess,
+    TypeMapped,
     TypeFun,
     TypeGeneric,
     TypeTuple,

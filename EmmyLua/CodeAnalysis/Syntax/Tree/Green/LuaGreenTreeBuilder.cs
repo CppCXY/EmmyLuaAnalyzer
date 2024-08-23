@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Compile.Parser;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree.Green;
 

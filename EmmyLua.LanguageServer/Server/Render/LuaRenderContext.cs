@@ -137,11 +137,11 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
         {
             foreach (var typeInfo in _aliasExpand)
             {
-                var originType = typeInfo.BaseType;
-                if (originType is LuaAggregateType aggregateType)
-                {
-                    LuaTypeRenderer.RenderAliasMember(typeInfo.Name, aggregateType, this);
-                }
+                // var originType = typeInfo.BaseType;
+                // if (originType is LuaAggregateType aggregateType)
+                // {
+                //     LuaTypeRenderer.RenderAliasMember(typeInfo.Name, aggregateType, this);
+                // }
             }
         }
     }

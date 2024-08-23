@@ -32,7 +32,7 @@ public class References(SearchContext context)
             EnumFieldInfo enumFieldInfo => EnumFieldReferences(luaSymbol, enumFieldInfo),
             TableFieldInfo tableFieldInfo => TableFieldReferences(luaSymbol, tableFieldInfo),
 
-            TupleMemberInfo tupleMemberInfo => TupleMemberReferences(luaSymbol, tupleMemberInfo),
+            // TupleMemberInfo tupleMemberInfo => TupleMemberReferences(luaSymbol, tupleMemberInfo),
             NamedTypeInfo namedTypeInfo => NamedTypeReferences(luaSymbol, namedTypeInfo),
             IndexInfo indexInfo => IndexExprReferences(luaSymbol, indexInfo),
             _ => []
@@ -184,18 +184,18 @@ public class References(SearchContext context)
         return references;
     }
 
-    private IEnumerable<ReferenceResult> TupleMemberReferences(LuaSymbol symbol, TupleMemberInfo info)
-    {
-        var name = symbol.Name;
-        var references = new List<ReferenceResult>();
-        if (info.TypePtr.ToNode(context) is { } tupleMember)
-        {
-            references.Add(new ReferenceResult(tupleMember.Location, tupleMember));
-            references.AddRange(FieldReferences(symbol, name));
-        }
-
-        return references;
-    }
+    // private IEnumerable<ReferenceResult> TupleMemberReferences(LuaSymbol symbol, TupleMemberInfo info)
+    // {
+    //     var name = symbol.Name;
+    //     var references = new List<ReferenceResult>();
+    //     if (info.TypePtr.ToNode(context) is { } tupleMember)
+    //     {
+    //         references.Add(new ReferenceResult(tupleMember.Location, tupleMember));
+    //         references.AddRange(FieldReferences(symbol, name));
+    //     }
+    //
+    //     return references;
+    // }
 
     private IEnumerable<ReferenceResult> NamedTypeReferences(LuaSymbol symbol, NamedTypeInfo info)
     {

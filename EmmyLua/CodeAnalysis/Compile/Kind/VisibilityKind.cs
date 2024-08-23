@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿namespace EmmyLua.CodeAnalysis.Compile.Kind;
 
 public enum VisibilityKind
 {

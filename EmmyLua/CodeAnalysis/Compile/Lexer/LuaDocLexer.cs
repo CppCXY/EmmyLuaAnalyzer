@@ -1,6 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Source;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
 
@@ -372,6 +372,9 @@ public class LuaDocLexer(LuaDocument document)
                 return Reader.CurrentSavedText switch
                 {
                     "true" or "false" => LuaTokenKind.TkDocBoolean,
+                    "typeof" => LuaTokenKind.TkDocTypeOf,
+                    "keyof" => LuaTokenKind.TkDocKeyOf,
+                    "extends" => LuaTokenKind.TkDocExtends,
                     _ => LuaTokenKind.TkName
                 };
             }

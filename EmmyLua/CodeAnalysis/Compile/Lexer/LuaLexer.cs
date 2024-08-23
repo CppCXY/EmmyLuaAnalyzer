@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Compile.Source;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
 

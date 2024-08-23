@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
@@ -47,45 +47,45 @@ public static class LuaTypeRenderer
         }
     }
 
-    public static void RenderAliasMember(string aliasName, LuaAggregateType aggregateType,
-        LuaRenderContext renderContext)
-    {
-        renderContext.AppendLine();
-        // renderContext.AddSeparator();
-        renderContext.WrapperLua(() =>
-        {
-            renderContext.Append($"{aliasName}:\n");
-            foreach (var typeDeclaration in aggregateType.Declarations)
-            {
-                if (typeDeclaration.Type is not null)
-                {
-                    renderContext.Append("    | ");
-                    InnerRenderType(typeDeclaration.Type, renderContext, 1);
-                    if (typeDeclaration is { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
-                        typePtr.ToNode(renderContext.SearchContext) is { Description: { } description })
-                    {
-                        renderContext.Append(" --");
-                        foreach (var token in description.ChildrenWithTokens)
-                        {
-                            if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text })
-                            {
-                                if (text.StartsWith('@') || text.StartsWith('#'))
-                                {
-                                    renderContext.Append(text[1..]);
-                                }
-                                else
-                                {
-                                    renderContext.Append(text);
-                                }
-                            }
-                        }
-                    }
-                    
-                    renderContext.AppendLine();
-                }
-            }
-        });
-    }
+    // public static void RenderAliasMember(string aliasName, LuaAggregateType aggregateType,
+    //     LuaRenderContext renderContext)
+    // {
+    //     renderContext.AppendLine();
+    //     // renderContext.AddSeparator();
+    //     renderContext.WrapperLua(() =>
+    //     {
+    //         renderContext.Append($"{aliasName}:\n");
+    //         foreach (var typeDeclaration in aggregateType.Declarations)
+    //         {
+    //             if (typeDeclaration.Type is not null)
+    //             {
+    //                 renderContext.Append("    | ");
+    //                 InnerRenderType(typeDeclaration.Type, renderContext, 1);
+    //                 if (typeDeclaration is { Info: AggregateMemberInfo { TypePtr: { } typePtr } } &&
+    //                     typePtr.ToNode(renderContext.SearchContext) is { Description: { } description })
+    //                 {
+    //                     renderContext.Append(" --");
+    //                     foreach (var token in description.ChildrenWithTokens)
+    //                     {
+    //                         if (token is LuaSyntaxToken { Kind: LuaTokenKind.TkDocDetail, RepresentText: { } text })
+    //                         {
+    //                             if (text.StartsWith('@') || text.StartsWith('#'))
+    //                             {
+    //                                 renderContext.Append(text[1..]);
+    //                             }
+    //                             else
+    //                             {
+    //                                 renderContext.Append(text);
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //                 
+    //                 renderContext.AppendLine();
+    //             }
+    //         }
+    //     });
+    // }
 
     private static void InnerRenderDetailType(LuaNamedType namedType, LuaRenderContext renderContext)
     {
@@ -99,11 +99,12 @@ public static class LuaTypeRenderer
         if (namedTypeKind == NamedTypeKind.Alias)
         {
             var originType = typeInfo.BaseType;
-            if (originType is LuaAggregateType)
-            {
-                renderContext.AddAliasExpand(namedType);
-            }
-            else if (originType is not null)
+            // if (originType is LuaAggregateType)
+            // {
+            //     renderContext.AddAliasExpand(namedType);
+            // }
+            // else
+            if (originType is not null)
             {
                 renderContext.Append(" = ");
                 InnerRenderType(originType, renderContext, 1);
@@ -177,11 +178,11 @@ public static class LuaTypeRenderer
                 RenderUnionType(unionType, renderContext, level);
                 break;
             }
-            case LuaAggregateType aggregateType:
-            {
-                RenderAggregateType(aggregateType, renderContext, level);
-                break;
-            }
+            // case LuaAggregateType aggregateType:
+            // {
+            //     RenderAggregateType(aggregateType, renderContext, level);
+            //     break;
+            // }
             case LuaTupleType tupleType:
             {
                 RenderTupleType(tupleType, renderContext, level);
@@ -385,7 +386,7 @@ public static class LuaTypeRenderer
                 renderContext.Append(',');
             }
 
-            InnerRenderType(tupleType.TypeList[i].Type, renderContext, level + 1);
+            InnerRenderType(tupleType.TypeList[i], renderContext, level + 1);
         }
 
         renderContext.Append(']');
@@ -603,17 +604,17 @@ public static class LuaTypeRenderer
     //     renderContext.Append('}');
     // }
 
-    private static void RenderAggregateType(LuaAggregateType aggregateType, LuaRenderContext renderContext, int level)
-    {
-        for (var index = 0; index < aggregateType.Declarations.Count; index++)
-        {
-            var typeDeclaration = aggregateType.Declarations[index];
-            if (index > 0)
-            {
-                renderContext.Append('|');
-            }
-
-            InnerRenderType(typeDeclaration.Type, renderContext, 1);
-        }
-    }
+    // private static void RenderAggregateType(LuaAggregateType aggregateType, LuaRenderContext renderContext, int level)
+    // {
+    //     for (var index = 0; index < aggregateType.Declarations.Count; index++)
+    //     {
+    //         var typeDeclaration = aggregateType.Declarations[index];
+    //         if (index > 0)
+    //         {
+    //             renderContext.Append('|');
+    //         }
+    //
+    //         InnerRenderType(typeDeclaration.Type, renderContext, 1);
+    //     }
+    // }
 }

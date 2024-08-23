@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
@@ -81,10 +81,10 @@ public class AliasAndEnumProvider : ICompleteProviderBase
                         AddEnumParamCompletion(typeInfo, context);
                     }
                 }
-                else if (paramType is LuaAggregateType aggregateType)
-                {
-                    AddAggregateTypeCompletion(aggregateType, context);
-                }
+                // else if (paramType is LuaAggregateType aggregateType)
+                // {
+                //     AddAggregateTypeCompletion(aggregateType, context);
+                // }
                 else if (paramType is LuaUnionType unionType)
                 {
                     AddUnionTypeCompletion(unionType, context);
@@ -96,11 +96,12 @@ public class AliasAndEnumProvider : ICompleteProviderBase
     private void AddAliasParamCompletion(TypeInfo typeInfo, CompleteContext context)
     {
         var baseType = typeInfo.BaseType;
-        if (baseType is LuaAggregateType aggregateType)
-        {
-            AddAggregateTypeCompletion(aggregateType, context);
-        }
-        else if (baseType is LuaUnionType unionType)
+        // if (baseType is LuaAggregateType aggregateType)
+        // {
+        //     AddAggregateTypeCompletion(aggregateType, context);
+        // }
+        // else
+        if (baseType is LuaUnionType unionType)
         {
             AddUnionTypeCompletion(unionType, context);
         }
@@ -136,54 +137,54 @@ public class AliasAndEnumProvider : ICompleteProviderBase
             }
         }
     }
-
-    private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
-    {
-        foreach (var declaration in aggregateType.Declarations.OfType<LuaSymbol>())
-        {
-            if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
-            {
-                var detail = string.Empty;
-                if (literalType.Description is { Details: { } details })
-                {
-                    detail = string.Join("\n", details.Select(d => d.RepresentText.Trim('#', '@')));
-                }
-
-                if (literalType is { IsString: true, String: { Value: { } label } stringLiteral })
-                {
-                    // compact emmylua old alias
-                    label = label.Trim('\'', '\"');
-
-                    if (context.TriggerToken is not LuaStringToken)
-                    {
-                        var quote = "\'";
-                        if (stringLiteral.RepresentText.StartsWith('\"'))
-                        {
-                            quote = "\"";
-                        }
-                        
-                        label = $"{quote}{label}{quote}";
-                    }
-
-                    context.Add(new CompletionItem
-                    {
-                        Label = label,
-                        Kind = CompletionItemKind.EnumMember,
-                        Detail = detail
-                    });
-                }
-                else if (declaration.Type is LuaIntegerLiteralType intLiteralType)
-                {
-                    context.Add(new CompletionItem
-                    {
-                        Label = intLiteralType.Value.ToString(),
-                        Kind = CompletionItemKind.EnumMember,
-                        Detail = detail
-                    });
-                }
-            }
-        }
-    }
+    //
+    // private void AddAggregateTypeCompletion(LuaAggregateType aggregateType, CompleteContext context)
+    // {
+    //     foreach (var declaration in aggregateType.Declarations.OfType<LuaSymbol>())
+    //     {
+    //         if (declaration.Info.Ptr.ToNode(context.SemanticModel.Context) is LuaDocLiteralTypeSyntax literalType)
+    //         {
+    //             var detail = string.Empty;
+    //             if (literalType.Description is { Details: { } details })
+    //             {
+    //                 detail = string.Join("\n", details.Select(d => d.RepresentText.Trim('#', '@')));
+    //             }
+    //
+    //             if (literalType is { IsString: true, String: { Value: { } label } stringLiteral })
+    //             {
+    //                 // compact emmylua old alias
+    //                 label = label.Trim('\'', '\"');
+    //
+    //                 if (context.TriggerToken is not LuaStringToken)
+    //                 {
+    //                     var quote = "\'";
+    //                     if (stringLiteral.RepresentText.StartsWith('\"'))
+    //                     {
+    //                         quote = "\"";
+    //                     }
+    //                     
+    //                     label = $"{quote}{label}{quote}";
+    //                 }
+    //
+    //                 context.Add(new CompletionItem
+    //                 {
+    //                     Label = label,
+    //                     Kind = CompletionItemKind.EnumMember,
+    //                     Detail = detail
+    //                 });
+    //             }
+    //             else if (declaration.Type is LuaIntegerLiteralType intLiteralType)
+    //             {
+    //                 context.Add(new CompletionItem
+    //                 {
+    //                     Label = intLiteralType.Value.ToString(),
+    //                     Kind = CompletionItemKind.EnumMember,
+    //                     Detail = detail
+    //                 });
+    //             }
+    //         }
+    //     }
+    // }
 
     private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
     {

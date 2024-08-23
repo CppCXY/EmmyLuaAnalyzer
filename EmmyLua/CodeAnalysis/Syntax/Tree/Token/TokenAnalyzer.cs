@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using System.Text;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Tree.Token;
 

@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Infer;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Infer;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;

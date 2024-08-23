@@ -1,27 +1,130 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Parser;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Compile.Parser;
 
 namespace EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 
 public static class TypesParser
 {
+    [Flags]
+    public enum TypeParseFeature
+    {
+        None = 0,
+        CompactLuaLs = 0X01,
+        AllowContinue = 0X02,
+        DisableNullable = 0X04,
+    }
+
     public static void TypeList(LuaDocParser p)
     {
         var cm = Type(p);
         while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
         {
             p.Bump();
-            cm = Type(p);
+            cm = Type(p, TypeParseFeature.None);
         }
     }
 
-    public static CompleteMarker Type(LuaDocParser p, bool allowUnion = true)
+    public static CompleteMarker Type(LuaDocParser p, TypeParseFeature feature = TypeParseFeature.AllowContinue)
     {
-        if (allowUnion && p.Current is LuaTokenKind.TkDocOr)
+        if (feature.HasFlag(TypeParseFeature.AllowContinue) && p.Current is LuaTokenKind.TkDocOr)
         {
-            return AliasType(p);
+            p.Bump();
         }
 
+        return SubType(p, 0, feature);
+    }
+
+    private static CompleteMarker SubType(LuaDocParser p, int limit, TypeParseFeature feature)
+    {
+        CompleteMarker cm;
+        var unaryOp = TypeOperatorKind.ToUnaryTypeOperatorKind(p.Current);
+        if (unaryOp != TypeOperatorKind.TypeUnaryOperator.None)
+        {
+            var m = p.Marker();
+            p.Bump();
+            SimpleType(p, feature);
+            var kind = unaryOp switch
+            {
+                TypeOperatorKind.TypeUnaryOperator.KeyOf => LuaSyntaxKind.TypeKeyOf,
+                TypeOperatorKind.TypeUnaryOperator.TypeOf => LuaSyntaxKind.TypeTypeOf,
+                _ => LuaSyntaxKind.None
+            };
+
+            cm = m.Complete(p, kind);
+        }
+        else
+        {
+            cm = SimpleType(p, feature);
+        }
+
+        var binaryOp = TypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
+        if (binaryOp != TypeOperatorKind.TypeBinaryOperator.None)
+        {
+            while (binaryOp != TypeOperatorKind.TypeBinaryOperator.None &&
+                   TypeOperatorKind.Priority[(int)binaryOp].Left > limit)
+            {
+                var m = cm.Precede(p);
+                p.Bump();
+
+                if (feature.HasFlag(TypeParseFeature.CompactLuaLs) &&
+                    binaryOp == TypeOperatorKind.TypeBinaryOperator.Union &&
+                    p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
+                {
+                    p.Bump();
+                }
+
+                var cm2 = SubType(p, TypeOperatorKind.Priority[(int)binaryOp].Right, feature);
+                DescriptionParser.InlineDescription(p);
+                cm = m.Complete(p,
+                    binaryOp == TypeOperatorKind.TypeBinaryOperator.Union
+                        ? LuaSyntaxKind.TypeUnion
+                        : LuaSyntaxKind.TypeIntersection);
+                if (!cm2.IsComplete)
+                {
+                    return cm;
+                }
+
+                binaryOp = TypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
+            }
+        }
+
+        var threeOp = TypeOperatorKind.ToThreeTypeOperatorKind(p.Current);
+        if (threeOp != TypeOperatorKind.TypeThreeOperator.None)
+        {
+            var m = cm.Precede(p);
+            try
+            {
+                p.Bump();
+                var cm2 = SubType(p, 0, feature | TypeParseFeature.DisableNullable);
+                if (!cm2.IsComplete)
+                {
+                    return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
+                }
+                p.Expect(LuaTokenKind.TkNullable);
+                var cm3 = SubType(p, 0, feature);
+                if (!cm3.IsComplete)
+                {
+                    return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
+                }
+                p.Expect(LuaTokenKind.TkColon);
+                var cm4 = SubType(p, 0, feature);
+                if (!cm4.IsComplete)
+                {
+                    return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
+                }
+                return m.Complete(p, LuaSyntaxKind.TypeConditional);
+            }
+            catch (UnexpectedTokenException e)
+            {
+                return m.Fail(p, LuaSyntaxKind.TypeConditional, e.Message);
+            }
+        }
+
+        return cm;
+    }
+
+    private static CompleteMarker SimpleType(LuaDocParser p, TypeParseFeature feature)
+    {
         var cm = PrimaryType(p);
         if (!cm.IsComplete)
         {
@@ -29,31 +132,7 @@ public static class TypesParser
         }
 
         // suffix
-        SuffixType(p, ref cm);
-        // ReSharper disable once InvertIf
-        if (allowUnion && p.Current is LuaTokenKind.TkDocOr)
-        {
-            var m = cm.Precede(p);
-            p.Bump();
-
-            var cm2 = Type(p, false);
-            while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
-            {
-                p.Bump();
-                cm2 = Type(p, false);
-            }
-
-            cm = m.Complete(p, LuaSyntaxKind.TypeUnion);
-        }
-
-        if (!allowUnion && p.Current is LuaTokenKind.TkDocDetail)
-        {
-            var oldKind = cm.Kind;
-            var m = cm.Reset(p);
-            DescriptionParser.InlineDescription(p);
-            cm = m.Complete(p, oldKind);
-        }
-
+        SuffixType(p, feature, ref cm);
         return cm;
     }
 
@@ -91,61 +170,27 @@ public static class TypesParser
         }
     }
 
-    public static CompleteMarker AliasType(LuaDocParser p)
+    private static void SuffixType(LuaDocParser p, TypeParseFeature feature, ref CompleteMarker pcm)
     {
-        var m = p.Marker();
-        var kind = LuaSyntaxKind.TypeUnion;
-        try
-        {
-            p.Accept(LuaTokenKind.TkDocOr);
-            // compact luals
-            if (p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
-            {
-                p.Bump();
-            }
-            var cm2 = Type(p, false);
-            if (cm2.Kind == LuaSyntaxKind.TypeLiteral)
-            {
-                kind = LuaSyntaxKind.TypeAggregate;
-            }
-
-            while (cm2.IsComplete && p.Current is LuaTokenKind.TkDocOr)
-            {
-                p.Bump();
-                // compact luals
-                if (p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
-                {
-                    p.Bump();
-                }
-                cm2 = Type(p, false);
-                if (cm2.Kind == LuaSyntaxKind.LiteralExpr)
-                {
-                    kind = LuaSyntaxKind.TypeAggregate;
-                }
-            }
-
-            return m.Complete(p, kind);
-        }
-        catch (UnexpectedTokenException e)
-        {
-            return m.Fail(p, kind, e.Message);
-        }
-    }
-
-    private static void SuffixType(LuaDocParser p, ref CompleteMarker pcm)
-    {
-        bool continueArray = false;
+        var continueArray = false;
         while (true)
         {
             switch (p.Current)
             {
-                // array
+                // array or index access
                 case LuaTokenKind.TkLeftBracket:
                 {
+                    var kind = LuaSyntaxKind.TypeArray;
                     var m = pcm.Precede(p);
                     p.Bump();
+                    if (p.Current is LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkName)
+                    {
+                        p.Bump();
+                        kind = LuaSyntaxKind.TypeIndexAccess;
+                    }
+
                     p.Expect(LuaTokenKind.TkRightBracket);
-                    pcm = m.Complete(p, LuaSyntaxKind.TypeArray);
+                    pcm = m.Complete(p, kind);
                     continueArray = true;
                     break;
                 }
@@ -172,6 +217,11 @@ public static class TypesParser
                 // '?'
                 case LuaTokenKind.TkNullable:
                 {
+                    if (feature.HasFlag(TypeParseFeature.DisableNullable))
+                    {
+                        return;
+                    }
+
                     p.Bump();
                     break;
                 }

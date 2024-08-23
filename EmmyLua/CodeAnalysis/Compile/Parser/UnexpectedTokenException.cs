@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Parser;
 

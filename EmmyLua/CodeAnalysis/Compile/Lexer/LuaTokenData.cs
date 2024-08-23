@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compile.Lexer;
 

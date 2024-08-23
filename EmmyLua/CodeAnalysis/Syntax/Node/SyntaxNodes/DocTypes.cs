@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -14,9 +14,13 @@ public class LuaDocLiteralTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocType
 
     public bool IsString => FirstChild<LuaStringToken>() != null;
 
+    public bool IsBoolean => FirstChildToken(LuaTokenKind.TkDocBoolean) != null;
+
     public LuaIntegerToken? Integer => FirstChild<LuaIntegerToken>();
 
     public LuaStringToken? String => FirstChild<LuaStringToken>();
+
+    public LuaSyntaxToken? Boolean => FirstChildToken(LuaTokenKind.TkDocBoolean);
 }
 
 public class LuaDocNameTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
@@ -86,14 +90,42 @@ public class LuaDocExpandTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeS
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaDocAggregateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
-{
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
-}
-
 public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? PrefixName => FirstChild<LuaNameToken>();
 
     public LuaTemplateTypeToken? TemplateName => FirstChild<LuaTemplateTypeToken>();
+}
+
+public class LuaDocKeyOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+}
+
+public class LuaDocTypeOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+}
+
+public class LuaDocConditionalTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? CheckType => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDocTypeSyntax? TrueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+
+    public LuaDocTypeSyntax? FalseType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(2).FirstOrDefault();
+}
+
+public class LuaDocMappedTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? KeyType => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDocTypeSyntax? ValueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+}
+
+public class LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
 }

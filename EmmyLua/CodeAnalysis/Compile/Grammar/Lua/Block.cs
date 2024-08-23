@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Parser;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Compile.Parser;
 
 namespace EmmyLua.CodeAnalysis.Compile.Grammar.Lua;
 

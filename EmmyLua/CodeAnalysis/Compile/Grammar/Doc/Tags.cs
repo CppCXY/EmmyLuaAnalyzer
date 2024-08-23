@@ -1,6 +1,6 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Lexer;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Compile.Lexer;
 using EmmyLua.CodeAnalysis.Compile.Parser;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
 
 namespace EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 
@@ -402,7 +402,7 @@ public static class TagParser
             }
 
             p.Expect(LuaTokenKind.TkName);
-            TypesParser.AliasType(p);
+            TypesParser.Type(p, TypesParser.TypeParseFeature.AllowContinue | TypesParser.TypeParseFeature.CompactLuaLs);
             DescriptionParser.Description(p);
             return m.Complete(p, LuaSyntaxKind.DocAlias);
         }

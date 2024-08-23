@@ -1,4 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Syntax.Kind;
+﻿using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Completion.CompletionData;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.Completion;

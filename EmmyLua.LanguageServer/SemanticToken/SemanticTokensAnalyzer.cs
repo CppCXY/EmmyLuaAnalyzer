@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Semantic;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Common;

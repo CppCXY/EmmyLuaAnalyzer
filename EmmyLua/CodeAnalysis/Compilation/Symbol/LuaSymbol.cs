@@ -303,20 +303,20 @@ public record TypeOpInfo(
     public LuaElementPtr<LuaSyntaxElement> Ptr => OpFieldPtr.UpCast();
 }
 
-public record TupleMemberInfo(
-    int Index,
-    LuaElementPtr<LuaDocTypeSyntax> TypePtr)
-    : ISymbolInfo
-{
-    public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
-}
-
-public record AggregateMemberInfo(
-    LuaElementPtr<LuaDocTypeSyntax> TypePtr
-) : ISymbolInfo
-{
-    public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
-}
+// public record TupleMemberInfo(
+//     int Index,
+//     LuaElementPtr<LuaDocTypeSyntax> TypePtr)
+//     : ISymbolInfo
+// {
+//     public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
+// }
+//
+// public record AggregateMemberInfo(
+//     LuaElementPtr<LuaDocTypeSyntax> TypePtr
+// ) : ISymbolInfo
+// {
+//     public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
+// }
 
 public record VirtualInfo : ISymbolInfo
 {

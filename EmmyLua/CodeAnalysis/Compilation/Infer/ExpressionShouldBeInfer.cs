@@ -1,5 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Syntax.Kind;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Type;
 using EmmyLua.CodeAnalysis.Type.Types;
