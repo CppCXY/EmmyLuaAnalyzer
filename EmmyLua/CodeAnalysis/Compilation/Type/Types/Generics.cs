@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Type.Types;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
 
 public class LuaTypeTemplate(string name, LuaType? baseType) : LuaType

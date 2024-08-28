@@ -191,3 +191,5 @@ public class LuaDocTagSourceSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyn
 {
     public LuaStringToken? Source => FirstChild<LuaStringToken>();
 }
+
+public class LuaDocTagReadonlySyntax(int index, LuaSyntaxTree tree) : LuaDocTagSyntax(index, tree);

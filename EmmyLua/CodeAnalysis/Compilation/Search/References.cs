@@ -1,11 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -49,7 +48,7 @@ public class References(SearchContext context)
     private IEnumerable<ReferenceResult> LocalReferences(LuaSymbol symbol)
     {
         var references = new List<ReferenceResult>();
-        var luaReferences = context.Compilation.Db.QueryLocalReferences(symbol);
+        var luaReferences = context.Compilation.ProjectIndex.QueryLocalReferences(symbol);
         foreach (var luaReference in luaReferences)
         {
             if (luaReference.Ptr.ToNode(context) is { } element)
@@ -65,7 +64,7 @@ public class References(SearchContext context)
     {
         var references = new List<ReferenceResult>();
         var globalName = symbol.Name;
-        var nameExprs = context.Compilation.Db.QueryNameExprReferences(globalName, context);
+        var nameExprs = context.Compilation.ProjectIndex.QueryNameExprReferences(globalName, context);
 
         foreach (var nameExpr in nameExprs)
         {
@@ -81,7 +80,7 @@ public class References(SearchContext context)
     private IEnumerable<ReferenceResult> FieldReferences(LuaSymbol symbol, string fieldName)
     {
         var references = new List<ReferenceResult>();
-        var indexExprs = context.Compilation.Db.QueryIndexExprReferences(fieldName, context);
+        var indexExprs = context.Compilation.ProjectIndex.QueryIndexExprReferences(fieldName, context);
         foreach (var indexExpr in indexExprs)
         {
             if (IsReferenceTo(indexExpr, symbol) && indexExpr.KeyElement is { } keyElement)
@@ -90,7 +89,7 @@ public class References(SearchContext context)
             }
         }
 
-        var tableFields = context.Compilation.Db.QueryTableFieldReferences(fieldName, context);
+        var tableFields = context.Compilation.ProjectIndex.QueryTableFieldReferences(fieldName, context);
         foreach (var tableField in tableFields)
         {
             if (IsReferenceTo(tableField, symbol) && tableField.KeyElement is { } keyElement)
@@ -117,7 +116,7 @@ public class References(SearchContext context)
             default:
             {
                 var results = new List<ReferenceResult>();
-                var mappingName = context.Compilation.Db.QueryMapping(methodInfo.IndexPtr.UniqueId);
+                var mappingName = context.Compilation.ProjectIndex.QueryMapping(methodInfo.IndexPtr.UniqueId);
                 if (mappingName is not null)
                 {
                     results.AddRange(FieldReferences(symbol, mappingName));
@@ -208,7 +207,7 @@ public class References(SearchContext context)
         if (info.TypeDefinePtr.ToNode(context) is { Name: { } typeName })
         {
             references.Add(new ReferenceResult(typeName.Location, typeName));
-            var nameTypePtrList = context.Compilation.Db.QueryAllNamedType();
+            var nameTypePtrList = context.Compilation.ProjectIndex.QueryAllNamedType();
             foreach (var nameTypePtr in nameTypePtrList)
             {
                 if (nameTypePtr.ToNode(context) is { Name.RepresentText: { } name, DocumentId: { } documentId } element)

@@ -15,7 +15,10 @@ public static class Fields
             {
                 p.SetState(LuaDocLexerState.FieldStart);
                 p.ReCalcCurrent();
-                p.Accept(LuaTokenKind.TkDocVisibility);
+                while (p.Current is LuaTokenKind.TkDocVisibility or LuaTokenKind.TkDocReadonly)
+                {
+                    p.Bump();
+                }
                 p.SetState(LuaDocLexerState.Normal);
             }
 

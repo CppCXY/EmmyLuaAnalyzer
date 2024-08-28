@@ -105,6 +105,7 @@ public enum LuaTokenKind : ushort
     TkTagCast, // cast
     TkTagOther, // other
     TkTagVisibility, // public private protected package
+    TkTagReadonly, // readonly
     TkTagDiagnostic, // diagnostic
     TkTagMeta, // meta
     TkTagVersion, // version
@@ -127,6 +128,7 @@ public enum LuaTokenKind : ushort
     TkDocDetail, // a description
     TkNullable, // '?'
     TkDocVisibility, // public private protected package
+    TkDocReadonly, // readonly
     TkAt, // '@', invalid lua token, but for postfix completion
     TkVersionNumber, // version number
     TkTypeTemplate, // type template

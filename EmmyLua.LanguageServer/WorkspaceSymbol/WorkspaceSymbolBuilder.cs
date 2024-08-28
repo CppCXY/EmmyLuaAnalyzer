@@ -17,7 +17,7 @@ public class WorkspaceSymbolBuilder
         {
             var luaProject = context.LuaProject;
             var searchContext = new SearchContext(luaProject.Compilation, new SearchContextFeatures());
-            var namedElements = context.LuaProject.Compilation.Db.QueryNamedElements(searchContext);
+            var namedElements = context.LuaProject.Compilation.ProjectIndex.QueryNamedElements(searchContext);
             foreach (var pair in namedElements)
             {
                 var name = pair.Item1;

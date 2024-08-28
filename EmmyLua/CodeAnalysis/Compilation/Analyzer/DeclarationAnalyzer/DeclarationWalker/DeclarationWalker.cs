@@ -83,11 +83,11 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Se
                 AnalyzeTableExpr(tableSyntax);
                 break;
             }
-            case LuaDocTableTypeSyntax tableTypeSyntax:
-            {
-                AnalyzeLuaTableType(tableTypeSyntax);
-                break;
-            }
+            // case LuaDocTableTypeSyntax tableTypeSyntax:
+            // {
+            //     AnalyzeLuaTableType(tableTypeSyntax);
+            //     break;
+            // }
             case LuaSourceSyntax sourceSyntax:
             {
                 AnalyzeSource(sourceSyntax);

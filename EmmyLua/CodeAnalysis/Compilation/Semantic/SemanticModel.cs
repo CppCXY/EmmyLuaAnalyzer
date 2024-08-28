@@ -1,11 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Semantic;
@@ -60,7 +59,7 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
     {
         var result = new List<LuaSymbol>();
         var token = Document.SyntaxTree.SyntaxRoot.TokenAt(beforeToken.Position);
-        if (Compilation.Db.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
+        if (Compilation.ProjectIndex.QueryDeclarationTree(beforeToken.DocumentId) is { } tree && token is not null)
         {
             var scope = tree.FindScope(token);
             scope?.WalkUp(beforeToken.Position, 0, declaration =>
@@ -76,6 +75,6 @@ public class SemanticModel(LuaCompilation compilation, LuaDocument document)
 
     public LuaType? GetExportType(LuaDocumentId documentId)
     {
-        return Compilation.Db.QueryModuleType(documentId);
+        return Compilation.ProjectIndex.QueryModuleType(documentId);
     }
 }

@@ -119,6 +119,10 @@ public static class TagParser
             {
                 return SimpleTag(p, LuaSyntaxKind.DocOther);
             }
+            case LuaTokenKind.TkTagReadonly:
+            {
+                return SimpleTag(p, LuaSyntaxKind.DocReadonly);
+            }
             case LuaTokenKind.TkWhitespace:
             {
                 p.Bump();

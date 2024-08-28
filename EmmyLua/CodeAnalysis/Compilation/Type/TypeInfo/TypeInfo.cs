@@ -1,10 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Type.Types;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
 public class TypeInfo : ITypeInfo
 {
@@ -209,7 +209,7 @@ public class TypeInfo : ITypeInfo
             {
                 for (var i = value.Count - 1; i >= 0; i--)
                 {
-                    if (value[i].LuaSymbol.DocumentId == documentId)
+                    if (value[i].Id.DocumentId == documentId)
                     {
                         value.RemoveAt(i);
                     }

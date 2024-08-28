@@ -78,6 +78,7 @@ public enum LuaSyntaxKind : ushort
     DocNamespace,
     DocUsing,
     DocSource,
+    DocReadonly,
 
     DocDetailField,
     DocBody,
@@ -90,7 +91,7 @@ public enum LuaSyntaxKind : ushort
     TypeTypeOf,
     TypeConditional,
     TypeIndexAccess,
-    TypeMapped,
+    TypeMapped, // p in keyof T
     TypeFun,
     TypeGeneric,
     TypeTuple,

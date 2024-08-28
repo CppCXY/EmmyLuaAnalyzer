@@ -1,10 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -70,13 +70,13 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     name.RepresentText,
-                    new LuaElementType(param.UniqueId),
+                    null,
                     new ParamInfo(
                         new(param),
                         false
                     ),
                     SymbolFeature.Local);
-                declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
+                // declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
                 declarationContext.AddLocalDeclaration(param, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
                 parameters.Add(declaration);
@@ -140,13 +140,14 @@ public partial class DeclarationWalker
                         var prevDeclaration = declarationContext.FindLocalDeclaration(nameExpr);
                         if (prevDeclaration is null)
                         {
+                            var nameText = name.RepresentText;
                             var declaration = new LuaSymbol(
-                                name.RepresentText,
-                                new GlobalNameType(name.RepresentText),
+                                nameText,
+                                null,
                                 new GlobalInfo(new(nameExpr)),
                                 SymbolFeature.Global
                             );
-                            declarationContext.TypeManager.AddGlobal(name.RepresentText, declaration);
+                            declarationContext.TypeManager.AddGlobal(nameText, declaration);
                             declarationContext.AddLocalDeclaration(nameExpr, declaration);
                             declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                             var unResolveDeclaration = new UnResolvedSymbol(

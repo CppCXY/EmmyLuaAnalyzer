@@ -134,6 +134,8 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
         }
     }
 
+    public bool ReadOnly => FirstChildToken(LuaTokenKind.TkDocReadonly) != null;
+
     public bool IsNameField => FirstChildToken(LuaTokenKind.TkName) != null;
 
     public bool IsStringField => FirstChildToken(LuaTokenKind.TkString) != null;

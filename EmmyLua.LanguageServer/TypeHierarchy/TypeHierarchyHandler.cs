@@ -1,5 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Client.ClientCapabilities;
 using EmmyLua.LanguageServer.Framework.Protocol.Capabilities.Server;
 using EmmyLua.LanguageServer.Framework.Protocol.Message.TypeHierarchy;

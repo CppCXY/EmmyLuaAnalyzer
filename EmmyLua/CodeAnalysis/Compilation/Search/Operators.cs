@@ -1,5 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 

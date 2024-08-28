@@ -1,8 +1,11 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Compile.Kind;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -11,40 +14,50 @@ public partial class DeclarationWalker
     private LuaSymbol? AnalyzeDocDetailField(LuaDocFieldSyntax field)
     {
         var visibility = field.Visibility;
+        var readonlyFlag = field.ReadOnly;
         switch (field)
         {
             case { NameField: { } nameField, Type: { } type1 }:
             {
-                var type = searchContext.Infer(type1);
-                return new LuaSymbol(
+                var symbol = new LuaSymbol(
                     nameField.RepresentText,
-                    type,
+                    null,
                     new DocFieldInfo(new(field)),
-                    SymbolFeature.None,
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
+                var unResolved =
+                    new UnResolvedDocSymbol(symbol, new TypeId(type1.UniqueId), ResolveState.UnResolvedType);
+                declarationContext.AddUnResolved(unResolved);
+                return symbol;
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
             {
-                var type = searchContext.Infer(type2);
-                return new LuaSymbol(
+                var symbol = new LuaSymbol(
                     $"[{integerField.Value}]",
-                    type,
-                    new DocFieldInfo( new(field)),
-                    SymbolFeature.None,
+                    null,
+                    new DocFieldInfo(new(field)),
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
+                var unResolved =
+                    new UnResolvedDocSymbol(symbol, new TypeId(type2.UniqueId), ResolveState.UnResolvedType);
+                declarationContext.AddUnResolved(unResolved);
+                return symbol;
             }
             case { StringField: { } stringField, Type: { } type3 }:
             {
-                var type = searchContext.Infer(type3);
-                return new LuaSymbol(
+                var symbol = new LuaSymbol(
                     stringField.Value,
-                    type,
+                    null,
                     new DocFieldInfo(new(field)),
-                    SymbolFeature.None,
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
+                var unResolved =
+                    new UnResolvedDocSymbol(symbol, new TypeId(type3.UniqueId), ResolveState.UnResolvedType);
+                declarationContext.AddUnResolved(unResolved);
+                return symbol;
             }
         }
 
@@ -58,24 +71,20 @@ public partial class DeclarationWalker
         {
             if (tagField.Field is not null)
             {
-                if (tagField.Field is { TypeField: { } typeField, Type: { } type4 })
+                if (tagField.Field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
                 {
-                    var keyType = searchContext.Infer(typeField);
-                    var valueType = searchContext.Infer(type4);
-                    var docIndexDeclaration = new LuaSymbol(
-                        string.Empty,
-                        valueType,
-                        new TypeIndexInfo(
-                            keyType,
-                            valueType,
-                            new(tagField.Field)
-                        ));
-                    var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
-                    declarationContext.TypeManager.AddOperators(namedType, [indexOperator]);
+                    var unResolved = new UnResolvedDocOperator(
+                        namedType,
+                        TypeOperatorKind.Index,
+                        id,
+                        [TypeId.Create(typeField), TypeId.Create(type)],
+                        ResolveState.UnResolvedType
+                    );
+                    declarationContext.AddUnResolved(unResolved);
                     continue;
                 }
 
-                if (AnalyzeDocDetailField(tagField.Field) is {} declaration)
+                if (AnalyzeDocDetailField(tagField.Field) is { } declaration)
                 {
                     declarations.Add(declaration);
                 }
@@ -93,24 +102,20 @@ public partial class DeclarationWalker
         var declarations = new List<LuaSymbol>();
         foreach (var field in docBody.FieldList)
         {
-            if (field is { TypeField: { } typeField, Type: { } type4 })
+            if (field is { TypeField: { } typeField, Type: { } type4, UniqueId: { } id })
             {
-                var keyType = searchContext.Infer(typeField);
-                var valueType = searchContext.Infer(type4);
-                var docIndexDeclaration = new LuaSymbol(
-                    string.Empty,
-                    valueType,
-                    new TypeIndexInfo(
-                        keyType,
-                        valueType,
-                        new(field)
-                    ));
-                var indexOperator = new IndexOperator(namedType, keyType, valueType, docIndexDeclaration);
-                declarationContext.TypeManager.AddOperators(namedType, [indexOperator]);
+                var unResolved = new UnResolvedDocOperator(
+                    namedType,
+                    TypeOperatorKind.Index,
+                    id,
+                    [TypeId.Create(typeField), TypeId.Create(type4)],
+                    ResolveState.UnResolvedType
+                );
+                declarationContext.AddUnResolved(unResolved);
                 continue;
             }
 
-            if (AnalyzeDocDetailField(field) is {} declaration)
+            if (AnalyzeDocDetailField(field) is { } declaration)
             {
                 declarations.Add(declaration);
             }
@@ -122,23 +127,23 @@ public partial class DeclarationWalker
         }
     }
 
-    private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
-    {
-        var declarations = new List<LuaSymbol>();
-        declarationContext.TypeManager.AddDocumentElementType(luaDocTableTypeSyntax.UniqueId);
-        if (luaDocTableTypeSyntax.Body is not null)
-        {
-            foreach (var field in luaDocTableTypeSyntax.Body.FieldList)
-            {
-                if (AnalyzeDocDetailField(field) is {} declaration)
-                {
-                    declarations.Add(declaration);
-                }
-            }
-        }
-
-        declarationContext.TypeManager.AddElementMembers(luaDocTableTypeSyntax.UniqueId, declarations);
-    }
+    // private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
+    // {
+    //     var declarations = new List<LuaSymbol>();
+    //     declarationContext.TypeManager.AddDocumentElementType(luaDocTableTypeSyntax.UniqueId);
+    //     if (luaDocTableTypeSyntax.Body is not null)
+    //     {
+    //         foreach (var field in luaDocTableTypeSyntax.Body.FieldList)
+    //         {
+    //             if (AnalyzeDocDetailField(field) is { } declaration)
+    //             {
+    //                 declarations.Add(declaration);
+    //             }
+    //         }
+    //     }
+    //
+    //     declarationContext.TypeManager.AddElementMembers(luaDocTableTypeSyntax.UniqueId, declarations);
+    // }
 
     private void AnalyzeMeta()
     {

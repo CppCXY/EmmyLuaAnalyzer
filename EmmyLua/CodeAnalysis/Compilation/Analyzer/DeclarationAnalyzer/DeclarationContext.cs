@@ -4,11 +4,11 @@ using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type.Manager;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -37,7 +37,7 @@ public class DeclarationContext(
 
     private LuaCompilation Compilation => Analyzer.Compilation;
 
-    public ProjectIndex Db => Compilation.Db;
+    public ProjectIndex ProjectIndex => Compilation.ProjectIndex;
 
     public LuaTypeManager TypeManager => Compilation.TypeManager;
 
@@ -97,7 +97,7 @@ public class DeclarationContext(
         }
 
         var reference = new LuaReference(new(nameElement), kind);
-        Db.AddReference(DocumentId, symbol, reference);
+        ProjectIndex.AddReference(DocumentId, symbol, reference);
     }
 
     public void AddUnResolved(UnResolved declaration)

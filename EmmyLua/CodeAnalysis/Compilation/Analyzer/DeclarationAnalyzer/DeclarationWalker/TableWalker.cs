@@ -16,7 +16,7 @@ public partial class DeclarationWalker
             return;
         }
 
-        declarationContext.TypeManager.AddDocumentElementType(tableExprSyntax.UniqueId);
+        // declarationContext.TypeManager.AddDocumentElementType(tableExprSyntax.UniqueId);
         var fields = new List<LuaSymbol>();
         var fieldList = tableExprSyntax.FieldList.ToList();
         for (var i = 0; i < fieldList.Count; i++)
@@ -43,14 +43,14 @@ public partial class DeclarationWalker
                     ResolveState.UnResolvedType
                 );
                 declarationContext.AddUnResolved(unResolveDeclaration);
-                declarationContext.Db.AddTableField(DocumentId, fieldSyntax);
+                declarationContext.ProjectIndex.AddTableField(DocumentId, fieldSyntax);
             }
         }
 
-        if (fields.Count > 0)
-        {
-            declarationContext.TypeManager.AddElementMembers(tableExprSyntax.UniqueId, fields);
-        }
+        // if (fields.Count > 0)
+        // {
+        //     declarationContext.TypeManager.AddElementMembers(tableExprSyntax.UniqueId, fields);
+        // }
     }
 
     // private void AnalyzeArrayTableExpr(LuaArrayTableExprSyntax arrayTableExprSyntax)
@@ -80,7 +80,7 @@ public partial class DeclarationWalker
     //                 ResolveState.UnResolvedType
     //             );
     //             declarationContext.AddUnResolved(unResolveDeclaration);
-    //             declarationContext.Db.AddTableField(DocumentId, fieldSyntax);
+    //             declarationContext.ProjectIndex.AddTableField(DocumentId, fieldSyntax);
     //         }
     //     }
     //

@@ -2,7 +2,7 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
-public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Symbol")
+public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Declaration")
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
@@ -16,11 +16,11 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             var tree = declarationContext.GetDeclarationTree();
             if (tree is not null)
             {
-                Compilation.Db.AddDeclarationTree(document.Id, tree);
+                Compilation.ProjectIndex.AddDeclarationTree(document.Id, tree);
             }
 
-            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
-            attachDeclarationAnalyzer.Analyze();
+            // var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
+            // attachDeclarationAnalyzer.Analyze();
         }
         Compilation.TypeManager.BuildSubTypes();
     }

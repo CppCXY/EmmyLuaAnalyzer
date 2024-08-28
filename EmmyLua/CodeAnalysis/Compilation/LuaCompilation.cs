@@ -2,13 +2,15 @@
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Semantic;
+using EmmyLua.CodeAnalysis.Compilation.Signature;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
-using EmmyLua.CodeAnalysis.Type.Manager;
 using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Compilation;
@@ -21,9 +23,11 @@ public class LuaCompilation
 
     public IEnumerable<LuaSyntaxTree> SyntaxTrees => _syntaxTrees.Values;
 
-    public ProjectIndex Db { get; }
+    public ProjectIndex ProjectIndex { get; }
 
     public LuaTypeManager TypeManager { get; }
+
+    public LuaSignatureManager SignatureManager { get; };
 
     private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
 
@@ -36,11 +40,13 @@ public class LuaCompilation
     public LuaCompilation(LuaProject project)
     {
         Project = project;
-        Db = new();
+        ProjectIndex = new();
         TypeManager = new LuaTypeManager(this);
+        SignatureManager = new LuaSignatureManager();
         Analyzers =
         [
             new DeclarationAnalyzer(this),
+            new TypeAnalyzer(this),
             new FlowAnalyzer(this),
             new ResolveAnalyzer(this),
         ];
@@ -87,7 +93,7 @@ public class LuaCompilation
             luaAnalyzer.RemoveCache(documentId);
         }
 
-        Db.Remove(documentId);
+        ProjectIndex.Remove(documentId);
         TypeManager.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }

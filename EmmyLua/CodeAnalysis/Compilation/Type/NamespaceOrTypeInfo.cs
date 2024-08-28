@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class NamespaceOrTypeInfo
 {

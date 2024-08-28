@@ -1,8 +1,10 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
@@ -10,258 +12,166 @@ public partial class DeclarationWalker
 {
     private void AnalyzeTypeOperator(LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
-        var operators = new List<TypeOperator>();
         foreach (var operatorSyntax in typeTag.NextOfType<LuaDocTagOperatorSyntax>())
         {
             switch (operatorSyntax.Operator?.RepresentText)
             {
                 case "add":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Add, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Add, operatorSyntax, 1);
                     break;
                 }
                 case "sub":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Sub, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Sub, operatorSyntax, 1);
                     break;
                 }
                 case "mul":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Mul, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Mul, operatorSyntax, 1);
                     break;
                 }
                 case "div":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Div, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Div, operatorSyntax, 1);
                     break;
                 }
                 case "mod":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Mod, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Mod, operatorSyntax, 1);
                     break;
                 }
                 case "pow":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Pow, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Pow, operatorSyntax, 1);
                     break;
                 }
                 case "unm":
                 {
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new UnaryOperator(TypeOperatorKind.Unm, namedType, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Unm, operatorSyntax, 0);
                     break;
                 }
                 case "idiv":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Idiv, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Idiv, operatorSyntax, 1);
                     break;
                 }
                 case "band":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Band, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Band, operatorSyntax, 1);
                     break;
                 }
                 case "bor":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Bor, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Bor, operatorSyntax, 1);
                     break;
                 }
                 case "bxor":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Bxor, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Bxor, operatorSyntax, 1);
                     break;
                 }
                 case "bnot":
                 {
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new UnaryOperator(TypeOperatorKind.Bnot, namedType, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Bnot, operatorSyntax, 0);
                     break;
                 }
                 case "shl":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Shl, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Shl, operatorSyntax, 1);
                     break;
                 }
                 case "shr":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Shr, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Shr, operatorSyntax, 1);
                     break;
                 }
                 case "concat":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Concat, namedType, type, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Concat, operatorSyntax, 1);
                     break;
                 }
                 case "len":
                 {
-                    var retType = searchContext.Infer(operatorSyntax.ReturnType);
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        retType,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new UnaryOperator(TypeOperatorKind.Len, namedType, retType, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Len, operatorSyntax, 0);
                     break;
                 }
                 case "eq":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        type,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Eq, namedType, type, Builtin.Boolean, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Eq, operatorSyntax, 1);
                     break;
                 }
                 case "lt":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        type,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Lt, namedType, type, Builtin.Boolean, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Lt, operatorSyntax, 1);
                     break;
                 }
                 case "le":
                 {
-                    var type = searchContext.Infer(operatorSyntax.Types.FirstOrDefault());
-                    var opDeclaration = new LuaSymbol(
-                        string.Empty,
-                        type,
-                        new TypeOpInfo(new(operatorSyntax)));
-                    var op = new BinaryOperator(TypeOperatorKind.Le, namedType, type, Builtin.Boolean, opDeclaration);
-                    operators.Add(op);
+                    AddUnResolveOperator(namedType, TypeOperatorKind.Le, operatorSyntax, 1);
                     break;
                 }
             }
         }
 
-        if (operators.Count > 0)
-        {
-            declarationContext.TypeManager.AddOperators(namedType, operators);
-        }
-
-        var overloads = new List<TypeInfo.OverloadStub>();
+        // var overloads = new List<TypeInfo.OverloadStub>();
         foreach (var overloadSyntax in typeTag.NextOfType<LuaDocTagOverloadSyntax>())
         {
-            var overloadType = searchContext.Infer(overloadSyntax.TypeFunc);
-            if (overloadType is LuaMethodType methodType)
+            if (overloadSyntax.TypeFunc is { UniqueId: { } id })
             {
-                var overload = new TypeInfo.OverloadStub(
-                    DocumentId,
-                    methodType
+                var unResolved = new UnResolvedDocOperator(
+                    namedType,
+                    TypeOperatorKind.Call,
+                    id,
+                    [new (id)],
+                    ResolveState.UnResolvedType
                 );
-                overloads.Add(overload);
+                declarationContext.AddUnResolved(unResolved);
+            }
+
+        }
+    }
+
+    private void AddUnResolveOperator(
+        LuaNamedType namedType,
+        TypeOperatorKind kind,
+        LuaDocTagOperatorSyntax operatorSyntax,
+        int paramCount
+        )
+    {
+        SyntaxElementId operatorId = operatorSyntax.Operator?.UniqueId ?? SyntaxElementId.Empty;
+
+        var typeIds = new List<TypeId>();
+        if (operatorSyntax.Types is {} types)
+        {
+            foreach (var type in types)
+            {
+                if (paramCount <= 0)
+                {
+                    break;
+                }
+
+                if (type.UniqueId is { } id)
+                {
+                    typeIds.Add(new(id));
+                }
+
+                paramCount--;
             }
         }
 
-        if (overloads.Count > 0)
+        if (operatorSyntax.ReturnType is { UniqueId: { } id2 })
         {
-            declarationContext.TypeManager.AddOverloads(namedType, overloads);
+            typeIds.Add(new(id2));
         }
+
+        var unResolved = new UnResolvedDocOperator(
+            namedType,
+            kind,
+            operatorId,
+            typeIds,
+            ResolveState.UnResolvedType
+        );
+        declarationContext.AddUnResolved(unResolved);
     }
 }

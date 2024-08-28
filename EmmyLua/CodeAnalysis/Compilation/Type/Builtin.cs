@@ -1,7 +1,7 @@
-﻿using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Type.Types;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public static class Builtin
 {

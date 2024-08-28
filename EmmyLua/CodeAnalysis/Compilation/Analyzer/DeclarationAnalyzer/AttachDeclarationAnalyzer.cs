@@ -1,10 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -71,7 +71,7 @@ public class AttachDeclarationAnalyzer(
                         if (mappingSyntax.Name is { RepresentText: { } name })
                         {
                             declaration.Name = name;
-                            declarationContext.Db.AddMapping(declaration.UniqueId, name);
+                            declarationContext.ProjectIndex.AddMapping(declaration.UniqueId, name);
                         }
 
                         break;
@@ -81,7 +81,7 @@ public class AttachDeclarationAnalyzer(
                         if (sourceSyntax.Source is { Value: { } source })
                         {
                             declaration.Feature |= SymbolFeature.Source;
-                            declarationContext.Db.AddSource(declaration.UniqueId, source);
+                            declarationContext.ProjectIndex.AddSource(declaration.UniqueId, source);
                         }
 
                         break;

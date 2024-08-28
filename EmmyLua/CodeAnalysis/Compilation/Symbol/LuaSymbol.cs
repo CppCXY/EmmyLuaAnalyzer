@@ -1,10 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
@@ -23,6 +23,7 @@ public enum SymbolFeature
     NoDiscard = 0x08,
     Async = 0x10,
     Source = 0x20,
+    Readonly = 0x40,
 }
 
 public enum SymbolVisibility
@@ -138,7 +139,7 @@ public class LuaSymbol(
     {
         if (HasSource)
         {
-            var source = context.Compilation.Db.QuerySource(UniqueId);
+            var source = context.Compilation.ProjectIndex.QuerySource(UniqueId);
             if (source is not null)
             {
                 var parts = source.Split('#');

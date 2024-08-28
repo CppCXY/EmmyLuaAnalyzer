@@ -1,11 +1,8 @@
-﻿namespace EmmyLua.CodeAnalysis.Type.Types;
-
-using EmmyLua.CodeAnalysis.Compilation.Infer;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
-using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+
+namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
 public class LuaNamedType(LuaDocumentId documentId, string name)
     : LuaType

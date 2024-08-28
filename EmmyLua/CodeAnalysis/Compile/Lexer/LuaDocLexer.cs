@@ -49,6 +49,7 @@ public class LuaDocLexer(LuaDocument document)
             "cast" => LuaTokenKind.TkTagCast,
             "deprecated" => LuaTokenKind.TkTagDeprecated,
             "private" or "protected" or "public" or "package" or "internal" => LuaTokenKind.TkTagVisibility,
+            "readonly" => LuaTokenKind.TkTagReadonly,
             "diagnostic" => LuaTokenKind.TkTagDiagnostic,
             "meta" => LuaTokenKind.TkTagMeta,
             "version" => LuaTokenKind.TkTagVersion,
@@ -63,11 +64,12 @@ public class LuaDocLexer(LuaDocument document)
         };
     }
 
-    private static LuaTokenKind ToVisibilityOrName(ReadOnlySpan<char> text)
+    private static LuaTokenKind ToModificationOrName(ReadOnlySpan<char> text)
     {
         return text switch
         {
             "private" or "protected" or "public" or "package" or "internal" => LuaTokenKind.TkDocVisibility,
+            "readonly" => LuaTokenKind.TkDocReadonly,
             _ => LuaTokenKind.TkName
         };
     }
@@ -449,7 +451,7 @@ public class LuaDocLexer(LuaDocument document)
             case var ch when LuaLexer.IsNameStart(ch):
             {
                 Reader.EatWhen(LuaLexer.IsNameContinue);
-                return ToVisibilityOrName(Reader.CurrentSavedText);
+                return ToModificationOrName(Reader.CurrentSavedText);
             }
             default:
             {

@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class GlobalIndex
 {

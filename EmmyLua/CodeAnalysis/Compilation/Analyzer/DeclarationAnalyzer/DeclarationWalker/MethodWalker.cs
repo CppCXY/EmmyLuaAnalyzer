@@ -1,9 +1,10 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Signature;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
@@ -27,7 +28,9 @@ public partial class DeclarationWalker
                 );
                 declarationContext.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
-                var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
+                var unResolved = new UnResolvedSymbol(
+                    declaration,
+                    new LuaExprRef(closureExpr),
                     ResolveState.UnResolvedType);
                 declarationContext.AddUnResolved(unResolved);
                 break;
@@ -49,7 +52,9 @@ public partial class DeclarationWalker
                     declarationContext.TypeManager.AddGlobal(name2.RepresentText, declaration);
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                    var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
+                    var unResolved = new UnResolvedSymbol(
+                        declaration,
+                        new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
                 }
@@ -73,7 +78,9 @@ public partial class DeclarationWalker
                         )
                     );
                     declarationContext.AddAttachedDeclaration(indexExpr, declaration);
-                    var unResolved = new UnResolvedSymbol(declaration, new LuaExprRef(closureExpr),
+                    var unResolved = new UnResolvedSymbol(
+                        declaration,
+                        new LuaExprRef(closureExpr),
                         ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
                     declarationContext.AddUnResolved(unResolved);
                 }
@@ -102,16 +109,9 @@ public partial class DeclarationWalker
                 if (param.Name is { } name)
                 {
                     var paramName = name.RepresentText;
-                    LuaType? paramType = null;
-                    if (paramName is not "self")
-                    {
-                        paramType = new LuaElementType(param.UniqueId);
-                        declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
-                    }
-
                     var declaration = new LuaSymbol(
-                        name.RepresentText,
-                        paramType,
+                        paramName,
+                        null,
                         new ParamInfo(
                             new(param),
                             false
@@ -143,16 +143,23 @@ public partial class DeclarationWalker
         }
 
         var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
-        var method = new LuaMethodType(
-            new LuaSignature(
-                Builtin.Unknown,
-                parameters.ToList()
-            ),
+        var signature = new LuaSignature(
             null,
-            isColonDefine);
+            parameters,
+            isColonDefine
+        );
 
-        declarationContext.TypeManager.AddDocumentElementType(closureExprSyntax.UniqueId);
-        declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
+        Compilation.SignatureManager.AddSignature(LuaSignatureId.Create(closureExprSyntax), signature);
+        // var method = new LuaMethodType(
+        //     new LuaSignature(
+        //         Builtin.Unknown,
+        //         parameters.ToList()
+        //     ),
+        //     null,
+        //     isColonDefine);
+
+        // declarationContext.TypeManager.AddDocumentElementType(closureExprSyntax.UniqueId);
+        // declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
         {

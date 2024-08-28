@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
 public interface ITypeInfo
 {

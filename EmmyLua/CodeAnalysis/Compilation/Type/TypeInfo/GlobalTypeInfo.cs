@@ -1,8 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
-using EmmyLua.CodeAnalysis.Type.Types;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
 public class GlobalTypeInfo : ITypeInfo
 {

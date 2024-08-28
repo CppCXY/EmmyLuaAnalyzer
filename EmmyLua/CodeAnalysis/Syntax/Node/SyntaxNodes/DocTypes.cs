@@ -129,3 +129,10 @@ public class LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : LuaDoc
 
     public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
 }
+
+public class LuaDocInTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocNameTypeSyntax? BaseType => FirstChild<LuaDocNameTypeSyntax>();
+
+    public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+}

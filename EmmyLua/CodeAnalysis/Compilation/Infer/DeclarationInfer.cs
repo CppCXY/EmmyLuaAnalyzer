@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Infer;
 
@@ -15,7 +15,7 @@ public static class DeclarationInfer
 
     public static LuaType InferSource(LuaSourceSyntax source, SearchContext context)
     {
-        return context.Compilation.Db.QueryModuleType(source.DocumentId) ?? Builtin.Unknown;
+        return context.Compilation.ProjectIndex.QueryModuleType(source.DocumentId) ?? Builtin.Unknown;
     }
 
     public static LuaType InferParam(LuaParamDefSyntax paramDef, SearchContext context)

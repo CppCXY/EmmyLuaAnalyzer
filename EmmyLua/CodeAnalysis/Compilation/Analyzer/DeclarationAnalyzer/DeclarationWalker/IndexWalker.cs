@@ -7,7 +7,7 @@ public partial class DeclarationWalker
 {
     private void AnalyzeNameExpr(LuaNameExprSyntax nameExpr)
     {
-        declarationContext.Db.AddNameExpr(DocumentId, nameExpr);
+        declarationContext.ProjectIndex.AddNameExpr(DocumentId, nameExpr);
 
         var declaration = declarationContext.FindLocalDeclaration(nameExpr);
         if (declaration is not null)
@@ -18,11 +18,11 @@ public partial class DeclarationWalker
 
     private void IndexIndexExpr(LuaIndexExprSyntax indexExpr)
     {
-        declarationContext.Db.AddIndexExpr(DocumentId, indexExpr);
+        declarationContext.ProjectIndex.AddIndexExpr(DocumentId, indexExpr);
     }
 
     private void IndexDocNameType(LuaDocNameTypeSyntax docNameType)
     {
-        declarationContext.Db.AddNameType(DocumentId, docNameType);
+        declarationContext.ProjectIndex.AddNameType(DocumentId, docNameType);
     }
 }

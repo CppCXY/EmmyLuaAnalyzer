@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
 
 namespace EmmyLua.CodeAnalysis.Diagnostics.Checkers;
 
@@ -54,7 +54,7 @@ public class UndefinedGlobalChecker(LuaCompilation compilation)
                     documentIds = documentIds
                         .Where(it =>
                         {
-                            if (Compilation.Db.QueryModuleType(it) is { } ty
+                            if (Compilation.ProjectIndex.QueryModuleType(it) is { } ty
                                 && !ty.IsSameType(Builtin.Unknown, context.SearchContext) &&
                                 !ty.IsSameType(Builtin.Nil, context.SearchContext))
                             {

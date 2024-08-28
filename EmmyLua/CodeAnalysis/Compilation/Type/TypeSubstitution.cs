@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Type.Types;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
-namespace EmmyLua.CodeAnalysis.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class TypeSubstitution
 {

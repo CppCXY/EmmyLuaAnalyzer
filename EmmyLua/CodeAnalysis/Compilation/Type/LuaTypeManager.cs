@@ -1,13 +1,12 @@
-﻿using EmmyLua.CodeAnalysis.Compilation;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Container;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type.Manager.TypeInfo;
-using EmmyLua.CodeAnalysis.Type.Types;
 
-namespace EmmyLua.CodeAnalysis.Type.Manager;
+namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class LuaTypeManager(LuaCompilation compilation)
 {
@@ -363,7 +362,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         typeInfo.Operators ??= new();
         foreach (var op in operators)
         {
-            if (typeInfo.IsDefinedInDocument(op.LuaSymbol.DocumentId))
+            if (typeInfo.IsDefinedInDocument(op.Id.DocumentId))
             {
                 if (!typeInfo.Operators.TryGetValue(op.Kind, out var list))
                 {

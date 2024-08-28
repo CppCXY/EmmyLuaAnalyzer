@@ -1,6 +1,6 @@
 ﻿namespace EmmyLua.CodeAnalysis.Compile.Kind;
 
-public static class TypeOperatorKind
+public static class CompileTypeOperatorKind
 {
     public enum TypeUnaryOperator
     {

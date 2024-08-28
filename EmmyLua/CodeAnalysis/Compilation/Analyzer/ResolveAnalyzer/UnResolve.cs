@@ -1,4 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -22,6 +26,20 @@ public record UnResolved(ResolveState ResolvedState);
 public record UnResolvedSymbol(
     LuaSymbol LuaSymbol,
     LuaExprRef? ExprRef,
+    ResolveState ResolvedState)
+    : UnResolved(ResolvedState);
+
+public record UnResolvedDocSymbol(
+    LuaSymbol LuaSymbol,
+    TypeId Id,
+    ResolveState ResolvedState)
+    : UnResolved(ResolvedState);
+
+public record UnResolvedDocOperator(
+    LuaNamedType NamedType,
+    TypeOperatorKind Kind,
+    SyntaxElementId Id,
+    List<TypeId> TypeIds,
     ResolveState ResolvedState)
     : UnResolved(ResolvedState);
 

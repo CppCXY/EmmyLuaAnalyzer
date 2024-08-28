@@ -1,9 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Type;
-using EmmyLua.CodeAnalysis.Type.Types;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Search;
 
@@ -87,7 +86,7 @@ public class Declarations(SearchContext context)
             }
             case LuaParamDefSyntax or LuaLocalNameSyntax:
             {
-                return context.Compilation.Db.QueryLocalDeclaration(element);
+                return context.Compilation.ProjectIndex.QueryLocalDeclaration(element);
             }
             case LuaDocTagParamSyntax docTagParam:
             {
@@ -113,7 +112,7 @@ public class Declarations(SearchContext context)
             }
         }
 
-        var luaDeclaration = context.Compilation.Db.QueryLocalDeclaration(nameExpr);
+        var luaDeclaration = context.Compilation.ProjectIndex.QueryLocalDeclaration(nameExpr);
         if (luaDeclaration is not null)
         {
             return luaDeclaration;

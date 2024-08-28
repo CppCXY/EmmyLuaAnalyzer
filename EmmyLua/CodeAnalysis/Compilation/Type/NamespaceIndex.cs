@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Type.Manager;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class NamespaceIndex
 {

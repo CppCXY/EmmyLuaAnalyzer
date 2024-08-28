@@ -37,16 +37,16 @@ public static class TypesParser
     private static CompleteMarker SubType(LuaDocParser p, int limit, TypeParseFeature feature)
     {
         CompleteMarker cm;
-        var unaryOp = TypeOperatorKind.ToUnaryTypeOperatorKind(p.Current);
-        if (unaryOp != TypeOperatorKind.TypeUnaryOperator.None)
+        var unaryOp = CompileTypeOperatorKind.ToUnaryTypeOperatorKind(p.Current);
+        if (unaryOp != CompileTypeOperatorKind.TypeUnaryOperator.None)
         {
             var m = p.Marker();
             p.Bump();
             SimpleType(p, feature);
             var kind = unaryOp switch
             {
-                TypeOperatorKind.TypeUnaryOperator.KeyOf => LuaSyntaxKind.TypeKeyOf,
-                TypeOperatorKind.TypeUnaryOperator.TypeOf => LuaSyntaxKind.TypeTypeOf,
+                CompileTypeOperatorKind.TypeUnaryOperator.KeyOf => LuaSyntaxKind.TypeKeyOf,
+                CompileTypeOperatorKind.TypeUnaryOperator.TypeOf => LuaSyntaxKind.TypeTypeOf,
                 _ => LuaSyntaxKind.None
             };
 
@@ -57,39 +57,43 @@ public static class TypesParser
             cm = SimpleType(p, feature);
         }
 
-        var binaryOp = TypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
-        if (binaryOp != TypeOperatorKind.TypeBinaryOperator.None)
+        var binaryOp = CompileTypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
+        if (binaryOp != CompileTypeOperatorKind.TypeBinaryOperator.None)
         {
-            while (binaryOp != TypeOperatorKind.TypeBinaryOperator.None &&
-                   TypeOperatorKind.Priority[(int)binaryOp].Left > limit)
+            while (binaryOp != CompileTypeOperatorKind.TypeBinaryOperator.None &&
+                   CompileTypeOperatorKind.Priority[(int)binaryOp].Left > limit)
             {
                 var m = cm.Precede(p);
                 p.Bump();
 
                 if (feature.HasFlag(TypeParseFeature.CompactLuaLs) &&
-                    binaryOp == TypeOperatorKind.TypeBinaryOperator.Union &&
+                    binaryOp == CompileTypeOperatorKind.TypeBinaryOperator.Union &&
                     p.Current is LuaTokenKind.TkGt or LuaTokenKind.TkPlus)
                 {
                     p.Bump();
                 }
 
-                var cm2 = SubType(p, TypeOperatorKind.Priority[(int)binaryOp].Right, feature);
+                var cm2 = SubType(p, CompileTypeOperatorKind.Priority[(int)binaryOp].Right, feature);
                 DescriptionParser.InlineDescription(p);
-                cm = m.Complete(p,
-                    binaryOp == TypeOperatorKind.TypeBinaryOperator.Union
-                        ? LuaSyntaxKind.TypeUnion
-                        : LuaSyntaxKind.TypeIntersection);
+                var kind = binaryOp switch
+                {
+                    CompileTypeOperatorKind.TypeBinaryOperator.Union => LuaSyntaxKind.TypeUnion,
+                    CompileTypeOperatorKind.TypeBinaryOperator.Intersection => LuaSyntaxKind.TypeIntersection,
+                    CompileTypeOperatorKind.TypeBinaryOperator.In => LuaSyntaxKind.TypeMapped,
+                    _ => LuaSyntaxKind.None
+                };
+                cm = m.Complete(p, kind);
                 if (!cm2.IsComplete)
                 {
                     return cm;
                 }
 
-                binaryOp = TypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
+                binaryOp = CompileTypeOperatorKind.ToBinaryTypeOperatorKind(p.Current);
             }
         }
 
-        var threeOp = TypeOperatorKind.ToThreeTypeOperatorKind(p.Current);
-        if (threeOp != TypeOperatorKind.TypeThreeOperator.None)
+        var threeOp = CompileTypeOperatorKind.ToThreeTypeOperatorKind(p.Current);
+        if (threeOp != CompileTypeOperatorKind.TypeThreeOperator.None)
         {
             var m = cm.Precede(p);
             try

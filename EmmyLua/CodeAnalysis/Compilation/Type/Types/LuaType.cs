@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 
-namespace EmmyLua.CodeAnalysis.Type.Types;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
 public abstract class LuaType(bool nullable = false)
 {
