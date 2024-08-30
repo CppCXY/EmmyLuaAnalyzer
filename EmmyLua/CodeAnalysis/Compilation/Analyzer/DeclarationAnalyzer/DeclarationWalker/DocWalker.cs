@@ -130,7 +130,7 @@ public partial class DeclarationWalker
     // private void AnalyzeLuaTableType(LuaDocTableTypeSyntax luaDocTableTypeSyntax)
     // {
     //     var declarations = new List<LuaSymbol>();
-    //     declarationContext.TypeManager.AddDocumentElementType(luaDocTableTypeSyntax.UniqueId);
+    //     declarationContext.TypeManager.AddLocalTypeInfo(luaDocTableTypeSyntax.UniqueId);
     //     if (luaDocTableTypeSyntax.Body is not null)
     //     {
     //         foreach (var field in luaDocTableTypeSyntax.Body.FieldList)

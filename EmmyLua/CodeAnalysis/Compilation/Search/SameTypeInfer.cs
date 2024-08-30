@@ -17,7 +17,7 @@ public class SameTypeInfer(SearchContext context)
         False,
     }
 
-    private record struct SameTypeKey(TypeInfo Left, TypeInfo Right);
+    private record struct SameTypeKey(LuaTypeInfo Left, LuaTypeInfo Right);
 
     public bool IsSameType(LuaType? left, LuaType? right)
     {

@@ -15,9 +15,9 @@ public class LuaRenderContext(SearchContext searchContext, LuaRenderFeature feat
 
     private StringBuilder _sb = new StringBuilder();
 
-    private HashSet<TypeInfo> _typeLinks = [];
+    private HashSet<LuaTypeInfo> _typeLinks = [];
 
-    private HashSet<TypeInfo> _aliasExpand = [];
+    private HashSet<LuaTypeInfo> _aliasExpand = [];
 
     private bool _allowExpandAlias = false;
 

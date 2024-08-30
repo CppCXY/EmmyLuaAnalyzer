@@ -121,7 +121,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(closureExpr.UniqueId);
         return typeInfo?.BaseType ?? Builtin.Unknown;
     }
 

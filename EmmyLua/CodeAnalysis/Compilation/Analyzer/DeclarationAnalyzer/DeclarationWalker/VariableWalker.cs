@@ -76,7 +76,7 @@ public partial class DeclarationWalker
                         false
                     ),
                     SymbolFeature.Local);
-                // declarationContext.TypeManager.AddDocumentElementType(param.UniqueId);
+                // declarationContext.TypeManager.AddLocalTypeInfo(param.UniqueId);
                 declarationContext.AddLocalDeclaration(param, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
                 parameters.Add(declaration);

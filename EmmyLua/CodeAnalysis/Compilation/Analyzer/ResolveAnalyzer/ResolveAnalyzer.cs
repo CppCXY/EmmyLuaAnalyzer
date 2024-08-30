@@ -170,7 +170,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var typeInfo = Compilation.TypeManager.FindTypeInfo(id);
+            var typeInfo = Compilation.TypeManager.FindElementTypeInfo(id);
             if (typeInfo?.BaseType is LuaMethodType methodType)
             {
                 if (methodType.MainSignature.ReturnType.IsSameType(Builtin.Unknown, Context))
@@ -302,13 +302,13 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 ))
             {
                 declaration.Type = new LuaElementType(declaration.UniqueId);
-                Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+                Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                 Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, type);
             }
             else if (luaExpr is LuaCallExprSyntax)
             {
                 declaration.Type = new LuaElementType(declaration.UniqueId);
-                Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+                Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                 Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, type);
             }
             else if (type is LuaElementType elementType)
@@ -321,7 +321,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 else
                 {
                     declaration.Type = new LuaElementType(declaration.UniqueId);
-                    Context.Compilation.TypeManager.AddDocumentElementType(declaration.UniqueId);
+                    Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                     Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, elementType);
                 }
             }

@@ -15,8 +15,12 @@ public partial class DeclarationWalker
             var luaClass = new LuaNamedType(declarationContext.DocumentId, name.RepresentText);
             var attribute = GetAttribute(tagClassSyntax);
 
-            if (!declarationContext.TypeManager.AddTypeDefinition(tagClassSyntax, name.RepresentText,
-                    NamedTypeKind.Class, attribute))
+            var typeInfo = declarationContext.TypeManager.AddTypeDefinition(
+                tagClassSyntax,
+                name.RepresentText,
+                NamedTypeKind.Class,
+                attribute);
+            if (typeInfo is null)
             {
                 declarationContext.AddDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Error,

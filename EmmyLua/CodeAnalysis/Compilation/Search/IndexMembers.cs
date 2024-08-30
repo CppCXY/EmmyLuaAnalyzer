@@ -140,7 +140,7 @@ public class IndexMembers(SearchContext context)
 
     private LuaSymbol? FindElementTypeMember(LuaElementType elementType, string name)
     {
-        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
+        var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(elementType.Id);
         if (typeInfo is null)
         {
             return null;
@@ -182,7 +182,7 @@ public class IndexMembers(SearchContext context)
             return FindNamedTypeMember(namedType, name);
         }
 
-        var typeInfo = context.Compilation.TypeManager.FindGlobalInfo(globalType.Name);
+        var typeInfo = context.Compilation.TypeManager.FindGlobalTypeInfo(globalType.Name);
         if (typeInfo is null)
         {
             return null;
@@ -304,11 +304,11 @@ public class IndexMembers(SearchContext context)
         {
             var substitute = new TypeSubstitution();
             var genericArgs = genericType.GenericArgs;
-            if (typeInfo.GenericParams is not null)
+            if (typeInfo.GenericParameters is not null)
             {
-                for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
+                for (var i = 0; i < typeInfo.GenericParameters.Count && i < genericArgs.Count; i++)
                 {
-                    substitute.Add(typeInfo.GenericParams[i].Name, genericArgs[i], true);
+                    substitute.Add(typeInfo.GenericParameters[i].Name, genericArgs[i], true);
                 }
             }
 

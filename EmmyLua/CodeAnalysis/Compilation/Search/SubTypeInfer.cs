@@ -15,7 +15,7 @@ public class SubTypeInfer(SearchContext context)
         False,
     }
 
-    record struct SubTypeKey(TypeInfo Left, TypeInfo Right);
+    record struct SubTypeKey(LuaTypeInfo Left, LuaTypeInfo Right);
 
     public bool IsSubTypeOf(LuaType? left, LuaType? right)
     {

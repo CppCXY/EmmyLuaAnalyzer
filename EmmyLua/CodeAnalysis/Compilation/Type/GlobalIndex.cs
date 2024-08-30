@@ -6,7 +6,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
 public class GlobalIndex
 {
-    private Dictionary<string, GlobalTypeInfo> GlobalInfos { get; } = new();
+    private Dictionary<string, LuaGlobalTypeInfo> GlobalInfos { get; } = new();
 
     private Dictionary<LuaDocumentId, HashSet<string>> GlobalLocations { get; } = new();
 
@@ -19,7 +19,7 @@ public class GlobalIndex
             {
                 if (GlobalInfos.TryGetValue(globalName, out var globalInfo))
                 {
-                    if (globalInfo.RemovePartial(documentId, typeManager))
+                    if (globalInfo.Remove(documentId, typeManager))
                     {
                         GlobalInfos.Remove(globalName);
                         toBeRemove.Add(globalName);
@@ -41,15 +41,15 @@ public class GlobalIndex
     {
         if (GlobalInfos.TryGetValue(name, out var globalInfo))
         {
-            globalInfo.DefinedDeclarations.TryAdd(symbol.DocumentId, symbol);
+            globalInfo.DefinedSymbol.TryAdd(symbol.DocumentId, symbol);
         }
         else
         {
-            globalInfo = new GlobalTypeInfo()
+            globalInfo = new LuaGlobalTypeInfo()
             {
                 Name = name
             };
-            globalInfo.DefinedDeclarations.TryAdd(symbol.DocumentId, symbol);
+            globalInfo.DefinedSymbol.TryAdd(symbol.DocumentId, symbol);
             GlobalInfos[name] = globalInfo;
         }
 
@@ -83,12 +83,12 @@ public class GlobalIndex
         }
     }
 
-    public GlobalTypeInfo? Query(string name)
+    public LuaGlobalTypeInfo? Query(string name)
     {
         return GlobalInfos.GetValueOrDefault(name);
     }
 
-    public IEnumerable<GlobalTypeInfo> QueryAll()
+    public IEnumerable<LuaGlobalTypeInfo> QueryAll()
     {
         return GlobalInfos.Values;
     }

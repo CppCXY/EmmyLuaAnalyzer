@@ -114,7 +114,7 @@ public partial class DeclarationWalker
             }
         }
 
-        // var overloads = new List<TypeInfo.OverloadStub>();
+        // var overloads = new List<LuaTypeInfo.OverloadStub>();
         foreach (var overloadSyntax in typeTag.NextOfType<LuaDocTagOverloadSyntax>())
         {
             if (overloadSyntax.TypeFunc is { UniqueId: { } id })

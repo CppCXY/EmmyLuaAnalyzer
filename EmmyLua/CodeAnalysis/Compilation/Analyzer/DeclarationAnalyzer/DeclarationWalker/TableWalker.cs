@@ -16,7 +16,7 @@ public partial class DeclarationWalker
             return;
         }
 
-        // declarationContext.TypeManager.AddDocumentElementType(tableExprSyntax.UniqueId);
+        // declarationContext.TypeManager.AddLocalTypeInfo(tableExprSyntax.UniqueId);
         var fields = new List<LuaSymbol>();
         var fieldList = tableExprSyntax.FieldList.ToList();
         for (var i = 0; i < fieldList.Count; i++)
@@ -24,7 +24,7 @@ public partial class DeclarationWalker
             var fieldSyntax = fieldList[i];
             if (i == 0 && fieldSyntax.IsValue)
             {
-                // declarationContext.TypeManager.AddDocumentElementType(fieldSyntax.UniqueId);
+                // declarationContext.TypeManager.AddLocalTypeInfo(fieldSyntax.UniqueId);
                 TableIgnoreRanges.Add(tableExprSyntax.Range);
                 return;
             }
@@ -60,7 +60,7 @@ public partial class DeclarationWalker
     //         return;
     //     }
     //
-    //     declarationContext.TypeManager.AddDocumentElementType(arrayTableExprSyntax.UniqueId);
+    //     declarationContext.TypeManager.AddLocalTypeInfo(arrayTableExprSyntax.UniqueId);
     //     var fields = new List<LuaSymbol>();
     //     var fieldList = arrayTableExprSyntax.FieldList.ToList();
     //     for (var i = 0; i < fieldList.Count; i++)

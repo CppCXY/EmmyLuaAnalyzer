@@ -27,7 +27,7 @@ public class LuaCompilation
 
     public LuaTypeManager TypeManager { get; }
 
-    public LuaSignatureManager SignatureManager { get; };
+    public LuaSignatureManager SignatureManager { get; }
 
     private HashSet<LuaDocumentId> DirtyDocumentIds { get; } = [];
 

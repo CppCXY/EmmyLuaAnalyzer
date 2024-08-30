@@ -112,7 +112,7 @@ public static class LuaTypeRenderer
         }
         // else if (namedTypeKind is NamedTypeKind.Class or NamedTypeKind.Interface)
         // {
-            // var generics = typeInfo.GenericParams ?? [];
+            // var generics = typeInfo.GenericParameters ?? [];
             // var supers = typeInfo.Supers ?? [];
             // RenderClassOrInterface(namedType.Name, generics, supers, renderContext);
         // }
@@ -264,7 +264,7 @@ public static class LuaTypeRenderer
     private static void RenderVariableRefType(LuaElementType variableRefType, LuaRenderContext renderContext,
         int level)
     {
-        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(variableRefType.Id);
+        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindElementTypeInfo(variableRefType.Id);
         var baseType = typeInfo?.BaseType;
         if (baseType is null)
         {
@@ -297,7 +297,7 @@ public static class LuaTypeRenderer
         }
         else
         {
-            var globalInfo = renderContext.SearchContext.Compilation.TypeManager.FindGlobalInfo(globalNameType.Name);
+            var globalInfo = renderContext.SearchContext.Compilation.TypeManager.FindGlobalTypeInfo(globalNameType.Name);
             if (globalInfo?.BaseType is not null)
             {
                 InnerRenderType(globalInfo.BaseType, renderContext, level + 1);

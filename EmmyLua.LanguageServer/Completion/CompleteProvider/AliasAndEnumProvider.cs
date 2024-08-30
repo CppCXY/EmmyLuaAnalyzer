@@ -93,9 +93,9 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         }
     }
 
-    private void AddAliasParamCompletion(TypeInfo typeInfo, CompleteContext context)
+    private void AddAliasParamCompletion(LuaTypeInfo luaTypeInfo, CompleteContext context)
     {
-        var baseType = typeInfo.BaseType;
+        var baseType = luaTypeInfo.BaseType;
         // if (baseType is LuaAggregateType aggregateType)
         // {
         //     AddAggregateTypeCompletion(aggregateType, context);
@@ -107,16 +107,16 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         }
     }
 
-    private void AddEnumParamCompletion(TypeInfo typeInfo, CompleteContext context)
+    private void AddEnumParamCompletion(LuaTypeInfo luaTypeInfo, CompleteContext context)
     {
-        if (typeInfo.Declarations is null)
+        if (luaTypeInfo.Declarations is null)
         {
             return;
         }
 
-        if (typeInfo.KeyEnum)
+        if (luaTypeInfo.KeyEnum)
         {
-            foreach (var field in typeInfo.Declarations.Values)
+            foreach (var field in luaTypeInfo.Declarations.Values)
             {
                 context.Add(new CompletionItem
                 {
@@ -127,11 +127,11 @@ public class AliasAndEnumProvider : ICompleteProviderBase
         }
         else
         {
-            foreach (var field in typeInfo.Declarations.Values)
+            foreach (var field in luaTypeInfo.Declarations.Values)
             {
                 context.Add(new CompletionItem
                 {
-                    Label = $"{typeInfo.Name}.{field.Name}",
+                    Label = $"{luaTypeInfo.Name}.{field.Name}",
                     Kind = CompletionItemKind.EnumMember,
                 });
             }

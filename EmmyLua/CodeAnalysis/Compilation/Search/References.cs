@@ -15,7 +15,7 @@ public record ReferenceResult(
 
 public class References(SearchContext context)
 {
-    private HashSet<TypeInfo> TypeInfoGuard { get; } = new();
+    private HashSet<LuaTypeInfo> TypeInfoGuard { get; } = new();
 
     public IEnumerable<ReferenceResult> FindReferences(LuaSymbol luaSymbol)
     {
@@ -313,17 +313,17 @@ public class References(SearchContext context)
         return false;
     }
 
-    private bool IsTypeInfoContainSymbol(TypeInfo typeInfo, LuaSymbol symbol)
+    private bool IsTypeInfoContainSymbol(LuaTypeInfo luaTypeInfo, LuaSymbol symbol)
     {
-        if (!TypeInfoGuard.Add(typeInfo))
+        if (!TypeInfoGuard.Add(luaTypeInfo))
         {
             return false;
         }
 
         try
         {
-            if (typeInfo.Declarations is not null &&
-                typeInfo.Declarations.TryGetValue(symbol.Name, out var childSymbol))
+            if (luaTypeInfo.Declarations is not null &&
+                luaTypeInfo.Declarations.TryGetValue(symbol.Name, out var childSymbol))
             {
                 if (childSymbol.IsReferenceTo(symbol))
                 {
@@ -331,7 +331,7 @@ public class References(SearchContext context)
                 }
             }
 
-            if (typeInfo is { Supers: { } supers })
+            if (luaTypeInfo is { Supers: { } supers })
             {
                 foreach (var super in supers)
                 {
@@ -347,7 +347,7 @@ public class References(SearchContext context)
         }
         finally
         {
-            TypeInfoGuard.Remove(typeInfo);
+            TypeInfoGuard.Remove(luaTypeInfo);
         }
     }
 }

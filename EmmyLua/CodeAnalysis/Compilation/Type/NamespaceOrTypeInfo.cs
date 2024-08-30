@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Document;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
+using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
@@ -9,7 +10,7 @@ public class NamespaceOrTypeInfo
 
     public Dictionary<string, NamespaceOrTypeInfo>? Children { get; set; } = null;
 
-    public TypeInfo.TypeInfo? TypeInfo { get; set; }
+    public TypeInfo.LuaTypeInfo? TypeInfo { get; set; }
 
     public void Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
@@ -25,7 +26,7 @@ public class NamespaceOrTypeInfo
             {
                 if (child.TypeInfo.Partial)
                 {
-                    if (child.TypeInfo.IsDefinedInDocument(documentId) && child.TypeInfo.RemovePartial(documentId, typeManager))
+                    if (child.TypeInfo.IsDefinedInDocument(documentId) && child.TypeInfo.Remove(documentId, typeManager))
                     {
                         child.TypeInfo = null;
                     }
@@ -154,7 +155,7 @@ public class NamespaceOrTypeInfo
         return node;
     }
 
-    public bool CreateTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, LuaTypeAttribute attribute)
+    public LuaTypeInfo? CreateTypeInfo(string name, SyntaxElementId elementId, NamedTypeKind kind, LuaTypeAttribute attribute)
     {
         if (TypeInfo is not null)
         {
@@ -162,31 +163,36 @@ public class NamespaceOrTypeInfo
             {
                 if (!attribute.HasFlag(LuaTypeAttribute.Partial))
                 {
-                    return false;
+                    return null;
                 }
 
-                TypeInfo.DefinedElementIds.Add(elementId);
-                TypeInfo.DefinedDocumentIds.Add(elementId.DocumentId);
-            }
-            else
-            {
-                return false;
+                if (TypeInfo is LuaPartialTypeInfo luaPartialTypeInfo)
+                {
+                    luaPartialTypeInfo.AddElementId(elementId);
+                    return TypeInfo;
+                }
             }
         }
         else
         {
-            TypeInfo = new TypeInfo.TypeInfo()
+            if (attribute.HasFlag(LuaTypeAttribute.Global))
             {
-                Name = Name,
-                MainDocumentId = elementId.DocumentId,
-                Kind = kind,
-                Attribute = attribute,
-                ResolvedMainDocumentId = kind == NamedTypeKind.Alias,
-                DefinedElementIds = [elementId],
-                DefinedDocumentIds = [elementId.DocumentId]
-            };
+                var typeInfo = new LuaGlobalTypeInfo(kind, attribute);
+                typeInfo.AddElementId(elementId);
+                TypeInfo = typeInfo;
+            }
+            else if (attribute.HasFlag(LuaTypeAttribute.Partial))
+            {
+                var typeInfo = new LuaPartialTypeInfo(kind, attribute);
+                typeInfo.AddElementId(elementId);
+                TypeInfo = typeInfo;
+            }
+            else
+            {
+                TypeInfo = new LuaLocalTypeInfo(elementId, kind, attribute);
+            }
         }
 
-        return true;
+        return null;
     }
 }

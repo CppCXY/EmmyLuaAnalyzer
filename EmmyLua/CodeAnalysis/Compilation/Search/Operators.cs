@@ -20,13 +20,13 @@ public class Operators(SearchContext context)
 
         if (typeInfo.Operators.TryGetValue(kind, out var operators))
         {
-            if (left is LuaGenericType genericType && typeInfo.GenericParams is not null)
+            if (left is LuaGenericType genericType && typeInfo.GenericParameters is not null)
             {
                 var substitution = new TypeSubstitution();
                 var genericArgs = genericType.GenericArgs;
-                for (var i = 0; i < typeInfo.GenericParams.Count && i < genericArgs.Count; i++)
+                for (var i = 0; i < typeInfo.GenericParameters.Count && i < genericArgs.Count; i++)
                 {
-                    substitution.Add(typeInfo.GenericParams[i].Name, genericArgs[i], true);
+                    substitution.Add(typeInfo.GenericParameters[i].Name, genericArgs[i], true);
                 }
 
                 var instanceOperators = operators.Select(op => op.Instantiate(substitution)).ToList();

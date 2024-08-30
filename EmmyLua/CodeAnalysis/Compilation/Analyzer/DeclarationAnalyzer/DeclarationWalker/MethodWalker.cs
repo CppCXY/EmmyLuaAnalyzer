@@ -158,7 +158,7 @@ public partial class DeclarationWalker
         //     null,
         //     isColonDefine);
 
-        // declarationContext.TypeManager.AddDocumentElementType(closureExprSyntax.UniqueId);
+        // declarationContext.TypeManager.AddLocalTypeInfo(closureExprSyntax.UniqueId);
         // declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
