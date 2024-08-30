@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -28,24 +29,25 @@ public partial class DeclarationWalker
                     $"Type '{name.RepresentText}' already exists",
                     name.Range
                 ));
+                return;
             }
 
-            AnalyzeTypeFields(luaClass, tagClassSyntax);
-            AnalyzeTypeOperator(luaClass, tagClassSyntax);
+            AnalyzeTypeFields(typeInfo, luaClass, tagClassSyntax);
+            AnalyzeTypeOperator(typeInfo, luaClass, tagClassSyntax);
 
             if (tagClassSyntax is { Body: { } body })
             {
-                AnalyzeTagDocBody(luaClass, body);
+                AnalyzeTagDocBody(typeInfo, luaClass, body);
             }
 
             if (tagClassSyntax is { ExtendTypeList: { } extendTypeList })
             {
-                AnalyzeTypeSupers(extendTypeList, luaClass);
+                AnalyzeTypeSupers(typeInfo, luaClass, extendTypeList);
             }
 
             if (tagClassSyntax is { GenericDeclareList: { } genericDeclareList })
             {
-                AnalyzeTypeGenericParam(genericDeclareList, luaClass);
+                AnalyzeTypeGenericParam(typeInfo, luaClass, genericDeclareList);
             }
         }
 
@@ -57,11 +59,15 @@ public partial class DeclarationWalker
         if (tagAliasSyntax is { Name: { } name, Type: { } type })
         {
             var attribute = GetAttribute(tagAliasSyntax);
-            var luaAlias = new LuaNamedType(DocumentId, name.RepresentText);
-            var baseTy = searchContext.Infer(type);
+            // var luaAlias = new LuaNamedType(DocumentId, name.RepresentText);
+            // var baseTy = searchContext.Infer(type);
 
-            if (!declarationContext.TypeManager.AddTypeDefinition(tagAliasSyntax, name.RepresentText,
-                    NamedTypeKind.Alias, attribute))
+            var typeInfo = declarationContext.TypeManager.AddTypeDefinition(
+                tagAliasSyntax,
+                name.RepresentText,
+                NamedTypeKind.Alias,
+                attribute);
+            if (typeInfo is null)
             {
                 declarationContext.AddDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Error,
@@ -71,7 +77,7 @@ public partial class DeclarationWalker
                 ));
             }
 
-            declarationContext.TypeManager.SetBaseType(luaAlias, baseTy);
+            // declarationContext.TypeManager.SetBaseType(luaAlias, baseTy);
         }
 
         declarationContext.AttachDoc(tagAliasSyntax);
@@ -86,9 +92,13 @@ public partial class DeclarationWalker
                 : Builtin.Integer;
             var luaEnum = new LuaNamedType(DocumentId, name.RepresentText);
             var attribute = GetAttribute(tagEnumSyntax);
+            var typeInfo = declarationContext.TypeManager.AddTypeDefinition(
+                tagEnumSyntax,
+                name.RepresentText,
+                NamedTypeKind.Enum,
+                attribute);
 
-            if (!declarationContext.TypeManager.AddTypeDefinition(tagEnumSyntax, name.RepresentText,
-                    NamedTypeKind.Enum, attribute))
+            if (typeInfo is null)
             {
                 declarationContext.AddDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Error,
@@ -96,10 +106,9 @@ public partial class DeclarationWalker
                     $"Type '{name.RepresentText}' already exists",
                     name.Range
                 ));
+                return;
             }
 
-            declarationContext.TypeManager.SetBaseType(luaEnum, baseType);
-            var enumFields = new List<LuaSymbol>();
             foreach (var field in tagEnumSyntax.FieldList)
             {
                 if (field is { Name: { } fieldName })
@@ -108,13 +117,9 @@ public partial class DeclarationWalker
                         fieldName.RepresentText,
                         baseType,
                         new EnumFieldInfo(new(field)));
-                    enumFields.Add(fieldDeclaration);
-                }
-            }
 
-            if (enumFields.Count > 0)
-            {
-                declarationContext.TypeManager.AddMemberDeclarations(luaEnum, enumFields);
+                    typeInfo.AddDeclaration(fieldDeclaration);
+                }
             }
         }
 
@@ -127,8 +132,13 @@ public partial class DeclarationWalker
         {
             var luaInterface = new LuaNamedType(DocumentId, name.RepresentText);
             var attribute = GetAttribute(tagInterfaceSyntax);
-            if (!declarationContext.TypeManager.AddTypeDefinition(tagInterfaceSyntax, name.RepresentText,
-                    NamedTypeKind.Interface, attribute))
+            var luaTypeInfo = declarationContext.TypeManager.AddTypeDefinition(
+                tagInterfaceSyntax,
+                name.RepresentText,
+                NamedTypeKind.Interface,
+                attribute);
+
+            if (luaTypeInfo is null)
             {
                 declarationContext.AddDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Error,
@@ -136,23 +146,24 @@ public partial class DeclarationWalker
                     $"Type '{name.RepresentText}' already exists",
                     name.Range
                 ));
+                return;
             }
 
-            AnalyzeTypeFields(luaInterface, tagInterfaceSyntax);
-            AnalyzeTypeOperator(luaInterface, tagInterfaceSyntax);
+            AnalyzeTypeFields(luaTypeInfo,luaInterface, tagInterfaceSyntax);
+            AnalyzeTypeOperator(luaTypeInfo,luaInterface, tagInterfaceSyntax);
             if (tagInterfaceSyntax is { Body: { } body })
             {
-                AnalyzeTagDocBody(luaInterface, body);
+                AnalyzeTagDocBody(luaTypeInfo, luaInterface, body);
             }
 
             if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
             {
-                AnalyzeTypeSupers(extendTypeList, luaInterface);
+                AnalyzeTypeSupers(luaTypeInfo, luaInterface, extendTypeList);
             }
 
             if (tagInterfaceSyntax is { GenericDeclareList: { } genericDeclareList })
             {
-                AnalyzeTypeGenericParam(genericDeclareList, luaInterface);
+                AnalyzeTypeGenericParam(luaTypeInfo, luaInterface, genericDeclareList);
             }
         }
 
@@ -164,35 +175,32 @@ public partial class DeclarationWalker
         declarationContext.AttachDoc(tagTypeSyntax);
     }
 
-    private void AnalyzeTypeSupers(IEnumerable<LuaDocTypeSyntax> extendList, LuaNamedType namedType)
+    private void AnalyzeTypeSupers(LuaTypeInfo luaTypeInfo, LuaNamedType namedType,
+        IEnumerable<LuaDocTypeSyntax> extendList)
     {
-        var supers = new List<LuaNamedType>();
         foreach (var extend in extendList)
         {
             if (extend is LuaDocTableTypeSyntax { Body: { } body })
             {
-                AnalyzeTagDocBody(namedType, body);
+                AnalyzeTagDocBody(luaTypeInfo, namedType, body);
             }
             else
             {
                 var type = searchContext.Infer(extend);
                 if (type is LuaNamedType superNamedType)
                 {
-                    supers.Add(superNamedType);
+                    luaTypeInfo.AddSuper(superNamedType);
                 }
             }
         }
-
-        if (supers.Count > 0)
-        {
-            declarationContext.TypeManager.AddSupers(namedType, supers);
-        }
     }
 
-    private void AnalyzeTypeGenericParam(LuaDocGenericDeclareListSyntax generic,
-        LuaNamedType namedType)
+    private void AnalyzeTypeGenericParam(
+        LuaTypeInfo luaTypeInfo,
+        LuaNamedType namedType,
+        LuaDocGenericDeclareListSyntax generic
+    )
     {
-        var genericParams = new List<LuaSymbol>();
         foreach (var param in generic.Params)
         {
             if (param is { Name: { } name })
@@ -202,13 +210,8 @@ public partial class DeclarationWalker
                     name.RepresentText,
                     type,
                     new GenericParamInfo(new(param)));
-                genericParams.Add(declaration);
+                luaTypeInfo.AddGenericParameter(declaration);
             }
-        }
-
-        if (genericParams.Count > 0)
-        {
-            declarationContext.TypeManager.AddGenericParams(namedType, genericParams);
         }
     }
 

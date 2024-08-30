@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Document;
@@ -36,6 +37,7 @@ public record UnResolvedDocSymbol(
     : UnResolved(ResolvedState);
 
 public record UnResolvedDocOperator(
+    LuaTypeInfo TypeInfo,
     LuaNamedType NamedType,
     TypeOperatorKind Kind,
     SyntaxElementId Id,

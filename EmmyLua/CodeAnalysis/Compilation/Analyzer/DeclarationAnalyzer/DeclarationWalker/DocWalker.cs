@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -64,9 +65,8 @@ public partial class DeclarationWalker
         return null;
     }
 
-    private void AnalyzeTypeFields(LuaNamedType namedType, LuaDocTagSyntax typeTag)
+    private void AnalyzeTypeFields(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
-        var declarations = new List<LuaSymbol>();
         foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
         {
             if (tagField.Field is not null)
@@ -74,6 +74,7 @@ public partial class DeclarationWalker
                 if (tagField.Field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
                 {
                     var unResolved = new UnResolvedDocOperator(
+                        luaTypeInfo,
                         namedType,
                         TypeOperatorKind.Index,
                         id,
@@ -84,27 +85,22 @@ public partial class DeclarationWalker
                     continue;
                 }
 
-                if (AnalyzeDocDetailField(tagField.Field) is { } declaration)
+                if (AnalyzeDocDetailField(tagField.Field) is { } fieldSymbol)
                 {
-                    declarations.Add(declaration);
+                    luaTypeInfo.AddDeclaration(fieldSymbol);
                 }
             }
         }
-
-        if (declarations.Count > 0)
-        {
-            declarationContext.TypeManager.AddMemberDeclarations(namedType, declarations);
-        }
     }
 
-    private void AnalyzeTagDocBody(LuaNamedType namedType, LuaDocBodySyntax docBody)
+    private void AnalyzeTagDocBody(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocBodySyntax docBody)
     {
-        var declarations = new List<LuaSymbol>();
         foreach (var field in docBody.FieldList)
         {
             if (field is { TypeField: { } typeField, Type: { } type4, UniqueId: { } id })
             {
                 var unResolved = new UnResolvedDocOperator(
+                    luaTypeInfo,
                     namedType,
                     TypeOperatorKind.Index,
                     id,
@@ -115,15 +111,10 @@ public partial class DeclarationWalker
                 continue;
             }
 
-            if (AnalyzeDocDetailField(field) is { } declaration)
+            if (AnalyzeDocDetailField(field) is { } fieldSymbol)
             {
-                declarations.Add(declaration);
+                luaTypeInfo.AddDeclaration(fieldSymbol);
             }
-        }
-
-        if (declarations.Count > 0)
-        {
-            declarationContext.TypeManager.AddMemberDeclarations(namedType, declarations);
         }
     }
 
