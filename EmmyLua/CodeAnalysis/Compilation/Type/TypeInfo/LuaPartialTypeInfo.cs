@@ -8,28 +8,20 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
 public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) : LuaTypeInfo
 {
-    private List<SyntaxElementId> _elementIds = new();
+    private Dictionary<LuaDocumentId, SyntaxElementId> _elementIds = new();
 
-    private HashSet<LuaDocumentId> _documentIdSet = new();
-
-    public void AddElementId(SyntaxElementId elementId)
+    public override void AddDefineId(SyntaxElementId id)
     {
-        _elementIds.Add(elementId);
-        _documentIdSet.Add(elementId.DocumentId);
+        _elementIds[id.DocumentId] = id;
     }
 
     public override IEnumerable<LuaLocation> GetLocation(SearchContext context)
     {
-        foreach (var elementId in _elementIds)
+        foreach (var elementId in _elementIds.Values)
         {
-            var document = context.Compilation.Project.GetDocument(elementId.DocumentId);
-            if (document is not null)
+            if (elementId.GetLocation(context) is { } location)
             {
-                var element = document.SyntaxTree.GetElement(elementId.ElementId);
-                if (element is not null)
-                {
-                    yield return element.Location;
-                }
+                yield return location;
             }
         }
     }
@@ -59,7 +51,7 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
 
     public override bool IsDefinedInDocument(LuaDocumentId documentId)
     {
-        return _documentIdSet.Contains(documentId);
+        return _elementIds.ContainsKey(documentId);
     }
 
     public override void AddDeclaration(LuaSymbol luaSymbol)

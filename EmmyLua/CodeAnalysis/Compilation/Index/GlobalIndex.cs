@@ -1,8 +1,9 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Document;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
 public class GlobalIndex
 {
@@ -41,15 +42,12 @@ public class GlobalIndex
     {
         if (GlobalInfos.TryGetValue(name, out var globalInfo))
         {
-            globalInfo.DefinedSymbol.TryAdd(symbol.DocumentId, symbol);
+            globalInfo.AddDefineId(symbol.UniqueId);
         }
         else
         {
-            globalInfo = new LuaGlobalTypeInfo()
-            {
-                Name = name
-            };
-            globalInfo.DefinedSymbol.TryAdd(symbol.DocumentId, symbol);
+            globalInfo = new LuaGlobalTypeInfo(NamedTypeKind.None, LuaTypeAttribute.Global);
+            globalInfo.AddDefineId(symbol.UniqueId);
             GlobalInfos[name] = globalInfo;
         }
 
@@ -68,8 +66,7 @@ public class GlobalIndex
     {
         if (GlobalInfos.TryGetValue(name, out var globalInfo))
         {
-            globalInfo.Declarations ??= new Dictionary<string, LuaSymbol>();
-            globalInfo.Declarations.TryAdd(symbol.Name, symbol);
+            globalInfo.AddImplement(symbol);
         }
 
         if (GlobalLocations.TryGetValue(symbol.DocumentId, out var globalNames))

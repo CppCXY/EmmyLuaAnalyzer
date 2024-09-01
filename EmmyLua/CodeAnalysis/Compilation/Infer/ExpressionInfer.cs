@@ -111,7 +111,7 @@ public static class ExpressionInfer
             return bop2.Ret;
         }
 
-        if (leftTy.SubTypeOf(Builtin.Integer, context) && rightTy.SubTypeOf(Builtin.Integer, context))
+        if (leftTy.IsSubTypeOf(Builtin.Integer, context) && rightTy.IsSubTypeOf(Builtin.Integer, context))
         {
             return Builtin.Integer;
         }
@@ -121,7 +121,7 @@ public static class ExpressionInfer
 
     private static LuaType InferClosureExpr(LuaClosureExprSyntax closureExpr, SearchContext context)
     {
-        var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(closureExpr.UniqueId);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(closureExpr.UniqueId);
         return typeInfo?.BaseType ?? Builtin.Unknown;
     }
 

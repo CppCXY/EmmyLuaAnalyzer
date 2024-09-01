@@ -38,6 +38,8 @@ public abstract class LuaTypeInfo
 
     public bool KeyEnum => Attribute.HasFlag(LuaTypeAttribute.Key);
 
+    public abstract void AddDefineId(SyntaxElementId id);
+
     public abstract bool Remove(LuaDocumentId documentId, LuaTypeManager typeManager);
 
     public abstract bool IsDefinedInDocument(LuaDocumentId documentId);

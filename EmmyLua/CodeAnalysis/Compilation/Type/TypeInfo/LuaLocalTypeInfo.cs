@@ -13,20 +13,9 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
 
     public override IEnumerable<LuaLocation> GetLocation(SearchContext context)
     {
-        var mainElementId = ElementId;
-        if (mainElementId == SyntaxElementId.Empty)
+        if (ElementId.GetLocation(context) is { } location)
         {
-            yield break;
-        }
-
-        var document = context.Compilation.Project.GetDocument(mainElementId.DocumentId);
-        if (document is not null)
-        {
-            var element = document.SyntaxTree.GetElement(mainElementId.ElementId);
-            if (element is not null)
-            {
-                yield return element.Location;
-            }
+            yield return location;
         }
     }
 
@@ -47,6 +36,10 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
     public override NamedTypeKind Kind { get; } = kind;
 
     public override LuaTypeAttribute Attribute { get; } = attribute;
+
+    public override void AddDefineId(SyntaxElementId _)
+    {
+    }
 
     public override bool Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {

@@ -143,7 +143,7 @@ public class Members(SearchContext context)
 
     private List<LuaSymbol> GetElementTypeMembers(LuaElementType elementType)
     {
-        var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(elementType.Id);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
         if (typeInfo is null)
         {
             return [];
@@ -190,7 +190,7 @@ public class Members(SearchContext context)
             return GetTypeMembers(namedType);
         }
 
-        var typeInfo = context.Compilation.TypeManager.FindGlobalTypeInfo(globalType.Name);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(globalType.Name);
         if (typeInfo is null)
         {
             return [];

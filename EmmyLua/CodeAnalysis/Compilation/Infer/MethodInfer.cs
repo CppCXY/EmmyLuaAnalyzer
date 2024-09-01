@@ -158,7 +158,7 @@ public static class MethodInfer
 
                 var matchedParam = 0;
                 var firstArgType = context.Infer(args[0]);
-                if (firstArgType.SubTypeOf(selfType, context))
+                if (firstArgType.IsSubTypeOf(selfType, context))
                 {
                     matchedParam++;
                 }
@@ -263,7 +263,7 @@ public static class MethodInfer
 
                 var matchedParam = 0;
                 var firstArgType = context.Infer(args[0]);
-                if (firstArgType.SubTypeOf(selfType, context))
+                if (firstArgType.IsSubTypeOf(selfType, context))
                 {
                     matchedParam++;
                 }

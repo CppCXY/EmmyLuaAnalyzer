@@ -170,7 +170,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var typeInfo = Compilation.TypeManager.FindElementTypeInfo(id);
+            var typeInfo = Compilation.TypeManager.FindTypeInfo(id);
             if (typeInfo?.BaseType is LuaMethodType methodType)
             {
                 if (methodType.MainSignature.ReturnType.IsSameType(Builtin.Unknown, Context))

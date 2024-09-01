@@ -31,7 +31,8 @@ public enum SymbolVisibility
     Public,
     Protected,
     Private,
-    Package
+    Package,
+    Internal
 }
 
 public class LuaSymbol(

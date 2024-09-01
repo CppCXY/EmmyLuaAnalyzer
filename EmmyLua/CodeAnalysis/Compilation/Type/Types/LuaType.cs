@@ -8,7 +8,7 @@ public abstract class LuaType(bool nullable = false)
 
     public virtual bool IsUnknown { get; } = false;
 
-    public bool SubTypeOf(LuaType? other, SearchContext context)
+    public bool IsSubTypeOf(LuaType? other, SearchContext context)
     {
         return other is not null && context.IsSubTypeOf(this, other);
     }

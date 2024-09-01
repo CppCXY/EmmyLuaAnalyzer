@@ -56,7 +56,7 @@ public class Visibility(SearchContext context)
             {
                 return true;
             }
-            else if (symbol.IsProtected && envType.SubTypeOf(prefixType, context))
+            else if (symbol.IsProtected && envType.IsSubTypeOf(prefixType, context))
             {
                 return true;
             }

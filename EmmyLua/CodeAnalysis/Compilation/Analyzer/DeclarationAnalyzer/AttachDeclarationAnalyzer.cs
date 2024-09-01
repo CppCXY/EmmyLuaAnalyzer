@@ -220,7 +220,7 @@ public class AttachDeclarationAnalyzer(
             return;
         }
 
-        var typeInfo = declarationContext.TypeManager.FindElementTypeInfo(closureExpr.UniqueId);
+        var typeInfo = declarationContext.TypeManager.FindTypeInfo(closureExpr.UniqueId);
         if (typeInfo?.BaseType is not LuaMethodType methodType)
         {
             return;

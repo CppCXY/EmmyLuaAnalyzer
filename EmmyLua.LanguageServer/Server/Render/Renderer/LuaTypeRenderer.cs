@@ -264,7 +264,7 @@ public static class LuaTypeRenderer
     private static void RenderVariableRefType(LuaElementType variableRefType, LuaRenderContext renderContext,
         int level)
     {
-        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindElementTypeInfo(variableRefType.Id);
+        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(variableRefType.Id);
         var baseType = typeInfo?.BaseType;
         if (baseType is null)
         {
@@ -297,7 +297,7 @@ public static class LuaTypeRenderer
         }
         else
         {
-            var globalInfo = renderContext.SearchContext.Compilation.TypeManager.FindGlobalTypeInfo(globalNameType.Name);
+            var globalInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(globalNameType.Name);
             if (globalInfo?.BaseType is not null)
             {
                 InnerRenderType(globalInfo.BaseType, renderContext, level + 1);

@@ -35,6 +35,8 @@ public class ProjectIndex
 
     private UniqueIndex<SyntaxElementId, string> MappingName { get; } = new();
 
+    private GlobalIndex GlobalIndex { get; } = new();
+
     public void Remove(LuaDocumentId documentId)
     {
         ModuleTypes.Remove(documentId);
@@ -117,6 +119,11 @@ public class ProjectIndex
     public void AddSource(SyntaxElementId id, string source)
     {
         Source.Add(id.DocumentId, id, source);
+    }
+
+    public void AddGlobal(string name, LuaSymbol symbol)
+    {
+        GlobalIndex.AddGlobal(name, symbol);
     }
 
     #endregion

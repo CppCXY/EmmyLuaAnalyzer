@@ -155,7 +155,7 @@ public class NamespaceOrTypeInfo
         return node;
     }
 
-    public LuaTypeInfo? CreateTypeInfo(string name, SyntaxElementId elementId, NamedTypeKind kind, LuaTypeAttribute attribute)
+    public LuaTypeInfo? CreateTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, LuaTypeAttribute attribute)
     {
         if (TypeInfo is not null)
         {
@@ -168,7 +168,7 @@ public class NamespaceOrTypeInfo
 
                 if (TypeInfo is LuaPartialTypeInfo luaPartialTypeInfo)
                 {
-                    luaPartialTypeInfo.AddElementId(elementId);
+                    luaPartialTypeInfo.Add(elementId);
                     return TypeInfo;
                 }
             }

@@ -140,7 +140,7 @@ public class IndexMembers(SearchContext context)
 
     private LuaSymbol? FindElementTypeMember(LuaElementType elementType, string name)
     {
-        var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(elementType.Id);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
         if (typeInfo is null)
         {
             return null;
@@ -182,7 +182,7 @@ public class IndexMembers(SearchContext context)
             return FindNamedTypeMember(namedType, name);
         }
 
-        var typeInfo = context.Compilation.TypeManager.FindGlobalTypeInfo(globalType.Name);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(globalType.Name);
         if (typeInfo is null)
         {
             return null;
@@ -466,12 +466,12 @@ public class IndexMembers(SearchContext context)
                 var keyType = context.Infer(indexKeyExpr);
                 if (keyType is EnumInstanceType { EnumType: { } enumType })
                 {
-                    if (enumType.SubTypeOf(type.GenericArgs[0], context))
+                    if (enumType.IsSubTypeOf(type.GenericArgs[0], context))
                     {
                         return new LuaSymbol(string.Empty, type.GenericArgs[1], new VirtualInfo());
                     }
                 }
-                else if (keyType.SubTypeOf(type.GenericArgs[0], context))
+                else if (keyType.IsSubTypeOf(type.GenericArgs[0], context))
                 {
                     return new LuaSymbol(string.Empty, type.GenericArgs[1], new VirtualInfo());
                 }

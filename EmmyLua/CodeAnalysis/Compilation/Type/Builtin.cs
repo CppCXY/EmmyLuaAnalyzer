@@ -13,6 +13,7 @@ public static class Builtin
     public static LuaNamedType Integer { get; } = new(LuaDocumentId.VirtualDocumentId, "integer");
     public static LuaNamedType String { get; } = new(LuaDocumentId.VirtualDocumentId, "string");
     public static LuaNamedType Table { get; } = new(LuaDocumentId.VirtualDocumentId, "table");
+
     public static LuaNamedType Thread { get; } = new(LuaDocumentId.VirtualDocumentId, "thread");
     public static LuaNamedType UserData { get; } = new(LuaDocumentId.VirtualDocumentId, "userdata");
 

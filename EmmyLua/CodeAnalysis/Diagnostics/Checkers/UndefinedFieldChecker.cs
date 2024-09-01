@@ -17,7 +17,7 @@ public class UndefinedFieldChecker(LuaCompilation compilation)
         foreach (var indexExpr in document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaIndexExprSyntax>())
         {
             var prefixType = context.SearchContext.Infer(indexExpr.PrefixExpr);
-            if (prefixType.SubTypeOf(Builtin.Unknown, context.SearchContext) || prefixType is LuaArrayType)
+            if (prefixType.IsSubTypeOf(Builtin.Unknown, context.SearchContext) || prefixType is LuaArrayType)
             {
                 continue;
             }

@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Index;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Container;
@@ -55,14 +56,14 @@ public class LuaTypeManager(LuaCompilation compilation)
         return RootNamespace.FindNamespaceOrType(type.Name)?.TypeInfo;
     }
 
-    public LuaLocalTypeInfo? FindElementTypeInfo(SyntaxElementId elementId)
+    public LuaLocalTypeInfo? FindTypeInfo(SyntaxElementId elementId)
     {
         return LocalTypeInfos.Query(elementId);
     }
 
-    public LuaGlobalTypeInfo? FindGlobalTypeInfo(string name)
+    public LuaGlobalTypeInfo? FindTypeInfo(string globalName)
     {
-        return GlobalIndices.Query(name);
+        return GlobalIndices.Query(globalName);
     }
 
     public void Remove(LuaDocumentId documentId)
@@ -115,7 +116,7 @@ public class LuaTypeManager(LuaCompilation compilation)
             return typeInfo;
         }
 
-        var newTypeInfo = new LuaLocalTypeInfo(id, );
+        var newTypeInfo = new LuaLocalTypeInfo(id, NamedTypeKind.None, LuaTypeAttribute.Exact);
         LocalTypeInfos.Add(id.DocumentId, id, newTypeInfo);
         return newTypeInfo;
     }
@@ -123,58 +124,6 @@ public class LuaTypeManager(LuaCompilation compilation)
     public void AddGlobal(string name, LuaSymbol symbol)
     {
         GlobalIndices.AddGlobal(name, symbol);
-    }
-
-    public void SetExprType(LuaNamedType namedType, LuaType type)
-    {
-        if (type is LuaElementType elementType)
-        {
-            var elementTypeInfo = FindElementTypeInfo(elementType.Id);
-            if (elementTypeInfo?.Declarations is { } members)
-            {
-                AddMemberImplementations(namedType, members.Values);
-            }
-        }
-    }
-
-    public void SetExprType(LuaDocumentId documentId, GlobalNameType globalNameType, LuaType baseType)
-    {
-        if (GlobalProxyTypes.Query(globalNameType.Name) is { } namedType)
-        {
-            SetExprType(namedType, baseType);
-        }
-        else
-        {
-            SetGlobalBaseType(documentId, globalNameType, baseType);
-        }
-    }
-
-    public void SetGlobalTypeSymbol(string name, LuaNamedType namedType)
-    {
-        if (GlobalIndices.Query(name) is { } globalTypeInfo)
-        {
-            globalTypeInfo.MainDocumentId = namedType.DocumentId;
-            GlobalProxyTypes.Add(namedType.DocumentId, name, namedType);
-            var typeInfo = FindTypeInfo(namedType);
-            if (typeInfo is not null)
-            {
-                typeInfo.Attribute |= LuaTypeAttribute.Global;
-            }
-
-            if (globalTypeInfo.Declarations is { } members)
-            {
-                AddMemberImplementations(namedType, members.Values);
-            }
-        }
-    }
-
-    public void SetGlobalBaseType(LuaDocumentId documentId, GlobalNameType globalNameType, LuaType baseType)
-    {
-        if (GlobalIndices.Query(globalNameType.Name) is { BaseType: null } globalTypeInfo)
-        {
-            globalTypeInfo.MainDocumentId = documentId;
-            globalTypeInfo.BaseType = baseType;
-        }
     }
 
     public void BuildSubTypes()

@@ -204,7 +204,7 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
         if (unResolved is UnResolvedMethod unResolvedMethod)
         {
             var id = unResolvedMethod.Id;
-            var typeInfo = context.Compilation.TypeManager.FindElementTypeInfo(id);
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(id);
             if (typeInfo?.BaseType is LuaMethodType methodType)
             {
                 var retType = methodType.MainSignature.ReturnType;

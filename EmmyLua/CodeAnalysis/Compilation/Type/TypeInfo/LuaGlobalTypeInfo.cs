@@ -6,46 +6,25 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
-public class LuaGlobalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, LuaTypeAttribute attribute) : LuaTypeInfo
+public class LuaGlobalTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) : LuaTypeInfo
 {
-    private LuaDocumentId _mainDocumentId = LuaDocumentId.VirtualDocumentId;
-
-    private Dictionary<LuaDocumentId, LuaSymbol> _symbolSet = new();
+    private Dictionary<LuaDocumentId, SyntaxElementId> _elementIds = new();
 
     private HashSet<LuaDocumentId> _documentIdSet = new();
 
-    public void AddDefineSymbol(LuaSymbol luaSymbol)
+    public override void AddDefineId(SyntaxElementId id)
     {
-        _symbolSet[luaSymbol.DocumentId] = luaSymbol;
-        _documentIdSet.Add(luaSymbol.DocumentId);
-    }
-
-    public LuaSymbol? MainLuaSymbol
-    {
-        get
-        {
-            if (_symbolSet.TryGetValue(_mainDocumentId, out var symbol))
-            {
-                return symbol;
-            }
-
-            return _symbolSet.FirstOrDefault().Value;
-        }
+        _elementIds[id.DocumentId] = id;
+        _documentIdSet.Add(id.DocumentId);
     }
 
     public override bool Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
-        if (documentId == _mainDocumentId)
-        {
-            BaseType = null;
-        }
-
         var removeAll = RemoveMembers(documentId);
         _documentIdSet.Remove(documentId);
-        _symbolSet.Remove(documentId);
+        _elementIds.Remove(documentId);
         if (_documentIdSet.Count != 0)
         {
-            _mainDocumentId = _documentIdSet.FirstOrDefault();
             removeAll = false;
         }
 
@@ -86,10 +65,12 @@ public class LuaGlobalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lu
 
     public override IEnumerable<LuaLocation> GetLocation(SearchContext context)
     {
-        var location = MainLuaSymbol?.GetLocation(context);
-        if (location is not null)
+        foreach (var id in _elementIds.Values)
         {
-            yield return location;
+            if (id.GetLocation(context) is { } location)
+            {
+                yield return location;
+            }
         }
     }
 
