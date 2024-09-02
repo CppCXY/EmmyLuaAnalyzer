@@ -115,12 +115,17 @@ public class Declarations(SearchContext context)
         var luaDeclaration = context.Compilation.ProjectIndex.QueryLocalDeclaration(nameExpr);
         if (luaDeclaration is not null)
         {
+            if (luaDeclaration.IsGlobal)
+            {
+                return context.Compilation.GlobalIndex.FindGlobalSymbol(luaDeclaration.Name);
+            }
+
             return luaDeclaration;
         }
 
         if (nameExpr.Name is { } name)
         {
-            return context.Compilation.TypeManager.GetGlobalSymbol(name.RepresentText);
+            return context.Compilation.GlobalIndex.FindGlobalSymbol(name.RepresentText);
         }
 
         return null;
@@ -153,7 +158,8 @@ public class Declarations(SearchContext context)
         if (name is not null)
         {
             var namedType = new LuaNamedType(documentId, name);
-            return context.Compilation.TypeManager.GetTypeDefinedSymbol(namedType);
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
+
         }
 
         return null;

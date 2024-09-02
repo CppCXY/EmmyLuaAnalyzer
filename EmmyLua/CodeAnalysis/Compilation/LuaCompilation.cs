@@ -25,6 +25,8 @@ public class LuaCompilation
 
     public ProjectIndex ProjectIndex { get; }
 
+    public GlobalIndex GlobalIndex { get; }
+
     public LuaTypeManager TypeManager { get; }
 
     public LuaSignatureManager SignatureManager { get; }
@@ -41,6 +43,7 @@ public class LuaCompilation
     {
         Project = project;
         ProjectIndex = new();
+        GlobalIndex = new(this);
         TypeManager = new LuaTypeManager(this);
         SignatureManager = new LuaSignatureManager();
         Analyzers =
@@ -94,6 +97,7 @@ public class LuaCompilation
         }
 
         ProjectIndex.Remove(documentId);
+        GlobalIndex.Remove(documentId);
         TypeManager.Remove(documentId);
         Diagnostics.RemoveCache(documentId);
     }

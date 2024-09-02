@@ -19,9 +19,7 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private InFileIndex<SyntaxElementId, LuaLocalTypeInfo> LocalTypeInfos { get; } = new();
 
-    private GlobalIndex GlobalIndices { get; } = new();
-
-    private InFileIndex<string, LuaNamedType> GlobalProxyTypes { get; } = new();
+    // private InFileIndex<string, >
 
     // left super, right sub
     private List<(LuaNamedType, LuaNamedType)> WaitBuildSubtypes { get; } = new();
@@ -61,11 +59,6 @@ public class LuaTypeManager(LuaCompilation compilation)
         return LocalTypeInfos.Query(elementId);
     }
 
-    public LuaGlobalTypeInfo? FindTypeInfo(string globalName)
-    {
-        return GlobalIndices.Query(globalName);
-    }
-
     public void Remove(LuaDocumentId documentId)
     {
         if (NamespaceIndices.Remove(documentId, out var namespaceIndex))
@@ -85,8 +78,6 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
 
         LocalTypeInfos.Remove(documentId);
-        GlobalIndices.Remove(documentId, this);
-        GlobalProxyTypes.Remove(documentId);
     }
 
     public LuaTypeInfo? AddTypeDefinition(
@@ -100,12 +91,12 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             var namespaceInfo = RootNamespace.FindOrCreate(namespaceIndex.FullName);
             var typeInfo = namespaceInfo.FindOrCreate(name);
-            return typeInfo.CreateTypeInfo(name, element.UniqueId, kind, attribute);
+            return typeInfo.CreateTypeInfo(element.UniqueId, kind, attribute);
         }
         else
         {
             var typeInfo = RootNamespace.FindOrCreate(name);
-            return typeInfo.CreateTypeInfo(name, element.UniqueId, kind, attribute);
+            return typeInfo.CreateTypeInfo(element.UniqueId, kind, attribute);
         }
     }
 
@@ -121,23 +112,23 @@ public class LuaTypeManager(LuaCompilation compilation)
         return newTypeInfo;
     }
 
-    public void AddGlobal(string name, LuaSymbol symbol)
+    public void AddTypeComposer(string name, LuaDocTypeSyntax typeSyntax)
     {
-        GlobalIndices.AddGlobal(name, symbol);
+
     }
 
     public void BuildSubTypes()
     {
-        foreach (var (left, right) in WaitBuildSubtypes)
-        {
-            if (FindTypeInfo(left) is { } leftTypeInfo)
-            {
-                leftTypeInfo.SubTypes ??= new();
-                leftTypeInfo.SubTypes.Add(right);
-            }
-        }
-
-        WaitBuildSubtypes.Clear();
+        // foreach (var (left, right) in WaitBuildSubtypes)
+        // {
+        //     if (FindTypeInfo(left) is { } leftTypeInfo)
+        //     {
+        //         leftTypeInfo.SubTypes ??= new();
+        //         leftTypeInfo.SubTypes.Add(right);
+        //     }
+        // }
+        //
+        // WaitBuildSubtypes.Clear();
     }
 
     public void SetNamespace(LuaDocumentId documentId, string fullName)
@@ -166,12 +157,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
     }
 
-    public IEnumerable<LuaGlobalTypeInfo> GetAllGlobalInfos()
-    {
-        return GlobalIndices.QueryAll();
-    }
-
-    public record struct NamespaceOrType(string Name, bool IsNamespace, NamedTypeKind Kind, SyntaxElementId Id);
+    public record struct NamespaceOrType(string Name, bool IsNamespace, NamedTypeKind Kind);
 
     public IEnumerable<NamespaceOrType> GetNamespaceOrTypeInfos(string prefixNamespace, LuaDocumentId documentId)
     {
@@ -190,8 +176,7 @@ public class LuaTypeManager(LuaCompilation compilation)
                                 yield return new NamespaceOrType(
                                     name,
                                     child.TypeInfo is null,
-                                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
-                                    child.TypeInfo?.ElementId ?? SyntaxElementId.Empty
+                                    child.TypeInfo?.Kind ?? NamedTypeKind.None
                                 );
                             }
                         }
@@ -209,8 +194,7 @@ public class LuaTypeManager(LuaCompilation compilation)
                                 yield return new NamespaceOrType(
                                     name,
                                     child.TypeInfo is null,
-                                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
-                                    child.TypeInfo?.ElementId ?? SyntaxElementId.Empty
+                                    child.TypeInfo?.Kind ?? NamedTypeKind.None
                                 );
                             }
                         }
@@ -226,8 +210,7 @@ public class LuaTypeManager(LuaCompilation compilation)
                 yield return new NamespaceOrType(
                     name,
                     child.TypeInfo is null,
-                    child.TypeInfo?.Kind ?? NamedTypeKind.None,
-                    child.TypeInfo?.ElementId ?? SyntaxElementId.Empty
+                    child.TypeInfo?.Kind ?? NamedTypeKind.None
                 );
             }
         }
@@ -239,8 +222,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         {
             if (namespaceInfo.FindNamespaceOrType(member) is { } child)
             {
-                return new NamespaceOrType(member, child.TypeInfo is null, child.TypeInfo?.Kind ?? NamedTypeKind.None,
-                    child.TypeInfo?.ElementId ?? SyntaxElementId.Empty);
+                return new NamespaceOrType(member, child.TypeInfo is null, child.TypeInfo?.Kind ?? NamedTypeKind.None);
             }
         }
 

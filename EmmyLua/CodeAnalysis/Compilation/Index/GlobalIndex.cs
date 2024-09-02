@@ -1,46 +1,73 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Container;
 using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Index;
 
-public class GlobalIndex
+public class GlobalIndex(LuaCompilation compilation)
 {
-    private Dictionary<string, LuaGlobalTypeInfo> GlobalInfos { get; } = new();
+    private Dictionary<string, LuaGlobalTypeInfo> _globalInfos = new();
 
-    private Dictionary<LuaDocumentId, HashSet<string>> GlobalLocations { get; } = new();
+    private Dictionary<string, LuaDocumentId> _globalDefinedDocumentIds = new();
 
-    public void Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
+    private Dictionary<string, Dictionary<LuaDocumentId, LuaSymbol>> _globalSymbols = new();
+
+    public void Remove(LuaDocumentId documentId)
     {
-        if (GlobalLocations.TryGetValue(documentId, out var globalNames))
+        var typeManager = compilation.TypeManager;
+        var toBeRemoved = new List<string>();
+        foreach (var (name, globalInfo) in _globalInfos)
         {
-            var toBeRemove = new List<string>();
-            foreach (var globalName in globalNames)
+            if (globalInfo.Remove(documentId, typeManager))
             {
-                if (GlobalInfos.TryGetValue(globalName, out var globalInfo))
-                {
-                    if (globalInfo.Remove(documentId, typeManager))
-                    {
-                        GlobalInfos.Remove(globalName);
-                        toBeRemove.Add(globalName);
-                    }
-                }
+                toBeRemoved.Add(name);
             }
+        }
 
-            if (toBeRemove.Count != 0)
+        if (toBeRemoved.Count > 0)
+        {
+            foreach (var name in toBeRemoved)
             {
-                foreach (var globalName in toBeRemove)
-                {
-                    globalNames.Remove(globalName);
-                }
+                _globalInfos.Remove(name);
+            }
+        }
+
+        toBeRemoved.Clear();
+
+        foreach (var (name, id) in _globalDefinedDocumentIds)
+        {
+            if (id == documentId)
+            {
+                _globalDefinedDocumentIds.Remove(name);
+                break;
+            }
+        }
+
+
+        foreach (var (name, symbols) in _globalSymbols)
+        {
+            symbols.Remove(documentId);
+            if (symbols.Count == 0)
+            {
+                toBeRemoved.Add(name);
+            }
+        }
+
+        if (toBeRemoved.Count > 0)
+        {
+            foreach (var name in toBeRemoved)
+            {
+                _globalSymbols.Remove(name);
             }
         }
     }
 
     public void AddGlobal(string name, LuaSymbol symbol)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalInfo))
+        if (_globalInfos.TryGetValue(name, out var globalInfo))
         {
             globalInfo.AddDefineId(symbol.UniqueId);
         }
@@ -48,45 +75,61 @@ public class GlobalIndex
         {
             globalInfo = new LuaGlobalTypeInfo(NamedTypeKind.None, LuaTypeAttribute.Global);
             globalInfo.AddDefineId(symbol.UniqueId);
-            GlobalInfos[name] = globalInfo;
+            _globalInfos[name] = globalInfo;
         }
 
-        if (GlobalLocations.TryGetValue(symbol.DocumentId, out var globalNames))
+        if (!_globalSymbols.TryGetValue(name, out var symbols))
         {
-            globalNames.Add(name);
+            symbols = new();
+            _globalSymbols[name] = symbols;
         }
-        else
-        {
-            globalNames = [name];
-            GlobalLocations[symbol.DocumentId] = globalNames;
-        }
+
+        symbols[symbol.DocumentId] = symbol;
+    }
+
+    public void AddDefinedDocumentId(string name, LuaDocumentId documentId)
+    {
+        _globalDefinedDocumentIds[name] = documentId;
     }
 
     public void AddGlobalMember(string name, LuaSymbol symbol)
     {
-        if (GlobalInfos.TryGetValue(name, out var globalInfo))
+        if (_globalInfos.TryGetValue(name, out var globalInfo))
         {
             globalInfo.AddImplement(symbol);
         }
 
-        if (GlobalLocations.TryGetValue(symbol.DocumentId, out var globalNames))
+        // var typeManager = compilation.TypeManager;
+        // var globalSymbol = FindGlobalSymbol(name);
+        // if (globalSymbol is {Type: LuaNamedType namedType})
+        // {
+        //     var typeInfo = typeManager.find
+        // }
+    }
+
+    public LuaSymbol? FindGlobalSymbol(string name)
+    {
+        if (_globalSymbols.TryGetValue(name, out var symbols))
         {
-            globalNames.Add(name);
+            if (_globalDefinedDocumentIds.TryGetValue(name, out var documentId))
+            {
+                if (symbols.TryGetValue(documentId, out var symbol))
+                {
+                    return symbol;
+                }
+            }
         }
-        else
-        {
-            globalNames = [name];
-            GlobalLocations[symbol.DocumentId] = globalNames;
-        }
+
+        return null;
     }
 
     public LuaGlobalTypeInfo? Query(string name)
     {
-        return GlobalInfos.GetValueOrDefault(name);
+        return _globalInfos.GetValueOrDefault(name);
     }
 
     public IEnumerable<LuaGlobalTypeInfo> QueryAll()
     {
-        return GlobalInfos.Values;
+        return _globalInfos.Values;
     }
 }

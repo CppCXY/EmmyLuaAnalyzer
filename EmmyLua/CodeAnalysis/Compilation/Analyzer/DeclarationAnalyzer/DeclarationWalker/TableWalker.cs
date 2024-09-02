@@ -16,8 +16,7 @@ public partial class DeclarationWalker
             return;
         }
 
-        // declarationContext.TypeManager.AddLocalTypeInfo(tableExprSyntax.UniqueId);
-        var fields = new List<LuaSymbol>();
+        var localTypeInfo = declarationContext.TypeManager.AddLocalTypeInfo(tableExprSyntax.UniqueId);
         var fieldList = tableExprSyntax.FieldList.ToList();
         for (var i = 0; i < fieldList.Count; i++)
         {
@@ -36,7 +35,7 @@ public partial class DeclarationWalker
                     null,
                     new TableFieldInfo(new(fieldSyntax)));
                 declarationContext.AddAttachedDeclaration(fieldSyntax, declaration);
-                fields.Add(declaration);
+                localTypeInfo.AddDeclaration(declaration);
                 var unResolveDeclaration = new UnResolvedSymbol(
                     declaration,
                     new LuaExprRef(value),
@@ -46,11 +45,6 @@ public partial class DeclarationWalker
                 declarationContext.ProjectIndex.AddTableField(DocumentId, fieldSyntax);
             }
         }
-
-        // if (fields.Count > 0)
-        // {
-        //     declarationContext.TypeManager.AddElementMembers(tableExprSyntax.UniqueId, fields);
-        // }
     }
 
     // private void AnalyzeArrayTableExpr(LuaArrayTableExprSyntax arrayTableExprSyntax)

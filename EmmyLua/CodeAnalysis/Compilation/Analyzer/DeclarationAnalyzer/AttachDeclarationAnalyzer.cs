@@ -93,7 +93,7 @@ public class AttachDeclarationAnalyzer(
         if (attachedElement is LuaLocalStatSyntax or LuaAssignStatSyntax or LuaTableFieldSyntax)
         {
             // general type define
-            var nameTypeDefine = docTagSyntaxes.OfType<LuaDocTagNamedTypeSyntax>().FirstOrDefault();
+            var nameTypeDefine = docTagSyntaxes.OfType<LuaDocTagNamedTypeSyntax>().LastOrDefault();
             if (nameTypeDefine is { Name.RepresentText: { } name } &&
                 declarations.FirstOrDefault() is { } firstDeclaration)
             {
@@ -101,7 +101,8 @@ public class AttachDeclarationAnalyzer(
                 firstDeclaration.Type = type;
                 if (firstDeclaration.IsGlobal)
                 {
-                    declarationContext.TypeManager.SetGlobalTypeSymbol(firstDeclaration.Name, type);
+                    declarationContext.GlobalIndex.AddDefinedDocumentId(firstDeclaration.Name,
+                        firstDeclaration.DocumentId);
                 }
 
                 return;
@@ -111,22 +112,22 @@ public class AttachDeclarationAnalyzer(
             var nameTypeList = docTagSyntaxes.OfType<LuaDocTagTypeSyntax>().FirstOrDefault();
             if (nameTypeList is { TypeList: { } typeList })
             {
-                var luaTypeList = typeList.Select(searchContext.Infer).ToList();
-                for (var i = 0; i < luaTypeList.Count; i++)
-                {
-                    if (declarations.Count > i)
-                    {
-                        if (declarations[i].IsGlobal && declarations[i].Type is GlobalNameType globalNameType)
-                        {
-                            declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId,
-                                globalNameType, luaTypeList[i]);
-                        }
-                        else
-                        {
-                            declarations[i].Type = luaTypeList[i];
-                        }
-                    }
-                }
+                // var luaTypeList = typeList.Select(searchContext.Infer).ToList();
+                // for (var i = 0; i < luaTypeList.Count; i++)
+                // {
+                //     if (declarations.Count > i)
+                //     {
+                //         if (declarations[i].IsGlobal && declarations[i].Type is GlobalNameType globalNameType)
+                //         {
+                //             declarationContext.TypeManager.SetGlobalBaseType(declarationContext.DocumentId,
+                //                 globalNameType, luaTypeList[i]);
+                //         }
+                //         else
+                //         {
+                //             declarations[i].Type = luaTypeList[i];
+                //         }
+                //     }
+                // }
             }
         }
     }
@@ -214,109 +215,109 @@ public class AttachDeclarationAnalyzer(
 
     private void AnalyzeMethodDeclaration(LuaSyntaxElement element, List<LuaDocTagSyntax> docTagSyntaxes)
     {
-        var closureExpr = declarationContext.GetElementRelatedClosure(element);
-        if (closureExpr is null)
-        {
-            return;
-        }
-
-        var typeInfo = declarationContext.TypeManager.FindTypeInfo(closureExpr.UniqueId);
-        if (typeInfo?.BaseType is not LuaMethodType methodType)
-        {
-            return;
-        }
-
-        var genericParams = new List<LuaTypeTemplate>();
-        var overloads = new List<LuaSignature>();
-        var parameterDict = new Dictionary<string, ParameterInfo>();
-        foreach (var docTagSyntax in docTagSyntaxes)
-        {
-            if (docTagSyntax is LuaDocTagOverloadSyntax overloadSyntax)
-            {
-                var func = searchContext.Infer(overloadSyntax.TypeFunc);
-                if (func is LuaMethodType { MainSignature: { } mainSignature })
-                {
-                    overloads.Add(mainSignature);
-                }
-            }
-            else if (docTagSyntax is LuaDocTagGenericSyntax genericSyntax)
-            {
-                foreach (var param in genericSyntax.Params)
-                {
-                    if (param is { Name: { } name })
-                    {
-                        genericParams.Add(new LuaTypeTemplate(name.RepresentText,
-                            searchContext.Infer(param.Type)));
-                    }
-                }
-            }
-            else if (docTagSyntax is LuaDocTagParamSyntax paramSyntax)
-            {
-                if (paramSyntax.Name is { RepresentText: { } name })
-                {
-                    var type = searchContext.Infer(paramSyntax.Type);
-                    var nullable = paramSyntax.Nullable;
-                    parameterDict[name] = new ParameterInfo(nullable, type);
-                }
-                else if (paramSyntax.VarArgs is not null)
-                {
-                    var type = searchContext.Infer(paramSyntax.Type);
-                    parameterDict["..."] = new ParameterInfo(true, type);
-                }
-            }
-            else if (docTagSyntax is LuaDocTagReturnSyntax returnSyntax)
-            {
-                var returnTypes = returnSyntax.TypeList.Select(searchContext.Infer).ToList();
-                var returnType = returnTypes.Count switch
-                {
-                    0 => Builtin.Nil,
-                    1 => returnTypes[0],
-                    _ => new LuaMultiReturnType(returnTypes)
-                };
-                methodType.MainSignature.ReturnType = returnType;
-            }
-        }
-
-        if (overloads.Count == 0)
-        {
-            overloads = null;
-        }
-
-        var parameters = methodType.MainSignature.Parameters;
-        foreach (var parameter in parameters)
-        {
-            if (parameter is { Name: { } name, Info: ParamInfo { } info } declaration)
-            {
-                if (parameterDict.TryGetValue(name, out var parameterInfo))
-                {
-                    declaration.Info = info with
-                    {
-                        Nullable = parameterInfo.Nullable,
-                        IsVararg = name == "..."
-                    };
-
-                    declaration.Type = parameterInfo.Type;
-                }
-            }
-        }
-
-        if (genericParams.Count > 0)
-        {
-            methodType = new LuaGenericMethodType(
-                genericParams,
-                new LuaSignature(methodType.MainSignature.ReturnType, parameters),
-                overloads,
-                methodType.ColonDefine);
-        }
-        else
-        {
-            methodType = new LuaMethodType(
-                new LuaSignature(methodType.MainSignature.ReturnType, parameters),
-                overloads,
-                methodType.ColonDefine);
-        }
-
-        declarationContext.TypeManager.SetBaseType(closureExpr.UniqueId, methodType);
+        // var closureExpr = declarationContext.GetElementRelatedClosure(element);
+        // if (closureExpr is null)
+        // {
+        //     return;
+        // }
+        //
+        // var typeInfo = declarationContext.TypeManager.FindTypeInfo(closureExpr.UniqueId);
+        // if (typeInfo?.BaseType is not LuaMethodType methodType)
+        // {
+        //     return;
+        // }
+        //
+        // var genericParams = new List<LuaTypeTemplate>();
+        // var overloads = new List<LuaSignature>();
+        // var parameterDict = new Dictionary<string, ParameterInfo>();
+        // foreach (var docTagSyntax in docTagSyntaxes)
+        // {
+        //     if (docTagSyntax is LuaDocTagOverloadSyntax overloadSyntax)
+        //     {
+        //         var func = searchContext.Infer(overloadSyntax.TypeFunc);
+        //         if (func is LuaMethodType { MainSignature: { } mainSignature })
+        //         {
+        //             overloads.Add(mainSignature);
+        //         }
+        //     }
+        //     else if (docTagSyntax is LuaDocTagGenericSyntax genericSyntax)
+        //     {
+        //         foreach (var param in genericSyntax.Params)
+        //         {
+        //             if (param is { Name: { } name })
+        //             {
+        //                 genericParams.Add(new LuaTypeTemplate(name.RepresentText,
+        //                     searchContext.Infer(param.Type)));
+        //             }
+        //         }
+        //     }
+        //     else if (docTagSyntax is LuaDocTagParamSyntax paramSyntax)
+        //     {
+        //         if (paramSyntax.Name is { RepresentText: { } name })
+        //         {
+        //             var type = searchContext.Infer(paramSyntax.Type);
+        //             var nullable = paramSyntax.Nullable;
+        //             parameterDict[name] = new ParameterInfo(nullable, type);
+        //         }
+        //         else if (paramSyntax.VarArgs is not null)
+        //         {
+        //             var type = searchContext.Infer(paramSyntax.Type);
+        //             parameterDict["..."] = new ParameterInfo(true, type);
+        //         }
+        //     }
+        //     else if (docTagSyntax is LuaDocTagReturnSyntax returnSyntax)
+        //     {
+        //         var returnTypes = returnSyntax.TypeList.Select(searchContext.Infer).ToList();
+        //         var returnType = returnTypes.Count switch
+        //         {
+        //             0 => Builtin.Nil,
+        //             1 => returnTypes[0],
+        //             _ => new LuaMultiReturnType(returnTypes)
+        //         };
+        //         methodType.MainSignature.ReturnType = returnType;
+        //     }
+        // }
+        //
+        // if (overloads.Count == 0)
+        // {
+        //     overloads = null;
+        // }
+        //
+        // var parameters = methodType.MainSignature.Parameters;
+        // foreach (var parameter in parameters)
+        // {
+        //     if (parameter is { Name: { } name, Info: ParamInfo { } info } declaration)
+        //     {
+        //         if (parameterDict.TryGetValue(name, out var parameterInfo))
+        //         {
+        //             declaration.Info = info with
+        //             {
+        //                 Nullable = parameterInfo.Nullable,
+        //                 IsVararg = name == "..."
+        //             };
+        //
+        //             declaration.Type = parameterInfo.Type;
+        //         }
+        //     }
+        // }
+        //
+        // if (genericParams.Count > 0)
+        // {
+        //     methodType = new LuaGenericMethodType(
+        //         genericParams,
+        //         new LuaSignature(methodType.MainSignature.ReturnType, parameters),
+        //         overloads,
+        //         methodType.ColonDefine);
+        // }
+        // else
+        // {
+        //     methodType = new LuaMethodType(
+        //         new LuaSignature(methodType.MainSignature.ReturnType, parameters),
+        //         overloads,
+        //         methodType.ColonDefine);
+        // }
+        //
+        // declarationContext.TypeManager.SetBaseType(closureExpr.UniqueId, methodType);
     }
 
     private void AnalyzeForRangeDeclaration(LuaSyntaxElement element, List<LuaDocTagSyntax> docTagSyntaxes)
@@ -343,7 +344,7 @@ public class AttachDeclarationAnalyzer(
             if (declaration?.Type is LuaElementType elementType &&
                 parameterDict.TryGetValue(declaration.Name, out var parameterInfo))
             {
-                declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);
+                // declarationContext.TypeManager.SetBaseType(elementType.Id, parameterInfo.Type);
             }
         }
     }

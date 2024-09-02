@@ -178,7 +178,6 @@ public class DocProvider : ICompleteProviderBase
                 {
                     Label = namespaceOrType.Name,
                     Kind = ConvertTypedName(namespaceOrType.Kind),
-                    Data = namespaceOrType.Id.Stringify
                 });
             }
         }

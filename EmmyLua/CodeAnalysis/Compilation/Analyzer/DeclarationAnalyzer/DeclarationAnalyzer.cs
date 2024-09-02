@@ -19,9 +19,9 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                 Compilation.ProjectIndex.AddDeclarationTree(document.Id, tree);
             }
 
-            // var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
-            // attachDeclarationAnalyzer.Analyze();
+            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
+            attachDeclarationAnalyzer.Analyze();
         }
-        Compilation.TypeManager.BuildSubTypes();
+        // Compilation.TypeManager.BuildSubTypes();
     }
 }

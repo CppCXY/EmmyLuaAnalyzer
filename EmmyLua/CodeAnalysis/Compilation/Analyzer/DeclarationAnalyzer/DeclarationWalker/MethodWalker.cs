@@ -49,7 +49,7 @@ public partial class DeclarationWalker
                         ),
                         SymbolFeature.Global
                     );
-                    declarationContext.TypeManager.AddGlobal(name2.RepresentText, declaration);
+                    declarationContext.GlobalIndex.AddGlobal(name2.RepresentText, declaration);
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                     var unResolved = new UnResolvedSymbol(

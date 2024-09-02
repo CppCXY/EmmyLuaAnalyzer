@@ -8,9 +8,9 @@ public class NamespaceOrTypeInfo
 {
     public string Name { get; init; } = string.Empty;
 
-    public Dictionary<string, NamespaceOrTypeInfo>? Children { get; set; } = null;
+    public Dictionary<string, NamespaceOrTypeInfo>? Children { get; private set; }
 
-    public TypeInfo.LuaTypeInfo? TypeInfo { get; set; }
+    public LuaTypeInfo? TypeInfo { get; private set; }
 
     public void Remove(LuaDocumentId documentId, LuaTypeManager typeManager)
     {
@@ -24,16 +24,8 @@ public class NamespaceOrTypeInfo
         {
             if (child.TypeInfo is not null)
             {
-                if (child.TypeInfo.Partial)
+                if (child.TypeInfo.Remove(documentId, typeManager))
                 {
-                    if (child.TypeInfo.IsDefinedInDocument(documentId) && child.TypeInfo.Remove(documentId, typeManager))
-                    {
-                        child.TypeInfo = null;
-                    }
-                }
-                else if (child.TypeInfo.MainDocumentId == documentId)
-                {
-                    child.TypeInfo.RemoveInherits(typeManager);
                     child.TypeInfo = null;
                 }
             }
@@ -166,31 +158,25 @@ public class NamespaceOrTypeInfo
                     return null;
                 }
 
-                if (TypeInfo is LuaPartialTypeInfo luaPartialTypeInfo)
-                {
-                    luaPartialTypeInfo.Add(elementId);
-                    return TypeInfo;
-                }
+                TypeInfo.AddDefineId(elementId);
             }
         }
         else
         {
             if (attribute.HasFlag(LuaTypeAttribute.Global))
             {
-                var typeInfo = new LuaGlobalTypeInfo(kind, attribute);
-                typeInfo.AddElementId(elementId);
-                TypeInfo = typeInfo;
+                TypeInfo = new LuaGlobalTypeInfo(kind, attribute);
             }
             else if (attribute.HasFlag(LuaTypeAttribute.Partial))
             {
-                var typeInfo = new LuaPartialTypeInfo(kind, attribute);
-                typeInfo.AddElementId(elementId);
-                TypeInfo = typeInfo;
+                TypeInfo = new LuaPartialTypeInfo(kind, attribute);
             }
             else
             {
                 TypeInfo = new LuaLocalTypeInfo(elementId, kind, attribute);
             }
+
+            TypeInfo.AddDefineId(elementId);
         }
 
         return null;

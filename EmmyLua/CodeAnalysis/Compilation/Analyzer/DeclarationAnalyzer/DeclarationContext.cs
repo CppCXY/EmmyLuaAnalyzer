@@ -39,6 +39,8 @@ public class DeclarationContext(
 
     public ProjectIndex ProjectIndex => Compilation.ProjectIndex;
 
+    public GlobalIndex GlobalIndex => Compilation.GlobalIndex;
+
     public LuaTypeManager TypeManager => Compilation.TypeManager;
 
     private AnalyzeContext AnalyzeContext { get; } = analyzeContext;

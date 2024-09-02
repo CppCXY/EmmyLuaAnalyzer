@@ -2,7 +2,6 @@
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
-using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -147,7 +146,7 @@ public partial class DeclarationWalker
                                 new GlobalInfo(new(nameExpr)),
                                 SymbolFeature.Global
                             );
-                            declarationContext.TypeManager.AddGlobal(nameText, declaration);
+                            declarationContext.GlobalIndex.AddGlobal(nameText, declaration);
                             declarationContext.AddLocalDeclaration(nameExpr, declaration);
                             declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                             var unResolveDeclaration = new UnResolvedSymbol(
