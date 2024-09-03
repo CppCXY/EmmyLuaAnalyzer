@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Document;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
@@ -6,6 +7,15 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        base.Analyze(analyzeContext);
+        foreach (var document in analyzeContext.LuaDocuments)
+        {
+            var comments = document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaCommentSyntax>();
+
+        }
+    }
+
+    private void AnalyzeComment(LuaCommentSyntax commentSyntax)
+    {
+
     }
 }

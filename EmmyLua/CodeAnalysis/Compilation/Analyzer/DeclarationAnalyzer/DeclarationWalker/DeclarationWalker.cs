@@ -7,10 +7,10 @@ using EmmyLua.CodeAnalysis.Syntax.Walker;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
-public partial class DeclarationWalker(DeclarationContext declarationContext, SearchContext searchContext)
+public partial class DeclarationWalker(DeclarationContext declarationContext, LuaCompilation compilation)
     : ILuaElementWalker
 {
-    private LuaCompilation Compilation => searchContext.Compilation;
+    private LuaCompilation Compilation => compilation;
 
     private LuaDocumentId DocumentId => declarationContext.DocumentId;
 

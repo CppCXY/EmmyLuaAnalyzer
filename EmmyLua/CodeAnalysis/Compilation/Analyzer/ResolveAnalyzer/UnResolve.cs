@@ -30,11 +30,11 @@ public record UnResolvedSymbol(
     ResolveState ResolvedState)
     : UnResolved(ResolvedState);
 
-public record UnResolvedDocSymbol(
-    LuaSymbol LuaSymbol,
-    TypeId Id,
-    ResolveState ResolvedState)
-    : UnResolved(ResolvedState);
+// public record UnResolvedDocSymbol(
+//     LuaSymbol LuaSymbol,
+//     TypeId Id,
+//     ResolveState ResolvedState)
+//     : UnResolved(ResolvedState);
 
 public record UnResolvedDocOperator(
     LuaTypeInfo TypeInfo,

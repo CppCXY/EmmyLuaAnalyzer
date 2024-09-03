@@ -17,7 +17,7 @@ public class LuaSignature(LuaType? returnType, List<LuaSymbol> parameters, bool 
 
     public virtual LuaSignature Instantiate(TypeSubstitution substitution)
     {
-        var newReturnType = ReturnType.Instantiate(substitution);
+        var newReturnType = ReturnType?.Instantiate(substitution);
         var newParameters = Parameters
             .Select(parameter => parameter.Instantiate(substitution))
             .ToList();

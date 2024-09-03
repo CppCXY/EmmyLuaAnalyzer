@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.AttachDocAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
@@ -49,6 +50,7 @@ public class LuaCompilation
         Analyzers =
         [
             new DeclarationAnalyzer(this),
+            new AttachDocAnalyzer(this),
             new TypeAnalyzer(this),
             new FlowAnalyzer(this),
             new ResolveAnalyzer(this),
@@ -91,10 +93,10 @@ public class LuaCompilation
 
     public void RemoveCache(LuaDocumentId documentId)
     {
-        foreach (var luaAnalyzer in Analyzers)
-        {
-            luaAnalyzer.RemoveCache(documentId);
-        }
+        // foreach (var luaAnalyzer in Analyzers)
+        // {
+        //     luaAnalyzer.RemoveCache(documentId);
+        // }
 
         ProjectIndex.Remove(documentId);
         GlobalIndex.Remove(documentId);

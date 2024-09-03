@@ -22,42 +22,33 @@ public partial class DeclarationWalker
             {
                 var symbol = new LuaSymbol(
                     nameField.RepresentText,
-                    null,
+                    new LuaTypeRef(TypeId.Create(type1)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
-                var unResolved =
-                    new UnResolvedDocSymbol(symbol, new TypeId(type1.UniqueId), ResolveState.UnResolvedType);
-                declarationContext.AddUnResolved(unResolved);
                 return symbol;
             }
             case { IntegerField: { } integerField, Type: { } type2 }:
             {
                 var symbol = new LuaSymbol(
                     $"[{integerField.Value}]",
-                    null,
+                    new LuaTypeRef(TypeId.Create(type2)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
-                var unResolved =
-                    new UnResolvedDocSymbol(symbol, new TypeId(type2.UniqueId), ResolveState.UnResolvedType);
-                declarationContext.AddUnResolved(unResolved);
                 return symbol;
             }
             case { StringField: { } stringField, Type: { } type3 }:
             {
                 var symbol = new LuaSymbol(
                     stringField.Value,
-                    null,
+                    new LuaTypeRef(TypeId.Create(type3)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
                 );
-                var unResolved =
-                    new UnResolvedDocSymbol(symbol, new TypeId(type3.UniqueId), ResolveState.UnResolvedType);
-                declarationContext.AddUnResolved(unResolved);
                 return symbol;
             }
         }

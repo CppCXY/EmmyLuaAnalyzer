@@ -3,6 +3,7 @@ using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Index;
 using EmmyLua.CodeAnalysis.Compilation.Reference;
 using EmmyLua.CodeAnalysis.Compilation.Scope;
+using EmmyLua.CodeAnalysis.Compilation.Signature;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Diagnostics;
@@ -42,6 +43,8 @@ public class DeclarationContext(
     public GlobalIndex GlobalIndex => Compilation.GlobalIndex;
 
     public LuaTypeManager TypeManager => Compilation.TypeManager;
+
+    public LuaSignatureManager SignatureManager => Compilation.SignatureManager;
 
     private AnalyzeContext AnalyzeContext { get; } = analyzeContext;
 

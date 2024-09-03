@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer.ControlFlow;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -11,6 +12,8 @@ public class AnalyzeContext(List<LuaDocument> documents)
     public List<LuaDocument> LuaDocuments { get; } = documents;
 
     public List<UnResolved> UnResolves { get; } = [];
+
+    public List<DeclarationContext> DeclarationContexts { get; } = [];
 
     // TODO
     public List<InferenceUsage> UseInfers { get; } = [];

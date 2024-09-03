@@ -19,7 +19,7 @@ public partial class DeclarationWalker
             {
                 var declaration = new LuaSymbol(
                     name.RepresentText,
-                    null,
+                    new LuaMethodType(LuaSignatureId.Create(closureExpr)),
                     new MethodInfo(
                         new(luaFuncStat.LocalName),
                         new(luaFuncStat)
@@ -28,11 +28,6 @@ public partial class DeclarationWalker
                 );
                 declarationContext.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
                 declarationContext.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
-                var unResolved = new UnResolvedSymbol(
-                    declaration,
-                    new LuaExprRef(closureExpr),
-                    ResolveState.UnResolvedType);
-                declarationContext.AddUnResolved(unResolved);
                 break;
             }
             case { IsLocal: false, NameExpr: { Name: { } name2 } nameExpr, ClosureExpr: { } closureExpr }:
@@ -42,7 +37,7 @@ public partial class DeclarationWalker
                 {
                     var declaration = new LuaSymbol(
                         name2.RepresentText,
-                        null,
+                        new LuaMethodType(LuaSignatureId.Create(closureExpr)),
                         new MethodInfo(
                             new(nameExpr),
                             new(luaFuncStat)
@@ -52,11 +47,6 @@ public partial class DeclarationWalker
                     declarationContext.GlobalIndex.AddGlobal(name2.RepresentText, declaration);
                     declarationContext.AddLocalDeclaration(nameExpr, declaration);
                     declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                    var unResolved = new UnResolvedSymbol(
-                        declaration,
-                        new LuaExprRef(closureExpr),
-                        ResolveState.UnResolvedType);
-                    declarationContext.AddUnResolved(unResolved);
                 }
                 else
                 {
@@ -71,7 +61,7 @@ public partial class DeclarationWalker
                 {
                     var declaration = new LuaSymbol(
                         name,
-                        null,
+                        new LuaMethodType(LuaSignatureId.Create(closureExpr)),
                         new MethodInfo(
                             new(indexExpr),
                             new(luaFuncStat)
@@ -80,8 +70,8 @@ public partial class DeclarationWalker
                     declarationContext.AddAttachedDeclaration(indexExpr, declaration);
                     var unResolved = new UnResolvedSymbol(
                         declaration,
-                        new LuaExprRef(closureExpr),
-                        ResolveState.UnResolvedIndex | ResolveState.UnResolvedType);
+                        null,
+                        ResolveState.UnResolvedIndex);
                     declarationContext.AddUnResolved(unResolved);
                 }
 

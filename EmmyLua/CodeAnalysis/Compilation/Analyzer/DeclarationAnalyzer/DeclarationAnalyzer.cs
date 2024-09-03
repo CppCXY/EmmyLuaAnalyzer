@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.AttachDocAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
@@ -6,11 +7,10 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        var searchContext = new SearchContext(Compilation, new SearchContextFeatures() { Cache = false });
         foreach (var document in analyzeContext.LuaDocuments)
         {
             var declarationContext = new DeclarationContext(document, this, analyzeContext);
-            var walker = new DeclarationWalker.DeclarationWalker(declarationContext, searchContext);
+            var walker = new DeclarationWalker.DeclarationWalker(declarationContext, Compilation);
             document.SyntaxTree.SyntaxRoot.Accept(walker);
 
             var tree = declarationContext.GetDeclarationTree();
@@ -19,9 +19,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
                 Compilation.ProjectIndex.AddDeclarationTree(document.Id, tree);
             }
 
-            var attachDeclarationAnalyzer = new AttachDeclarationAnalyzer(declarationContext, searchContext);
-            attachDeclarationAnalyzer.Analyze();
+            analyzeContext.DeclarationContexts.Add(declarationContext);
         }
-        // Compilation.TypeManager.BuildSubTypes();
     }
 }

@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
+﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
@@ -40,14 +41,14 @@ public partial class DeclarationWalker
                 AnalyzeTagDocBody(typeInfo, luaClass, body);
             }
 
-            if (tagClassSyntax is { ExtendTypeList: { } extendTypeList })
-            {
-                AnalyzeTypeSupers(typeInfo, luaClass, extendTypeList);
-            }
+            // if (tagClassSyntax is { ExtendTypeList: { } extendTypeList })
+            // {
+            //     AnalyzeTypeSupers(typeInfo, luaClass, extendTypeList);
+            // }
 
             if (tagClassSyntax is { GenericDeclareList: { } genericDeclareList })
             {
-                AnalyzeTypeGenericParam(typeInfo, luaClass, genericDeclareList);
+                AnalyzeTypeGenericParam(typeInfo, genericDeclareList);
             }
         }
 
@@ -87,10 +88,7 @@ public partial class DeclarationWalker
     {
         if (tagEnumSyntax is { Name: { } name })
         {
-            var baseType = tagEnumSyntax.BaseType is { } type
-                ? searchContext.Infer(type)
-                : Builtin.Integer;
-            var luaEnum = new LuaNamedType(DocumentId, name.RepresentText);
+            // var luaEnum = new LuaNamedType(DocumentId, name.RepresentText);
             var attribute = GetAttribute(tagEnumSyntax);
             var typeInfo = declarationContext.TypeManager.AddTypeDefinition(
                 tagEnumSyntax,
@@ -115,7 +113,7 @@ public partial class DeclarationWalker
                 {
                     var fieldDeclaration = new LuaSymbol(
                         fieldName.RepresentText,
-                        baseType,
+                        null,
                         new EnumFieldInfo(new(field)));
 
                     typeInfo.AddDeclaration(fieldDeclaration);
@@ -156,14 +154,14 @@ public partial class DeclarationWalker
                 AnalyzeTagDocBody(luaTypeInfo, luaInterface, body);
             }
 
-            if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
-            {
-                AnalyzeTypeSupers(luaTypeInfo, luaInterface, extendTypeList);
-            }
+            // if (tagInterfaceSyntax is { ExtendTypeList: { } extendTypeList })
+            // {
+            //     AnalyzeTypeSupers(luaTypeInfo, luaInterface, extendTypeList);
+            // }
 
             if (tagInterfaceSyntax is { GenericDeclareList: { } genericDeclareList })
             {
-                AnalyzeTypeGenericParam(luaTypeInfo, luaInterface, genericDeclareList);
+                AnalyzeTypeGenericParam(luaTypeInfo, genericDeclareList);
             }
         }
 
@@ -175,29 +173,28 @@ public partial class DeclarationWalker
         declarationContext.AttachDoc(tagTypeSyntax);
     }
 
-    private void AnalyzeTypeSupers(LuaTypeInfo luaTypeInfo, LuaNamedType namedType,
-        IEnumerable<LuaDocTypeSyntax> extendList)
-    {
-        foreach (var extend in extendList)
-        {
-            if (extend is LuaDocTableTypeSyntax { Body: { } body })
-            {
-                AnalyzeTagDocBody(luaTypeInfo, namedType, body);
-            }
-            else
-            {
-                var type = searchContext.Infer(extend);
-                if (type is LuaNamedType superNamedType)
-                {
-                    luaTypeInfo.AddSuper(superNamedType);
-                }
-            }
-        }
-    }
+    // private void AnalyzeTypeSupers(LuaTypeInfo luaTypeInfo, LuaNamedType namedType,
+    //     IEnumerable<LuaDocTypeSyntax> extendList)
+    // {
+    //     foreach (var extend in extendList)
+    //     {
+    //         if (extend is LuaDocTableTypeSyntax { Body: { } body })
+    //         {
+    //             AnalyzeTagDocBody(luaTypeInfo, namedType, body);
+    //         }
+    //         else
+    //         {
+    //             var type = searchContext.Infer(extend);
+    //             if (type is LuaNamedType superNamedType)
+    //             {
+    //                 luaTypeInfo.AddSuper(superNamedType);
+    //             }
+    //         }
+    //     }
+    // }
 
     private void AnalyzeTypeGenericParam(
         LuaTypeInfo luaTypeInfo,
-        LuaNamedType namedType,
         LuaDocGenericDeclareListSyntax generic
     )
     {
@@ -205,7 +202,7 @@ public partial class DeclarationWalker
         {
             if (param is { Name: { } name })
             {
-                var type = param.Type is not null ? searchContext.Infer(param.Type) : null;
+                var type = param.Type is not null ? new LuaTypeRef(TypeId.Create(param.Type)) : null;
                 var declaration = new LuaSymbol(
                     name.RepresentText,
                     type,

@@ -35,7 +35,7 @@ public class CallChecker(LuaCompilation compilation)
             var args = callExpr.ArgList?.ArgList.ToList() ?? [];
             var perfectSignature = context.SearchContext.FindPerfectMatchSignature(luaMethodType, callExpr, args);
             var parameters = perfectSignature.Parameters;
-            var colonDefine = luaMethodType.ColonDefine;
+            var colonDefine = perfectSignature.ColonDefine;
             var colonCall = (callExpr.PrefixExpr as LuaIndexExprSyntax)?.IsColonIndex ?? false;
 
             switch ((colonDefine, colonCall))
