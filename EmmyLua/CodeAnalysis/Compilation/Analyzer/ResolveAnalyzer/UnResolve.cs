@@ -32,7 +32,7 @@ public record UnResolvedSymbol(
 
 // public record UnResolvedDocSymbol(
 //     LuaSymbol LuaSymbol,
-//     TypeId Id,
+//     LuaTypeId Id,
 //     ResolveState ResolvedState)
 //     : UnResolved(ResolvedState);
 
@@ -41,7 +41,7 @@ public record UnResolvedDocOperator(
     LuaNamedType NamedType,
     TypeOperatorKind Kind,
     SyntaxElementId Id,
-    List<TypeId> TypeIds,
+    List<LuaTypeId> TypeIds,
     ResolveState ResolvedState)
     : UnResolved(ResolvedState);
 

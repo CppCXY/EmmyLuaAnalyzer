@@ -30,6 +30,8 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
                 AnalyzeForRangeDeclaration(attachedElement, tagSyntaxes, declarationContext);
             }
         }
+
+        analyzeContext.DeclarationContexts.Clear();
     }
 
     private void AnalyzeGeneralDeclaration(LuaSyntaxElement attachedElement, List<LuaDocTagSyntax> docTagSyntaxes,
@@ -124,7 +126,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
             var nameTypeList = docTagSyntaxes.OfType<LuaDocTagTypeSyntax>().FirstOrDefault();
             if (nameTypeList is { TypeList: { } typeList })
             {
-                var luaTypeList = typeList.Select(it => new LuaTypeRef(TypeId.Create(it))).ToList();
+                var luaTypeList = typeList.Select(it => new LuaTypeRef(LuaTypeId.Create(it))).ToList();
                 for (var i = 0; i < luaTypeList.Count; i++)
                 {
                     if (declarations.Count > i)
@@ -254,20 +256,20 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
             {
                 if (paramSyntax is { Name.RepresentText: { } name, Type: { } paramType })
                 {
-                    var type = new LuaTypeRef(TypeId.Create(paramType));
+                    var type = new LuaTypeRef(LuaTypeId.Create(paramType));
                     var nullable = paramSyntax.Nullable;
                     parameterDict[name] = new ParameterInfo(nullable, type);
                 }
                 else if (paramSyntax is { VarArgs: { } _, Type: { } paramType2 })
                 {
-                    var type = new LuaTypeRef(TypeId.Create(paramType2));
+                    var type = new LuaTypeRef(LuaTypeId.Create(paramType2));
                     parameterDict["..."] = new ParameterInfo(true, type);
                 }
             }
             else if (docTagSyntax is LuaDocTagReturnSyntax returnSyntax)
             {
                 var returnTypes = returnSyntax.TypeList
-                    .Select(it => new LuaTypeRef(TypeId.Create(it))).Cast<LuaType>()
+                    .Select(it => new LuaTypeRef(LuaTypeId.Create(it))).Cast<LuaType>()
                     .ToList();
                 var returnType = returnTypes.Count switch
                 {
@@ -311,7 +313,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
         {
             if (paramSyntax is { Name.RepresentText: { } name, Type: { } paramType })
             {
-                var type = new LuaTypeRef(TypeId.Create(paramType));
+                var type = new LuaTypeRef(LuaTypeId.Create(paramType));
                 var nullable = paramSyntax.Nullable;
                 parameterDict[name] = new ParameterInfo(nullable, type);
             }

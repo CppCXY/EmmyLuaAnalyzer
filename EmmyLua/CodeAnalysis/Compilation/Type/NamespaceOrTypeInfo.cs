@@ -1,6 +1,8 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
+using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type;
 
@@ -180,5 +182,36 @@ public class NamespaceOrTypeInfo
         }
 
         return null;
+    }
+
+    public LuaComputerTypeInfo? CreateComputerTypeInfo(SyntaxElementId elementId, LuaDocTagClassSyntax tagClass)
+    {
+        if (TypeInfo is not null)
+        {
+            return null;
+        }
+
+        var genericList = new List<string>();
+        if (tagClass.GenericDeclareList?.Params is { } genericParamSyntaxes)
+        {
+            foreach (var genericParamSyntax in genericParamSyntaxes)
+            {
+                if (genericParamSyntax.Name?.RepresentText is { } name)
+                {
+                    genericList.Add(name);
+                }
+            }
+        }
+
+        var typeSyntax = tagClass.ExtendTypeList.FirstOrDefault();
+        if (typeSyntax is null)
+        {
+            return null;
+        }
+
+        var computer = TypeComputer.Compile(genericList, typeSyntax);
+        var typeInfo = new LuaComputerTypeInfo(elementId, computer);
+        TypeInfo = typeInfo;
+        return typeInfo;
     }
 }

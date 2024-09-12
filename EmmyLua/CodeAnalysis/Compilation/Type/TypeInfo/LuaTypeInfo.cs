@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -12,19 +13,19 @@ public abstract class LuaTypeInfo
 
     public bool IsGeneric => GenericParameters != null;
 
-    public abstract List<LuaSymbol>? GenericParameters { get; protected set; }
+    public abstract List<LuaSymbol>? GenericParameters { get; }
 
-    public abstract LuaType? BaseType { get; protected set; }
+    public abstract LuaType? BaseType { get; }
 
-    public abstract List<LuaNamedType>? Supers { get; protected set; }
+    public abstract TypeComputer? TypeCompute { get; }
 
-    public abstract List<LuaNamedType>? SubTypes { get; protected set; }
+    public abstract List<LuaNamedType>? Supers { get; }
 
-    public abstract Dictionary<string, LuaSymbol>? Declarations { get; protected set; }
+    public abstract Dictionary<string, LuaSymbol>? Declarations { get; }
 
-    public abstract Dictionary<string, LuaSymbol>? Implements { get; protected set; }
+    public abstract Dictionary<string, LuaSymbol>? Implements { get; }
 
-    public abstract Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators { get; protected set; }
+    public abstract Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators { get; }
 
     public abstract NamedTypeKind Kind { get; }
 
@@ -50,9 +51,9 @@ public abstract class LuaTypeInfo
 
     public abstract void AddSuper(LuaNamedType super);
 
-    public abstract void AddSubType(LuaNamedType subType);
-
     public abstract void AddOperator(TypeOperatorKind kind, TypeOperator typeOperator);
 
     public abstract void AddGenericParameter(LuaSymbol genericParameter);
+
+    public abstract void AddBaseType(LuaType baseType);
 }

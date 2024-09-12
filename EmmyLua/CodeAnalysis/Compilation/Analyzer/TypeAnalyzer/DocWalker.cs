@@ -10,7 +10,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
-public partial class DeclarationWalker
+public class TypeUtil
 {
     private LuaSymbol? AnalyzeDocDetailField(LuaDocFieldSyntax field)
     {
@@ -22,7 +22,7 @@ public partial class DeclarationWalker
             {
                 var symbol = new LuaSymbol(
                     nameField.RepresentText,
-                    new LuaTypeRef(TypeId.Create(type1)),
+                    new LuaTypeRef(LuaTypeId.Create(type1)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
@@ -33,7 +33,7 @@ public partial class DeclarationWalker
             {
                 var symbol = new LuaSymbol(
                     $"[{integerField.Value}]",
-                    new LuaTypeRef(TypeId.Create(type2)),
+                    new LuaTypeRef(LuaTypeId.Create(type2)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
@@ -44,7 +44,7 @@ public partial class DeclarationWalker
             {
                 var symbol = new LuaSymbol(
                     stringField.Value,
-                    new LuaTypeRef(TypeId.Create(type3)),
+                    new LuaTypeRef(LuaTypeId.Create(type3)),
                     new DocFieldInfo(new(field)),
                     readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
                     GetVisibility(visibility)
@@ -69,10 +69,10 @@ public partial class DeclarationWalker
                         namedType,
                         TypeOperatorKind.Index,
                         id,
-                        [TypeId.Create(typeField), TypeId.Create(type)],
+                        [LuaTypeId.Create(typeField), LuaTypeId.Create(type)],
                         ResolveState.UnResolvedType
                     );
-                    declarationContext.AddUnResolved(unResolved);
+                    // declarationContext.AddUnResolved(unResolved);
                     continue;
                 }
 
@@ -80,31 +80,6 @@ public partial class DeclarationWalker
                 {
                     luaTypeInfo.AddDeclaration(fieldSymbol);
                 }
-            }
-        }
-    }
-
-    private void AnalyzeTagDocBody(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocBodySyntax docBody)
-    {
-        foreach (var field in docBody.FieldList)
-        {
-            if (field is { TypeField: { } typeField, Type: { } type4, UniqueId: { } id })
-            {
-                var unResolved = new UnResolvedDocOperator(
-                    luaTypeInfo,
-                    namedType,
-                    TypeOperatorKind.Index,
-                    id,
-                    [TypeId.Create(typeField), TypeId.Create(type4)],
-                    ResolveState.UnResolvedType
-                );
-                declarationContext.AddUnResolved(unResolved);
-                continue;
-            }
-
-            if (AnalyzeDocDetailField(field) is { } fieldSymbol)
-            {
-                luaTypeInfo.AddDeclaration(fieldSymbol);
             }
         }
     }
@@ -126,11 +101,6 @@ public partial class DeclarationWalker
     //
     //     declarationContext.TypeManager.AddElementMembers(luaDocTableTypeSyntax.UniqueId, declarations);
     // }
-
-    private void AnalyzeMeta()
-    {
-        Compilation.Diagnostics.AddMeta(DocumentId);
-    }
 
     public static SymbolVisibility GetVisibility(VisibilityKind visibility)
     {

@@ -7,9 +7,9 @@ using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
-public partial class DeclarationWalker
+public class OperatorAnalyzer
 {
     private void AnalyzeTypeOperator(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
@@ -128,7 +128,7 @@ public partial class DeclarationWalker
                     [new(id)],
                     ResolveState.UnResolvedType
                 );
-                declarationContext.AddUnResolved(unResolved);
+                // declarationContext.AddUnResolved(unResolved);
             }
         }
     }
@@ -143,7 +143,7 @@ public partial class DeclarationWalker
     {
         SyntaxElementId operatorId = operatorSyntax.Operator?.UniqueId ?? SyntaxElementId.Empty;
 
-        var typeIds = new List<TypeId>();
+        var typeIds = new List<LuaTypeId>();
         if (operatorSyntax.Types is { } types)
         {
             foreach (var type in types)
@@ -175,6 +175,6 @@ public partial class DeclarationWalker
             typeIds,
             ResolveState.UnResolvedType
         );
-        declarationContext.AddUnResolved(unResolved);
+        // declarationContext.AddUnResolved(unResolved);
     }
 }

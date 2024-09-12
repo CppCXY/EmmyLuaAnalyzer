@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -19,19 +20,31 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
         }
     }
 
-    public override List<LuaSymbol>? GenericParameters { get; protected set; }
+    private List<LuaSymbol>? _genericParameters = null;
 
-    public override LuaType? BaseType { get; protected set; }
+    public override List<LuaSymbol>? GenericParameters => _genericParameters;
 
-    public override List<LuaNamedType>? Supers { get; protected set; }
+    private LuaType? _baseType = null;
 
-    public override List<LuaNamedType>? SubTypes { get; protected set; }
+    public override LuaType? BaseType => _baseType;
 
-    public override Dictionary<string, LuaSymbol>? Declarations { get; protected set; }
+    public override TypeComputer? TypeCompute => null;
 
-    public override Dictionary<string, LuaSymbol>? Implements { get; protected set; }
+    private List<LuaNamedType>? _supers = null;
 
-    public override Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators { get; protected set; }
+    public override List<LuaNamedType>? Supers => _supers;
+
+    private Dictionary<string, LuaSymbol> _declarations = new();
+
+    public override Dictionary<string, LuaSymbol>? Declarations => _declarations;
+
+    private Dictionary<string, LuaSymbol>? _implements = null;
+
+    public override Dictionary<string, LuaSymbol>? Implements => _implements;
+
+    private Dictionary<TypeOperatorKind, List<TypeOperator>>? _operators = null;
+
+    public override Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators => _operators;
 
     public override NamedTypeKind Kind { get; } = kind;
 
@@ -45,29 +58,29 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
     {
         if (IsDefinedInDocument(documentId))
         {
-            if (Supers is not null)
-            {
-                var newSupers = new List<LuaNamedType>();
-                newSupers.AddRange(Supers);
-                foreach (var super in newSupers)
-                {
-                    var superTypeInfo = typeManager.FindTypeInfo(super);
-                    if (superTypeInfo is { SubTypes: { } subTypes })
-                    {
-                        for (var i = subTypes.Count - 1; i >= 0; i--)
-                        {
-                            if (typeManager.FindTypeInfo(subTypes[i]) is { } subTypeInfo && subTypeInfo == this)
-                            {
-                                subTypes.RemoveAt(i);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            Supers = null;
-            SubTypes = null;
+            // if (Supers is not null)
+            // {
+            //     var newSupers = new List<LuaNamedType>();
+            //     newSupers.AddRange(Supers);
+            //     foreach (var super in newSupers)
+            //     {
+            //         var superTypeInfo = typeManager.FindTypeInfo(super);
+            //         if (superTypeInfo is { SubTypes: { } subTypes })
+            //         {
+            //             for (var i = subTypes.Count - 1; i >= 0; i--)
+            //             {
+            //                 if (typeManager.FindTypeInfo(subTypes[i]) is { } subTypeInfo && subTypeInfo == this)
+            //                 {
+            //                     subTypes.RemoveAt(i);
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            //
+            // Supers = null;
+            // SubTypes = null;
             return true;
         }
 
@@ -80,8 +93,8 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
     {
         if (IsDefinedInDocument(luaSymbol.DocumentId))
         {
-            Declarations ??= new();
-            Declarations.TryAdd(luaSymbol.Name, luaSymbol);
+            _declarations ??= new();
+            _declarations.TryAdd(luaSymbol.Name, luaSymbol);
         }
     }
 
@@ -90,8 +103,8 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
         if (IsDefinedInDocument(luaSymbol.DocumentId))
         {
             AddDeclaration(luaSymbol);
-            Implements ??= new();
-            Implements.TryAdd(luaSymbol.Name, luaSymbol);
+            _implements ??= new();
+            _implements.TryAdd(luaSymbol.Name, luaSymbol);
         }
     }
 
@@ -99,26 +112,26 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
     {
         if (IsDefinedInDocument(super.DocumentId))
         {
-            Supers ??= new();
-            Supers.Add(super);
+            _supers ??= new();
+            _supers.Add(super);
         }
     }
 
-    public override void AddSubType(LuaNamedType subType)
-    {
-        SubTypes ??= new();
-        SubTypes.Add(subType);
-    }
+    // public override void AddSubType(LuaNamedType subType)
+    // {
+    //     SubTypes ??= new();
+    //     SubTypes.Add(subType);
+    // }
 
     public override void AddOperator(TypeOperatorKind kind, TypeOperator typeOperator)
     {
         if (IsDefinedInDocument(typeOperator.Id.DocumentId))
         {
-            Operators ??= new();
-            if (!Operators.TryGetValue(kind, out var list))
+            _operators ??= new();
+            if (!_operators.TryGetValue(kind, out var list))
             {
                 list = new();
-                Operators.Add(kind, list);
+                _operators.Add(kind, list);
             }
 
             list.Add(typeOperator);
@@ -129,8 +142,13 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
     {
         if (IsDefinedInDocument(genericParameter.DocumentId))
         {
-            GenericParameters ??= new();
-            GenericParameters.Add(genericParameter);
+            _genericParameters ??= new();
+            _genericParameters.Add(genericParameter);
         }
+    }
+
+    public override void AddBaseType(LuaType baseType)
+    {
+         _baseType = baseType;
     }
 }

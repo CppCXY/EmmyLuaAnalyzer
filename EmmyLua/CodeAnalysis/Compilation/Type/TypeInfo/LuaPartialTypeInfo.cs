@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -26,19 +27,29 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
         }
     }
 
-    public override List<LuaSymbol>? GenericParameters { get; protected set; }
+    private List<LuaSymbol>? _genericParameters = null;
 
-    public override LuaType? BaseType { get; protected set; }
+    public override List<LuaSymbol>? GenericParameters => _genericParameters;
 
-    public override List<LuaNamedType>? Supers { get; protected set; }
+    public override LuaType? BaseType => null;
 
-    public override List<LuaNamedType>? SubTypes { get; protected set; }
+    public override TypeComputer? TypeCompute => null;
 
-    public override Dictionary<string, LuaSymbol>? Declarations { get; protected set; }
+    private List<LuaNamedType>? _supers = null;
 
-    public override Dictionary<string, LuaSymbol>? Implements { get; protected set; }
+    public override List<LuaNamedType>? Supers => _supers;
 
-    public override Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators { get; protected set; }
+    private Dictionary<string, LuaSymbol> _declarations = new();
+
+    public override Dictionary<string, LuaSymbol>? Declarations => _declarations;
+
+    private Dictionary<string, LuaSymbol>? _implements = null;
+
+    public override Dictionary<string, LuaSymbol>? Implements => _implements;
+
+    private Dictionary<TypeOperatorKind, List<TypeOperator>>? _operators = null;
+
+    public override Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators => _operators;
 
     public override NamedTypeKind Kind { get; } = kind;
 
@@ -58,8 +69,8 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
     {
         if (IsDefinedInDocument(luaSymbol.DocumentId))
         {
-            Declarations ??= new();
-            Declarations.TryAdd(luaSymbol.Name, luaSymbol);
+            _declarations ??= new();
+            _declarations.TryAdd(luaSymbol.Name, luaSymbol);
         }
     }
 
@@ -68,8 +79,8 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
         if (IsDefinedInDocument(luaSymbol.DocumentId))
         {
             AddDeclaration(luaSymbol);
-            Implements ??= new();
-            Implements[luaSymbol.Name] = luaSymbol;
+            _implements ??= new();
+            _implements[luaSymbol.Name] = luaSymbol;
         }
     }
 
@@ -77,26 +88,20 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
     {
         if (IsDefinedInDocument(super.DocumentId))
         {
-            Supers ??= new();
-            Supers.Add(super);
+            _supers ??= new();
+            _supers.Add(super);
         }
-    }
-
-    public override void AddSubType(LuaNamedType subType)
-    {
-        SubTypes ??= new();
-        SubTypes.Add(subType);
     }
 
     public override void AddOperator(TypeOperatorKind kind, TypeOperator typeOperator)
     {
         if (IsDefinedInDocument(typeOperator.Id.DocumentId))
         {
-            Operators ??= new();
-            if (!Operators.TryGetValue(kind, out var list))
+            _operators ??= new();
+            if (!_operators.TryGetValue(kind, out var list))
             {
                 list = new();
-                Operators[kind] = list;
+                _operators[kind] = list;
             }
 
             list.Add(typeOperator);
@@ -107,9 +112,13 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
     {
         if (IsDefinedInDocument(genericParameter.DocumentId))
         {
-            GenericParameters ??= new();
-            GenericParameters.Add(genericParameter);
+            _genericParameters ??= new();
+            _genericParameters.Add(genericParameter);
         }
+    }
+
+    public override void AddBaseType(LuaType baseType)
+    {
     }
 }
 

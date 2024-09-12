@@ -6,5 +6,6 @@ public enum NamedTypeKind
     Class,
     Enum,
     Interface,
-    Alias
+    Alias,
+    TypeCompute,
 }

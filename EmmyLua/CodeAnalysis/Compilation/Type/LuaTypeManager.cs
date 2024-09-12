@@ -19,7 +19,7 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private InFileIndex<SyntaxElementId, LuaLocalTypeInfo> LocalTypeInfos { get; } = new();
 
-    // private InFileIndex<string, >
+    private InFileIndex<SyntaxElementId, LuaType> DocumentTypes { get; } = new();
 
     // left super, right sub
     private List<(LuaNamedType, LuaNamedType)> WaitBuildSubtypes { get; } = new();
@@ -78,6 +78,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
 
         LocalTypeInfos.Remove(documentId);
+        DocumentTypes.Remove(documentId);
     }
 
     public LuaTypeInfo? AddTypeDefinition(
@@ -112,23 +113,19 @@ public class LuaTypeManager(LuaCompilation compilation)
         return newTypeInfo;
     }
 
-    public void AddTypeComposer(string name, LuaDocTypeSyntax typeSyntax)
+    public LuaTypeInfo? AddTypeComputer(LuaDocTagClassSyntax docTagClassSyntax, string name)
     {
-
-    }
-
-    public void BuildSubTypes()
-    {
-        // foreach (var (left, right) in WaitBuildSubtypes)
-        // {
-        //     if (FindTypeInfo(left) is { } leftTypeInfo)
-        //     {
-        //         leftTypeInfo.SubTypes ??= new();
-        //         leftTypeInfo.SubTypes.Add(right);
-        //     }
-        // }
-        //
-        // WaitBuildSubtypes.Clear();
+        if (NamespaceIndices.TryGetValue(docTagClassSyntax.DocumentId, out var namespaceIndex))
+        {
+            var namespaceInfo = RootNamespace.FindOrCreate(namespaceIndex.FullName);
+            var typeInfo = namespaceInfo.FindOrCreate(name);
+            return typeInfo.CreateComputerTypeInfo(docTagClassSyntax.UniqueId, docTagClassSyntax);
+        }
+        else
+        {
+            var typeInfo = RootNamespace.FindOrCreate(name);
+            return typeInfo.CreateComputerTypeInfo(docTagClassSyntax.UniqueId, docTagClassSyntax);
+        }
     }
 
     public void SetNamespace(LuaDocumentId documentId, string fullName)
@@ -232,5 +229,15 @@ public class LuaTypeManager(LuaCompilation compilation)
     public bool HasNamespace(LuaDocumentId documentId)
     {
         return NamespaceIndices.ContainsKey(documentId);
+    }
+
+    public void AddType(SyntaxElementId id, LuaType type)
+    {
+        DocumentTypes.Add(id.DocumentId, id, type);
+    }
+
+    public LuaType? GetType(SyntaxElementId id)
+    {
+        return DocumentTypes.Query(id);
     }
 }

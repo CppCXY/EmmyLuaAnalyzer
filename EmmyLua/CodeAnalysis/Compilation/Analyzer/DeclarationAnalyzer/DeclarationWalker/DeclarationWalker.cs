@@ -220,4 +220,9 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Lu
             declarationContext.AddUnResolved(new UnResolvedSource(DocumentId, block, ResolveState.UnResolveReturn));
         }
     }
+
+    private void AnalyzeMeta()
+    {
+        Compilation.Diagnostics.AddMeta(DocumentId);
+    }
 }

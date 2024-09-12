@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
 
-public class TypeCompute
+public class TypeComputer
 {
     private List<string> Params { get; }
 
@@ -15,7 +15,7 @@ public class TypeCompute
 
     private List<string> IdRefs { get; }
 
-    TypeCompute(List<string> @params)
+    TypeComputer(List<string> @params)
     {
         Params = @params;
         ParamIndex = new();
@@ -29,9 +29,9 @@ public class TypeCompute
         IdRefs = new List<string>();
     }
 
-    public static TypeCompute Compile(List<string> templateParams, LuaDocTypeSyntax typeSyntax)
+    public static TypeComputer Compile(List<string> templateParams, LuaDocTypeSyntax typeSyntax)
     {
-        var typeComposer = new TypeCompute(templateParams);
+        var typeComposer = new TypeComputer(templateParams);
         typeComposer.Compile(typeSyntax);
         return typeComposer;
     }

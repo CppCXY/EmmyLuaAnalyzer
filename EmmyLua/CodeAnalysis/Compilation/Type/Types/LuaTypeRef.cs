@@ -1,8 +1,11 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Declaration;
+using EmmyLua.CodeAnalysis.Document;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
-public class LuaTypeRef(TypeId id) : LuaType
+public class LuaTypeRef(LuaTypeId id) : LuaType
 {
-    public TypeId Id { get; } = id;
+    public LuaTypeId Id { get; } = id;
+
+    public LuaDocumentId DocumentId => Id.Id.DocumentId;
 }
