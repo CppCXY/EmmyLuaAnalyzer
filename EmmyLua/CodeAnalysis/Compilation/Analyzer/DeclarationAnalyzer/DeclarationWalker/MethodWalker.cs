@@ -26,13 +26,13 @@ public partial class DeclarationWalker
                     ),
                     SymbolFeature.Local
                 );
-                declarationContext.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
-                declarationContext.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
+                builder.AddLocalDeclaration(luaFuncStat.LocalName, declaration);
+                builder.AddReference(ReferenceKind.Definition, declaration, luaFuncStat.LocalName);
                 break;
             }
             case { IsLocal: false, NameExpr: { Name: { } name2 } nameExpr, ClosureExpr: { } closureExpr }:
             {
-                var prevDeclaration = declarationContext.FindLocalDeclaration(luaFuncStat.NameExpr);
+                var prevDeclaration = builder.FindLocalDeclaration(luaFuncStat.NameExpr);
                 if (prevDeclaration is null)
                 {
                     var declaration = new LuaSymbol(
@@ -44,13 +44,13 @@ public partial class DeclarationWalker
                         ),
                         SymbolFeature.Global
                     );
-                    declarationContext.GlobalIndex.AddGlobal(name2.RepresentText, declaration);
-                    declarationContext.AddLocalDeclaration(nameExpr, declaration);
-                    declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
+                    builder.GlobalIndex.AddGlobal(name2.RepresentText, declaration);
+                    builder.AddLocalDeclaration(nameExpr, declaration);
+                    builder.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                 }
                 else
                 {
-                    declarationContext.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
+                    builder.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
                 }
 
                 break;
@@ -67,12 +67,12 @@ public partial class DeclarationWalker
                             new(luaFuncStat)
                         )
                     );
-                    declarationContext.AddAttachedDeclaration(indexExpr, declaration);
+                    builder.AddAttachedDeclaration(indexExpr, declaration);
                     var unResolved = new UnResolvedSymbol(
                         declaration,
                         null,
                         ResolveState.UnResolvedIndex);
-                    declarationContext.AddUnResolved(unResolved);
+                    builder.AddUnResolved(unResolved);
                 }
 
                 break;
@@ -86,7 +86,7 @@ public partial class DeclarationWalker
         {
             if (ancestor is LuaStatSyntax or LuaTableFieldSyntax)
             {
-                declarationContext.SetElementRelatedClosure(ancestor, closureExprSyntax);
+                builder.AddRelatedClosure(ancestor, closureExprSyntax);
                 break;
             }
         }
@@ -109,8 +109,8 @@ public partial class DeclarationWalker
                         SymbolFeature.Local
                     );
 
-                    declarationContext.AddLocalDeclaration(param, declaration);
-                    declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
+                    builder.AddLocalDeclaration(param, declaration);
+                    builder.AddReference(ReferenceKind.Definition, declaration, param);
                     parameters.Add(declaration);
                 }
                 else if (param.IsVarArgs)
@@ -126,7 +126,7 @@ public partial class DeclarationWalker
                         SymbolFeature.Local
                     );
 
-                    declarationContext.AddLocalDeclaration(param, declaration);
+                    builder.AddLocalDeclaration(param, declaration);
                     parameters.Add(declaration);
                 }
             }
@@ -148,20 +148,20 @@ public partial class DeclarationWalker
         //     null,
         //     isColonDefine);
 
-        // declarationContext.TypeManager.AddLocalTypeInfo(closureExprSyntax.UniqueId);
-        // declarationContext.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
+        // builder.TypeManager.AddLocalTypeInfo(closureExprSyntax.UniqueId);
+        // builder.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
         {
             var index = callArgList.ArgList.ToList().IndexOf(closureExprSyntax);
             var unResolved = new UnResolvedClosureParameters(parameters, callExprSyntax, index);
-            declarationContext.AddUnResolved(unResolved);
+            builder.AddUnResolved(unResolved);
         }
 
         if (closureExprSyntax.Block is { } block)
         {
             var unResolved = new UnResolvedMethod(closureExprSyntax.UniqueId, block, ResolveState.UnResolveReturn);
-            declarationContext.AddUnResolved(unResolved);
+            builder.AddUnResolved(unResolved);
         }
     }
 }

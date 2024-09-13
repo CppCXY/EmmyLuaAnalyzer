@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using EmmyLua.CodeAnalysis.Compilation;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Workspace;
 
@@ -43,6 +44,11 @@ public readonly record struct LuaElementPtr<TNode>(SyntaxElementId UniqueId)
     public TNode? ToNode(SearchContext context)
     {
         return ToNode(context.Compilation.Project);
+    }
+
+    public TNode? ToNode(LuaCompilation compilation)
+    {
+        return ToNode(compilation.Project);
     }
 
     public LuaElementPtr<TBaseNode> Cast<TBaseNode>()

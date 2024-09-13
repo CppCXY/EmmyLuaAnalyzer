@@ -7,18 +7,18 @@ using EmmyLua.CodeAnalysis.Syntax.Walker;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
-public partial class DeclarationWalker(DeclarationContext declarationContext, LuaCompilation compilation)
+public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilation compilation)
     : ILuaElementWalker
 {
     private LuaCompilation Compilation => compilation;
 
-    private LuaDocumentId DocumentId => declarationContext.DocumentId;
+    private LuaDocumentId DocumentId => builder.DocumentId;
 
     public void WalkIn(LuaSyntaxElement node)
     {
         if (IsScopeOwner(node))
         {
-            declarationContext.PushScope(node);
+            builder.PushScope(node);
         }
 
         switch (node)
@@ -205,7 +205,7 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Lu
     {
         if (IsScopeOwner(node))
         {
-            declarationContext.PopScope();
+            builder.PopScope();
         }
     }
 
@@ -217,7 +217,7 @@ public partial class DeclarationWalker(DeclarationContext declarationContext, Lu
     {
         if (sourceSyntax.Block is { } block)
         {
-            declarationContext.AddUnResolved(new UnResolvedSource(DocumentId, block, ResolveState.UnResolveReturn));
+            builder.AddUnResolved(new UnResolvedSource(DocumentId, block, ResolveState.UnResolveReturn));
         }
     }
 

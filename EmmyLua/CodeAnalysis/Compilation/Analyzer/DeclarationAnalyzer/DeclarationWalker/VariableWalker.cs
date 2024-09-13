@@ -48,14 +48,14 @@ public partial class DeclarationWalker
                     ),
                     SymbolFeature.Local
                 );
-                declarationContext.AddLocalDeclaration(localName, declaration);
-                declarationContext.AddReference(ReferenceKind.Definition, declaration, localName);
+                builder.AddLocalDeclaration(localName, declaration);
+                builder.AddReference(ReferenceKind.Definition, declaration, localName);
                 var unResolveDeclaration = new UnResolvedSymbol(
                     declaration,
                     relatedExpr,
                     ResolveState.UnResolvedType
                 );
-                declarationContext.AddUnResolved(unResolveDeclaration);
+                builder.AddUnResolved(unResolveDeclaration);
             }
         }
     }
@@ -75,15 +75,15 @@ public partial class DeclarationWalker
                         false
                     ),
                     SymbolFeature.Local);
-                // declarationContext.TypeManager.AddLocalTypeInfo(param.UniqueId);
-                declarationContext.AddLocalDeclaration(param, declaration);
-                declarationContext.AddReference(ReferenceKind.Definition, declaration, param);
+                // builder.TypeManager.AddLocalTypeInfo(param.UniqueId);
+                builder.AddLocalDeclaration(param, declaration);
+                builder.AddReference(ReferenceKind.Definition, declaration, param);
                 parameters.Add(declaration);
             }
         }
 
         var unResolved = new UnResolvedForRangeParameter(parameters, forRangeStatSyntax.ExprList.ToList());
-        declarationContext.AddUnResolved(unResolved);
+        builder.AddUnResolved(unResolved);
     }
 
     private void AnalyzeForStat(LuaForStatSyntax forStatSyntax)
@@ -98,8 +98,8 @@ public partial class DeclarationWalker
                     false
                 ),
                 SymbolFeature.Local);
-            declarationContext.AddReference(ReferenceKind.Definition, declaration, forStatSyntax.IteratorName);
-            declarationContext.AddLocalDeclaration(forStatSyntax.IteratorName, declaration);
+            builder.AddReference(ReferenceKind.Definition, declaration, forStatSyntax.IteratorName);
+            builder.AddLocalDeclaration(forStatSyntax.IteratorName, declaration);
         }
     }
 
@@ -136,7 +136,7 @@ public partial class DeclarationWalker
                 {
                     if (nameExpr.Name is { } name)
                     {
-                        var prevDeclaration = declarationContext.FindLocalDeclaration(nameExpr);
+                        var prevDeclaration = builder.FindLocalDeclaration(nameExpr);
                         if (prevDeclaration is null)
                         {
                             var nameText = name.RepresentText;
@@ -146,19 +146,19 @@ public partial class DeclarationWalker
                                 new GlobalInfo(new(nameExpr)),
                                 SymbolFeature.Global
                             );
-                            declarationContext.GlobalIndex.AddGlobal(nameText, declaration);
-                            declarationContext.AddLocalDeclaration(nameExpr, declaration);
-                            declarationContext.AddReference(ReferenceKind.Definition, declaration, nameExpr);
+                            builder.GlobalIndex.AddGlobal(nameText, declaration);
+                            builder.AddLocalDeclaration(nameExpr, declaration);
+                            builder.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                             var unResolveDeclaration = new UnResolvedSymbol(
                                 declaration,
                                 relatedExpr,
                                 ResolveState.UnResolvedType
                             );
-                            declarationContext.AddUnResolved(unResolveDeclaration);
+                            builder.AddUnResolved(unResolveDeclaration);
                         }
                         else
                         {
-                            declarationContext.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
+                            builder.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
                         }
                     }
 
@@ -176,10 +176,10 @@ public partial class DeclarationWalker
                             null,
                             new IndexInfo(new(indexExpr), valueExprPtr)
                         );
-                        declarationContext.AddAttachedDeclaration(varExpr, declaration);
+                        builder.AddAttachedDeclaration(varExpr, declaration);
                         var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,
                             ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
-                        declarationContext.AddUnResolved(unResolveDeclaration);
+                        builder.AddUnResolved(unResolveDeclaration);
                     }
 
                     break;

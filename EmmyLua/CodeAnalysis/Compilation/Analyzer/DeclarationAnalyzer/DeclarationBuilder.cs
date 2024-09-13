@@ -13,9 +13,9 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
-public class DeclarationContext(
+public class DeclarationBuilder(
     LuaDocument document,
-    DeclarationAnalyzer analyzer,
+    LuaCompilation compilation,
     AnalyzeContext analyzeContext)
 {
     private DeclarationScope? _topScope;
@@ -32,11 +32,9 @@ public class DeclarationContext(
 
     private Dictionary<SyntaxElementId, LuaSymbol> _declarations = new();
 
-    private Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> _elementRelatedClosure = new();
+    private Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> _relatedClosure = new();
 
-    private DeclarationAnalyzer Analyzer { get; } = analyzer;
-
-    private LuaCompilation Compilation => Analyzer.Compilation;
+    private LuaCompilation Compilation { get; } = compilation;
 
     public ProjectIndex ProjectIndex => Compilation.ProjectIndex;
 
@@ -52,11 +50,11 @@ public class DeclarationContext(
 
     public LuaDocumentId DocumentId => Document.Id;
 
-    public LuaDeclarationTree? GetDeclarationTree()
+    public LuaDeclarationTree? Build()
     {
         if (_topScope is not null)
         {
-            return new LuaDeclarationTree(_scopeOwners, _topScope);
+            return new LuaDeclarationTree(_scopeOwners, _topScope, _declarations, _relatedClosure, _attachedDocs);
         }
 
         return null;
@@ -180,42 +178,9 @@ public class DeclarationContext(
         }
     }
 
-    public IEnumerable<(LuaSyntaxElement, List<LuaDocTagSyntax>)> GetAttachedDocs()
+    public void AddRelatedClosure(LuaSyntaxElement element, LuaClosureExprSyntax closureExprSyntax)
     {
-        foreach (var (commentId, docTags) in _attachedDocs)
-        {
-            var ptr = new LuaElementPtr<LuaCommentSyntax>(commentId);
-            var comment = ptr.ToNode(Document);
-            if (comment is { Owner: { } owner })
-            {
-                var docList = new List<LuaDocTagSyntax>();
-                foreach (var elementPtr in docTags)
-                {
-                    var docTag = elementPtr.ToNode(Document);
-                    if (docTag is not null)
-                    {
-                        docList.Add(docTag);
-                    }
-                }
-
-                yield return (owner, docList);
-            }
-        }
-    }
-
-    public LuaSymbol? GetAttachedDeclaration(LuaSyntaxElement element)
-    {
-        return _declarations.GetValueOrDefault(element.UniqueId);
-    }
-
-    public void SetElementRelatedClosure(LuaSyntaxElement element, LuaClosureExprSyntax closureExprSyntax)
-    {
-        _elementRelatedClosure.TryAdd(element.UniqueId, new(closureExprSyntax));
-    }
-
-    public LuaClosureExprSyntax? GetElementRelatedClosure(LuaSyntaxElement element)
-    {
-        return _elementRelatedClosure.GetValueOrDefault(element.UniqueId).ToNode(Document);
+        _relatedClosure.TryAdd(element.UniqueId, new(closureExprSyntax));
     }
 
     public void AddDiagnostic(Diagnostic diagnostic)

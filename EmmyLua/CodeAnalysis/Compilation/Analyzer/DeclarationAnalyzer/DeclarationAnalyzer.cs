@@ -9,17 +9,15 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
     {
         foreach (var document in analyzeContext.LuaDocuments)
         {
-            var declarationContext = new DeclarationContext(document, this, analyzeContext);
-            var walker = new DeclarationWalker.DeclarationWalker(declarationContext, Compilation);
+            var builder = new DeclarationBuilder(document, Compilation, analyzeContext);
+            var walker = new DeclarationWalker.DeclarationWalker(builder, Compilation);
             document.SyntaxTree.SyntaxRoot.Accept(walker);
 
-            var tree = declarationContext.GetDeclarationTree();
+            var tree = builder.Build();
             if (tree is not null)
             {
                 Compilation.ProjectIndex.AddDeclarationTree(document.Id, tree);
             }
-
-            analyzeContext.DeclarationContexts.Add(declarationContext);
         }
     }
 }

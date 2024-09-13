@@ -5,6 +5,7 @@ using EmmyLua.CodeAnalysis.Compilation.Signature;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Document.Version;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -19,25 +20,49 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
 
     private LuaTypeManager TypeManager => Compilation.TypeManager;
 
+    private LuaSignatureManager SignatureManager => Compilation.SignatureManager;
+
     public override void Analyze(AnalyzeContext analyzeContext)
     {
-        foreach (var declarationContext in analyzeContext.DeclarationContexts)
+        foreach (var document in analyzeContext.LuaDocuments)
         {
-            foreach (var (attachedElement, tagSyntaxes) in declarationContext.GetAttachedDocs())
+            var declarationTree = ProjectIndex.QueryDeclarationTree(document.Id);
+            if (declarationTree is null)
             {
-                AnalyzeGeneralDeclaration(attachedElement, tagSyntaxes, declarationContext);
-                AnalyzeMethodDeclaration(attachedElement, tagSyntaxes, declarationContext);
-                AnalyzeForRangeDeclaration(attachedElement, tagSyntaxes, declarationContext);
+                continue;
             }
-        }
+            foreach (var (elementId, tagSyntaxes) in declarationTree.AttachedDocs)
+            {
+                if (elementId.ToSyntaxElement(Compilation) is LuaCommentSyntax { Owner: {} attachedElement })
+                {
+                    var docList = new List<LuaDocTagSyntax>();
+                    foreach (var elementPtr in tagSyntaxes)
+                    {
+                        var docTag = elementPtr.ToNode(document);
+                        if (docTag is not null)
+                        {
+                            docList.Add(docTag);
+                        }
+                    }
 
-        analyzeContext.DeclarationContexts.Clear();
+                    AnalyzeGeneralDeclaration(attachedElement, docList, declarationTree);
+                    AnalyzeMethodDeclaration(attachedElement, docList, declarationTree);
+                    if (attachedElement is LuaForRangeStatSyntax forRangeStatSyntax)
+                    {
+                        AnalyzeForRangeDeclaration(forRangeStatSyntax, docList, declarationTree);
+                    }
+                }
+            }
+            declarationTree.Declarations.Clear();
+            declarationTree.AttachedDocs.Clear();
+            declarationTree.RelatedClosure.Clear();
+        }
     }
 
     private void AnalyzeGeneralDeclaration(LuaSyntaxElement attachedElement, List<LuaDocTagSyntax> docTagSyntaxes,
-        DeclarationContext declarationContext)
+        LuaDeclarationTree tree)
     {
-        var declarations = FindDeclarations(attachedElement, declarationContext).ToList();
+        var declarations = FindDeclarations(attachedElement, tree).ToList();
         foreach (var declaration in declarations)
         {
             foreach (var docTagSyntax in docTagSyntaxes)
@@ -51,9 +76,14 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
                     }
                     case LuaDocTagVisibilitySyntax visibilitySyntax:
                     {
-                        declaration.Visibility =
-                            DeclarationAnalyzer.DeclarationWalker.DeclarationWalker.GetVisibility(visibilitySyntax
-                                .Visibility);
+                        declaration.Visibility = visibilitySyntax.Visibility switch
+                        {
+                            VisibilityKind.Public => SymbolVisibility.Public,
+                            VisibilityKind.Protected => SymbolVisibility.Protected,
+                            VisibilityKind.Private => SymbolVisibility.Private,
+                            VisibilityKind.Package => SymbolVisibility.Package,
+                            _ => SymbolVisibility.Public
+                        };
                         break;
                     }
                     case LuaDocTagVersionSyntax versionSyntax:
@@ -144,7 +174,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
         }
     }
 
-    private IEnumerable<LuaSymbol> FindDeclarations(LuaSyntaxElement element, DeclarationContext declarationContext)
+    private IEnumerable<LuaSymbol> FindDeclarations(LuaSyntaxElement element, LuaDeclarationTree tree)
     {
         switch (element)
         {
@@ -152,7 +182,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
             {
                 foreach (var localName in localStatSyntax.NameList)
                 {
-                    if (declarationContext.GetAttachedDeclaration(localName) is { } luaDeclaration)
+                    if (tree.FindLocalSymbol(localName) is { } luaDeclaration)
                     {
                         yield return luaDeclaration;
                     }
@@ -164,7 +194,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
             {
                 foreach (var assign in assignStatSyntax.VarList)
                 {
-                    if (declarationContext.GetAttachedDeclaration(assign) is { } luaDeclaration)
+                    if (tree.FindLocalSymbol(assign) is { } luaDeclaration)
                     {
                         yield return luaDeclaration;
                     }
@@ -174,7 +204,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
             }
             case LuaTableFieldSyntax tableFieldSyntax:
             {
-                if (declarationContext.GetAttachedDeclaration(tableFieldSyntax) is { } luaDeclaration)
+                if (tree.FindLocalSymbol(tableFieldSyntax) is { } luaDeclaration)
                 {
                     yield return luaDeclaration;
                 }
@@ -187,7 +217,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
                 {
                     case { IsLocal: true, LocalName: { } name }:
                     {
-                        if (declarationContext.GetAttachedDeclaration(name) is { } luaDeclaration)
+                        if (tree.FindLocalSymbol(name) is { } luaDeclaration)
                         {
                             yield return luaDeclaration;
                         }
@@ -196,7 +226,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
                     }
                     case { IsLocal: false, NameExpr: { } nameExpr }:
                     {
-                        if (declarationContext.GetAttachedDeclaration(nameExpr) is { } luaDeclaration)
+                        if (tree.FindLocalSymbol(nameExpr) is { } luaDeclaration)
                         {
                             yield return luaDeclaration;
                         }
@@ -205,7 +235,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
                     }
                     case { IsMethod: true, IndexExpr: { } indexExpr }:
                     {
-                        if (declarationContext.GetAttachedDeclaration(indexExpr) is { } luaDeclaration)
+                        if (tree.FindLocalSymbol(indexExpr) is { } luaDeclaration)
                         {
                             yield return luaDeclaration;
                         }
@@ -226,16 +256,22 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
     private record struct ParameterInfo(bool Nullable, LuaType Type);
 
     private void AnalyzeMethodDeclaration(LuaSyntaxElement element, List<LuaDocTagSyntax> docTagSyntaxes,
-        DeclarationContext declarationContext)
+        LuaDeclarationTree tree)
     {
-        var closureExpr = declarationContext.GetElementRelatedClosure(element);
+        var closureExprPtr = tree.GetElementRelatedClosure(element);
+        if (!closureExprPtr.HasValue)
+        {
+            return;
+        }
+
+        var closureExpr = closureExprPtr.Value.ToNode(Compilation);
         if (closureExpr is null)
         {
             return;
         }
 
         var id = LuaSignatureId.Create(closureExpr);
-        var luaSignature = declarationContext.SignatureManager.GetSignature(id);
+        var luaSignature = SignatureManager.GetSignature(id);
         if (luaSignature is null)
         {
             return;
@@ -300,14 +336,9 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
         }
     }
 
-    private void AnalyzeForRangeDeclaration(LuaSyntaxElement element, List<LuaDocTagSyntax> docTagSyntaxes,
-        DeclarationContext declarationContext)
+    private void AnalyzeForRangeDeclaration(LuaForRangeStatSyntax forRangeStatSyntax, List<LuaDocTagSyntax> docTagSyntaxes,
+        LuaDeclarationTree tree)
     {
-        if (element is not LuaForRangeStatSyntax forRangeStatSyntax)
-        {
-            return;
-        }
-
         var parameterDict = new Dictionary<string, ParameterInfo>();
         foreach (var paramSyntax in docTagSyntaxes.OfType<LuaDocTagParamSyntax>())
         {
@@ -321,7 +352,7 @@ public class AttachDocAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compila
 
         foreach (var paramDef in forRangeStatSyntax.IteratorNames)
         {
-            var declaration = declarationContext.GetAttachedDeclaration(paramDef);
+            var declaration = tree.FindLocalSymbol(paramDef);
             if (declaration is null)
             {
                 continue;
