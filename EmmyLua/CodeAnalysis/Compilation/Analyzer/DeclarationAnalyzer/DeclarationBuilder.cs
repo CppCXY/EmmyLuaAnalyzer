@@ -162,7 +162,7 @@ public class DeclarationBuilder(
         _curScope = _scopeStack.Count != 0 ? _scopeStack.Peek() : _topScope;
     }
 
-    public void AttachDoc(LuaDocTagSyntax docTagSyntax)
+    public void AttachToNext(LuaDocTagSyntax docTagSyntax)
     {
         var comment = docTagSyntax.Parent;
         if (comment is LuaCommentSyntax)

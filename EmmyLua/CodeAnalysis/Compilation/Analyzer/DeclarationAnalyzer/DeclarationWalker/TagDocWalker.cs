@@ -47,7 +47,7 @@ public partial class DeclarationWalker
                     return;
                 }
 
-                builder.AttachDoc(tagClassSyntax);
+                builder.AttachToNext(tagClassSyntax);
             }
         }
     }
@@ -75,7 +75,7 @@ public partial class DeclarationWalker
             }
         }
 
-        builder.AttachDoc(tagAliasSyntax);
+        builder.AttachToNext(tagAliasSyntax);
     }
 
     private void AnalyzeTagEnum(LuaDocTagEnumSyntax tagEnumSyntax)
@@ -114,7 +114,7 @@ public partial class DeclarationWalker
             }
         }
 
-        builder.AttachDoc(tagEnumSyntax);
+        builder.AttachToNext(tagEnumSyntax);
     }
 
     private void AnalyzeTagInterface(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
@@ -140,12 +140,12 @@ public partial class DeclarationWalker
             }
         }
 
-        builder.AttachDoc(tagInterfaceSyntax);
+        builder.AttachToNext(tagInterfaceSyntax);
     }
 
     private void AnalyzeTagType(LuaDocTagTypeSyntax tagTypeSyntax)
     {
-        builder.AttachDoc(tagTypeSyntax);
+        builder.AttachToNext(tagTypeSyntax);
     }
 
     private void AnalyzeTagModule(LuaDocTagModuleSyntax moduleSyntax)
@@ -231,12 +231,12 @@ public partial class DeclarationWalker
 
     private void AnalyzeTagSource(LuaDocTagSourceSyntax sourceSyntax)
     {
-        builder.AttachDoc(sourceSyntax);
+        builder.AttachToNext(sourceSyntax);
     }
 
     private void AnalyzeSimpleTag(LuaDocTagSyntax tagSyntax)
     {
-        builder.AttachDoc(tagSyntax);
+        builder.AttachToNext(tagSyntax);
     }
 
     private LuaTypeAttribute GetAttribute(LuaDocTagNamedTypeSyntax tagNamedTypeSyntax)

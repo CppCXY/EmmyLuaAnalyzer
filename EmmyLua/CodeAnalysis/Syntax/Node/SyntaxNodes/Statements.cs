@@ -13,13 +13,39 @@ public class LuaLocalStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(i
 {
     public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
 
-    public bool IsLocalDeclare => Assign != null;
-
     public IEnumerable<LuaLocalNameSyntax> NameList => ChildrenElement<LuaLocalNameSyntax>();
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
 
     public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
+
+    public IEnumerable<(LuaLocalNameSyntax, (LuaExprSyntax?, int))> NameExprPairs
+    {
+        get
+        {
+            var nameList = NameList.ToList();
+            var exprList = ExprList.ToList();
+            LuaExprSyntax? lastValidExpr = null;
+            var count = nameList.Count;
+            var retId = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var localName = nameList[i];
+                var expr = exprList.ElementAtOrDefault(i);
+                if (expr is not null)
+                {
+                    lastValidExpr = expr;
+                    retId = 0;
+                }
+                else
+                {
+                    retId++;
+                }
+
+                yield return (localName, (lastValidExpr, retId));
+            }
+        }
+    }
 }
 
 public class LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
@@ -29,6 +55,34 @@ public class LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(
     public IEnumerable<LuaExprSyntax> ExprList => ChildNodesAfterToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
 
     public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+
+    public IEnumerable<(LuaExprSyntax, (LuaExprSyntax?, int))> VarExprPairs
+    {
+        get
+        {
+            var varList = VarList.ToList();
+            var exprList = ExprList.ToList();
+            LuaExprSyntax? lastValidExpr = null;
+            var count = varList.Count;
+            var retId = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var varExpr = varList[i];
+                var expr = exprList.ElementAtOrDefault(i);
+                if (expr is not null)
+                {
+                    lastValidExpr = expr;
+                    retId = 0;
+                }
+                else
+                {
+                    retId++;
+                }
+
+                yield return (varExpr, (lastValidExpr, retId));
+            }
+        }
+    }
 }
 
 public class LuaFuncStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)

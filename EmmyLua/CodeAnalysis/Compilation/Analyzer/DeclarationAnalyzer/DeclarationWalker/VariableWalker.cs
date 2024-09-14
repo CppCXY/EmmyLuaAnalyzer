@@ -11,31 +11,8 @@ public partial class DeclarationWalker
 {
     private void AnalyzeLocalStat(LuaLocalStatSyntax localStatSyntax)
     {
-        var nameList = localStatSyntax.NameList.ToList();
-        var exprList = localStatSyntax.ExprList.ToList();
-        LuaExprSyntax? lastValidExpr = null;
-        var count = nameList.Count;
-        var retId = 0;
-        for (var i = 0; i < count; i++)
+        foreach (var (localName, (expr, idx)) in localStatSyntax.NameExprPairs)
         {
-            var localName = nameList[i];
-            var expr = exprList.ElementAtOrDefault(i);
-            if (expr is not null)
-            {
-                lastValidExpr = expr;
-                retId = 0;
-            }
-            else
-            {
-                retId++;
-            }
-
-            LuaExprRef? relatedExpr = null;
-            if (lastValidExpr is not null)
-            {
-                relatedExpr = new LuaExprRef(lastValidExpr, retId);
-            }
-
             if (localName is { Name: { } name })
             {
                 var declaration = new LuaSymbol(
@@ -50,12 +27,15 @@ public partial class DeclarationWalker
                 );
                 builder.AddLocalDeclaration(localName, declaration);
                 builder.AddReference(ReferenceKind.Definition, declaration, localName);
-                var unResolveDeclaration = new UnResolvedSymbol(
-                    declaration,
-                    relatedExpr,
-                    ResolveState.UnResolvedType
-                );
-                builder.AddUnResolved(unResolveDeclaration);
+                if (expr is not null)
+                {
+                    var unResolveDeclaration = new UnResolvedSymbol(
+                        declaration,
+                        new LuaExprRef(expr, idx),
+                        ResolveState.UnResolvedType
+                    );
+                    builder.AddUnResolved(unResolveDeclaration);
+                }
             }
         }
     }
@@ -105,81 +85,54 @@ public partial class DeclarationWalker
 
     private void AnalyzeAssignStat(LuaAssignStatSyntax luaAssignStat)
     {
-        var varList = luaAssignStat.VarList.ToList();
-        var exprList = luaAssignStat.ExprList.ToList();
-        LuaExprSyntax? lastValidExpr = null;
-        var retId = 0;
-        var count = varList.Count;
-        for (var i = 0; i < count; i++)
+        foreach (var (varExpr, (expr, idx)) in luaAssignStat.VarExprPairs)
         {
-            var varExpr = varList[i];
-            var expr = exprList.ElementAtOrDefault(i);
-            if (expr is not null)
-            {
-                lastValidExpr = expr;
-                retId = 0;
-            }
-            else
-            {
-                retId++;
-            }
-
-            LuaExprRef? relatedExpr = null;
-            if (lastValidExpr is not null)
-            {
-                relatedExpr = new LuaExprRef(lastValidExpr, retId);
-            }
-
             switch (varExpr)
             {
-                case LuaNameExprSyntax nameExpr:
+                case LuaNameExprSyntax { Name: { } name } nameExpr:
                 {
-                    if (nameExpr.Name is { } name)
+                    var prevDeclaration = builder.FindLocalDeclaration(nameExpr);
+                    if (prevDeclaration is null)
                     {
-                        var prevDeclaration = builder.FindLocalDeclaration(nameExpr);
-                        if (prevDeclaration is null)
-                        {
-                            var nameText = name.RepresentText;
-                            var declaration = new LuaSymbol(
-                                nameText,
-                                null,
-                                new GlobalInfo(new(nameExpr)),
-                                SymbolFeature.Global
-                            );
-                            builder.GlobalIndex.AddGlobal(nameText, declaration);
-                            builder.AddLocalDeclaration(nameExpr, declaration);
-                            builder.AddReference(ReferenceKind.Definition, declaration, nameExpr);
-                            var unResolveDeclaration = new UnResolvedSymbol(
-                                declaration,
-                                relatedExpr,
-                                ResolveState.UnResolvedType
-                            );
-                            builder.AddUnResolved(unResolveDeclaration);
-                        }
-                        else
-                        {
-                            builder.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
-                        }
+                        var nameText = name.RepresentText;
+                        var declaration = new LuaSymbol(
+                            nameText,
+                            null,
+                            new GlobalInfo(new(nameExpr)),
+                            SymbolFeature.Global
+                        );
+                        builder.GlobalIndex.AddGlobal(nameText, declaration);
+                        builder.AddLocalDeclaration(nameExpr, declaration);
+                        builder.AddReference(ReferenceKind.Definition, declaration, nameExpr);
+                        var unResolveDeclaration = new UnResolvedSymbol(
+                            declaration,
+                            new LuaExprRef(expr, idx),
+                            ResolveState.UnResolvedType
+                        );
+                        builder.AddUnResolved(unResolveDeclaration);
                     }
-
+                    else
+                    {
+                        builder.AddReference(ReferenceKind.Write, prevDeclaration, nameExpr);
+                    }
                     break;
                 }
                 case LuaIndexExprSyntax indexExpr:
                 {
                     if (indexExpr.Name is { } name)
                     {
-                        var valueExprPtr = relatedExpr?.RetId == 0
-                            ? new(relatedExpr.Expr)
-                            : LuaElementPtr<LuaExprSyntax>.Empty;
-                        var declaration = new LuaSymbol(
-                            name,
-                            null,
-                            new IndexInfo(new(indexExpr), valueExprPtr)
-                        );
-                        builder.AddAttachedDeclaration(varExpr, declaration);
-                        var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,
-                            ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
-                        builder.AddUnResolved(unResolveDeclaration);
+                        // var valueExprPtr = relatedExpr?.RetId == 0
+                        //     ? new(relatedExpr.Expr)
+                        //     : LuaElementPtr<LuaExprSyntax>.Empty;
+                        // var declaration = new LuaSymbol(
+                        //     name,
+                        //     null,
+                        //     new IndexInfo(new(indexExpr), valueExprPtr)
+                        // );
+                        // builder.AddAttachedDeclaration(varExpr, declaration);
+                        // var unResolveDeclaration = new UnResolvedSymbol(declaration, relatedExpr,
+                        //     ResolveState.UnResolvedType | ResolveState.UnResolvedIndex);
+                        // builder.AddUnResolved(unResolveDeclaration);
                     }
 
                     break;
