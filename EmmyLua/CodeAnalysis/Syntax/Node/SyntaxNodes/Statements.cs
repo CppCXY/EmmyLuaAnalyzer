@@ -3,7 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaStatSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
+public class LuaStatSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree), ICommentOwner
 {
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? [];

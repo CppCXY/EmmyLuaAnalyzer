@@ -19,3 +19,8 @@ public class LuaCommentSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(ind
 
     public LuaSyntaxElement? Owner => Tree.BinderData?.CommentOwner(this);
 }
+
+public interface ICommentOwner
+{
+    IEnumerable<LuaCommentSyntax> Comments { get; }
+}

@@ -1,5 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -7,10 +8,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Declaration;
 
 public record LuaDeclarationTree(
     Dictionary<SyntaxElementId, DeclarationScope> Scopes,
-    DeclarationScope Root,
-    Dictionary<SyntaxElementId, LuaSymbol> Declarations,
-    Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> RelatedClosure,
-    Dictionary<SyntaxElementId, List<LuaElementPtr<LuaDocTagSyntax>>> AttachedDocs
+    DeclarationScope Root
 )
 {
     public DeclarationScope? FindScope(LuaSyntaxElement element)
@@ -27,15 +25,5 @@ public record LuaDeclarationTree(
         }
 
         return null;
-    }
-
-    public LuaSymbol? FindLocalSymbol(LuaSyntaxElement element)
-    {
-        return Declarations.GetValueOrDefault(element.UniqueId);
-    }
-
-    public LuaElementPtr<LuaClosureExprSyntax>? GetElementRelatedClosure(LuaSyntaxElement element)
-    {
-        return RelatedClosure.GetValueOrDefault(element.UniqueId);
     }
 }

@@ -83,11 +83,6 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
                 AnalyzeTableExpr(tableSyntax);
                 break;
             }
-            // case LuaDocTableTypeSyntax tableTypeSyntax:
-            // {
-            //     AnalyzeLuaTableType(tableTypeSyntax);
-            //     break;
-            // }
             case LuaSourceSyntax sourceSyntax:
             {
                 AnalyzeSource(sourceSyntax);
@@ -138,21 +133,6 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
                 AnalyzeSimpleTag(asyncSyntax);
                 break;
             }
-            case LuaDocTagGenericSyntax genericSyntax:
-            {
-                AnalyzeSimpleTag(genericSyntax);
-                break;
-            }
-            case LuaDocTagParamSyntax paramSyntax:
-            {
-                AnalyzeSimpleTag(paramSyntax);
-                break;
-            }
-            case LuaDocTagReturnSyntax returnSyntax:
-            {
-                AnalyzeSimpleTag(returnSyntax);
-                break;
-            }
             case LuaDocTagSeeSyntax seeSyntax:
             {
                 AnalyzeSimpleTag(seeSyntax);
@@ -173,11 +153,6 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
                 AnalyzeSimpleTag(versionSyntax);
                 break;
             }
-            case LuaDocTagOverloadSyntax overloadSyntax:
-            {
-                AnalyzeSimpleTag(overloadSyntax);
-                break;
-            }
             case LuaDocTagMappingSyntax mappingSyntax:
             {
                 AnalyzeSimpleTag(mappingSyntax);
@@ -195,7 +170,7 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
             }
             case LuaDocTagSourceSyntax sourceSyntax:
             {
-                AnalyzeTagSource(sourceSyntax);
+                AnalyzeSimpleTag(sourceSyntax);
                 break;
             }
         }

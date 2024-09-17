@@ -50,7 +50,6 @@ public class LuaCompilation
         Analyzers =
         [
             new DeclarationAnalyzer(this),
-            new AttachDocAnalyzer(this),
             new TypeAnalyzer(this),
             new FlowAnalyzer(this),
             new ResolveAnalyzer(this),

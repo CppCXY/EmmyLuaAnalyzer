@@ -2,6 +2,7 @@
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Diagnostics;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
@@ -47,7 +48,8 @@ public partial class DeclarationWalker
                     return;
                 }
 
-                builder.AttachToNext(tagClassSyntax);
+                var luaClass = new LuaNamedType(DocumentId, name.RepresentText);
+                AttachTypeToNext(luaClass, tagClassSyntax);
             }
         }
     }
@@ -63,7 +65,7 @@ public partial class DeclarationWalker
                 NamedTypeKind.Alias,
                 attribute);
 
-            typeInfo?.AddBaseType(new LuaTypeRef(LuaTypeId.Create(type)));
+            typeInfo?.AddBaseType(builder.CreateRef(type));
             if (typeInfo is null)
             {
                 builder.AddDiagnostic(new Diagnostic(
@@ -73,9 +75,10 @@ public partial class DeclarationWalker
                     name.Range
                 ));
             }
-        }
 
-        builder.AttachToNext(tagAliasSyntax);
+            var luaAlias = new LuaNamedType(DocumentId, name.RepresentText);
+            AttachTypeToNext(luaAlias, tagAliasSyntax);
+        }
     }
 
     private void AnalyzeTagEnum(LuaDocTagEnumSyntax tagEnumSyntax)
@@ -112,9 +115,11 @@ public partial class DeclarationWalker
                     typeInfo.AddDeclaration(fieldDeclaration);
                 }
             }
+
+            var luaEnum = new LuaNamedType(DocumentId, name.RepresentText);
+            AttachTypeToNext(luaEnum, tagEnumSyntax);
         }
 
-        builder.AttachToNext(tagEnumSyntax);
     }
 
     private void AnalyzeTagInterface(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
@@ -138,14 +143,19 @@ public partial class DeclarationWalker
                 ));
                 return;
             }
-        }
 
-        builder.AttachToNext(tagInterfaceSyntax);
+            var luaInterface = new LuaNamedType(DocumentId, name.RepresentText);
+            AttachTypeToNext(luaInterface, tagInterfaceSyntax);
+        }
     }
 
     private void AnalyzeTagType(LuaDocTagTypeSyntax tagTypeSyntax)
     {
-        builder.AttachToNext(tagTypeSyntax);
+        foreach (var typeSyntax in tagTypeSyntax.TypeList)
+        {
+            var luaType = builder.CreateRef(typeSyntax);
+            AttachTypeToNext(luaType, tagTypeSyntax);
+        }
     }
 
     private void AnalyzeTagModule(LuaDocTagModuleSyntax moduleSyntax)
@@ -229,14 +239,9 @@ public partial class DeclarationWalker
         }
     }
 
-    private void AnalyzeTagSource(LuaDocTagSourceSyntax sourceSyntax)
-    {
-        builder.AttachToNext(sourceSyntax);
-    }
-
     private void AnalyzeSimpleTag(LuaDocTagSyntax tagSyntax)
     {
-        builder.AttachToNext(tagSyntax);
+        AttachToNext(tagSyntax);
     }
 
     private LuaTypeAttribute GetAttribute(LuaDocTagNamedTypeSyntax tagNamedTypeSyntax)

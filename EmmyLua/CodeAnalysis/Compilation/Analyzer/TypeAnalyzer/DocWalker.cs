@@ -1,14 +1,12 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Compile.Kind;
-using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
 public class TypeUtil
 {

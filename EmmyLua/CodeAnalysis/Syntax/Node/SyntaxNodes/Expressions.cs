@@ -3,11 +3,7 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
-{
-    public IEnumerable<LuaCommentSyntax> Comments =>
-        Tree.BinderData?.GetComments(this) ?? [];
-}
+public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree);
 
 public class LuaNameExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
@@ -75,7 +71,7 @@ public class LuaTableExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(i
     public IEnumerable<LuaTableFieldSyntax> FieldList => ChildrenElement<LuaTableFieldSyntax>();
 }
 
-public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
+public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree), ICommentOwner
 {
     public bool IsExprKey => ChildrenElement<LuaExprSyntax>().Count() == 2;
 

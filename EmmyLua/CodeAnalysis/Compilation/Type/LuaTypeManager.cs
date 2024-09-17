@@ -19,7 +19,7 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private InFileIndex<SyntaxElementId, LuaLocalTypeInfo> LocalTypeInfos { get; } = new();
 
-    private InFileIndex<SyntaxElementId, LuaType> DocumentTypes { get; } = new();
+    private InFileIndex<SyntaxElementId, LuaType> RefDetailType { get; } = new();
 
     // left super, right sub
     private List<(LuaNamedType, LuaNamedType)> WaitBuildSubtypes { get; } = new();
@@ -78,7 +78,8 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
 
         LocalTypeInfos.Remove(documentId);
-        DocumentTypes.Remove(documentId);
+        RefDetailType.Remove(documentId);
+        RefDetailType.Remove(documentId);
     }
 
     public LuaTypeInfo? AddTypeDefinition(
@@ -87,7 +88,6 @@ public class LuaTypeManager(LuaCompilation compilation)
         NamedTypeKind kind,
         LuaTypeAttribute attribute)
     {
-
         if (NamespaceIndices.TryGetValue(element.DocumentId, out var namespaceIndex))
         {
             var namespaceInfo = RootNamespace.FindOrCreate(namespaceIndex.FullName);
@@ -231,13 +231,13 @@ public class LuaTypeManager(LuaCompilation compilation)
         return NamespaceIndices.ContainsKey(documentId);
     }
 
-    public void AddType(SyntaxElementId id, LuaType type)
+    public void AddRefDetailType(SyntaxElementId id, LuaType type)
     {
-        DocumentTypes.Add(id.DocumentId, id, type);
+        RefDetailType.Add(id.DocumentId, id, type);
     }
 
-    public LuaType? GetType(SyntaxElementId id)
+    public LuaType? GetRefDetailType(SyntaxElementId id)
     {
-        return DocumentTypes.Query(id);
+        return RefDetailType.Query(id);
     }
 }

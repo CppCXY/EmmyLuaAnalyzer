@@ -55,25 +55,18 @@ public partial class DeclarationWalker
 
                 break;
             }
-            case { IsMethod: true, IndexExpr: { } indexExpr, ClosureExpr: { } closureExpr }:
+            case { IsMethod: true, IndexExpr: { Name: { } name } indexExpr, ClosureExpr: { } closureExpr }:
             {
-                if (indexExpr is { Name: { } name })
-                {
-                    var declaration = new LuaSymbol(
-                        name,
-                        new LuaMethodType(LuaSignatureId.Create(closureExpr)),
-                        new MethodInfo(
-                            new(indexExpr),
-                            new(luaFuncStat)
-                        )
-                    );
-                    builder.AddAttachedDeclaration(indexExpr, declaration);
-                    var unResolved = new UnResolvedSymbol(
-                        declaration,
-                        null,
-                        ResolveState.UnResolvedIndex);
-                    builder.AddUnResolved(unResolved);
-                }
+                var declaration = new LuaSymbol(
+                    name,
+                    new LuaMethodType(LuaSignatureId.Create(closureExpr)),
+                    new MethodInfo(
+                        new(indexExpr),
+                        new(luaFuncStat)
+                    )
+                );
+                builder.AddAttachedDeclaration(indexExpr, declaration);
+                builder.AddIndexExprMember(indexExpr, declaration);
 
                 break;
             }
@@ -82,12 +75,37 @@ public partial class DeclarationWalker
 
     private void AnalyzeClosureExpr(LuaClosureExprSyntax closureExprSyntax)
     {
-        foreach (var ancestor in closureExprSyntax.Ancestors)
+        var docList = FindAttachedDoc(closureExprSyntax);
+        var parameterDict = new Dictionary<string, ParameterInfo>();
+        LuaType? returnType = null;
+        foreach (var docTagSyntax in docList)
         {
-            if (ancestor is LuaStatSyntax or LuaTableFieldSyntax)
+            if (docTagSyntax is LuaDocTagParamSyntax paramSyntax)
             {
-                builder.AddRelatedClosure(ancestor, closureExprSyntax);
-                break;
+                if (paramSyntax is { Name.RepresentText: { } name, Type: { } paramType })
+                {
+                    var type = builder.CreateRef(paramType);
+                    var nullable = paramSyntax.Nullable;
+                    parameterDict[name] = new ParameterInfo(nullable, type);
+                }
+                else if (paramSyntax is { VarArgs: { } _, Type: { } paramType2 })
+                {
+                    var type = builder.CreateRef(paramType2);
+                    parameterDict["..."] = new ParameterInfo(true, type);
+                }
+            }
+            else if (docTagSyntax is LuaDocTagReturnSyntax returnSyntax)
+            {
+                var returnTypes = returnSyntax.TypeList
+                    .Select(builder.CreateRef)
+                    .Cast<LuaType>()
+                    .ToList();
+                returnType = returnTypes.Count switch
+                {
+                    0 => Builtin.Nil,
+                    1 => returnTypes[0],
+                    _ => new LuaMultiReturnType(returnTypes)
+                };
             }
         }
 
@@ -98,13 +116,22 @@ public partial class DeclarationWalker
             {
                 if (param.Name is { } name)
                 {
+                    LuaType? type = null;
+                    var nullable = false;
+                    if (parameterDict.TryGetValue(name.RepresentText, out var info))
+                    {
+                        type = info.Type;
+                        nullable = info.Nullable;
+                    }
+
                     var paramName = name.RepresentText;
                     var declaration = new LuaSymbol(
                         paramName,
-                        null,
+                        type,
                         new ParamInfo(
                             new(param),
-                            false
+                            false,
+                            nullable
                         ),
                         SymbolFeature.Local
                     );
@@ -115,9 +142,14 @@ public partial class DeclarationWalker
                 }
                 else if (param.IsVarArgs)
                 {
+                    LuaType? type = null;
+                    if (parameterDict.TryGetValue("...", out var info))
+                    {
+                        type = info.Type;
+                    }
                     var declaration = new LuaSymbol(
                         "...",
-                        null,
+                        type,
                         new ParamInfo(
                             new(param),
                             true,
@@ -134,22 +166,13 @@ public partial class DeclarationWalker
 
         var isColonDefine = closureExprSyntax.Parent is LuaFuncStatSyntax { IsColonFunc: true };
         var signature = new LuaSignature(
-            null,
+            returnType,
             parameters,
             isColonDefine
         );
 
         Compilation.SignatureManager.AddSignature(LuaSignatureId.Create(closureExprSyntax), signature);
-        // var method = new LuaMethodType(
-        //     new LuaSignature(
-        //         Builtin.Unknown,
-        //         parameters.ToList()
-        //     ),
-        //     null,
-        //     isColonDefine);
-
-        // builder.TypeManager.AddLocalTypeInfo(closureExprSyntax.UniqueId);
-        // builder.TypeManager.SetBaseType(closureExprSyntax.UniqueId, method);
+        // TODO overload
 
         if (closureExprSyntax.Parent is LuaCallArgListSyntax { Parent: LuaCallExprSyntax callExprSyntax } callArgList)
         {

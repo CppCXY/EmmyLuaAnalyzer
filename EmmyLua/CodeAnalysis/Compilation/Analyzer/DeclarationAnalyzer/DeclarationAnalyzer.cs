@@ -1,7 +1,4 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.AttachDocAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Search;
-
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
 
 public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Declaration")
 {
@@ -12,6 +9,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
             var builder = new DeclarationBuilder(document, Compilation, analyzeContext);
             var walker = new DeclarationWalker.DeclarationWalker(builder, Compilation);
             document.SyntaxTree.SyntaxRoot.Accept(walker);
+            walker.FinishAttachedAnalyze();
 
             var tree = builder.Build();
             if (tree is not null)

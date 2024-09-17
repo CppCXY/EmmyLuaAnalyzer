@@ -6,6 +6,7 @@ using EmmyLua.CodeAnalysis.Compilation.Scope;
 using EmmyLua.CodeAnalysis.Compilation.Signature;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -26,13 +27,9 @@ public class DeclarationBuilder(
 
     private Dictionary<SyntaxElementId, DeclarationScope> _scopeOwners = new();
 
-    private Dictionary<SyntaxElementId, List<LuaElementPtr<LuaDocTagSyntax>>> _attachedDocs = new();
-
     private HashSet<SyntaxElementId> _uniqueReferences = new();
 
     private Dictionary<SyntaxElementId, LuaSymbol> _declarations = new();
-
-    private Dictionary<SyntaxElementId, LuaElementPtr<LuaClosureExprSyntax>> _relatedClosure = new();
 
     private LuaCompilation Compilation { get; } = compilation;
 
@@ -54,7 +51,7 @@ public class DeclarationBuilder(
     {
         if (_topScope is not null)
         {
-            return new LuaDeclarationTree(_scopeOwners, _topScope, _declarations, _relatedClosure, _attachedDocs);
+            return new LuaDeclarationTree(_scopeOwners, _topScope);
         }
 
         return null;
@@ -162,32 +159,45 @@ public class DeclarationBuilder(
         _curScope = _scopeStack.Count != 0 ? _scopeStack.Peek() : _topScope;
     }
 
-    public void AttachToNext(LuaDocTagSyntax docTagSyntax)
-    {
-        var comment = docTagSyntax.Parent;
-        if (comment is LuaCommentSyntax)
-        {
-            if (_attachedDocs.TryGetValue(comment.UniqueId, out var list))
-            {
-                list.Add(new LuaElementPtr<LuaDocTagSyntax>(docTagSyntax));
-            }
-            else
-            {
-                _attachedDocs.Add(comment.UniqueId, [new(docTagSyntax)]);
-            }
-        }
-    }
-
-    public void AddRelatedClosure(LuaSyntaxElement element, LuaClosureExprSyntax closureExprSyntax)
-    {
-        _relatedClosure.TryAdd(element.UniqueId, new(closureExprSyntax));
-    }
-
     public void AddDiagnostic(Diagnostic diagnostic)
     {
         if (Compilation.Diagnostics.CanAddDiagnostic(DocumentId, diagnostic.Code, diagnostic.Range))
         {
             Compilation.Diagnostics.AddDiagnostic(DocumentId, diagnostic);
         }
+    }
+
+    public void AddIndexExprMember(LuaIndexExprSyntax indexExpr, LuaSymbol member)
+    {
+        if (indexExpr.PrefixExpr is LuaNameExprSyntax nameExpr)
+        {
+            var prevSymbol = FindLocalDeclaration(nameExpr);
+            if (prevSymbol?.Type is LuaNamedType namedType)
+            {
+                var typeInfo = TypeManager.FindTypeInfo(namedType);
+                typeInfo?.AddImplement(member);
+                return;
+            }
+        }
+
+        var unResolvedIndex = new UnResolvedSymbol(
+            member,
+            null,
+            ResolveState.UnResolvedIndex
+        );
+
+        AddUnResolved(unResolvedIndex);
+    }
+
+    public LuaSymbol? FindLocalSymbol(LuaSyntaxElement element)
+    {
+        return _declarations.GetValueOrDefault(element.UniqueId);
+    }
+
+    public LuaTypeRef CreateRef(LuaDocTypeSyntax typeSyntax)
+    {
+        var refType = new LuaTypeRef(LuaTypeId.Create(typeSyntax));
+        AnalyzeContext.TypeRefs.Add(refType);
+        return refType;
     }
 }
