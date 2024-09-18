@@ -17,9 +17,14 @@ public partial class DeclarationWalker
         for (var i = 0; i < nameExprPairs.Count; i++)
         {
             var (localName, (expr, idx)) = nameExprPairs[i];
+            var exprType = SimpleInfer(expr, idx);
+            var type = attachedTypes.Count > i ? attachedTypes[i] : exprType;
+            if (type is LuaNamedType namedType && expr is LuaTableExprSyntax tableExpr)
+            {
+            }
+
             if (localName is { Name: { } name })
             {
-                var type = attachedTypes.Count > i ? attachedTypes[i] : null;
                 var declaration = new LuaSymbol(
                     name.RepresentText,
                     type,
@@ -118,6 +123,12 @@ public partial class DeclarationWalker
         for (var i = 0; i < varExprPairs.Count; i++)
         {
             var (varExpr, (expr, idx)) = varExprPairs[i];
+            var exprType = SimpleInfer(expr, idx);
+            var type = attachedTypes.Count > i ? attachedTypes[i] : exprType;
+            if (type is LuaNamedType namedType && expr is LuaTableExprSyntax tableExpr)
+            {
+            }
+
             switch (varExpr)
             {
                 case LuaNameExprSyntax { Name: { } name } nameExpr:
@@ -125,7 +136,6 @@ public partial class DeclarationWalker
                     var prevDeclaration = builder.FindLocalDeclaration(nameExpr);
                     if (prevDeclaration is null)
                     {
-                        var type = attachedTypes.Count > i ? attachedTypes[i] : null;
                         var nameText = name.RepresentText;
                         var declaration = new LuaSymbol(
                             nameText,
@@ -139,10 +149,10 @@ public partial class DeclarationWalker
                         if (expr is not null && type is null)
                         {
                             var unResolvedSymbol = new UnResolvedSymbol(
-                                    declaration,
-                                    new LuaExprRef(expr, idx),
-                                    ResolveState.UnResolvedType
-                                );
+                                declaration,
+                                new LuaExprRef(expr, idx),
+                                ResolveState.UnResolvedType
+                            );
                             builder.AddUnResolved(unResolvedSymbol);
                         }
                     }
@@ -155,7 +165,6 @@ public partial class DeclarationWalker
                 }
                 case LuaIndexExprSyntax { Name: { } name } indexExpr:
                 {
-                    var type = attachedTypes.Count > i ? attachedTypes[i] : null;
                     var valueExprPtr = (idx == 0 && expr is not null)
                         ? new(expr)
                         : LuaElementPtr<LuaExprSyntax>.Empty;
@@ -185,5 +194,37 @@ public partial class DeclarationWalker
     private List<LuaType> GetAttachedTypes(LuaSyntaxElement element)
     {
         return _attachedTypes.TryGetValue(element.UniqueId, out var list) ? list : [];
+    }
+
+    private LuaType? SimpleInfer(LuaExprSyntax? expr, int idx)
+    {
+        if (idx != 0)
+        {
+            return null;
+        }
+
+        switch (expr)
+        {
+            case LuaTableExprSyntax:
+            {
+                return null;
+            }
+            case LuaLiteralExprSyntax { Literal: { } literal }:
+            {
+                return literal switch
+                {
+                    LuaIntegerToken { Value: var value } => new LuaIntegerLiteralType(value),
+                    LuaStringToken { Value: var value } => new LuaStringLiteralType(value),
+                    LuaFloatToken { Value: var value } => new LuaFloatLiteralType(value),
+                    LuaBoolToken => Builtin.Boolean,
+                    LuaNilToken => Builtin.Nil,
+                    _ => Builtin.Unknown
+                };
+            }
+            default:
+            {
+                return null;
+            }
+        }
     }
 }

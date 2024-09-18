@@ -26,6 +26,12 @@ public class LuaIntegerLiteralType(long value)
     public long Value { get; } = value;
 }
 
+public class LuaFloatLiteralType(double value)
+    : LuaType
+{
+    public double Value { get; } = value;
+}
+
 public class LuaElementType(SyntaxElementId id)
     : LuaType
 {
