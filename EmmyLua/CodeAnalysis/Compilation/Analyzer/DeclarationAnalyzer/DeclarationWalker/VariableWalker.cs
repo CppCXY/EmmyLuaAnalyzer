@@ -138,8 +138,7 @@ public partial class DeclarationWalker
                         builder.AddReference(ReferenceKind.Definition, declaration, nameExpr);
                         if (expr is not null && type is null)
                         {
-                            var unResolvedSymbol
-                                = new UnResolvedSymbol(
+                            var unResolvedSymbol = new UnResolvedSymbol(
                                     declaration,
                                     new LuaExprRef(expr, idx),
                                     ResolveState.UnResolvedType

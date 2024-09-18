@@ -1,6 +1,6 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer;
-using EmmyLua.CodeAnalysis.Compilation.Analyzer.AttachDocAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer;
+using EmmyLua.CodeAnalysis.Compilation.Analyzer.DocAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.FlowAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
 using EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;

@@ -1,6 +1,6 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DocAnalyzer;
 
 public class TypeContext
 {
-    
+
 }

@@ -79,7 +79,6 @@ public class LuaTypeManager(LuaCompilation compilation)
 
         LocalTypeInfos.Remove(documentId);
         RefDetailType.Remove(documentId);
-        RefDetailType.Remove(documentId);
     }
 
     public LuaTypeInfo? AddTypeDefinition(

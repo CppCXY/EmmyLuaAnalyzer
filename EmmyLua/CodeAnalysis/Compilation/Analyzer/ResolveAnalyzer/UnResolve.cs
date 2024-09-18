@@ -36,14 +36,14 @@ public record UnResolvedSymbol(
 //     ResolveState ResolvedState)
 //     : UnResolved(ResolvedState);
 
-public record UnResolvedDocOperator(
-    LuaTypeInfo TypeInfo,
-    LuaNamedType NamedType,
-    TypeOperatorKind Kind,
-    SyntaxElementId Id,
-    List<LuaTypeId> TypeIds,
-    ResolveState ResolvedState)
-    : UnResolved(ResolvedState);
+// public record UnResolvedDocOperator(
+//     LuaTypeInfo TypeInfo,
+//     LuaNamedType NamedType,
+//     TypeOperatorKind Kind,
+//     SyntaxElementId Id,
+//     List<LuaTypeId> TypeIds,
+//     ResolveState ResolvedState)
+//     : UnResolved(ResolvedState);
 
 public record UnResolvedMethod(SyntaxElementId Id, LuaBlockSyntax Block, ResolveState ResolvedState)
     : UnResolved(ResolvedState);

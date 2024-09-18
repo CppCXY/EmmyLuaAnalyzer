@@ -1,15 +1,12 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Declaration;
-using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Compilation.Type;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
-public class OperatorAnalyzer
+public partial class DeclarationWalker
 {
     private void AnalyzeTypeOperator(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
@@ -120,14 +117,14 @@ public class OperatorAnalyzer
         {
             if (overloadSyntax.TypeFunc is { UniqueId: { } id })
             {
-                var unResolved = new UnResolvedDocOperator(
-                    luaTypeInfo,
-                    namedType,
-                    TypeOperatorKind.Call,
-                    id,
-                    [new(id)],
-                    ResolveState.UnResolvedType
-                );
+                // var unResolved = new UnResolvedDocOperator(
+                //     luaTypeInfo,
+                //     namedType,
+                //     TypeOperatorKind.Call,
+                //     id,
+                //     [new(id)],
+                //     ResolveState.UnResolvedType
+                // );
                 // declarationContext.AddUnResolved(unResolved);
             }
         }
@@ -141,40 +138,35 @@ public class OperatorAnalyzer
         int paramCount
     )
     {
-        SyntaxElementId operatorId = operatorSyntax.Operator?.UniqueId ?? SyntaxElementId.Empty;
-
-        var typeIds = new List<LuaTypeId>();
-        if (operatorSyntax.Types is { } types)
+        switch (paramCount)
         {
-            foreach (var type in types)
+            case 1:
             {
-                if (paramCount <= 0)
+                var firstType = operatorSyntax.ParamTypes.FirstOrDefault();
+                var retType = operatorSyntax.ReturnType;
+                if (firstType is not null && retType is not null)
                 {
-                    break;
+                    var typeRef = builder.CreateRef(firstType);
+                    var returnTypeRef = builder.CreateRef(retType);
+                    var binaryOperator =
+                        new BinaryOperator(kind, namedType, typeRef, returnTypeRef, operatorSyntax.UniqueId);
+                    luaTypeInfo.AddOperator(kind, binaryOperator);
                 }
 
-                if (type.UniqueId is { } id)
+                break;
+            }
+            case 0:
+            {
+                var retType = operatorSyntax.ReturnType;
+                if (retType is not null)
                 {
-                    typeIds.Add(new(id));
+                    var returnTypeRef = builder.CreateRef(retType);
+                    var unaryOperator = new UnaryOperator(kind, namedType, returnTypeRef, operatorSyntax.UniqueId);
+                    luaTypeInfo.AddOperator(kind, unaryOperator);
                 }
 
-                paramCount--;
+                break;
             }
         }
-
-        if (operatorSyntax.ReturnType is { UniqueId: { } id2 })
-        {
-            typeIds.Add(new(id2));
-        }
-
-        var unResolved = new UnResolvedDocOperator(
-            luaTypeInfo,
-            namedType,
-            kind,
-            operatorId,
-            typeIds,
-            ResolveState.UnResolvedType
-        );
-        // declarationContext.AddUnResolved(unResolved);
     }
 }

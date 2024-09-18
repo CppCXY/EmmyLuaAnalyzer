@@ -1,6 +1,8 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
+using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -49,6 +51,23 @@ public partial class DeclarationWalker
                 }
 
                 var luaClass = new LuaNamedType(DocumentId, name.RepresentText);
+                if (tagClassSyntax.GenericDeclareList is { } genericDeclareList)
+                {
+                    AnalyzeTypeGenericParam(typeInfo, genericDeclareList);
+                }
+
+                if (tagClassSyntax.ExtendTypeList is { } extendList)
+                {
+                    AnalyzeTypeSupers(typeInfo, extendList);
+                }
+
+                if (tagClassSyntax.Body is { } body)
+                {
+                    AnalyzeTagDocBody(typeInfo, body);
+                }
+
+                AnalyzeTypeFields(typeInfo, tagClassSyntax);
+                AnalyzeTypeOperator(typeInfo, luaClass, tagClassSyntax);
                 AttachTypeToNext(luaClass, tagClassSyntax);
             }
         }
@@ -119,7 +138,6 @@ public partial class DeclarationWalker
             var luaEnum = new LuaNamedType(DocumentId, name.RepresentText);
             AttachTypeToNext(luaEnum, tagEnumSyntax);
         }
-
     }
 
     private void AnalyzeTagInterface(LuaDocTagInterfaceSyntax tagInterfaceSyntax)
@@ -127,13 +145,13 @@ public partial class DeclarationWalker
         if (tagInterfaceSyntax is { Name: { } name })
         {
             var attribute = GetAttribute(tagInterfaceSyntax);
-            var luaTypeInfo = builder.TypeManager.AddTypeDefinition(
+            var typeInfo = builder.TypeManager.AddTypeDefinition(
                 tagInterfaceSyntax,
                 name.RepresentText,
                 NamedTypeKind.Interface,
                 attribute);
 
-            if (luaTypeInfo is null)
+            if (typeInfo is null)
             {
                 builder.AddDiagnostic(new Diagnostic(
                     DiagnosticSeverity.Error,
@@ -145,6 +163,23 @@ public partial class DeclarationWalker
             }
 
             var luaInterface = new LuaNamedType(DocumentId, name.RepresentText);
+            if (tagInterfaceSyntax.GenericDeclareList is { } genericDeclareList)
+            {
+                AnalyzeTypeGenericParam(typeInfo, genericDeclareList);
+            }
+
+            if (tagInterfaceSyntax.ExtendTypeList is { } extendList)
+            {
+                AnalyzeTypeSupers(typeInfo, extendList);
+            }
+
+            if (tagInterfaceSyntax.Body is { } body)
+            {
+                AnalyzeTagDocBody(typeInfo, body);
+            }
+
+            AnalyzeTypeFields(typeInfo, tagInterfaceSyntax);
+            AnalyzeTypeOperator(typeInfo, luaInterface, tagInterfaceSyntax);
             AttachTypeToNext(luaInterface, tagInterfaceSyntax);
         }
     }
@@ -281,5 +316,135 @@ public partial class DeclarationWalker
         }
 
         return attribute;
+    }
+
+    private void AnalyzeTypeSupers(LuaTypeInfo luaTypeInfo, IEnumerable<LuaDocTypeSyntax> extendList)
+    {
+        foreach (var extend in extendList)
+        {
+            if (extend is LuaDocNameTypeSyntax or LuaDocGenericTypeSyntax)
+            {
+                var type = builder.CreateRef(extend);
+                luaTypeInfo.AddSuper(type);
+            }
+        }
+    }
+
+    private void AnalyzeTypeGenericParam(
+        LuaTypeInfo luaTypeInfo,
+        LuaDocGenericDeclareListSyntax generic
+    )
+    {
+        foreach (var param in generic.Params)
+        {
+            if (param is { Name: { } name })
+            {
+                var type = param.Type is not null ? new LuaTypeRef(LuaTypeId.Create(param.Type)) : null;
+                var declaration = new LuaSymbol(
+                    name.RepresentText,
+                    type,
+                    new GenericParamInfo(new(param)));
+                luaTypeInfo.AddGenericParameter(declaration);
+            }
+        }
+    }
+
+    private LuaSymbol? AnalyzeDocDetailField(LuaDocFieldSyntax field)
+    {
+        var visibility = field.Visibility;
+        var readonlyFlag = field.ReadOnly;
+        switch (field)
+        {
+            case { NameField: { } nameField, Type: { } type1 }:
+            {
+                var symbol = new LuaSymbol(
+                    nameField.RepresentText,
+                    new LuaTypeRef(LuaTypeId.Create(type1)),
+                    new DocFieldInfo(new(field)),
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
+                    GetVisibility(visibility)
+                );
+                return symbol;
+            }
+            case { IntegerField: { } integerField, Type: { } type2 }:
+            {
+                var symbol = new LuaSymbol(
+                    $"[{integerField.Value}]",
+                    new LuaTypeRef(LuaTypeId.Create(type2)),
+                    new DocFieldInfo(new(field)),
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
+                    GetVisibility(visibility)
+                );
+                return symbol;
+            }
+            case { StringField: { } stringField, Type: { } type3 }:
+            {
+                var symbol = new LuaSymbol(
+                    stringField.Value,
+                    new LuaTypeRef(LuaTypeId.Create(type3)),
+                    new DocFieldInfo(new(field)),
+                    readonlyFlag ? SymbolFeature.Readonly : SymbolFeature.None,
+                    GetVisibility(visibility)
+                );
+                return symbol;
+            }
+        }
+
+        return null;
+    }
+
+    private void AnalyzeTypeFields(LuaTypeInfo luaTypeInfo, LuaDocTagSyntax typeTag)
+    {
+        foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
+        {
+            if (tagField.Field is not null)
+            {
+                if (tagField.Field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
+                {
+                    var keyType = builder.CreateRef(typeField);
+                    var valueType = builder.CreateRef(type);
+                    luaTypeInfo.AddOperator(TypeOperatorKind.Index,
+                        new IndexOperator(keyType, valueType, id));
+                    continue;
+                }
+
+                if (AnalyzeDocDetailField(tagField.Field) is { } fieldSymbol)
+                {
+                    luaTypeInfo.AddDeclaration(fieldSymbol);
+                }
+            }
+        }
+    }
+
+    private void AnalyzeTagDocBody(LuaTypeInfo luaTypeInfo, LuaDocBodySyntax docBody)
+    {
+        foreach (var field in docBody.FieldList)
+        {
+            if (field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
+            {
+                var keyType = builder.CreateRef(typeField);
+                var valueType = builder.CreateRef(type);
+                luaTypeInfo.AddOperator(TypeOperatorKind.Index,
+                    new IndexOperator(keyType, valueType, id));
+                continue;
+            }
+
+            if (AnalyzeDocDetailField(field) is { } fieldSymbol)
+            {
+                luaTypeInfo.AddDeclaration(fieldSymbol);
+            }
+        }
+    }
+
+    private static SymbolVisibility GetVisibility(VisibilityKind visibility)
+    {
+        return visibility switch
+        {
+            VisibilityKind.Public => SymbolVisibility.Public,
+            VisibilityKind.Protected => SymbolVisibility.Protected,
+            VisibilityKind.Private => SymbolVisibility.Private,
+            VisibilityKind.Package => SymbolVisibility.Package,
+            _ => SymbolVisibility.Public
+        };
     }
 }

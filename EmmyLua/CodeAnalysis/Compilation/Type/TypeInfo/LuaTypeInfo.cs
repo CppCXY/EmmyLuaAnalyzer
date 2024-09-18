@@ -19,7 +19,7 @@ public abstract class LuaTypeInfo
 
     public abstract TypeComputer? TypeCompute { get; }
 
-    public abstract List<LuaNamedType>? Supers { get; }
+    public abstract List<LuaTypeRef>? Supers { get; }
 
     public abstract Dictionary<string, LuaSymbol>? Declarations { get; }
 
@@ -49,7 +49,7 @@ public abstract class LuaTypeInfo
 
     public abstract void AddImplement(LuaSymbol luaSymbol);
 
-    public abstract void AddSuper(LuaNamedType super);
+    public abstract void AddSuper(LuaTypeRef super);
 
     public abstract void AddOperator(TypeOperatorKind kind, TypeOperator typeOperator);
 

@@ -30,9 +30,9 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
 
     public override TypeComputer? TypeCompute => null;
 
-    private List<LuaNamedType>? _supers = null;
+    private List<LuaTypeRef>? _supers = null;
 
-    public override List<LuaNamedType>? Supers => _supers;
+    public override List<LuaTypeRef>? Supers => _supers;
 
     private Dictionary<string, LuaSymbol> _declarations = new();
 
@@ -108,7 +108,7 @@ public class LuaLocalTypeInfo(SyntaxElementId elementId, NamedTypeKind kind, Lua
         }
     }
 
-    public override void AddSuper(LuaNamedType super)
+    public override void AddSuper(LuaTypeRef super)
     {
         if (IsDefinedInDocument(super.DocumentId))
         {

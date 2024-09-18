@@ -150,14 +150,13 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
             Id);
 }
 
-public class IndexOperator(LuaType type, LuaType key, LuaType ret, SyntaxElementId id)
+public class IndexOperator(LuaType key, LuaType ret, SyntaxElementId id)
     : TypeOperator(TypeOperatorKind.Index, id)
 {
-    public LuaType Type { get; } = type;
     public LuaType Key { get; } = key;
     public LuaType Ret { get; } = ret;
 
     public override TypeOperator Instantiate(TypeSubstitution substitution) =>
-        new IndexOperator(Type.Instantiate(substitution), Key.Instantiate(substitution),
+        new IndexOperator(Key.Instantiate(substitution),
             Ret.Instantiate(substitution), Id);
 }

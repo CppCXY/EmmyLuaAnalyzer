@@ -153,7 +153,7 @@ public class LuaDocTagOperatorSyntax(int index, LuaSyntaxTree tree) : LuaDocTagS
 {
     public LuaNameToken? Operator => FirstChild<LuaNameToken>();
 
-    public IEnumerable<LuaDocTypeSyntax> Types => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon);
+    public IEnumerable<LuaDocTypeSyntax> ParamTypes => ChildNodesBeforeToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon);
 
     public LuaDocTypeSyntax? ReturnType => ChildNodeAfterToken<LuaDocTypeSyntax>(LuaTokenKind.TkColon);
 }

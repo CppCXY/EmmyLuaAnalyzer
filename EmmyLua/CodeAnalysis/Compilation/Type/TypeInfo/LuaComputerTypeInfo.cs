@@ -25,7 +25,7 @@ public class LuaComputerTypeInfo(SyntaxElementId id, TypeComputer typeComputer) 
 
     public override TypeComputer TypeCompute => typeComputer;
 
-    public override List<LuaNamedType>? Supers => null;
+    public override List<LuaTypeRef>? Supers => null;
 
     public override Dictionary<string, LuaSymbol>? Declarations => null;
 
@@ -64,7 +64,7 @@ public class LuaComputerTypeInfo(SyntaxElementId id, TypeComputer typeComputer) 
     {
     }
 
-    public override void AddSuper(LuaNamedType super)
+    public override void AddSuper(LuaTypeRef super)
     {
     }
 
