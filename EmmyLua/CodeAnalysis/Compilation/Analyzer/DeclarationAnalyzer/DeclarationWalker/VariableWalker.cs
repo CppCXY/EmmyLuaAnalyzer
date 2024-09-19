@@ -17,11 +17,7 @@ public partial class DeclarationWalker
         for (var i = 0; i < nameExprPairs.Count; i++)
         {
             var (localName, (expr, idx)) = nameExprPairs[i];
-            var exprType = SimpleInfer(expr, idx);
-            var type = attachedTypes.Count > i ? attachedTypes[i] : exprType;
-            if (type is LuaNamedType namedType && expr is LuaTableExprSyntax tableExpr)
-            {
-            }
+            var type = ResolveVariableType(attachedTypes, i, expr, idx);
 
             if (localName is { Name: { } name })
             {
@@ -123,11 +119,7 @@ public partial class DeclarationWalker
         for (var i = 0; i < varExprPairs.Count; i++)
         {
             var (varExpr, (expr, idx)) = varExprPairs[i];
-            var exprType = SimpleInfer(expr, idx);
-            var type = attachedTypes.Count > i ? attachedTypes[i] : exprType;
-            if (type is LuaNamedType namedType && expr is LuaTableExprSyntax tableExpr)
-            {
-            }
+            var type = ResolveVariableType(attachedTypes, i, expr, idx);
 
             switch (varExpr)
             {
@@ -205,17 +197,19 @@ public partial class DeclarationWalker
 
         switch (expr)
         {
-            case LuaTableExprSyntax:
+            case LuaTableExprSyntax tableExprSyntax:
             {
-                return null;
+                AnalyzeTableExpr(tableExprSyntax);
+                var elementType = new LuaElementType(tableExprSyntax.UniqueId);
+                return elementType;
             }
             case LuaLiteralExprSyntax { Literal: { } literal }:
             {
                 return literal switch
                 {
-                    LuaIntegerToken { Value: var value } => new LuaIntegerLiteralType(value),
-                    LuaStringToken { Value: var value } => new LuaStringLiteralType(value),
-                    LuaFloatToken { Value: var value } => new LuaFloatLiteralType(value),
+                    LuaIntegerToken  => Builtin.Integer,
+                    LuaStringToken  => Builtin.String,
+                    LuaFloatToken  => Builtin.Number,
                     LuaBoolToken => Builtin.Boolean,
                     LuaNilToken => Builtin.Nil,
                     _ => Builtin.Unknown
@@ -226,5 +220,27 @@ public partial class DeclarationWalker
                 return null;
             }
         }
+    }
+
+    private LuaType? ResolveVariableType(List<LuaType> attachedTypes, int idx, LuaExprSyntax? expr, int retIdx)
+    {
+        var exprType = SimpleInfer(expr, retIdx);
+        var type = attachedTypes.Count > idx ? attachedTypes[idx] : exprType;
+        if (type != exprType &&
+            (type is LuaNamedType namedType && namedType.DocumentId == DocumentId) &&
+            exprType is LuaElementType elementType)
+        {
+            var typeInfo = builder.TypeManager.FindTypeInfo(namedType);
+            var elementTypeInfo = builder.TypeManager.FindTypeInfo(elementType.Id);
+            if (typeInfo is not null && elementTypeInfo is { Declarations.Values: {} declarations})
+            {
+                foreach (var declaration in declarations)
+                {
+                    typeInfo.AddDeclaration(declaration);
+                }
+            }
+        }
+
+        return type;
     }
 }

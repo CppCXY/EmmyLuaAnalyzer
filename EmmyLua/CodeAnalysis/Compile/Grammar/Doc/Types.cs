@@ -241,7 +241,7 @@ public static class TypesParser
                     pcm = m.Complete(p, LuaSyntaxKind.TypeExpand);
                     return;
                 }
-                case LuaTokenKind.TkTypeTemplate:
+                case LuaTokenKind.TkStringTemplateType:
                 {
                     if (pcm.Kind != LuaSyntaxKind.TypeName)
                     {
@@ -270,7 +270,7 @@ public static class TypesParser
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkDocBoolean => LiteralType(p),
             LuaTokenKind.TkName => FuncOrNameType(p),
-            LuaTokenKind.TkTypeTemplate => TemplateType(p),
+            LuaTokenKind.TkStringTemplateType => TemplateType(p),
             LuaTokenKind.TkDots => VariadicType(p),
             _ => CompleteMarker.Empty
         };

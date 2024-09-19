@@ -7,16 +7,21 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private List<SourceRange> TableIgnoreRanges { get; } = new();
+    private RangeCollection TableIgnoreRanges { get; } = new();
 
     private void AnalyzeTableExpr(LuaTableExprSyntax tableExprSyntax)
     {
-        if (IsIgnoreTable(tableExprSyntax))
+        if (TableIgnoreRanges.Contains(tableExprSyntax.Range.StartOffset))
         {
             return;
         }
 
         var localTypeInfo = builder.TypeManager.AddLocalTypeInfo(tableExprSyntax.UniqueId);
+        if (localTypeInfo is null)
+        {
+            return;
+        }
+
         var fieldList = tableExprSyntax.FieldList.ToList();
         for (var i = 0; i < fieldList.Count; i++)
         {
@@ -24,82 +29,31 @@ public partial class DeclarationWalker
             if (i == 0 && fieldSyntax.IsValue)
             {
                 // builder.TypeManager.AddLocalTypeInfo(fieldSyntax.UniqueId);
-                TableIgnoreRanges.Add(tableExprSyntax.Range);
+                TableIgnoreRanges.AddRange(tableExprSyntax.Range);
                 return;
             }
 
             if (fieldSyntax is { Name: { } fieldName, Value: { } value })
             {
+                var attachedTypes = GetAttachedTypes(fieldSyntax);
+                var type = ResolveVariableType(attachedTypes, 0, value, 0);
                 var declaration = new LuaSymbol(
                     fieldName,
-                    null,
+                    type,
                     new TableFieldInfo(new(fieldSyntax)));
                 builder.AddAttachedDeclaration(fieldSyntax, declaration);
                 localTypeInfo.AddDeclaration(declaration);
-                var unResolveDeclaration = new UnResolvedSymbol(
-                    declaration,
-                    new LuaExprRef(value),
-                    ResolveState.UnResolvedType
-                );
-                builder.AddUnResolved(unResolveDeclaration);
                 builder.ProjectIndex.AddTableField(DocumentId, fieldSyntax);
+                if (type is not null)
+                {
+                    var unResolveDeclaration = new UnResolvedSymbol(
+                        declaration,
+                        new LuaExprRef(value),
+                        ResolveState.UnResolvedType
+                    );
+                    builder.AddUnResolved(unResolveDeclaration);
+                }
             }
         }
-    }
-
-    // private void AnalyzeArrayTableExpr(LuaArrayTableExprSyntax arrayTableExprSyntax)
-    // {
-    //     if (IsIgnoreTable(arrayTableExprSyntax))
-    //     {
-    //         return;
-    //     }
-    //
-    //     builder.TypeManager.AddLocalTypeInfo(arrayTableExprSyntax.UniqueId);
-    //     var fields = new List<LuaSymbol>();
-    //     var fieldList = arrayTableExprSyntax.FieldList.ToList();
-    //     for (var i = 0; i < fieldList.Count; i++)
-    //     {
-    //         var fieldSyntax = fieldList[i];
-    //         if (fieldSyntax is { Value: { } value })
-    //         {
-    //             var declaration = new LuaSymbol(
-    //                 null,
-    //                 null,
-    //                 new TableFieldInfo(new(fieldSyntax)));
-    //             builder.AddAttachedDeclaration(fieldSyntax, declaration);
-    //             fields.Add(declaration);
-    //             var unResolveDeclaration = new UnResolvedSymbol(
-    //                 declaration,
-    //                 new LuaExprRef(value),
-    //                 ResolveState.UnResolvedType
-    //             );
-    //             builder.AddUnResolved(unResolveDeclaration);
-    //             builder.ProjectIndex.AddTableField(DocumentId, fieldSyntax);
-    //         }
-    //     }
-    //
-    //     if (fields.Count > 0)
-    //     {
-    //         builder.TypeManager.AddElementMembers(arrayTableExprSyntax.UniqueId, fields);
-    //     }
-    // }
-
-    private bool IsIgnoreTable(LuaTableExprSyntax tableExprSyntax)
-    {
-        if (TableIgnoreRanges.Count == 0)
-        {
-            return false;
-        }
-
-        var tableRange = tableExprSyntax.Range;
-        foreach (var range in TableIgnoreRanges)
-        {
-            if (range.Intersect(tableRange))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

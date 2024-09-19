@@ -184,7 +184,7 @@ public class NamespaceOrTypeInfo
         return null;
     }
 
-    public LuaComputerTypeInfo? CreateComputerTypeInfo(SyntaxElementId elementId, LuaDocTagClassSyntax tagClass)
+    public LuaComputerTypeInfo? CreateComputerTypeInfo(SyntaxElementId elementId, LuaDocTagAliasSyntax tagAlias)
     {
         if (TypeInfo is not null)
         {
@@ -192,7 +192,7 @@ public class NamespaceOrTypeInfo
         }
 
         var genericList = new List<string>();
-        if (tagClass.GenericDeclareList?.Params is { } genericParamSyntaxes)
+        if (tagAlias.GenericDeclareList?.Params is { } genericParamSyntaxes)
         {
             foreach (var genericParamSyntax in genericParamSyntaxes)
             {
@@ -203,7 +203,7 @@ public class NamespaceOrTypeInfo
             }
         }
 
-        var typeSyntax = tagClass.ExtendTypeList.FirstOrDefault();
+        var typeSyntax = tagAlias.Type;
         if (typeSyntax is null)
         {
             return null;

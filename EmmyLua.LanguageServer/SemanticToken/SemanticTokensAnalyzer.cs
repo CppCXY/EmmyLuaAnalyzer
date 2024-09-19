@@ -197,7 +197,7 @@ public class SemanticTokensAnalyzer
                 builder.Push(token, SemanticTokenTypes.Comment);
                 break;
             }
-            case LuaTokenKind.TkTypeTemplate:
+            case LuaTokenKind.TkStringTemplateType:
             {
                 builder.Push(token, SemanticTokenTypes.String, SemanticTokenModifiers.Abstract);
                 break;

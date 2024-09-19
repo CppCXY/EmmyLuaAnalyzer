@@ -100,11 +100,11 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
     }
 
-    public LuaLocalTypeInfo AddLocalTypeInfo(SyntaxElementId id)
+    public LuaLocalTypeInfo? AddLocalTypeInfo(SyntaxElementId id)
     {
-        if (LocalTypeInfos.Query(id) is { } typeInfo)
+        if (LocalTypeInfos.ContainsKey(id))
         {
-            return typeInfo;
+            return null;
         }
 
         var newTypeInfo = new LuaLocalTypeInfo(id, NamedTypeKind.None, LuaTypeAttribute.Exact);
@@ -112,18 +112,18 @@ public class LuaTypeManager(LuaCompilation compilation)
         return newTypeInfo;
     }
 
-    public LuaTypeInfo? AddTypeComputer(LuaDocTagClassSyntax docTagClassSyntax, string name)
+    public LuaTypeInfo? AddTypeComputer(LuaDocTagAliasSyntax docTagAliasSyntax, string name)
     {
-        if (NamespaceIndices.TryGetValue(docTagClassSyntax.DocumentId, out var namespaceIndex))
+        if (NamespaceIndices.TryGetValue(docTagAliasSyntax.DocumentId, out var namespaceIndex))
         {
             var namespaceInfo = RootNamespace.FindOrCreate(namespaceIndex.FullName);
             var typeInfo = namespaceInfo.FindOrCreate(name);
-            return typeInfo.CreateComputerTypeInfo(docTagClassSyntax.UniqueId, docTagClassSyntax);
+            return typeInfo.CreateComputerTypeInfo(docTagAliasSyntax.UniqueId, docTagAliasSyntax);
         }
         else
         {
             var typeInfo = RootNamespace.FindOrCreate(name);
-            return typeInfo.CreateComputerTypeInfo(docTagClassSyntax.UniqueId, docTagClassSyntax);
+            return typeInfo.CreateComputerTypeInfo(docTagAliasSyntax.UniqueId, docTagAliasSyntax);
         }
     }
 

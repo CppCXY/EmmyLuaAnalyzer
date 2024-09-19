@@ -400,12 +400,18 @@ public static class TagParser
         p.Bump();
         try
         {
-            if (p.Current is LuaTokenKind.TkLeftParen)
-            {
-                Attribute(p);
-            }
+            // alias 没有attribute
+            // if (p.Current is LuaTokenKind.TkLeftParen)
+            // {
+            //     Attribute(p);
+            // }
 
             p.Expect(LuaTokenKind.TkName);
+            if (p.Current is LuaTokenKind.TkLt)
+            {
+                GenericDeclareList(p);
+            }
+
             TypesParser.Type(p, TypesParser.TypeParseFeature.AllowContinue | TypesParser.TypeParseFeature.CompactLuaLs);
             DescriptionParser.Description(p);
             return m.Complete(p, LuaSyntaxKind.DocAlias);

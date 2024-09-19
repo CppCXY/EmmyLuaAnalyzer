@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Type;
+namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
 public static class TypeDeclarationInfer
 {

@@ -39,6 +39,11 @@ public class InFileIndex<TKey, TValue> where TKey : notnull
         return _map.GetValueOrDefault(key);
     }
 
+    public bool ContainsKey(TKey key)
+    {
+        return _map.ContainsKey(key);
+    }
+
     public IEnumerable<TValue> QueryAll(LuaDocumentId documentId)
     {
         if (_documentKeys.TryGetValue(documentId, out var keys))

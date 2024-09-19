@@ -120,7 +120,7 @@ public static class SyntaxFactory
             LuaTokenKind.TkName => new LuaNameToken(index, tree),
             LuaTokenKind.TkWhitespace => new LuaWhitespaceToken(index, tree),
             LuaTokenKind.TkVersionNumber => new LuaVersionNumberToken(index, tree),
-            LuaTokenKind.TkTypeTemplate => new LuaTemplateTypeToken(index, tree),
+            LuaTokenKind.TkStringTemplateType => new LuaTemplateTypeToken(index, tree),
             _ => new LuaSyntaxToken(index, tree)
         };
     }

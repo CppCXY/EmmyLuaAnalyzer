@@ -351,7 +351,7 @@ public class LuaDocLexer(LuaDocument document)
                     Reader.Bump();
                 }
 
-                return LuaTokenKind.TkTypeTemplate;
+                return LuaTokenKind.TkStringTemplateType;
             }
             case var ch when LuaLexer.IsNameStart(ch):
             {

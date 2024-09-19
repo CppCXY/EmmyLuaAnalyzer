@@ -65,6 +65,8 @@ public class LuaDocTagInterfaceSyntax(int index, LuaSyntaxTree tree) : LuaDocTag
 
 public class LuaDocTagAliasSyntax(int index, LuaSyntaxTree tree) : LuaDocTagNamedTypeSyntax(index, tree)
 {
+    public LuaDocGenericDeclareListSyntax? GenericDeclareList => FirstChild<LuaDocGenericDeclareListSyntax>();
+
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }
 

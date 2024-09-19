@@ -3,56 +3,36 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
-public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Doc")
+public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation, "Type")
 {
     public override void Analyze(AnalyzeContext analyzeContext)
     {
         foreach (var document in analyzeContext.LuaDocuments)
         {
-            var comments = document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaCommentSyntax>();
-            foreach (var comment in comments)
+            var typeContext = new TypeContext(Compilation);
+            var docTypes = document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaDocTypeSyntax>();
+            foreach (var docType in docTypes)
             {
-                AnalyzeComment(comment);
-            }
-        }
-    }
-
-    private void AnalyzeComment(LuaCommentSyntax commentSyntax)
-    {
-        foreach (var tagDoc in commentSyntax.DocList)
-        {
-            switch (tagDoc)
-            {
-                case LuaDocTagClassSyntax classSyntax:
+                if (typeContext.IsIgnoreRange(docType.Range))
                 {
-                    AnalyzeClass(classSyntax);
-                    break;
+                    continue;
                 }
+
+                typeContext.AddIgnoreRange(docType.Range);
+                CompileType(docType, typeContext);
             }
+
         }
     }
 
-    private void AnalyzeClass(LuaDocTagClassSyntax classSyntax)
+    private LuaType? CompileType(LuaDocTypeSyntax docTypeSyntax, TypeContext context)
     {
-        if (classSyntax.Name?.RepresentText is not { } className)
+        switch (docTypeSyntax)
         {
-            return;
+            case LuaDocNameTypeSyntax nameTypeSyntax:
+                CompileNameType(nameType, context);
+                break;
         }
-
-        var classType = new LuaNamedType(classSyntax.DocumentId, className);
-        var classTypeInfo = Compilation.TypeManager.FindTypeInfo(classType);
-        if (classTypeInfo is null)
-        {
-            return;
-        }
-
-        if (classTypeInfo.TypeCompute is not null)
-        {
-            return;
-        }
-
-
     }
-
 
 }

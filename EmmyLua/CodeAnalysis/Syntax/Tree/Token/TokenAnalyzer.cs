@@ -40,7 +40,7 @@ public static class TokenAnalyzer
                     CalculateVersionNumber(index, tree);
                     break;
                 }
-                case LuaTokenKind.TkTypeTemplate:
+                case LuaTokenKind.TkStringTemplateType:
                 {
                     CalculateTemplateType(index, tree);
                     break;

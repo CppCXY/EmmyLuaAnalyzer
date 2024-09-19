@@ -16,75 +16,51 @@ public partial class DeclarationWalker
         if (tagClassSyntax is { Name: { } name })
         {
             var attribute = GetAttribute(tagClassSyntax);
-            var isTypeCompute = tagClassSyntax.ExtendTypeList
-                .Any(typeSyntax => typeSyntax is not LuaDocNameTypeSyntax && typeSyntax is not LuaDocGenericTypeSyntax);
 
-            if (isTypeCompute)
+
+            var typeInfo = builder.TypeManager.AddTypeDefinition(
+                tagClassSyntax,
+                name.RepresentText,
+                NamedTypeKind.Class,
+                attribute);
+            if (typeInfo is null)
             {
-                var typeInfo = builder.TypeManager.AddTypeComputer(tagClassSyntax, name.RepresentText);
-                if (typeInfo is null)
-                {
-                    builder.AddDiagnostic(new Diagnostic(
-                        DiagnosticSeverity.Error,
-                        DiagnosticCode.DuplicateType,
-                        $"Type '{name.RepresentText}' already exists",
-                        name.Range
-                    ));
-                }
+                builder.AddDiagnostic(new Diagnostic(
+                    DiagnosticSeverity.Error,
+                    DiagnosticCode.DuplicateType,
+                    $"Type '{name.RepresentText}' already exists",
+                    name.Range
+                ));
+                return;
             }
-            else
+
+            var luaClass = new LuaNamedType(DocumentId, name.RepresentText);
+            if (tagClassSyntax.GenericDeclareList is { } genericDeclareList)
             {
-                var typeInfo = builder.TypeManager.AddTypeDefinition(
-                    tagClassSyntax,
-                    name.RepresentText,
-                    NamedTypeKind.Class,
-                    attribute);
-                if (typeInfo is null)
-                {
-                    builder.AddDiagnostic(new Diagnostic(
-                        DiagnosticSeverity.Error,
-                        DiagnosticCode.DuplicateType,
-                        $"Type '{name.RepresentText}' already exists",
-                        name.Range
-                    ));
-                    return;
-                }
-
-                var luaClass = new LuaNamedType(DocumentId, name.RepresentText);
-                if (tagClassSyntax.GenericDeclareList is { } genericDeclareList)
-                {
-                    AnalyzeTypeGenericParam(typeInfo, genericDeclareList);
-                }
-
-                if (tagClassSyntax.ExtendTypeList is { } extendList)
-                {
-                    AnalyzeTypeSupers(typeInfo, extendList);
-                }
-
-                if (tagClassSyntax.Body is { } body)
-                {
-                    AnalyzeTagDocBody(typeInfo, body);
-                }
-
-                AnalyzeTypeFields(typeInfo, tagClassSyntax);
-                AnalyzeTypeOperator(typeInfo, luaClass, tagClassSyntax);
-                AttachTypeToNext(luaClass, tagClassSyntax);
+                AnalyzeTypeGenericParam(typeInfo, genericDeclareList);
             }
+
+            if (tagClassSyntax.ExtendTypeList is { } extendList)
+            {
+                AnalyzeTypeSupers(typeInfo, extendList);
+            }
+
+            if (tagClassSyntax.Body is { } body)
+            {
+                AnalyzeTagDocBody(typeInfo, body);
+            }
+
+            AnalyzeTypeFields(typeInfo, tagClassSyntax);
+            AnalyzeTypeOperator(typeInfo, luaClass, tagClassSyntax);
+            AttachTypeToNext(luaClass, tagClassSyntax);
         }
     }
 
     private void AnalyzeTagAlias(LuaDocTagAliasSyntax tagAliasSyntax)
     {
-        if (tagAliasSyntax is { Name: { } name, Type: { } type })
+        if (tagAliasSyntax is { Name: { } name })
         {
-            var attribute = GetAttribute(tagAliasSyntax);
-            var typeInfo = builder.TypeManager.AddTypeDefinition(
-                tagAliasSyntax,
-                name.RepresentText,
-                NamedTypeKind.Alias,
-                attribute);
-
-            typeInfo?.AddBaseType(builder.CreateRef(type));
+            var typeInfo = builder.TypeManager.AddTypeComputer(tagAliasSyntax, name.RepresentText);
             if (typeInfo is null)
             {
                 builder.AddDiagnostic(new Diagnostic(
@@ -94,9 +70,6 @@ public partial class DeclarationWalker
                     name.Range
                 ));
             }
-
-            var luaAlias = new LuaNamedType(DocumentId, name.RepresentText);
-            AttachTypeToNext(luaAlias, tagAliasSyntax);
         }
     }
 
