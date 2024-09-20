@@ -5,11 +5,11 @@ public class LuaUnionType(IEnumerable<LuaType> unionTypes)
 {
     public List<LuaType> UnionTypes { get; } = unionTypes.ToList();
 
-    public override LuaType Instantiate(TypeSubstitution substitution)
-    {
-        var newUnionTypes = UnionTypes.Select(t => t.Instantiate(substitution));
-        return new LuaUnionType(newUnionTypes);
-    }
+    // public override LuaType Instantiate(TypeSubstitution substitution)
+    // {
+    //     var newUnionTypes = UnionTypes.Select(t => t.Instantiate(substitution));
+    //     return new LuaUnionType(newUnionTypes);
+    // }
 }
 
 public class LuaTupleType(List<LuaType> typeList)
@@ -17,13 +17,13 @@ public class LuaTupleType(List<LuaType> typeList)
 {
     public List<LuaType> TypeList { get; } = typeList;
 
-    public override LuaType Instantiate(TypeSubstitution substitution)
-    {
-        var newTupleTypes = TypeList
-            .Select(t => t.Instantiate(substitution))
-            .ToList();
-        return new LuaTupleType(newTupleTypes);
-    }
+    // public override LuaType Instantiate(TypeSubstitution substitution)
+    // {
+    //     var newTupleTypes = TypeList
+    //         .Select(t => t.Instantiate(substitution))
+    //         .ToList();
+    //     return new LuaTupleType(newTupleTypes);
+    // }
 }
 
 public class LuaArrayType(LuaType baseType)
@@ -31,11 +31,11 @@ public class LuaArrayType(LuaType baseType)
 {
     public LuaType BaseType { get; } = baseType;
 
-    public override LuaType Instantiate(TypeSubstitution substitution)
-    {
-        var newBaseType = BaseType.Instantiate(substitution);
-        return new LuaArrayType(newBaseType);
-    }
+    // public override LuaType Instantiate(TypeSubstitution substitution)
+    // {
+    //     var newBaseType = BaseType.Instantiate(substitution);
+    //     return new LuaArrayType(newBaseType);
+    // }
 }
 
 public class LuaVariadicType(LuaType baseType)
@@ -43,11 +43,11 @@ public class LuaVariadicType(LuaType baseType)
 {
     public LuaType BaseType { get; } = baseType;
 
-    public override LuaType Instantiate(TypeSubstitution substitution)
-    {
-        var newBaseType = BaseType.Instantiate(substitution);
-        return new LuaVariadicType(newBaseType);
-    }
+    // public override LuaType Instantiate(TypeSubstitution substitution)
+    // {
+    //     var newBaseType = BaseType.Instantiate(substitution);
+    //     return new LuaVariadicType(newBaseType);
+    // }
 }
 
 public class InstanceType(LuaType baseType)
@@ -55,11 +55,11 @@ public class InstanceType(LuaType baseType)
 {
     public LuaType BaseType { get; } = baseType;
 
-    public override LuaType Instantiate(TypeSubstitution substitution)
-    {
-        var newBaseType = BaseType.Instantiate(substitution);
-        return new InstanceType(newBaseType);
-    }
+    // public override LuaType Instantiate(TypeSubstitution substitution)
+    // {
+    //     var newBaseType = BaseType.Instantiate(substitution);
+    //     return new InstanceType(newBaseType);
+    // }
 }
 
 public class EnumInstanceType(LuaNamedType enumType, LuaType? baseType)

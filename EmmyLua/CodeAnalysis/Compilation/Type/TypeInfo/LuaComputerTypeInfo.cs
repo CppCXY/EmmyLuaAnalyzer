@@ -1,13 +1,13 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Search;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
-using EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
+using EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
-public class LuaComputerTypeInfo(SyntaxElementId id, TypeComputer typeComputer) : LuaTypeInfo
+public class LuaAliasTypeInfo(SyntaxElementId id, TypeComputer typeComputer) : LuaTypeInfo
 {
     private SyntaxElementId _elementId = id;
 
@@ -33,7 +33,7 @@ public class LuaComputerTypeInfo(SyntaxElementId id, TypeComputer typeComputer) 
 
     public override Dictionary<TypeOperatorKind, List<TypeOperator>>? Operators => null;
 
-    public override NamedTypeKind Kind => NamedTypeKind.TypeCompute;
+    public override NamedTypeKind Kind => NamedTypeKind.Alias;
 
     public override LuaTypeAttribute Attribute => LuaTypeAttribute.None;
 

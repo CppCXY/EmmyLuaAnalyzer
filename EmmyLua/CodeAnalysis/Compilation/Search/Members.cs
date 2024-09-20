@@ -19,7 +19,7 @@ public class Members(SearchContext context)
         {
             LuaGenericType genericType => GetGenericTypeMembers(genericType),
             LuaNamedType namedType => GetNamedTypeMembers(namedType),
-            LuaElementType elementType => GetElementTypeMembers(elementType),
+            LuaElementRef elementType => GetElementTypeMembers(elementType),
             GlobalNameType globalType => GetGlobalTypeMembers(globalType),
             LuaUnionType unionType => unionType.UnionTypes.SelectMany(GetTypeMembers).ToList(),
             LuaTupleType tupleType => GetTupleTypeMembers(tupleType),
@@ -141,9 +141,9 @@ public class Members(SearchContext context)
         return members.Values.ToList();
     }
 
-    private List<LuaSymbol> GetElementTypeMembers(LuaElementType elementType)
+    private List<LuaSymbol> GetElementTypeMembers(LuaElementRef elementRef)
     {
-        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementRef.Id);
         if (typeInfo is null)
         {
             return [];

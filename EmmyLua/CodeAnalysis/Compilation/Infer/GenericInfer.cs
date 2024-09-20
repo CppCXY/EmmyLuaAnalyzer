@@ -127,7 +127,7 @@ public static class GenericInfer
                 }
             }
         }
-        else if (exprType is LuaElementType elementType &&
+        else if (exprType is LuaElementRef elementType &&
                  elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
             if (substitution.IsGenericParam(genericType.Name))
@@ -188,7 +188,7 @@ public static class GenericInfer
         {
             InferByType(arrayType.BaseType, arrayType2.BaseType, substitution, context);
         }
-        else if (exprType is LuaElementType elementType &&
+        else if (exprType is LuaElementRef elementType &&
                  elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
             LuaType valueType = Builtin.Unknown;
@@ -311,7 +311,7 @@ public static class GenericInfer
                 }
             }
         }
-        else if (exprType is LuaElementType elementType &&
+        else if (exprType is LuaElementRef elementType &&
                  elementType.ToSyntaxElement(context) is LuaTableExprSyntax tableExpr)
         {
             var fileList = tableExpr.FieldList.ToList();

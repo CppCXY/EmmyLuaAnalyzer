@@ -1,7 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
+namespace EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 
 public class TypeComputer
 {

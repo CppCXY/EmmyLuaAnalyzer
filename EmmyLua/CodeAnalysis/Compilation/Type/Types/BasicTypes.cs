@@ -26,27 +26,11 @@ public class LuaIntegerLiteralType(long value)
     public long Value { get; } = value;
 }
 
-public class LuaFloatLiteralType(double value)
-    : LuaType
-{
-    public double Value { get; } = value;
-}
 
-public class LuaElementType(SyntaxElementId id)
-    : LuaType
-{
-    public SyntaxElementId Id { get; } = id;
 
-    public LuaSyntaxElement? ToSyntaxElement(SearchContext context)
-    {
-        var document = context.Compilation.Project.GetDocument(Id.DocumentId);
-        return document?.SyntaxTree.GetElement(Id.ElementId);
-    }
-}
-
-public class GlobalNameType(string name)
-    : LuaType
-{
-    public string Name { get; } = name;
-}
+// public class GlobalNameType(string name)
+//     : LuaType
+// {
+//     public string Name { get; } = name;
+// }
 

@@ -171,7 +171,7 @@ public class SearchContext
 
                 break;
             }
-            case LuaElementType elementType:
+            case LuaElementRef elementType:
             {
                 var baseType = Compilation.TypeManager.GetBaseType(elementType.Id);
                 if (baseType is not null)
@@ -196,7 +196,7 @@ public class SearchContext
 
     public LuaSymbol? FindMember(SyntaxElementId id, string name)
     {
-        var elementType = new LuaElementType(id);
+        var elementType = new LuaElementRef(id);
         return IndexMembers.FindTypeMember(elementType, name);
     }
 

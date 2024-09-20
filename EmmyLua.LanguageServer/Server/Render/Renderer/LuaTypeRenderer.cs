@@ -243,7 +243,7 @@ public static class LuaTypeRenderer
                 renderContext.Append($"{templateType.PrefixName}<{templateType.TemplateName}>");
                 break;
             }
-            case LuaElementType luaElementType:
+            case LuaElementRef luaElementType:
             {
                 RenderVariableRefType(luaElementType, renderContext, level);
                 break;
@@ -261,14 +261,14 @@ public static class LuaTypeRenderer
         }
     }
 
-    private static void RenderVariableRefType(LuaElementType variableRefType, LuaRenderContext renderContext,
+    private static void RenderVariableRefType(LuaElementRef variableRefRef, LuaRenderContext renderContext,
         int level)
     {
-        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(variableRefType.Id);
+        var typeInfo = renderContext.SearchContext.Compilation.TypeManager.FindTypeInfo(variableRefRef.Id);
         var baseType = typeInfo?.BaseType;
         if (baseType is null)
         {
-            var element = variableRefType.ToSyntaxElement(renderContext.SearchContext);
+            var element = variableRefRef.ToSyntaxElement(renderContext.SearchContext);
             if (element is LuaTableExprSyntax)
             {
                 renderContext.Append("table");

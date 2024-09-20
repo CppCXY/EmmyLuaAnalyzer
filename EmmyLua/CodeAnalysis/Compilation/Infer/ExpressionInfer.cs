@@ -148,7 +148,7 @@ public static class ExpressionInfer
             }
         }
 
-        return new LuaElementType(tableExpr.UniqueId);
+        return new LuaElementRef(tableExpr.UniqueId);
     }
 
     private static LuaType InferParenExpr(LuaParenExprSyntax parenExpr, SearchContext context)

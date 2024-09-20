@@ -18,7 +18,7 @@ public class IndexMembers(SearchContext context)
         {
             LuaGenericType genericType => FindGenericTypeMember(genericType, name),
             LuaNamedType namedType => FindNamedTypeMember(namedType, name),
-            LuaElementType elementType => FindElementTypeMember(elementType, name),
+            LuaElementRef elementType => FindElementTypeMember(elementType, name),
             GlobalNameType globalType => FindGlobalTypeMember(globalType, name),
             LuaTupleType tupleType => FindTupleTypeMember(tupleType, name),
             LuaUnionType unionType => FindUnionTypeMember(unionType, name),
@@ -138,9 +138,9 @@ public class IndexMembers(SearchContext context)
         }
     }
 
-    private LuaSymbol? FindElementTypeMember(LuaElementType elementType, string name)
+    private LuaSymbol? FindElementTypeMember(LuaElementRef elementRef, string name)
     {
-        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementType.Id);
+        var typeInfo = context.Compilation.TypeManager.FindTypeInfo(elementRef.Id);
         if (typeInfo is null)
         {
             return null;

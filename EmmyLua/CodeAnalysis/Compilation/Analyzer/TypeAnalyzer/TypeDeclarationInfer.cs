@@ -46,7 +46,7 @@ public static class TypeDeclarationInfer
 
     private static LuaType InferTableType(LuaDocTableTypeSyntax tableType)
     {
-        return new LuaElementType(tableType.UniqueId);
+        return new LuaElementRef(tableType.UniqueId);
     }
 
     private static LuaType InferArrayType(LuaDocArrayTypeSyntax arrayType, SearchContext context)

@@ -200,7 +200,7 @@ public partial class DeclarationWalker
             case LuaTableExprSyntax tableExprSyntax:
             {
                 AnalyzeTableExpr(tableExprSyntax);
-                var elementType = new LuaElementType(tableExprSyntax.UniqueId);
+                var elementType = new LuaElementRef(tableExprSyntax.UniqueId);
                 return elementType;
             }
             case LuaLiteralExprSyntax { Literal: { } literal }:
@@ -228,7 +228,7 @@ public partial class DeclarationWalker
         var type = attachedTypes.Count > idx ? attachedTypes[idx] : exprType;
         if (type != exprType &&
             (type is LuaNamedType namedType && namedType.DocumentId == DocumentId) &&
-            exprType is LuaElementType elementType)
+            exprType is LuaElementRef elementType)
         {
             var typeInfo = builder.TypeManager.FindTypeInfo(namedType);
             var elementTypeInfo = builder.TypeManager.FindTypeInfo(elementType.Id);

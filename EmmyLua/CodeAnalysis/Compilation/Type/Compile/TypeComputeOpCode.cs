@@ -1,4 +1,4 @@
-﻿namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeCompute;
+﻿namespace EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 
 public enum TypeComputeOpCode
 {

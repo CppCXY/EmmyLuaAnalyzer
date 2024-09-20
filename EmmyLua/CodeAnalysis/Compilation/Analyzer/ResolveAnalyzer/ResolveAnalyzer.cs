@@ -101,7 +101,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                             for (var i = 0; i < unResolvedForRangeParameter.Parameters.Count; i++)
                             {
                                 var parameter = unResolvedForRangeParameter.Parameters[i];
-                                if (parameter.Type is LuaElementType elementType)
+                                if (parameter.Type is LuaElementRef elementType)
                                 {
                                     if (Compilation.TypeManager.GetBaseType(elementType.Id) is null)
                                     {
@@ -114,7 +114,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                         else if (unResolvedForRangeParameter.Parameters.FirstOrDefault() is
                                  { } firstDeclaration)
                         {
-                            if (firstDeclaration.Type is LuaElementType elementType)
+                            if (firstDeclaration.Type is LuaElementRef elementType)
                             {
                                 if (Compilation.TypeManager.GetBaseType(elementType.Id) is null)
                                 {
@@ -135,7 +135,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         if (unResolved is UnResolvedSymbol unResolvedDeclaration)
         {
             var declaration = unResolvedDeclaration.LuaSymbol;
-            declaration.Type ??= new LuaElementType(declaration.UniqueId);
+            declaration.Type ??= new LuaElementRef(declaration.UniqueId);
         }
     }
 
@@ -151,7 +151,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 {
                     Compilation.TypeManager.AddMemberImplementation(namedType, declaration);
                 }
-                else if (ty is LuaElementType elementType)
+                else if (ty is LuaElementRef elementType)
                 {
                     Compilation.TypeManager.AddElementMember(elementType.Id, declaration);
                 }
@@ -290,7 +290,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
 
         if (luaExpr is LuaTableExprSyntax tableExprSyntax)
         {
-            type = new LuaElementType(tableExprSyntax.UniqueId);
+            type = new LuaElementRef(tableExprSyntax.UniqueId);
         }
 
         var declaration = unResolved.LuaSymbol;
@@ -301,17 +301,17 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                                         type.IsSameType(Builtin.UserData, Context)
                 ))
             {
-                declaration.Type = new LuaElementType(declaration.UniqueId);
+                declaration.Type = new LuaElementRef(declaration.UniqueId);
                 Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                 Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, type);
             }
             else if (luaExpr is LuaCallExprSyntax)
             {
-                declaration.Type = new LuaElementType(declaration.UniqueId);
+                declaration.Type = new LuaElementRef(declaration.UniqueId);
                 Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                 Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, type);
             }
-            else if (type is LuaElementType elementType)
+            else if (type is LuaElementRef elementType)
             {
                 // same file use ref
                 if (elementType.Id.DocumentId == declaration.DocumentId)
@@ -320,7 +320,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
                 }
                 else
                 {
-                    declaration.Type = new LuaElementType(declaration.UniqueId);
+                    declaration.Type = new LuaElementRef(declaration.UniqueId);
                     Context.Compilation.TypeManager.AddLocalTypeInfo(declaration.UniqueId);
                     Context.Compilation.TypeManager.SetBaseType(declaration.UniqueId, elementType);
                 }
@@ -333,7 +333,7 @@ public class ResolveAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilati
         else
         {
             var declarationType = unResolved.LuaSymbol.Type;
-            if (declarationType is LuaElementType elementType)
+            if (declarationType is LuaElementRef elementType)
             {
                 Compilation.TypeManager.SetBaseType(elementType.Id, type);
             }

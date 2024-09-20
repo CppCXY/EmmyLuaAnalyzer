@@ -229,7 +229,7 @@ public class InlayHintBuilder
                 if (parameter is { RepresentText: { } name })
                 {
                     var type = parameterDic.GetValueOrDefault(name);
-                    if (type is LuaElementType elementType)
+                    if (type is LuaElementRef elementType)
                     {
                         type = semanticModel.Context.Compilation.TypeManager.GetBaseType(elementType.Id);
                     }

@@ -30,9 +30,11 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
         switch (docTypeSyntax)
         {
             case LuaDocNameTypeSyntax nameTypeSyntax:
-                CompileNameType(nameType, context);
+                // CompileNameType(nameType, context);
                 break;
         }
+
+        return null;
     }
 
 }
