@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+﻿using EmmyLua.CodeAnalysis.Compilation.Type.Compile;
+using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
@@ -9,7 +10,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
     {
         foreach (var document in analyzeContext.LuaDocuments)
         {
-            var typeContext = new TypeContext(Compilation);
+            var typeContext = new TypeContext(Compilation, document);
             var docTypes = document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaDocTypeSyntax>();
             foreach (var docType in docTypes)
             {
@@ -19,7 +20,8 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                 }
 
                 typeContext.AddIgnoreRange(docType.Range);
-                CompileType(docType, typeContext);
+                var type = TypeCompiler.Compile(docType, typeContext);
+                // CompileType(docType, typeContext);
             }
 
         }
@@ -30,7 +32,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
         switch (docTypeSyntax)
         {
             case LuaDocNameTypeSyntax nameTypeSyntax:
-                // CompileNameType(nameType, context);
+
                 break;
         }
 
