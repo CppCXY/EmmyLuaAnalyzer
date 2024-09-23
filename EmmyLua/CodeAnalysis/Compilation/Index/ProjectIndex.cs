@@ -134,6 +134,17 @@ public class ProjectIndex
         return [];
     }
 
+    public IEnumerable<LuaReference> QueryLocalReferences(SyntaxElementId id)
+    {
+        var list = InFiledReferences.Query(id);
+        if (list is not null)
+        {
+            return list;
+        }
+
+        return [];
+    }
+
     public LuaSymbol? QueryLocalDeclaration(LuaSyntaxElement element)
     {
         return InFiledDeclarations.Query(element.UniqueId);
