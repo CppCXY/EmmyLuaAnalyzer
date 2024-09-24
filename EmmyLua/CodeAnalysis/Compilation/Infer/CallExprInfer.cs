@@ -95,7 +95,7 @@ public static class CallExprInfer
             return unionType;
         }
 
-        var types = unionType.UnionTypes.Select(t => UnwrapReturn(callExprSyntax, context, t, parentType, level))
+        var types = unionType.TypeList.Select(t => UnwrapReturn(callExprSyntax, context, t, parentType, level))
             .ToList();
         return new LuaUnionType(types);
     }

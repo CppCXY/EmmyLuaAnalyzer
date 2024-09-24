@@ -156,7 +156,7 @@ public static class GenericInfer
 
         foreach (var fieldSyntax in tableExpr.FieldList)
         {
-            if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
+            if (valueType is LuaUnionType { TypeList.Count: > 2 })
             {
                 break;
             }
@@ -195,7 +195,7 @@ public static class GenericInfer
 
             foreach (var field in tableExpr.FieldList)
             {
-                if (valueType is LuaUnionType { UnionTypes.Count: > 2 })
+                if (valueType is LuaUnionType { TypeList.Count: > 2 })
                 {
                     break;
                 }
@@ -252,13 +252,13 @@ public static class GenericInfer
         TypeSubstitution substitution,
         SearchContext context)
     {
-        if (unionType.UnionTypes.Contains(Builtin.Nil))
+        if (unionType.TypeList.Contains(Builtin.Nil))
         {
             var newType = unionType.Remove(Builtin.Nil, context);
             InferByType(newType, exprType, substitution, context);
         }
 
-        foreach (var luaType in unionType.UnionTypes)
+        foreach (var luaType in unionType.TypeList)
         {
             InferByType(luaType, exprType, substitution, context);
             if (substitution.InferFinished)

@@ -57,10 +57,10 @@ public static class TypeExtension
 
     private static LuaUnionType UnionTypeMerge(LuaUnionType left, LuaType right, SearchContext context)
     {
-        var types = new List<LuaType>(left.UnionTypes);
+        var types = new List<LuaType>(left.TypeList);
         if (right is LuaUnionType rightUnionType)
         {
-            types.AddRange(rightUnionType.UnionTypes);
+            types.AddRange(rightUnionType.TypeList);
         }
         else if (right.IsSameType(Builtin.Unknown, context))
         {
@@ -76,10 +76,10 @@ public static class TypeExtension
 
     private static LuaType UnionTypeRemove(LuaUnionType left, LuaType right)
     {
-        var types = new List<LuaType>(left.UnionTypes);
+        var types = new List<LuaType>(left.TypeList);
         if (right is LuaUnionType rightUnionType)
         {
-            types.RemoveAll(rightUnionType.UnionTypes.Contains);
+            types.RemoveAll(rightUnionType.TypeList.Contains);
         }
         else
         {

@@ -21,7 +21,7 @@ public class Members(SearchContext context)
             LuaNamedType namedType => GetNamedTypeMembers(namedType),
             LuaElementRef elementType => GetElementTypeMembers(elementType),
             GlobalNameType globalType => GetGlobalTypeMembers(globalType),
-            LuaUnionType unionType => unionType.UnionTypes.SelectMany(GetTypeMembers).ToList(),
+            LuaUnionType unionType => unionType.TypeList.SelectMany(GetTypeMembers).ToList(),
             LuaTupleType tupleType => GetTupleTypeMembers(tupleType),
             _ => []
         };

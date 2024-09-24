@@ -119,7 +119,7 @@ public class SearchContext
         {
             case LuaUnionType unionType:
             {
-                foreach (var t in unionType.UnionTypes)
+                foreach (var t in unionType.TypeList)
                 {
                     InnerFindMethods(t, action, 0);
                 }

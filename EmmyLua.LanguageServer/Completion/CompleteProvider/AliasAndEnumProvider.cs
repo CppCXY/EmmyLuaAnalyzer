@@ -188,7 +188,7 @@ public class AliasAndEnumProvider : ICompleteProviderBase
 
     private void AddUnionTypeCompletion(LuaUnionType unionType, CompleteContext context)
     {
-        foreach (var luaType in unionType.UnionTypes)
+        foreach (var luaType in unionType.TypeList)
         {
             if (luaType is LuaStringLiteralType stringLiteralType)
             {

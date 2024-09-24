@@ -349,7 +349,7 @@ public static class LuaTypeRenderer
             return;
         }
 
-        if (unionType.UnionTypes.Count == 2 && unionType.UnionTypes.Contains(Builtin.Nil))
+        if (unionType.TypeList.Count == 2 && unionType.TypeList.Contains(Builtin.Nil))
         {
             var newType = unionType.Remove(Builtin.Nil, renderContext.SearchContext);
             InnerRenderType(newType, renderContext, level + 1);
@@ -358,7 +358,7 @@ public static class LuaTypeRenderer
         }
 
         var count = 0;
-        foreach (var luaType in unionType.UnionTypes)
+        foreach (var luaType in unionType.TypeList)
         {
             if (count > 0)
             {

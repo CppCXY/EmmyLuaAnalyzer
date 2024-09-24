@@ -108,7 +108,7 @@ public class SubTypeInfer(SearchContext context)
 
     private bool IsSubTypeOfUnionType(LuaUnionType left, LuaUnionType right)
     {
-        return left.UnionTypes.All(leftType => right.UnionTypes.Any(rightType => IsSubTypeOf(leftType, rightType)));
+        return left.TypeList.All(leftType => right.TypeList.Any(rightType => IsSubTypeOf(leftType, rightType)));
     }
 
     // private bool IsSubTypeOfAggregateType(LuaAggregateType left, LuaAggregateType right)

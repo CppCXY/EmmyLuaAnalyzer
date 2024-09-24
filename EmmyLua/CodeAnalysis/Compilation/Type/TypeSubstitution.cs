@@ -7,11 +7,11 @@ public class TypeSubstitution
 {
     private Dictionary<string, LuaType> TypeMap { get; } = new();
 
-    private Dictionary<string, LuaTypeTemplate> Template { get; } = new();
+    private Dictionary<string, LuaTemplateRef> Template { get; } = new();
 
     private Dictionary<string, List<LuaSymbol>> SpreadParameters { get; } = new();
 
-    public void SetTemplate(Dictionary<string, LuaTypeTemplate> defaultTypeMap)
+    public void SetTemplate(Dictionary<string, LuaTemplateRef> defaultTypeMap)
     {
         foreach (var (key, value) in defaultTypeMap)
         {

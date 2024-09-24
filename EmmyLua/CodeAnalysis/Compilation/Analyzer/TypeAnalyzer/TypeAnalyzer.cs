@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Reference;
+using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -19,7 +20,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                 AddDocGeneric(comment, typeContext);
                 foreach (var typeSyntax in comment.Descendants.OfType<LuaDocTypeSyntax>())
                 {
-                    TypeCompiler.Compile(typeSyntax, typeContext);
+                    TypeCompiler.Compile(typeSyntax, comment, typeContext);
                 }
             }
         }
@@ -37,7 +38,8 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     {
                         if (genericParam.Name is { RepresentText: { } name })
                         {
-                            typeContext.AddGenericName(comment.UniqueId, name);
+                            var baseType = genericParam.Type is not null ? new LuaTypeRef(LuaTypeId.Create(genericParam.Type)) : null;
+                            typeContext.AddGenericName(comment.UniqueId, name, baseType);
                         }
                     }
 
@@ -50,7 +52,8 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     {
                         if (param.Name is { RepresentText: { } name })
                         {
-                            typeContext.AddGenericName(comment.UniqueId, name);
+                            var baseType = param.Type is not null ? new LuaTypeRef(LuaTypeId.Create(param.Type)) : null;
+                            typeContext.AddGenericName(comment.UniqueId, name, baseType);
                         }
                     }
 
@@ -64,7 +67,8 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     {
                         if (param.Name is { RepresentText: { } name })
                         {
-                            typeContext.AddGenericName(comment.UniqueId, name);
+                            var baseType = param.Type is not null ? new LuaTypeRef(LuaTypeId.Create(param.Type)) : null;
+                            typeContext.AddGenericName(comment.UniqueId, name, baseType);
                         }
                     }
 
@@ -78,7 +82,8 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     {
                         if (param.Name is { RepresentText: { } name })
                         {
-                            typeContext.AddGenericName(comment.UniqueId, name);
+                            var baseType = param.Type is not null ? new LuaTypeRef(LuaTypeId.Create(param.Type)) : null;
+                            typeContext.AddGenericName(comment.UniqueId, name, baseType);
                         }
                     }
 
@@ -91,7 +96,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
     private void AddGenericParamRange(LuaCommentSyntax commentSyntax, SyntaxElementId id,
         TypeContext context)
     {
-        if (commentSyntax is { Owner: { } owner, DocumentId: { } documentId })
+        if (commentSyntax is { Owner: { } owner })
         {
             switch (owner)
             {
@@ -100,7 +105,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     if (localNames.FirstOrDefault() is { } firstLocalDecl)
                     {
                         var references = Compilation.ProjectIndex.QueryLocalReferences(firstLocalDecl.UniqueId);
-                        AddGenericEffectRange(id, references.ToList(), context);
+                        AddGenericEffectId(id, references.ToList(), context);
                     }
 
                     break;
@@ -110,21 +115,24 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                     if (varList.FirstOrDefault() is LuaNameExprSyntax firstVarDecl)
                     {
                         var references = Compilation.ProjectIndex.QueryLocalReferences(firstVarDecl.UniqueId);
-                        AddGenericEffectRange(id, references.ToList(), context);
+                        AddGenericEffectId(id, references.ToList(), context);
                     }
 
                     break;
                 }
                 case LuaTableFieldSyntax tableFieldSyntax:
                 {
-                    context.AddGenericEffectRange(id, tableFieldSyntax.Range);
+                    foreach (var luaCommentSyntax in tableFieldSyntax.Descendants.OfType<LuaCommentSyntax>())
+                    {
+                        context.AddGenericEffectId(id, luaCommentSyntax.UniqueId);
+                    }
                     break;
                 }
             }
         }
     }
 
-    private void AddGenericEffectRange(SyntaxElementId id, List<LuaReference> references, TypeContext typeContext)
+    private void AddGenericEffectId(SyntaxElementId id, List<LuaReference> references, TypeContext typeContext)
     {
         foreach (var reference in references)
         {
@@ -134,7 +142,7 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
                 {
                     foreach (var comment in comments)
                     {
-                        typeContext.AddGenericEffectRange(id, comment.Range);
+                        typeContext.AddGenericEffectId(id, comment.UniqueId);
                     }
                 }
             }

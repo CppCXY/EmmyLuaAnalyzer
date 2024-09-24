@@ -26,8 +26,6 @@ public class LuaIntegerLiteralType(long value)
     public long Value { get; } = value;
 }
 
-
-
 // public class GlobalNameType(string name)
 //     : LuaType
 // {

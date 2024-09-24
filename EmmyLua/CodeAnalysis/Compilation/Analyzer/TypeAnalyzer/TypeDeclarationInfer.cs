@@ -57,7 +57,7 @@
 //
 //     private static LuaType InferUnionType(LuaDocUnionTypeSyntax unionType, SearchContext context)
 //     {
-//         var types = unionType.UnionTypes.Select(context.Infer).ToList();
+//         var types = unionType.TypeList.Select(context.Infer).ToList();
 //         if (types.Count == 1)
 //         {
 //             return types[0];

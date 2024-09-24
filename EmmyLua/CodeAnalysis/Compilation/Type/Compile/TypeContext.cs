@@ -1,4 +1,5 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -15,9 +16,9 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
     private RangeCollection IgnoreRanges { get; } = new();
 
-    private Dictionary<SyntaxElementId, List<HashSet<string>>> GenericNames { get; } = new();
+    private Dictionary<SyntaxElementId, Dictionary<string, LuaType?>> GenericNames { get; } = new();
 
-    private Dictionary<SyntaxElementId, RangeCollection> GenericEffectRanges { get; } = new();
+    private Dictionary<SyntaxElementId, SyntaxElementId> GenericEffectRanges { get; } = new();
 
     public void AddIgnoreRange(SourceRange range)
     {
@@ -31,25 +32,27 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
     public LuaType? FindType(string name, LuaCommentSyntax comment)
     {
-        var commentRange = comment.Range;
-        foreach (var (id, rangeCollection) in GenericEffectRanges)
+        var id = comment.UniqueId;
+        if (!GenericNames.TryGetValue(id, out var names))
         {
-            if (rangeCollection.Contains(commentRange.StartOffset))
+            var sourceId = GenericEffectRanges.GetValueOrDefault(id);
+            if (!GenericNames.TryGetValue(sourceId, out names))
             {
-                if (GenericNames.TryGetValue(id, out var names))
-                {
-                    foreach (var nameSet in names)
-                    {
-                        if (nameSet.Contains(name))
-                        {
-                            return new LuaTypeTemplate(name, null);
-                        }
-                    }
-                }
+                return FindDefinedType(name);
             }
         }
 
-        var luaNamedType = new LuaNamedType(comment.DocumentId, name);
+        if (names.TryGetValue(name, out var baseType))
+        {
+            return new LuaTemplateRef(name, baseType);
+        }
+
+        return FindDefinedType(name);
+    }
+
+    private LuaType? FindDefinedType(string name)
+    {
+        var luaNamedType = new LuaNamedType(Document.Id, name);
         if (TypeManager.FindTypeInfo(luaNamedType) is not null)
         {
             return luaNamedType;
@@ -58,30 +61,24 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
         return null;
     }
 
-    public void AddGenericName(SyntaxElementId id, string name)
+    public void AddGenericName(SyntaxElementId id, string name, LuaType? baseType)
     {
         if (!GenericNames.TryGetValue(id, out var names))
         {
-            names = new List<HashSet<string>>();
+            names = new();
             GenericNames[id] = names;
         }
 
-        if (names.Count == 0)
-        {
-            names.Add(new HashSet<string>());
-        }
-
-        names[^1].Add(name);
+        names[name] = baseType;
     }
 
-    public void AddGenericEffectRange(SyntaxElementId id, SourceRange range)
+    public void AddGenericEffectId(SyntaxElementId sourceId, SyntaxElementId effectId)
     {
-        if (!GenericEffectRanges.TryGetValue(id, out var ranges))
-        {
-            ranges = new RangeCollection();
-            GenericEffectRanges[id] = ranges;
-        }
+        GenericEffectRanges[effectId] = sourceId;
+    }
 
-        ranges.AddRange(range);
+    public void AddDiagnostic(Diagnostic diagnostic)
+    {
+        Compilation.Diagnostics.AddDiagnostic(document.Id, diagnostic);
     }
 }

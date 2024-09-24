@@ -3,11 +3,11 @@
 public class LuaUnionType(IEnumerable<LuaType> unionTypes)
     : LuaType
 {
-    public List<LuaType> UnionTypes { get; } = unionTypes.ToList();
+    public List<LuaType> TypeList { get; } = unionTypes.ToList();
 
     // public override LuaType Instantiate(TypeSubstitution substitution)
     // {
-    //     var newUnionTypes = UnionTypes.Select(t => t.Instantiate(substitution));
+    //     var newUnionTypes = TypeList.Select(t => t.Instantiate(substitution));
     //     return new LuaUnionType(newUnionTypes);
     // }
 }

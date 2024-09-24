@@ -230,7 +230,7 @@ public static class MethodInfer
         LuaSignature signature,
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        Dictionary<string, LuaTypeTemplate> genericParams,
+        Dictionary<string, LuaTemplateRef> genericParams,
         bool colonDefine,
         SearchContext context)
     {

@@ -231,7 +231,7 @@ public class IndexMembers(SearchContext context)
 
     private LuaSymbol? FindUnionTypeMember(LuaUnionType unionType, string name)
     {
-        foreach (var type in unionType.UnionTypes)
+        foreach (var type in unionType.TypeList)
         {
             if (FindTypeMember(type, name) is { } symbol)
             {
