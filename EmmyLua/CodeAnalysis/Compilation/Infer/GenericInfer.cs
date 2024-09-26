@@ -30,12 +30,12 @@ public static class GenericInfer
         TypeSubstitution substitution,
         SearchContext context)
     {
-        if (type is LuaStringTemplate templateType && expr is LuaLiteralExprSyntax
+        if (type is LuaStrTplType templateType && expr is LuaLiteralExprSyntax
             {
                 Literal: LuaStringToken { } stringToken1
             })
         {
-            substitution.Add(templateType.TemplateName,
+            substitution.Add(templateType.Name,
                 new LuaNamedType(LuaDocumentId.VirtualDocumentId, templateType.PrefixName + stringToken1.Value));
             return true;
         }
@@ -53,13 +53,13 @@ public static class GenericInfer
     }
 
     public static void InferByExpandTypeAndExprs(
-        LuaExpandTemplate expandTemplate,
+        LuaExpandTplType expandTplType,
         IEnumerable<LuaExprSyntax> expr,
         TypeSubstitution substitution,
         SearchContext context
     )
     {
-        substitution.Add(expandTemplate.Name, new LuaMultiReturnType(expr.Select(context.Infer).ToList()));
+        substitution.Add(expandTplType.Name, new LuaMultiReturnType(expr.Select(context.Infer).ToList()));
     }
 
     public static void InferByType(
@@ -100,7 +100,7 @@ public static class GenericInfer
                 TupleTypeInstantiateByType(tupleType, rightType, substitution, context);
                 break;
             }
-            case LuaExpandTemplate expandType:
+            case LuaExpandTplType expandType:
             {
                 substitution.Add(expandType.Name, rightType);
                 break;
@@ -224,7 +224,7 @@ public static class GenericInfer
             for (var i = 0; i < mainSignature.Parameters.Count && i < mainSignature2.Parameters.Count; i++)
             {
                 var leftParamType = mainSignature.Parameters[i].Type;
-                if (leftParamType is LuaExpandTemplate expandType)
+                if (leftParamType is LuaExpandTplType expandType)
                 {
                     substitution.AddSpreadParameter(expandType.Name, mainSignature2.Parameters[i..]);
                     break;
@@ -279,7 +279,7 @@ public static class GenericInfer
             for (var i = 0; i < tupleType.TypeList.Count && i < tupleType2.TypeList.Count; i++)
             {
                 var leftElementType = tupleType.TypeList[i];
-                if (leftElementType is LuaExpandTemplate expandType)
+                if (leftElementType is LuaExpandTplType expandType)
                 {
                     var rightExprTypes = tupleType2.TypeList[i..]
                         .Select(it => it);
@@ -299,7 +299,7 @@ public static class GenericInfer
             foreach (var tupleElement in tupleType.TypeList)
             {
                 var leftElementType = tupleElement;
-                if (leftElementType is LuaExpandTemplate expandType)
+                if (leftElementType is LuaExpandTplType expandType)
                 {
                     substitution.Add(expandType.Name, new LuaMultiReturnType(arrayElementType));
                     break;
@@ -323,7 +323,7 @@ public static class GenericInfer
                     continue;
                 }
 
-                if (tupleElementType is LuaExpandTemplate expandType)
+                if (tupleElementType is LuaExpandTplType expandType)
                 {
                     var fileExprs = fileList[i..]
                         .Where(it => it is { IsValue: true, Value: not null })

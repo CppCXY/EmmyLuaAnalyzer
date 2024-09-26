@@ -34,16 +34,16 @@ public static class TypeCompiler
                 CompileNameType(nameTypeSyntax, commentSyntax, context, stack);
                 break;
             }
-            case LuaDocUnionTypeSyntax unionTypeSyntax:
-            {
-                CompileUnionType(unionTypeSyntax, commentSyntax, context, stack);
-                break;
-            }
-            case LuaDocArrayTypeSyntax arrayTypeSyntax:
-            {
-                CompileArrayType(arrayTypeSyntax, commentSyntax, context, stack);
-                break;
-            }
+            // case LuaDocUnionTypeSyntax unionTypeSyntax:
+            // {
+            //     CompileUnionType(unionTypeSyntax, commentSyntax, context, stack);
+            //     break;
+            // }
+            // case LuaDocArrayTypeSyntax arrayTypeSyntax:
+            // {
+            //     CompileArrayType(arrayTypeSyntax, commentSyntax, context, stack);
+            //     break;
+            // }
         }
     }
 
@@ -69,7 +69,7 @@ public static class TypeCompiler
             }
             else
             {
-                nameTypeSyntax
+                // nameTypeSyntax
             }
         }
 

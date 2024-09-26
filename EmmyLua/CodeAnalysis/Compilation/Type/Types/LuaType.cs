@@ -1,13 +1,13 @@
-﻿using EmmyLua.CodeAnalysis.Compilation.Search;
+﻿using System.Collections;
+using EmmyLua.CodeAnalysis.Compilation.Search;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
-public abstract class LuaType(bool nullable = false)
+/// <summary>
+/// LuaType被设计为树的形式, 非常近似于语法树本身
+/// </summary>
+public abstract class LuaType
 {
-    public bool IsNullable { get; } = nullable;
-
-    public virtual bool IsUnknown { get; } = false;
-
     public bool IsSubTypeOf(LuaType? other, SearchContext context)
     {
         return other is not null && context.IsSubTypeOf(this, other);
@@ -18,8 +18,12 @@ public abstract class LuaType(bool nullable = false)
         return other is not null && context.IsSameType(this, other);
     }
 
-    public virtual LuaType Instantiate(TypeSubstitution substitution)
+    public abstract IEnumerable<LuaType> ChildrenTypes { get; }
+
+    public abstract IEnumerable<LuaType> DescendantTypes { get; }
+
+    public override string ToString()
     {
-        return this;
+        return "luaType";
     }
 }

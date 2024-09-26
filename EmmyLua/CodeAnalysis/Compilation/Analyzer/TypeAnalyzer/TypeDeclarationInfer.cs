@@ -182,7 +182,7 @@
 //     {
 //         if (expandType is { Name: { } name })
 //         {
-//             return new LuaExpandTemplate(name.RepresentText);
+//             return new LuaExpandTplType(name.RepresentText);
 //         }
 //
 //         return Builtin.Unknown;
@@ -206,9 +206,9 @@
 //     private static LuaType InferTemplateType(LuaDocTemplateTypeSyntax templateType, SearchContext context)
 //     {
 //         var prefixName = templateType.PrefixName?.RepresentText ?? string.Empty;
-//         if (templateType.TemplateName?.Name is { } name)
+//         if (templateType.Name?.Name is { } name)
 //         {
-//             return new LuaStringTemplate(prefixName, name);
+//             return new LuaStrTplType(prefixName, name);
 //         }
 //
 //         return Builtin.Unknown;

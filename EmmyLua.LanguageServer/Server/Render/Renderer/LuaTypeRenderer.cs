@@ -227,7 +227,7 @@ public static class LuaTypeRenderer
                 RenderType(variadicType.BaseType, renderContext);
                 break;
             }
-            case LuaExpandTemplate expandType:
+            case LuaExpandTplType expandType:
             {
                 renderContext.Append(expandType.Name);
                 renderContext.Append("...");
@@ -238,9 +238,9 @@ public static class LuaTypeRenderer
                 RenderNamedType(namedType, renderContext, level);
                 break;
             }
-            case LuaStringTemplate templateType:
+            case LuaStrTplType templateType:
             {
-                renderContext.Append($"{templateType.PrefixName}<{templateType.TemplateName}>");
+                renderContext.Append($"{templateType.PrefixName}<{templateType.Name}>");
                 break;
             }
             case LuaElementRef luaElementType:

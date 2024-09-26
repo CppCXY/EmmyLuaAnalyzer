@@ -125,9 +125,9 @@ public class BinaryOperator(
         _ => false,
     };
 
-    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
-        new BinaryOperator(Kind, Left.Instantiate(substitution), Right.Instantiate(substitution),
-            Ret.Instantiate(substitution), Id);
+    // public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+    //     new BinaryOperator(Kind, Left.Instantiate(substitution), Right.Instantiate(substitution),
+    //         Ret.Instantiate(substitution), Id);
 }
 
 public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, SyntaxElementId id)
@@ -145,9 +145,9 @@ public class UnaryOperator(TypeOperatorKind kind, LuaType operand, LuaType ret, 
 
     public bool IsLen => Kind == TypeOperatorKind.Len;
 
-    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
-        new UnaryOperator(Kind, Operand.Instantiate(substitution), Ret.Instantiate(substitution),
-            Id);
+    // public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+    //     new UnaryOperator(Kind, Operand.Instantiate(substitution), Ret.Instantiate(substitution),
+    //         Id);
 }
 
 public class IndexOperator(LuaType key, LuaType ret, SyntaxElementId id)
@@ -156,7 +156,7 @@ public class IndexOperator(LuaType key, LuaType ret, SyntaxElementId id)
     public LuaType Key { get; } = key;
     public LuaType Ret { get; } = ret;
 
-    public override TypeOperator Instantiate(TypeSubstitution substitution) =>
-        new IndexOperator(Key.Instantiate(substitution),
-            Ret.Instantiate(substitution), Id);
+    // public override TypeOperator Instantiate(TypeSubstitution substitution) =>
+    //     new IndexOperator(Key.Instantiate(substitution),
+    //         Ret.Instantiate(substitution), Id);
 }

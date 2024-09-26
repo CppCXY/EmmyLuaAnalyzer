@@ -230,7 +230,7 @@ public static class MethodInfer
         LuaSignature signature,
         LuaCallExprSyntax callExpr,
         List<LuaExprSyntax> args,
-        Dictionary<string, LuaTemplateRef> genericParams,
+        Dictionary<string, LuaTplType> genericParams,
         bool colonDefine,
         SearchContext context)
     {
@@ -316,7 +316,7 @@ public static class MethodInfer
             var parameter = signature.Parameters[i + paramStart];
             if (parameter is
                 {
-                    Type: LuaExpandTemplate expandType,
+                    Type: LuaExpandTplType expandType,
                     Info: ParamInfo { IsVararg: true }
                 })
             {
@@ -339,7 +339,7 @@ public static class MethodInfer
         var newReturnType = signature.ReturnType.Instantiate(substitution);
         foreach (var parameter in signature.Parameters)
         {
-            if (parameter.Type is LuaExpandTemplate expandType)
+            if (parameter.Type is LuaExpandTplType expandType)
             {
                 newParameters.AddRange(substitution.GetSpreadParameters(expandType.Name));
             }

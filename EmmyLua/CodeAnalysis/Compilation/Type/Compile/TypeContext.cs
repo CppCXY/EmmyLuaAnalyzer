@@ -44,7 +44,7 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
         if (names.TryGetValue(name, out var baseType))
         {
-            return new LuaTemplateRef(name, baseType);
+            return new LuaTplType(name, baseType);
         }
 
         return FindDefinedType(name);
