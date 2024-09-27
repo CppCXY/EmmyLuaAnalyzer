@@ -200,7 +200,7 @@ public static class TagParser
                 }
                 else if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    Fields.DefineBody(p);
+                    FieldsParser.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -219,7 +219,7 @@ public static class TagParser
                 }
                 else if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    Fields.DefineBody(p);
+                    FieldsParser.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -233,7 +233,7 @@ public static class TagParser
             {
                 if (p.Current is LuaTokenKind.TkLeftBrace)
                 {
-                    Fields.DefineBody(p);
+                    FieldsParser.DefineBody(p);
                     state = ClassSuffixState.Body;
                 }
                 else
@@ -434,7 +434,7 @@ public static class TagParser
                 Attribute(p);
             }
 
-            Fields.Field(p, false);
+            FieldsParser.Field(p, false);
             return m.Complete(p, LuaSyntaxKind.DocField);
         }
         catch (UnexpectedTokenException e)

@@ -5,7 +5,6 @@ public static class CompileTypeOperatorKind
     public enum TypeUnaryOperator
     {
         None,
-        TypeOf,
         KeyOf,
     }
 
@@ -28,7 +27,6 @@ public static class CompileTypeOperatorKind
         return kind switch
         {
             LuaTokenKind.TkDocKeyOf => TypeUnaryOperator.KeyOf,
-            LuaTokenKind.TkDocTypeOf => TypeUnaryOperator.TypeOf,
             _ => TypeUnaryOperator.None
         };
     }

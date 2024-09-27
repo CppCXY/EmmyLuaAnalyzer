@@ -68,7 +68,7 @@ public class TypeComputer
                 }
                 break;
             }
-            case LuaDocTableTypeSyntax tableTypeSyntax:
+            case LuaDocObjectTypeSyntax tableTypeSyntax:
             {
                 CompileTableType(tableTypeSyntax);
                 break;
@@ -153,9 +153,9 @@ public class TypeComputer
         }
     }
 
-    private void CompileTableType(LuaDocTableTypeSyntax tableTypeSyntax)
+    private void CompileTableType(LuaDocObjectTypeSyntax objectTypeSyntax)
     {
-        if (tableTypeSyntax is { Body.FieldList: { } fields })
+        if (objectTypeSyntax is { Body.FieldList: { } fields })
         {
             foreach (var field in fields)
             {

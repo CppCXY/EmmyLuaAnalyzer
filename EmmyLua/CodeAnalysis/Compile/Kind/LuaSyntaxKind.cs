@@ -84,25 +84,27 @@ public enum LuaSyntaxKind : ushort
     DocBody,
 
     // doc Type
-    TypeArray,
-    TypeUnion,
-    TypeIntersection,
-    TypeKeyOf,
-    TypeTypeOf,
-    TypeConditional,
-    TypeIndexAccess,
-    TypeMapped, // p in keyof T
-    TypeFun,
-    TypeGeneric,
-    TypeTuple,
-    TypeTable,
-    TypeParen,
-    TypeLiteral,
-    TypeName,
-    TypeVariadic,
-    TypeExpand,
-    TypeTemplate,
-    TypeMatch,
+    TypeArray, // baseType []
+    TypeUnion, // aType | bType
+    TypeIntersection, // aType & bType
+    TypeKeyOf, // keyof type
+    TypeExtends, // aType extends bType
+    TypeIn, // aType in bType
+    TypeConditional, // conditionType ? trueType : falseType
+    TypeIndexAccess, // type[keyType]
+    TypeMapped, // { [p in KeyType]+? : ValueType }
+    TypeMappedKeys, // [p in KeyType]+?
+    TypeFun, // fun(<paramList>): returnType
+    TypeGeneric, // name<typeList>
+    TypeTuple, // [typeList]
+    TypeObject, // { a: aType, b: bType } or { [1]: aType, [2]: bType } or { a: aType, b: bType, [number]: string }
+    TypeParen, // (type)
+    TypeLiteral, // "string" or <integer> or true or false
+    TypeName, // name
+    TypeVariadic, // ...type
+    TypeExpand, // type...
+    TypeTemplate, // prefixName.`T`
+    TypeMatch, // not support now
 
     // doc parameter
     TypedParameter,

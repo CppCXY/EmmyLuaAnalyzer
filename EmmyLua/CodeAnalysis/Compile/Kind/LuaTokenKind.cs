@@ -120,8 +120,8 @@ public enum LuaTokenKind : ushort
     TkDocOr, // |
     TkDocAnd, // &
     TkDocKeyOf, // keyof
-    TkDocTypeOf, // typeof
     TkDocExtends, // extends
+    TkDocAs, // as
     TkDocIn, // in
     TkDocInfer, // infer
     TkDocContinue, // ---

@@ -182,7 +182,7 @@ public class Declarations(SearchContext context)
                 return context.FindMember(namedType, docField.Name);
             }
         }
-        else if (docField.Parent is LuaDocTableTypeSyntax tableTypeSyntax)
+        else if (docField.Parent is LuaDocObjectTypeSyntax tableTypeSyntax)
         {
             if (tableTypeSyntax is { Parent: LuaDocTagNamedTypeSyntax tagNamedType })
             {

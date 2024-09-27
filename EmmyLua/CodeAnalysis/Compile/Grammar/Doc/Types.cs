@@ -46,7 +46,6 @@ public static class TypesParser
             var kind = unaryOp switch
             {
                 CompileTypeOperatorKind.TypeUnaryOperator.KeyOf => LuaSyntaxKind.TypeKeyOf,
-                CompileTypeOperatorKind.TypeUnaryOperator.TypeOf => LuaSyntaxKind.TypeTypeOf,
                 _ => LuaSyntaxKind.None
             };
 
@@ -79,7 +78,7 @@ public static class TypesParser
                 {
                     CompileTypeOperatorKind.TypeBinaryOperator.Union => LuaSyntaxKind.TypeUnion,
                     CompileTypeOperatorKind.TypeBinaryOperator.Intersection => LuaSyntaxKind.TypeIntersection,
-                    CompileTypeOperatorKind.TypeBinaryOperator.In => LuaSyntaxKind.TypeMapped,
+                    CompileTypeOperatorKind.TypeBinaryOperator.In => LuaSyntaxKind.TypeIn,
                     _ => LuaSyntaxKind.None
                 };
                 cm = m.Complete(p, kind);
@@ -104,18 +103,21 @@ public static class TypesParser
                 {
                     return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
                 }
+
                 p.Expect(LuaTokenKind.TkNullable);
                 var cm3 = SubType(p, 0, feature);
                 if (!cm3.IsComplete)
                 {
                     return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
                 }
+
                 p.Expect(LuaTokenKind.TkColon);
                 var cm4 = SubType(p, 0, feature);
                 if (!cm4.IsComplete)
                 {
                     return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
                 }
+
                 return m.Complete(p, LuaSyntaxKind.TypeConditional);
             }
             catch (UnexpectedTokenException e)
@@ -265,7 +267,7 @@ public static class TypesParser
     {
         return p.Current switch
         {
-            LuaTokenKind.TkLeftBrace => TableType(p),
+            LuaTokenKind.TkLeftBrace => ObjectOrMappedType(p),
             LuaTokenKind.TkLeftParen => ParenType(p),
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkDocBoolean => LiteralType(p),
@@ -276,18 +278,29 @@ public static class TypesParser
         };
     }
 
-    public static CompleteMarker TableType(LuaDocParser p)
+    public static CompleteMarker ObjectOrMappedType(LuaDocParser p)
     {
         var m = p.Marker();
 
         try
         {
-            Fields.DefineBody(p);
-            return m.Complete(p, LuaSyntaxKind.TypeTable);
+            if (p.Current is LuaTokenKind.TkLeftBracket)
+            {
+                var rollbackPoint = p.GetRollbackPoint();
+                var cm = MappedParser.TryMappedType(p);
+                if (cm.IsComplete)
+                {
+                    return cm;
+                }
+                p.Rollback(rollbackPoint);
+            }
+
+            FieldsParser.DefineBody(p);
+            return m.Complete(p, LuaSyntaxKind.TypeObject);
         }
         catch (UnexpectedTokenException e)
         {
-            return m.Fail(p, LuaSyntaxKind.TypeTable, e.Message);
+            return m.Fail(p, LuaSyntaxKind.TypeObject, e.Message);
         }
     }
 

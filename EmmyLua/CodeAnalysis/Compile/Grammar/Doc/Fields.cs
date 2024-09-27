@@ -4,7 +4,7 @@ using EmmyLua.CodeAnalysis.Compile.Parser;
 
 namespace EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 
-public static class Fields
+public static class FieldsParser
 {
     public static CompleteMarker Field(LuaDocParser p, bool inBody)
     {

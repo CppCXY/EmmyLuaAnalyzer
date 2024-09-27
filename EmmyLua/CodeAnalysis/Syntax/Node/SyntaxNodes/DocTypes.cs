@@ -33,7 +33,7 @@ public class LuaDocArrayTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSy
     public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
 }
 
-public class LuaDocTableTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocObjectTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
 }
@@ -98,11 +98,6 @@ public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTyp
 }
 
 public class LuaDocKeyOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
-{
-    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
-}
-
-public class LuaDocTypeOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }

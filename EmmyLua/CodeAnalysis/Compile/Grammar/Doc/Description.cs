@@ -6,6 +6,7 @@ namespace EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 
 public static class DescriptionParser
 {
+    // DocDetail ::= ('#' | '@')? content
     public static CompleteMarker Description(LuaDocParser p)
     {
         if (p.Current is LuaTokenKind.TkEof)

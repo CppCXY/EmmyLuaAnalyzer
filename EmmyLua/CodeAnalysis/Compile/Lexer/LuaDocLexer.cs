@@ -374,9 +374,9 @@ public class LuaDocLexer(LuaDocument document)
                 return Reader.CurrentSavedText switch
                 {
                     "true" or "false" => LuaTokenKind.TkDocBoolean,
-                    "typeof" => LuaTokenKind.TkDocTypeOf,
                     "keyof" => LuaTokenKind.TkDocKeyOf,
                     "extends" => LuaTokenKind.TkDocExtends,
+                    "as" => LuaTokenKind.TkDocAs,
                     _ => LuaTokenKind.TkName
                 };
             }

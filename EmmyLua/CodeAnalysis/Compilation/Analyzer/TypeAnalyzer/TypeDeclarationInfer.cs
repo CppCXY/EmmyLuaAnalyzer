@@ -13,7 +13,7 @@
 //     {
 //         switch (type)
 //         {
-//             case LuaDocTableTypeSyntax tableType:
+//             case LuaDocObjectTypeSyntax tableType:
 //                 return InferTableType(tableType);
 //             case LuaDocArrayTypeSyntax arrayType:
 //                 return InferArrayType(arrayType);
@@ -44,7 +44,7 @@
 //         }
 //     }
 //
-//     private static LuaType InferTableType(LuaDocTableTypeSyntax tableType)
+//     private static LuaType InferTableType(LuaDocObjectTypeSyntax tableType)
 //     {
 //         return new LuaElementRef(tableType.UniqueId);
 //     }
