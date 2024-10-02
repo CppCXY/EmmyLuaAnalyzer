@@ -44,6 +44,18 @@ public static class MappedParser
             // }
 
             p.Expect(LuaTokenKind.TkRightBracket);
+            // [P in keyof T]+?
+            // [P in keyof T]-?
+            if (p.Current is LuaTokenKind.TkMinus)
+            {
+                p.Bump();
+                p.Expect(LuaTokenKind.TkNullable);
+            }
+            else if (p.Current is LuaTokenKind.TkNullable)
+            {
+                p.Bump();
+            }
+
             return m.Complete(p, LuaSyntaxKind.TypeMappedKeys);
         }
         catch (UnexpectedTokenException e)

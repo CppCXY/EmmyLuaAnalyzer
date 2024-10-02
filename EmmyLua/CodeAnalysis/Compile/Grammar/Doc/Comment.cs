@@ -6,6 +6,15 @@ namespace EmmyLua.CodeAnalysis.Compile.Grammar.Doc;
 
 public static class CommentParser
 {
+    /// <summary>
+    /// ---@class AAA
+    /// ---@field field1 number
+    /// ---@field field2 string
+    ///
+    /// ---@interface BBB
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
     public static CompleteMarker Comment(LuaDocParser p)
     {
         var m = p.Marker();

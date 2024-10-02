@@ -91,7 +91,11 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(index, tree),
                 LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(index, tree),
-                LuaSyntaxKind.TypeTemplate => new LuaDocTemplateTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeStringTemplate => new LuaDocTemplateTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeIntersection => new LuaDocIntersectionTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeExtends => new LuaDocExtendTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeIn => new LuaDocInTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeMappedKeys => new LuaDocMappedKeysSyntax(index, tree),
                 LuaSyntaxKind.DocDetailField => new LuaDocFieldSyntax(index, tree),
                 LuaSyntaxKind.LocalName => new LuaLocalNameSyntax(index, tree),
                 LuaSyntaxKind.ParamName => new LuaParamDefSyntax(index, tree),
@@ -103,6 +107,9 @@ public static class SyntaxFactory
                 LuaSyntaxKind.DiagnosticNameList => new LuaDocDiagnosticNameListSyntax(index, tree),
                 LuaSyntaxKind.DocAttribute => new LuaDocAttributeSyntax(index, tree),
                 LuaSyntaxKind.Version => new LuaDocVersionSyntax(index, tree),
+                LuaSyntaxKind.DocReadonly => new LuaDocTagOtherSyntax(index, tree),
+                // LuaSyntaxKind.TypeMatch =>
+                // LuaSyntaxKind.None =>
                 _ => throw new ArgumentException("Unexpected SyntaxKind")
             };
         }

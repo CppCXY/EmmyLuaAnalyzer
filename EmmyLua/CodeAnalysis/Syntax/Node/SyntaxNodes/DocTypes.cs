@@ -113,9 +113,18 @@ public class LuaDocConditionalTypeSyntax(int index, LuaSyntaxTree tree) : LuaDoc
 
 public class LuaDocMappedTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocTypeSyntax? KeyType => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocMappedKeysSyntax? Key => FirstChild<LuaDocMappedKeysSyntax>();
 
     public LuaDocTypeSyntax? ValueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+}
+
+public class LuaDocMappedKeysSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+
+    public LuaDocTypeSyntax? IterType => FirstChild<LuaDocTypeSyntax>();
+
+    // other TODO
 }
 
 public class LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
@@ -130,4 +139,16 @@ public class LuaDocInTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSynta
     public LuaDocNameTypeSyntax? BaseType => FirstChild<LuaDocNameTypeSyntax>();
 
     public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+}
+
+public class LuaDocExtendTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+
+    public LuaDocTypeSyntax? ExtendType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+}
+
+public class LuaDocIntersectionTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+{
+    public IEnumerable<LuaDocTypeSyntax> IntersectionTypes => ChildrenElement<LuaDocTypeSyntax>();
 }

@@ -79,6 +79,7 @@ public static class TypesParser
                     CompileTypeOperatorKind.TypeBinaryOperator.Union => LuaSyntaxKind.TypeUnion,
                     CompileTypeOperatorKind.TypeBinaryOperator.Intersection => LuaSyntaxKind.TypeIntersection,
                     CompileTypeOperatorKind.TypeBinaryOperator.In => LuaSyntaxKind.TypeIn,
+                    CompileTypeOperatorKind.TypeBinaryOperator.Extends => LuaSyntaxKind.TypeExtends,
                     _ => LuaSyntaxKind.None
                 };
                 cm = m.Complete(p, kind);
@@ -95,19 +96,14 @@ public static class TypesParser
         if (threeOp != CompileTypeOperatorKind.TypeThreeOperator.None)
         {
             var m = cm.Precede(p);
+            // support for condition ? trueType : falseType
+            p.Expect(LuaTokenKind.TkNullable);
             try
             {
-                p.Bump();
-                var cm2 = SubType(p, 0, feature | TypeParseFeature.DisableNullable);
+                var cm2 = SubType(p, 0, feature);
                 if (!cm2.IsComplete)
                 {
-                    return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
-                }
-
-                p.Expect(LuaTokenKind.TkNullable);
-                var cm3 = SubType(p, 0, feature);
-                if (!cm3.IsComplete)
-                {
+                    p.Bump();
                     return m.Fail(p, LuaSyntaxKind.TypeConditional, "expect type");
                 }
 
@@ -142,6 +138,7 @@ public static class TypesParser
         return cm;
     }
 
+    // ---@return <type> [name], ...
     public static void ReturnTypeList(LuaDocParser p)
     {
         if (p.Current is LuaTokenKind.TkDocMatch)
@@ -155,10 +152,21 @@ public static class TypesParser
 
             return;
         }
-
-        TypeList(p);
+        else
+        {
+            var cm = Type(p);
+            // just compact luals, donot support now
+            p.Accept(LuaTokenKind.TkName);
+            while (cm.IsComplete && p.Current is LuaTokenKind.TkComma)
+            {
+                p.Bump();
+                cm = Type(p, TypeParseFeature.None);
+                p.Accept(LuaTokenKind.TkName);
+            }
+        }
     }
 
+    // donot support now
     private static CompleteMarker ReturnMatchType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -220,17 +228,6 @@ public static class TypesParser
                     pcm = m.Complete(p, LuaSyntaxKind.TypeGeneric);
                     return;
                 }
-                // '?'
-                case LuaTokenKind.TkNullable:
-                {
-                    if (feature.HasFlag(TypeParseFeature.DisableNullable))
-                    {
-                        return;
-                    }
-
-                    p.Bump();
-                    break;
-                }
                 case LuaTokenKind.TkDots:
                 {
                     if (pcm.Kind != LuaSyntaxKind.TypeName)
@@ -252,7 +249,7 @@ public static class TypesParser
 
                     var m = pcm.Reset(p);
                     p.Bump();
-                    pcm = m.Complete(p, LuaSyntaxKind.TypeTemplate);
+                    pcm = m.Complete(p, LuaSyntaxKind.TypeStringTemplate);
                     return;
                 }
                 default:
@@ -272,13 +269,15 @@ public static class TypesParser
             LuaTokenKind.TkLeftBracket => TupleType(p),
             LuaTokenKind.TkString or LuaTokenKind.TkInt or LuaTokenKind.TkDocBoolean => LiteralType(p),
             LuaTokenKind.TkName => FuncOrNameType(p),
-            LuaTokenKind.TkStringTemplateType => TemplateType(p),
+            LuaTokenKind.TkStringTemplateType => StringTemplateType(p),
             LuaTokenKind.TkDots => VariadicType(p),
             _ => CompleteMarker.Empty
         };
     }
 
-    public static CompleteMarker ObjectOrMappedType(LuaDocParser p)
+    // objectType: { a: number } or { [number]: string } or { [1]: string }
+    // mappedType: { [P in keyof T as P]: T[P] } or { [P in keyof T]: T[P] }
+    private static CompleteMarker ObjectOrMappedType(LuaDocParser p)
     {
         var m = p.Marker();
 
@@ -304,6 +303,7 @@ public static class TypesParser
         }
     }
 
+    // (type)
     private static CompleteMarker ParenType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -323,6 +323,7 @@ public static class TypesParser
         }
     }
 
+    // [type, type, ...]
     private static CompleteMarker TupleType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -348,6 +349,7 @@ public static class TypesParser
         }
     }
 
+    // <stringLiteral> or <integerLiteral> or <booleanLiteral>
     private static CompleteMarker LiteralType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -357,6 +359,8 @@ public static class TypesParser
         return m.Complete(p, LuaSyntaxKind.TypeLiteral);
     }
 
+    // funcType:  fun(...) or fun(a: number, b: string): void or async fun(a: number, b: string): void
+    //
     private static CompleteMarker FuncOrNameType(LuaDocParser p)
     {
         if (p.CurrentNameText is "fun" or "async")
@@ -369,13 +373,16 @@ public static class TypesParser
         return m.Complete(p, LuaSyntaxKind.TypeName);
     }
 
-    private static CompleteMarker TemplateType(LuaDocParser p)
+    // `T`
+    private static CompleteMarker StringTemplateType(LuaDocParser p)
     {
         var m = p.Marker();
         p.Bump();
-        return m.Complete(p, LuaSyntaxKind.TypeTemplate);
+        return m.Complete(p, LuaSyntaxKind.TypeStringTemplate);
     }
 
+    // ...T, trival type just compact luals
+    // should same as <NamedType>
     private static CompleteMarker VariadicType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -392,6 +399,7 @@ public static class TypesParser
         }
     }
 
+    // fun(...) or fun(a: number, b: string): void or async fun(a: number, b: string): void
     public static CompleteMarker FunType(LuaDocParser p)
     {
         var m = p.Marker();
@@ -446,6 +454,7 @@ public static class TypesParser
         }
     }
 
+    // <name> or <name>? or <name>:<type> or  <name>?: <type>
     private static CompleteMarker TypedParameter(LuaDocParser p)
     {
         var m = p.Marker();
@@ -479,6 +488,7 @@ public static class TypesParser
         }
     }
 
+    // ... or ...: <type>
     private static CompleteMarker VariadicTypedParameter(LuaDocParser p)
     {
         var m = p.Marker();

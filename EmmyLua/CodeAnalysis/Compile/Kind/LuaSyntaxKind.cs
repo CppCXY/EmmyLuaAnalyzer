@@ -103,7 +103,7 @@ public enum LuaSyntaxKind : ushort
     TypeName, // name
     TypeVariadic, // ...type
     TypeExpand, // type...
-    TypeTemplate, // prefixName.`T`
+    TypeStringTemplate, // prefixName.`T`
     TypeMatch, // not support now
 
     // doc parameter

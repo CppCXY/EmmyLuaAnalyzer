@@ -14,12 +14,13 @@ public static class CompileTypeOperatorKind
         Union,
         Intersection,
         In,
+        Extends
     }
 
     public enum TypeThreeOperator
     {
         None,
-        Extends,
+        Condition,
     }
 
     public static TypeUnaryOperator ToUnaryTypeOperatorKind(LuaTokenKind kind)
@@ -46,7 +47,7 @@ public static class CompileTypeOperatorKind
     {
         return kind switch
         {
-            LuaTokenKind.TkDocExtends => TypeThreeOperator.Extends,
+            LuaTokenKind.TkNullable => TypeThreeOperator.Condition,
             _ => TypeThreeOperator.None
         };
     }
