@@ -209,8 +209,7 @@ public class NamespaceOrTypeInfo
             return null;
         }
 
-        var computer = TypeComputer.Compile(genericList, typeSyntax);
-        var typeInfo = new LuaAliasTypeInfo(elementId, computer);
+        var typeInfo = new LuaAliasTypeInfo(elementId);
         TypeInfo = typeInfo;
         return typeInfo;
     }

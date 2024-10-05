@@ -33,8 +33,6 @@ public class LuaPartialTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) 
 
     public override LuaType? BaseType => null;
 
-    public override TypeComputer? TypeCompute => null;
-
     private List<LuaTypeRef>? _supers = null;
 
     public override List<LuaTypeRef>? Supers => _supers;

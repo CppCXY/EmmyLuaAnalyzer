@@ -14,21 +14,9 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
     public LuaDocument Document { get; } = document;
 
-    private RangeCollection IgnoreRanges { get; } = new();
-
     private Dictionary<SyntaxElementId, Dictionary<string, LuaType?>> GenericNames { get; } = new();
 
     private Dictionary<SyntaxElementId, SyntaxElementId> GenericEffectRanges { get; } = new();
-
-    public void AddIgnoreRange(SourceRange range)
-    {
-        IgnoreRanges.AddRange(range);
-    }
-
-    public bool IsIgnoreRange(SourceRange range)
-    {
-        return IgnoreRanges.Contains(range.StartOffset);
-    }
 
     public LuaType? FindType(string name, LuaCommentSyntax comment)
     {
@@ -79,6 +67,6 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
     public void AddDiagnostic(Diagnostic diagnostic)
     {
-        Compilation.Diagnostics.AddDiagnostic(document.Id, diagnostic);
+        Compilation.Diagnostics.AddDiagnostic(Document.Id, diagnostic);
     }
 }

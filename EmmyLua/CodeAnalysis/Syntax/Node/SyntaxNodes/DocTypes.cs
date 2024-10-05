@@ -46,7 +46,7 @@ public class LuaDocTypedParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNo
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 
-    public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
+    public bool Nullable => FirstChildToken(LuaTokenKind.TkDocQuestion) != null;
 
     public bool IsVarArgs => VarArgs != null;
 }
@@ -90,7 +90,7 @@ public class LuaDocExpandTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeS
     public LuaNameToken? Name => FirstChild<LuaNameToken>();
 }
 
-public class LuaDocTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocStringTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
     public LuaNameToken? PrefixName => FirstChild<LuaNameToken>();
 
@@ -104,6 +104,8 @@ public class LuaDocKeyOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSy
 
 public class LuaDocConditionalTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
+    public LuaSyntaxToken QuestionToken => FirstChildToken(LuaTokenKind.TkDocQuestion)!;
+
     public LuaDocTypeSyntax? CheckType => FirstChild<LuaDocTypeSyntax>();
 
     public LuaDocTypeSyntax? TrueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
@@ -136,13 +138,15 @@ public class LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : LuaDoc
 
 public class LuaDocInTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocNameTypeSyntax? BaseType => FirstChild<LuaDocNameTypeSyntax>();
+    public LuaDocNameTypeSyntax? KeyType => FirstChild<LuaDocNameTypeSyntax>();
 
     public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
 }
 
 public class LuaDocExtendTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
+    public LuaSyntaxToken ExtendToken => FirstChildToken(LuaTokenKind.TkDocExtends)!;
+
     public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
 
     public LuaDocTypeSyntax? ExtendType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();

@@ -50,7 +50,7 @@ public static class FieldsParser
                 }
             }
 
-            p.Accept(LuaTokenKind.TkNullable);
+            p.Accept(LuaTokenKind.TkDocQuestion);
             if (inBody)
             {
                 p.Expect(LuaTokenKind.TkColon);

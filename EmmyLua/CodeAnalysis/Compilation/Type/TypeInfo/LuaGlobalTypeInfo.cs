@@ -83,8 +83,6 @@ public class LuaGlobalTypeInfo(NamedTypeKind kind, LuaTypeAttribute attribute) :
 
     public override LuaType? BaseType => _baseType;
 
-    public override TypeComputer? TypeCompute => null;
-
     private List<LuaTypeRef>? _supers = null;
 
     public override List<LuaTypeRef>? Supers => _supers;

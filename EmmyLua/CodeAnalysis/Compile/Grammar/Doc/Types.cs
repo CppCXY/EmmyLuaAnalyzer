@@ -97,7 +97,7 @@ public static class TypesParser
         {
             var m = cm.Precede(p);
             // support for condition ? trueType : falseType
-            p.Expect(LuaTokenKind.TkNullable);
+            p.Expect(LuaTokenKind.TkDocQuestion);
             try
             {
                 var cm2 = SubType(p, 0, feature);
@@ -463,7 +463,7 @@ public static class TypesParser
             if (p.Current is LuaTokenKind.TkName)
             {
                 p.Bump();
-                p.Accept(LuaTokenKind.TkNullable);
+                p.Accept(LuaTokenKind.TkDocQuestion);
             }
             else if (p.Current is LuaTokenKind.TkDots)
             {

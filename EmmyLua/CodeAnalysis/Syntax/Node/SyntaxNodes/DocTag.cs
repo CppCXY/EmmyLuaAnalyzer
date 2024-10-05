@@ -81,7 +81,7 @@ public class LuaDocTagParamSyntax(int index, LuaSyntaxTree tree) : LuaDocTagSynt
 
     public LuaSyntaxToken? VarArgs => FirstChildToken(LuaTokenKind.TkDots);
 
-    public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
+    public bool Nullable => FirstChildToken(LuaTokenKind.TkDocQuestion) != null;
 
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }

@@ -126,7 +126,7 @@ public enum LuaTokenKind : ushort
     TkDocInfer, // infer
     TkDocContinue, // ---
     TkDocDetail, // a description
-    TkNullable, // '?'
+    TkDocQuestion, // '?'
     TkDocVisibility, // public private protected package
     TkDocReadonly, // readonly
     TkAt, // '@', invalid lua token, but for postfix completion

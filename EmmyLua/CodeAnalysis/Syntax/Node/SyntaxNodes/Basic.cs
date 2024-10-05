@@ -183,7 +183,7 @@ public class LuaDocFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(in
         }
     }
 
-    public bool Nullable => FirstChildToken(LuaTokenKind.TkNullable) != null;
+    public bool Nullable => FirstChildToken(LuaTokenKind.TkDocQuestion) != null;
 
     public LuaSyntaxElement? FieldElement
     {

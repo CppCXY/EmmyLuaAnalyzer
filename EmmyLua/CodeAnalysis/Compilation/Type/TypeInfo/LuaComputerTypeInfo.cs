@@ -7,7 +7,7 @@ using EmmyLua.CodeAnalysis.Syntax.Node;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 
-public class LuaAliasTypeInfo(SyntaxElementId id, TypeComputer typeComputer) : LuaTypeInfo
+public class LuaAliasTypeInfo(SyntaxElementId id) : LuaTypeInfo
 {
     private SyntaxElementId _elementId = id;
 
@@ -23,7 +23,6 @@ public class LuaAliasTypeInfo(SyntaxElementId id, TypeComputer typeComputer) : L
 
     public override LuaType? BaseType => null;
 
-    public override TypeComputer TypeCompute => typeComputer;
 
     public override List<LuaTypeRef>? Supers => null;
 

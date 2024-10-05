@@ -47,12 +47,7 @@ public readonly record struct SyntaxElementId(LuaDocumentId DocumentId, int Elem
     public LuaSyntaxElement? ToSyntaxElement(LuaCompilation compilation)
     {
         var document = compilation.Project.GetDocument(DocumentId);
-        if (document is not null)
-        {
-            return document.SyntaxTree.GetElement(ElementId);
-        }
-
-        return null;
+        return document?.SyntaxTree.GetElement(ElementId);
     }
 
     public override string ToString()

@@ -47,7 +47,7 @@ public static class CompileTypeOperatorKind
     {
         return kind switch
         {
-            LuaTokenKind.TkNullable => TypeThreeOperator.Condition,
+            LuaTokenKind.TkDocQuestion => TypeThreeOperator.Condition,
             _ => TypeThreeOperator.None
         };
     }

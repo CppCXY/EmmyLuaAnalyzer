@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Syntax.Visitor;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
@@ -140,6 +141,11 @@ public class LuaSyntaxNode(int index, LuaSyntaxTree tree)
                 }
             }
         }
+    }
+
+    public void VisitSyntaxNode(LuaSyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 
     public ReadOnlySpan<char> Text => Tree.Document.Text.AsSpan(Range.StartOffset, Range.Length);

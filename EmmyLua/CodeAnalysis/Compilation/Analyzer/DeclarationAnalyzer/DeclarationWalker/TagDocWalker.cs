@@ -16,8 +16,6 @@ public partial class DeclarationWalker
         if (tagClassSyntax is { Name: { } name })
         {
             var attribute = GetAttribute(tagClassSyntax);
-
-
             var typeInfo = builder.TypeManager.AddTypeDefinition(
                 tagClassSyntax,
                 name.RepresentText,

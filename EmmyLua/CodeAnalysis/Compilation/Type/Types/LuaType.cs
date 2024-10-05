@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compilation.Type.Visitor;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.Types;
 
@@ -21,6 +22,11 @@ public abstract class LuaType
     public abstract IEnumerable<LuaType> ChildrenTypes { get; }
 
     public abstract IEnumerable<LuaType> DescendantTypes { get; }
+
+    public void Visit(LuaTypeVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 
     public override string ToString()
     {

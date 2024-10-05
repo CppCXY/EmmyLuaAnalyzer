@@ -1,9 +1,11 @@
-﻿using System.Text;
+﻿using System.Collections;
+using System.Text;
 using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
+using EmmyLua.CodeAnalysis.Syntax.Visitor;
 using EmmyLua.CodeAnalysis.Syntax.Walker;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
@@ -78,6 +80,51 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
                     {
                         yield return (element as LuaSyntaxNode)!;
                     }
+                }
+            }
+        }
+    }
+
+    // for better performance
+    public IEnumerable<LuaSyntaxNode> ChildrenNodeFor(HashSet<LuaSyntaxKind> kinds)
+    {
+        var start = ChildStartIndex;
+        if (start == -1)
+        {
+            yield break;
+        }
+
+        var finish = ChildFinishIndex;
+        for (var i = start; i <= finish; i++)
+        {
+            if (kinds.Contains(Tree.GetSyntaxKind(i)))
+            {
+                var element = Tree.GetElement(i);
+                if (element is LuaSyntaxNode node)
+                {
+                    yield return node;
+                }
+            }
+        }
+    }
+
+    public IEnumerable<LuaSyntaxToken> ChildrenTokenFor(HashSet<LuaTokenKind> kinds)
+    {
+        var start = ChildStartIndex;
+        if (start == -1)
+        {
+            yield break;
+        }
+
+        var finish = ChildFinishIndex;
+        for (var i = start; i <= finish; i++)
+        {
+            if (kinds.Contains(Tree.GetTokenKind(i)))
+            {
+                var element = Tree.GetElement(i);
+                if (element is LuaSyntaxToken token)
+                {
+                    yield return token;
                 }
             }
         }
@@ -524,6 +571,8 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
 
         return null;
     }
+
+    public void VisitSyntax(LuaSyntaxVisitor visitor) => visitor.Visit(this);
 
     public void PushDiagnostic(DiagnosticSeverity severity, string message)
     {

@@ -4,6 +4,7 @@ using EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
+using EmmyLua.CodeAnalysis.Syntax.Visitor;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.TypeAnalyzer;
 
@@ -17,11 +18,21 @@ public class TypeAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compilation,
             var comments = document.SyntaxTree.SyntaxRoot.Descendants.OfType<LuaCommentSyntax>();
             foreach (var comment in comments)
             {
+                var visitor = new TypeCompilerVisitor(comment, typeContext);
                 AddDocGeneric(comment, typeContext);
-                foreach (var typeSyntax in comment.Descendants.OfType<LuaDocTypeSyntax>())
-                {
-                    TypeCompiler.Compile(typeSyntax, comment, typeContext);
-                }
+                comment.VisitSyntaxNode(visitor);
+            }
+        }
+    }
+
+    private class TypeCompilerVisitor(LuaCommentSyntax comment, TypeContext typeContext) : LuaSyntaxNodeVisitor
+    {
+        protected override void VisitNode(LuaSyntaxNode node)
+        {
+            if (node is LuaDocTypeSyntax typeSyntax)
+            {
+                TypeCompiler.Compile(typeSyntax, comment, typeContext);
+                SkipChildren();
             }
         }
     }

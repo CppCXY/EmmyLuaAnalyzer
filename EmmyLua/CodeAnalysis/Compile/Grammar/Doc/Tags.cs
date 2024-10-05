@@ -476,7 +476,7 @@ public static class TagParser
                 throw new UnexpectedTokenException("expected <name> or ...", p.Current);
             }
 
-            p.Accept(LuaTokenKind.TkNullable);
+            p.Accept(LuaTokenKind.TkDocQuestion);
             TypesParser.Type(p);
             DescriptionParser.Description(p);
             return m.Complete(p, LuaSyntaxKind.DocParam);

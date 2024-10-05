@@ -17,8 +17,6 @@ public abstract class LuaTypeInfo
 
     public abstract LuaType? BaseType { get; }
 
-    public abstract TypeComputer? TypeCompute { get; }
-
     public abstract List<LuaTypeRef>? Supers { get; }
 
     public abstract Dictionary<string, LuaSymbol>? Declarations { get; }

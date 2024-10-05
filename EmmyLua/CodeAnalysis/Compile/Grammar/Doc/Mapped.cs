@@ -49,9 +49,9 @@ public static class MappedParser
             if (p.Current is LuaTokenKind.TkMinus)
             {
                 p.Bump();
-                p.Expect(LuaTokenKind.TkNullable);
+                p.Expect(LuaTokenKind.TkDocQuestion);
             }
-            else if (p.Current is LuaTokenKind.TkNullable)
+            else if (p.Current is LuaTokenKind.TkDocQuestion)
             {
                 p.Bump();
             }

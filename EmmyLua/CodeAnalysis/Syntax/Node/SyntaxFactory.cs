@@ -91,7 +91,7 @@ public static class SyntaxFactory
                 LuaSyntaxKind.TypedParameter => new LuaDocTypedParamSyntax(index, tree),
                 LuaSyntaxKind.TypeVariadic => new LuaDocVariadicTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeExpand => new LuaDocExpandTypeSyntax(index, tree),
-                LuaSyntaxKind.TypeStringTemplate => new LuaDocTemplateTypeSyntax(index, tree),
+                LuaSyntaxKind.TypeStringTemplate => new LuaDocStringTemplateTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeIntersection => new LuaDocIntersectionTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeExtends => new LuaDocExtendTypeSyntax(index, tree),
                 LuaSyntaxKind.TypeIn => new LuaDocInTypeSyntax(index, tree),

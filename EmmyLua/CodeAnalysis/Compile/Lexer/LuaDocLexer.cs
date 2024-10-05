@@ -282,7 +282,7 @@ public class LuaDocLexer(LuaDocument document)
             case '?':
             {
                 Reader.Bump();
-                return LuaTokenKind.TkNullable;
+                return LuaTokenKind.TkDocQuestion;
             }
             // support luals '|+' what is this
             case '+':
