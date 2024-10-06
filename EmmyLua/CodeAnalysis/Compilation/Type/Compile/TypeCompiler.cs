@@ -7,7 +7,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 
 public static class TypeCompiler
 {
-    public static LuaType? Compile(LuaDocTypeSyntax typeSyntax, LuaCommentSyntax commentSyntax, TypeContext context)
+    public static void Compile(LuaDocTypeSyntax typeSyntax, LuaCommentSyntax commentSyntax, TypeContext context)
     {
         var stack = new Stack<LuaType>();
         try
@@ -16,14 +16,15 @@ public static class TypeCompiler
 
             if (stack.Count == 0)
             {
-                return null;
+                return;
             }
 
-            return stack.Peek();
+            var realType = stack.Peek();
+            context.AddRealType(typeSyntax.UniqueId, realType);
         }
         catch (LuaTypeCompilationCancel e)
         {
-            return null;
+            // ignore
         }
     }
 
@@ -266,7 +267,7 @@ public static class TypeCompiler
     private static void CompileInType(LuaDocInTypeSyntax luaDocInTypeSyntax, LuaCommentSyntax commentSyntax,
         TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocInTypeSyntax is { KeyType: {} keyType, IndexType: {} indexType})
+        if (luaDocInTypeSyntax is {KeyType: { } keyType, IndexType: { } indexType})
         {
             // if (keyType is )
         }
@@ -299,7 +300,7 @@ public static class TypeCompiler
     private static void CompileIndexAccessType(LuaDocIndexAccessTypeSyntax luaDocIndexAccessTypeSyntax,
         LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocIndexAccessTypeSyntax is { BaseType: { } baseTypeSyntax, IndexType: { } indexTypeSyntax })
+        if (luaDocIndexAccessTypeSyntax is {BaseType: { } baseTypeSyntax, IndexType: { } indexTypeSyntax})
         {
             CompileType(baseTypeSyntax, commentSyntax, context, stack);
             CompileType(indexTypeSyntax, commentSyntax, context, stack);
@@ -317,13 +318,34 @@ public static class TypeCompiler
     private static void CompileStringTemplateType(LuaDocStringTemplateTypeSyntax luaDocStringTemplateTypeSyntax,
         LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
     {
-        throw new NotImplementedException();
+        if (luaDocStringTemplateTypeSyntax is {TemplateName.Name: { } templateName})
+        {
+            var type = context.FindType(templateName, commentSyntax);
+            if (type is LuaTplType)
+            {
+                string prefix = string.Empty;
+                if (luaDocStringTemplateTypeSyntax.PrefixName is {RepresentText: {} prefixName})
+                {
+                    prefix = prefixName;
+                }
+
+                var stringTplType = new LuaStrTplType(prefix, templateName);
+                stack.Push(stringTplType);
+                return;
+            }
+        }
+
+        context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete string template type",
+            luaDocStringTemplateTypeSyntax.Range));
     }
 
     private static void CompileParenType(LuaDocParenTypeSyntax luaDocParenTypeSyntax, LuaCommentSyntax commentSyntax,
         TypeContext context, Stack<LuaType> stack)
     {
-        throw new NotImplementedException();
+        if (luaDocParenTypeSyntax.Type is { } typeSyntax)
+        {
+            CompileType(typeSyntax, commentSyntax, context, stack);
+        }
     }
 
     private static void CompileObjectType(LuaDocObjectTypeSyntax luaDocObjectTypeSyntax, LuaCommentSyntax commentSyntax,

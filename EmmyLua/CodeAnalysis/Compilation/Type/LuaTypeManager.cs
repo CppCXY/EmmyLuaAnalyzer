@@ -19,6 +19,8 @@ public class LuaTypeManager(LuaCompilation compilation)
 
     private InFileIndex<SyntaxElementId, LuaLocalTypeInfo> LocalTypeInfos { get; } = new();
 
+    private InFileIndex<SyntaxElementId, LuaType> RealTypes { get; } = new();
+
     // left super, right sub
     private List<(LuaNamedType, LuaNamedType)> WaitBuildSubtypes { get; } = new();
 
@@ -76,6 +78,7 @@ public class LuaTypeManager(LuaCompilation compilation)
         }
 
         LocalTypeInfos.Remove(documentId);
+        RealTypes.Remove(documentId);
     }
 
     public LuaTypeInfo? AddTypeDefinition(
@@ -225,5 +228,10 @@ public class LuaTypeManager(LuaCompilation compilation)
     public bool HasNamespace(LuaDocumentId documentId)
     {
         return NamespaceIndices.ContainsKey(documentId);
+    }
+
+    public void AddRealType(SyntaxElementId id, LuaType type)
+    {
+        RealTypes.Add(id.DocumentId, id, type);
     }
 }

@@ -67,7 +67,7 @@ public class LuaNilToken(int index, LuaSyntaxTree tree) : LuaSyntaxToken(index, 
 
 public class LuaBoolToken(int index, LuaSyntaxTree tree) : LuaSyntaxToken(index, tree)
 {
-    public bool Value => Text == "true";
+    public bool Value => Text is "true";
 }
 
 public class LuaDotsToken(int index, LuaSyntaxTree tree) : LuaSyntaxToken(index, tree);

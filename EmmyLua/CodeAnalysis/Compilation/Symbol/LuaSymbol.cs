@@ -87,8 +87,10 @@ public class LuaSymbol(
     public LuaSymbol WithType(LuaType? otherType) =>
         new(Name, otherType, Info, Feature, Visibility);
 
-    public LuaSymbol Instantiate(TypeSubstitution substitution) =>
-        new(Name, Type?.Instantiate(substitution), Info, Feature, Visibility);
+    public LuaSymbol Instantiate(TypeSubstitution substitution)
+    {
+        throw new NotImplementedException();
+    }
 
     public bool ValidateLuaVersion(VersionNumber version)
     {

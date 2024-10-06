@@ -69,4 +69,9 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
     {
         Compilation.Diagnostics.AddDiagnostic(Document.Id, diagnostic);
     }
+
+    public void AddRealType(SyntaxElementId id, LuaType type)
+    {
+        Compilation.TypeManager.AddRealType(id, type);
+    }
 }
