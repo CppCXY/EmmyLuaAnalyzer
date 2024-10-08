@@ -584,6 +584,8 @@ public abstract class LuaSyntaxElement(int index, LuaSyntaxTree tree)
         where TNode : LuaSyntaxElement
         => new(UniqueId);
 
+    public SyntaxIterator Iter => new(ElementId, Tree);
+
     public override int GetHashCode()
     {
         return UniqueId.GetHashCode();

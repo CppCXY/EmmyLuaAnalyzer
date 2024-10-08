@@ -158,7 +158,7 @@ public static class TypeCompiler
     private static void CompileExtendType(LuaDocExtendTypeSyntax luaDocExtendTypeSyntax, LuaCommentSyntax commentSyntax,
         TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocExtendTypeSyntax is {BaseType: { } baseTypeSyntax, ExtendType: { } extendTypeSyntax})
+        if (luaDocExtendTypeSyntax is { BaseType: { } baseTypeSyntax, ExtendType: { } extendTypeSyntax })
         {
             CompileType(baseTypeSyntax, commentSyntax, context, stack);
             CompileType(extendTypeSyntax, commentSyntax, context, stack);
@@ -188,7 +188,8 @@ public static class TypeCompiler
     {
         if (luaDocConditionalTypeSyntax is
             {
-                CheckType: { } checkTypeSyntax, TrueType: { } trueTypeSyntax,
+                CheckType: { } checkTypeSyntax,
+                TrueType: { } trueTypeSyntax,
                 FalseType: { } falseTypeSyntax
             })
         {
@@ -225,13 +226,13 @@ public static class TypeCompiler
     {
         switch (luaDocLiteralTypeSyntax)
         {
-            case {Boolean.Kind: { } kind}:
+            case { Boolean.Kind: { } kind }:
                 stack.Push(new LuaBooleanLiteralType(kind == LuaTokenKind.TkTrue));
                 break;
-            case {Integer: { } integer}:
+            case { Integer: { } integer }:
                 stack.Push(new LuaIntegerLiteralType(integer.Value));
                 break;
-            case {String: { } str}:
+            case { String: { } str }:
                 stack.Push(new LuaStringLiteralType(str.Value));
                 break;
         }
@@ -257,19 +258,45 @@ public static class TypeCompiler
         }
     }
 
-    // TODO
     private static bool TryGetKeys(LuaType type, out List<string> result, LuaCommentSyntax commentSyntax,
         TypeContext context)
     {
-        throw new NotImplementedException();
+        result = [];
+        if (type is LuaNamedType namedType)
+        {
+            var typeInfo = context.Compilation.TypeManager.FindTypeInfo(namedType);
+            if (typeInfo is null)
+            {
+                return false;
+            }
+
+            if (typeInfo.Declarations?.Keys.ToList() is { } keys)
+            {
+                result = keys;
+            }
+        }
+
+        return false;
     }
 
     private static void CompileInType(LuaDocInTypeSyntax luaDocInTypeSyntax, LuaCommentSyntax commentSyntax,
         TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocInTypeSyntax is {KeyType: { } keyType, IndexType: { } indexType})
+        if (luaDocInTypeSyntax is { KeyType: { } keyType, IndexType: { } indexType })
         {
-            // if (keyType is )
+            if (keyType is { Name.RepresentText: { } name })
+            {
+                CompileType(indexType, commentSyntax, context, stack);
+                var baseType = stack.Pop();
+                var inType = new LuaInType(name, baseType);
+                stack.Push(inType);
+            }
+        }
+        else
+        {
+            context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete in type",
+                luaDocInTypeSyntax.InToken.Range));
+            throw new LuaTypeCompilationCancel();
         }
     }
 
@@ -300,7 +327,7 @@ public static class TypeCompiler
     private static void CompileIndexAccessType(LuaDocIndexAccessTypeSyntax luaDocIndexAccessTypeSyntax,
         LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocIndexAccessTypeSyntax is {BaseType: { } baseTypeSyntax, IndexType: { } indexTypeSyntax})
+        if (luaDocIndexAccessTypeSyntax is { BaseType: { } baseTypeSyntax, IndexType: { } indexTypeSyntax })
         {
             CompileType(baseTypeSyntax, commentSyntax, context, stack);
             CompileType(indexTypeSyntax, commentSyntax, context, stack);
@@ -312,19 +339,20 @@ public static class TypeCompiler
         {
             context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete index access type",
                 luaDocIndexAccessTypeSyntax.Range));
+            throw new LuaTypeCompilationCancel();
         }
     }
 
     private static void CompileStringTemplateType(LuaDocStringTemplateTypeSyntax luaDocStringTemplateTypeSyntax,
         LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
     {
-        if (luaDocStringTemplateTypeSyntax is {TemplateName.Name: { } templateName})
+        if (luaDocStringTemplateTypeSyntax is { TemplateName.Name: { } templateName })
         {
             var type = context.FindType(templateName, commentSyntax);
             if (type is LuaTplType)
             {
                 string prefix = string.Empty;
-                if (luaDocStringTemplateTypeSyntax.PrefixName is {RepresentText: {} prefixName})
+                if (luaDocStringTemplateTypeSyntax.PrefixName is { RepresentText: { } prefixName })
                 {
                     prefix = prefixName;
                 }

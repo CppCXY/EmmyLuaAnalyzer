@@ -32,19 +32,9 @@ public static class MappedParser
         try
         {
             p.Expect(LuaTokenKind.TkLeftBracket);
-            p.Expect(LuaTokenKind.TkName);
-            p.Expect(LuaTokenKind.TkIn);
             TypesParser.Type(p);
-
-            // TODO support `as`
-            // if (p.Current is LuaTokenKind.TkDocAs)
-            // {
-            //     p.Bump();
-            //     TypesParser.Type(p);
-            // }
-
             p.Expect(LuaTokenKind.TkRightBracket);
-            // [P in keyof T]+?
+            // [P in keyof T]?
             // [P in keyof T]-?
             if (p.Current is LuaTokenKind.TkMinus)
             {
@@ -63,22 +53,4 @@ public static class MappedParser
             return m.Fail(p, LuaSyntaxKind.TypeMappedKeys, e.Message);
         }
     }
-
-    // private static CompleteMarker MappedKeysAs(LuaDocParser p)
-    // {
-    //     var m = p.Marker();
-    //     try
-    //     {
-    //         p.Expect(LuaTokenKind.TkLeftBracket);
-    //         p.Expect(LuaTokenKind.TkName);
-    //         p.Expect(LuaTokenKind.TkIn);
-    //         TypesParser.Type(p);
-    //         p.Expect(LuaTokenKind.TkRightBracket);
-    //         return m.Complete(p, LuaSyntaxKind.TypeMappedKeys);
-    //     }
-    //     catch (UnexpectedTokenException e)
-    //     {
-    //         return m.Fail(p, LuaSyntaxKind.TypeMappedKeys, e.Message);
-    //     }
-    // }
 }

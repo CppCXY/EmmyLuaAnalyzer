@@ -39,6 +39,7 @@ public static class CompileTypeOperatorKind
             LuaTokenKind.TkDocOr => TypeBinaryOperator.Union,
             LuaTokenKind.TkDocAnd => TypeBinaryOperator.Intersection,
             LuaTokenKind.TkDocIn => TypeBinaryOperator.In,
+            LuaTokenKind.TkDocExtends => TypeBinaryOperator.Extends,
             _ => TypeBinaryOperator.None
         };
     }

@@ -93,7 +93,7 @@ public enum LuaSyntaxKind : ushort
     TypeConditional, // conditionType ? trueType : falseType
     TypeIndexAccess, // type[keyType]
     TypeMapped, // { [p in KeyType]+? : ValueType }
-    TypeMappedKeys, // [p in KeyType]+?
+    TypeMappedKeys, // [p in KeyType]?
     TypeFun, // fun(<paramList>): returnType
     TypeGeneric, // name<typeList>
     TypeTuple, // [typeList]
