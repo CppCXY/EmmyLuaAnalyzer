@@ -3,7 +3,10 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
-public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree);
+public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
+{
+    public static bool CanCast(LuaSyntaxKind kind) => kind is >= LuaSyntaxKind.ParenExpr and <= LuaSyntaxKind.NameExpr;
+}
 
 public class LuaNameExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {

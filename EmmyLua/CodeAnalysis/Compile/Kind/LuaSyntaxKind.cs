@@ -55,7 +55,6 @@ public enum LuaSyntaxKind : ushort
     DocAlias,
     DocField,
     DocEnumField,
-
     DocType,
     DocParam,
     DocReturn,
@@ -80,9 +79,9 @@ public enum LuaSyntaxKind : ushort
     DocSource,
     DocReadonly,
 
+
     DocDetailField,
     DocBody,
-
     // doc Type
     TypeArray, // baseType []
     TypeUnion, // aType | bType

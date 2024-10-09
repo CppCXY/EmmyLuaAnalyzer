@@ -207,16 +207,16 @@ public class ResolveDependencyGraph(SearchContext context, AnalyzeContext analyz
             var typeInfo = context.Compilation.TypeManager.FindTypeInfo(id);
             if (typeInfo?.BaseType is LuaMethodType methodType)
             {
-                var retType = methodType.MainSignature.ReturnType;
-                if (!retType.IsSameType(Builtin.Unknown, context))
-                {
-                    OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
-                }
-                else
-                {
-                    var block = unResolvedMethod.Block;
-                    AnalyzeBlockReturns(block, unResolved);
-                }
+                // var retType = methodType.MainSignature.ReturnType;
+                // if (!retType.IsSameType(Builtin.Unknown, context))
+                // {
+                //     OnResolved?.Invoke(unResolved, ResolveState.UnResolveReturn);
+                // }
+                // else
+                // {
+                //     var block = unResolvedMethod.Block;
+                //     AnalyzeBlockReturns(block, unResolved);
+                // }
             }
         }
         else if (unResolved is UnResolvedSource unResolvedSource)

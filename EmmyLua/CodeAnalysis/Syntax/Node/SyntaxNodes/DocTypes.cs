@@ -5,7 +5,9 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaDocTypeSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
 {
-    public LuaDescriptionSyntax? Description => FirstChild<LuaDescriptionSyntax>();
+    public static bool CanCast(LuaSyntaxKind kind) => kind is >= LuaSyntaxKind.TypeArray and <= LuaSyntaxKind.TypeMatch;
+
+    public LuaDescriptionSyntax? Description => Iter.FirstChildNode(LuaSyntaxKind.Description).ToNode<LuaDescriptionSyntax>();
 }
 
 public class LuaDocLiteralTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
@@ -99,6 +101,8 @@ public class LuaDocStringTemplateTypeSyntax(int index, LuaSyntaxTree tree) : Lua
 
 public class LuaDocKeyOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
+    public LuaSyntaxToken KeyOfToken => FirstChildToken(LuaTokenKind.TkDocKeyOf)!;
+
     public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
 }
 

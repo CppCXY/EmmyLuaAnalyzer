@@ -5,33 +5,63 @@ namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 public class LuaStatSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree), ICommentOwner
 {
+    public static bool CanCast(LuaSyntaxKind kind) =>
+        kind is >= LuaSyntaxKind.EmptyStat and <= LuaSyntaxKind.UnknownStat;
+
     public IEnumerable<LuaCommentSyntax> Comments =>
         Tree.BinderData?.GetComments(this) ?? [];
 }
 
-public class LuaLocalStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaLocalStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken? Local => FirstChildToken(LuaTokenKind.TkLocal);
+    public LuaLocalStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkLocal)
+            {
+                Local = it.ToToken<LuaSyntaxToken>();
+            }
+            else if (it.TokenKind == LuaTokenKind.TkAssign)
+            {
+                Assign = it.ToToken<LuaSyntaxToken>();
+            }
+            else if (it.Kind == LuaSyntaxKind.LocalName)
+            {
+                if (it.ToNode<LuaLocalNameSyntax>() is { } localName)
+                {
+                    NameList.Add(localName);
+                }
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                if (it.ToNode<LuaExprSyntax>() is { } expr)
+                {
+                    ExprList.Add(expr);
+                }
+            }
+        }
+    }
 
-    public IEnumerable<LuaLocalNameSyntax> NameList => ChildrenElement<LuaLocalNameSyntax>();
+    public LuaSyntaxToken? Local { get; }
 
-    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+    public List<LuaLocalNameSyntax> NameList { get; } = [];
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
+    public LuaSyntaxToken? Assign { get; }
+
+    public List<LuaExprSyntax> ExprList { get; } = [];
 
     public IEnumerable<(LuaLocalNameSyntax, (LuaExprSyntax?, int))> NameExprPairs
     {
         get
         {
-            var nameList = NameList.ToList();
-            var exprList = ExprList.ToList();
             LuaExprSyntax? lastValidExpr = null;
-            var count = nameList.Count;
+            var count = NameList.Count;
             var retId = 0;
             for (var i = 0; i < count; i++)
             {
-                var localName = nameList[i];
-                var expr = exprList.ElementAtOrDefault(i);
+                var localName = NameList[i];
+                var expr = ExprList.ElementAtOrDefault(i);
                 if (expr is not null)
                 {
                     lastValidExpr = expr;
@@ -48,27 +78,52 @@ public class LuaLocalStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(i
     }
 }
 
-public class LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaAssignStatSyntax : LuaStatSyntax
 {
-    public IEnumerable<LuaExprSyntax> VarList => ChildNodesBeforeToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
+    public LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        var foundAssign = false;
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkAssign)
+            {
+                Assign = it.ToToken<LuaSyntaxToken>();
+                foundAssign = true;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                if (it.ToNode<LuaExprSyntax>() is { } expr)
+                {
+                    if (foundAssign)
+                    {
+                        ExprList.Add(expr);
+                    }
+                    else
+                    {
+                        VarList.Add(expr);
+                    }
+                }
+            }
+        }
+    }
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildNodesAfterToken<LuaExprSyntax>(LuaTokenKind.TkAssign);
+    public List<LuaExprSyntax> VarList { get; } = [];
 
-    public LuaSyntaxToken? Assign => FirstChildToken(LuaTokenKind.TkAssign);
+    public List<LuaExprSyntax> ExprList { get; } = [];
+
+    public LuaSyntaxToken? Assign { get; }
 
     public IEnumerable<(LuaExprSyntax, (LuaExprSyntax?, int))> VarExprPairs
     {
         get
         {
-            var varList = VarList.ToList();
-            var exprList = ExprList.ToList();
             LuaExprSyntax? lastValidExpr = null;
-            var count = varList.Count;
+            var count = VarList.Count;
             var retId = 0;
             for (var i = 0; i < count; i++)
             {
-                var varExpr = varList[i];
-                var expr = exprList.ElementAtOrDefault(i);
+                var varExpr = VarList[i];
+                var expr = ExprList.ElementAtOrDefault(i);
                 if (expr is not null)
                 {
                     lastValidExpr = expr;
@@ -85,40 +140,79 @@ public class LuaAssignStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(
     }
 }
 
-public class LuaFuncStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaFuncStatSyntax : LuaStatSyntax
 {
-    public bool IsLocal => FirstChildToken(LuaTokenKind.TkLocal) != null;
+    public LuaFuncStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkLocal)
+            {
+                IsLocal = true;
+                IsMethod = false;
+            }
+            else if (it.Kind == LuaSyntaxKind.NameExpr)
+            {
+                if (it.ToNode<LuaNameExprSyntax>() is { } nameExpr)
+                {
+                    NameExpr = nameExpr;
+                }
+            }
+            else if (it.Kind == LuaSyntaxKind.IndexExpr)
+            {
+                if (it.ToNode<LuaIndexExprSyntax>() is { IsColonIndex: { } colonIndex } indexExpr)
+                {
+                    IndexExpr = indexExpr;
+                    IsColonFunc = colonIndex;
+                }
+            }
+            else if (it.Kind == LuaSyntaxKind.ClosureExpr)
+            {
+                if (it.ToNode<LuaClosureExprSyntax>() is { } closureExpr)
+                {
+                    ClosureExpr = closureExpr;
+                }
+            }
+            else if (it.Kind == LuaSyntaxKind.LocalName)
+            {
+                if (it.ToNode<LuaLocalNameSyntax>() is { } localName)
+                {
+                    LocalName = localName;
+                }
+            }
+        }
+    }
 
-    public bool IsMethod => FirstChild<LuaIndexExprSyntax>() != null;
 
-    public bool IsColonFunc => IndexExpr?.IsColonIndex == true;
+    public bool IsLocal { get; }
 
-    public LuaLocalNameSyntax? LocalName => FirstChild<LuaLocalNameSyntax>();
+    public bool IsMethod { get; } = true;
 
-    public LuaNameExprSyntax? NameExpr => FirstChild<LuaNameExprSyntax>();
+    public bool IsColonFunc { get; }
 
-    public LuaIndexExprSyntax? IndexExpr => FirstChild<LuaIndexExprSyntax>();
+    public LuaLocalNameSyntax? LocalName { get; }
 
-    public LuaClosureExprSyntax? ClosureExpr => FirstChild<LuaClosureExprSyntax>();
+    public LuaNameExprSyntax? NameExpr { get; }
+
+    public LuaIndexExprSyntax? IndexExpr { get; }
+
+    public LuaClosureExprSyntax? ClosureExpr { get; }
 
     public LuaSyntaxElement? NameElement
     {
         get
         {
-            foreach (var element in ChildrenElements)
+            if (LocalName is  { Name: { } name1 })
             {
-                if (element is LuaLocalNameSyntax { Name: { } name1 })
-                {
-                    return name1;
-                }
-                else if (element is LuaNameExprSyntax { Name: { } name2 })
-                {
-                    return name2;
-                }
-                else if (element is LuaIndexExprSyntax { KeyElement: { } keyElement })
-                {
-                    return keyElement;
-                }
+                return name1;
+            }
+            else if (NameExpr is { Name: { } name2 })
+            {
+                return name2;
+            }
+            else if (IndexExpr is { KeyElement: { } keyElement })
+            {
+                return keyElement;
             }
 
             return null;

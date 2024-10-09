@@ -5,82 +5,83 @@ using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 
-public static class TypeCompiler
+public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
 {
+    private Stack<LuaType> Stack { get; } = new();
+
     public static void Compile(LuaDocTypeSyntax typeSyntax, LuaCommentSyntax commentSyntax, TypeContext context)
     {
-        var stack = new Stack<LuaType>();
+        var compiler = new TypeCompiler(commentSyntax, context);
         try
         {
-            CompileType(typeSyntax, commentSyntax, context, stack);
+            compiler.CompileType(typeSyntax);
 
-            if (stack.Count == 0)
+            if (compiler.Stack.Count == 0)
             {
                 return;
             }
 
-            var realType = stack.Peek();
+            var realType = compiler.Stack.Peek();
             context.AddRealType(typeSyntax.UniqueId, realType);
         }
         catch (LuaTypeCompilationCancel e)
         {
-            // ignore
+            context.AddDiagnostic(Diagnostic.Error(e.Code, e.Message, e.Range));
         }
     }
 
-    private static void CompileType(LuaDocTypeSyntax typeSyntax, LuaCommentSyntax commentSyntax, TypeContext context,
-        Stack<LuaType> stack)
+    private void CompileType(LuaDocTypeSyntax typeSyntax)
     {
         switch (typeSyntax)
         {
             case LuaDocNameTypeSyntax nameTypeSyntax:
             {
-                CompileNameType(nameTypeSyntax, commentSyntax, context, stack);
+                CompileNameType(nameTypeSyntax);
                 break;
             }
             case LuaDocObjectTypeSyntax luaDocObjectTypeSyntax:
             {
-                CompileObjectType(luaDocObjectTypeSyntax, commentSyntax, context, stack);
+                CompileObjectType(luaDocObjectTypeSyntax);
                 break;
             }
             case LuaDocParenTypeSyntax luaDocParenTypeSyntax:
             {
-                CompileParenType(luaDocParenTypeSyntax, commentSyntax, context, stack);
+                CompileParenType(luaDocParenTypeSyntax);
                 break;
             }
             case LuaDocStringTemplateTypeSyntax luaDocTemplateTypeSyntax:
             {
-                CompileStringTemplateType(luaDocTemplateTypeSyntax, commentSyntax, context, stack);
+                CompileStringTemplateType(luaDocTemplateTypeSyntax);
                 break;
             }
             case LuaDocGenericTypeSyntax genericTypeSyntax:
             {
-                CompileGenericType(genericTypeSyntax, commentSyntax, context, stack);
+                CompileGenericType(genericTypeSyntax);
                 break;
             }
             case LuaDocIndexAccessTypeSyntax luaDocIndexAccessTypeSyntax:
             {
-                CompileIndexAccessType(luaDocIndexAccessTypeSyntax, commentSyntax, context, stack);
+                CompileIndexAccessType(luaDocIndexAccessTypeSyntax);
                 break;
             }
             case LuaDocIntersectionTypeSyntax luaDocIntersectionTypeSyntax:
             {
-                CompileIntersectionType(luaDocIntersectionTypeSyntax, commentSyntax, context, stack);
+                CompileIntersectionType(luaDocIntersectionTypeSyntax);
                 break;
             }
             case LuaDocInTypeSyntax luaDocInTypeSyntax:
             {
-                CompileInType(luaDocInTypeSyntax, commentSyntax, context, stack);
+                CompileInType(luaDocInTypeSyntax);
                 break;
             }
             case LuaDocKeyOfTypeSyntax luaDocKeyOfTypeSyntax:
             {
-                CompileKeyOfType(luaDocKeyOfTypeSyntax, commentSyntax, context, stack);
+                CompileKeyOfType(luaDocKeyOfTypeSyntax);
                 break;
             }
             case LuaDocLiteralTypeSyntax luaDocLiteralTypeSyntax:
             {
-                CompileLiteralType(luaDocLiteralTypeSyntax, commentSyntax, context, stack);
+                CompileLiteralType(luaDocLiteralTypeSyntax);
                 break;
             }
             // case LuaDocMappedKeysSyntax luaDocMappedKeysSyntax:
@@ -90,101 +91,114 @@ public static class TypeCompiler
             // }
             case LuaDocMappedTypeSyntax luaDocMappedTypeSyntax:
             {
-                CompileMappedType(luaDocMappedTypeSyntax, commentSyntax, context, stack);
+                CompileMappedType(luaDocMappedTypeSyntax);
                 break;
             }
             case LuaDocUnionTypeSyntax unionTypeSyntax:
             {
-                CompileUnionType(unionTypeSyntax, commentSyntax, context, stack);
+                CompileUnionType(unionTypeSyntax);
                 break;
             }
             case LuaDocVariadicTypeSyntax luaDocVariadicTypeSyntax:
             {
-                CompileVariadicType(luaDocVariadicTypeSyntax, commentSyntax, context, stack);
+                CompileVariadicType(luaDocVariadicTypeSyntax);
                 break;
             }
             case LuaDocArrayTypeSyntax arrayTypeSyntax:
             {
-                CompileArrayType(arrayTypeSyntax, commentSyntax, context, stack);
+                CompileArrayType(arrayTypeSyntax);
                 break;
             }
             case LuaDocConditionalTypeSyntax luaDocConditionalTypeSyntax:
             {
-                CompileConditionalType(luaDocConditionalTypeSyntax, commentSyntax, context, stack);
+                CompileConditionalType(luaDocConditionalTypeSyntax);
                 break;
             }
             case LuaDocExpandTypeSyntax luaDocExpandTypeSyntax:
             {
-                CompileExpandType(luaDocExpandTypeSyntax, commentSyntax, context, stack);
+                CompileExpandType(luaDocExpandTypeSyntax);
                 break;
             }
             case LuaDocExtendTypeSyntax luaDocExtendTypeSyntax:
             {
-                CompileExtendType(luaDocExtendTypeSyntax, commentSyntax, context, stack);
+                CompileExtendType(luaDocExtendTypeSyntax);
                 break;
             }
             case LuaDocTupleTypeSyntax tupleTypeSyntax:
             {
-                CompileTupleType(tupleTypeSyntax, commentSyntax, context, stack);
+                CompileTupleType(tupleTypeSyntax);
                 break;
             }
             case LuaDocFuncTypeSyntax funcTypeSyntax:
             {
-                CompileFuncType(funcTypeSyntax, commentSyntax, context, stack);
+                CompileFuncType(funcTypeSyntax);
                 break;
             }
         }
     }
 
-    private static void CompileVariadicType(LuaDocVariadicTypeSyntax luaDocVariadicTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileVariadicType(LuaDocVariadicTypeSyntax luaDocVariadicTypeSyntax)
     {
         if (luaDocVariadicTypeSyntax.Name?.RepresentText is { } name)
         {
             var type = context.FindType(name, commentSyntax);
-            if (type is not null)
+            if (type is null)
             {
-                stack.Push(type);
+                throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type not found",
+                    luaDocVariadicTypeSyntax.Range);
             }
-            else
-            {
-                context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.TypeNotFound, "Type not found",
-                    luaDocVariadicTypeSyntax.Range));
-                throw new LuaTypeCompilationCancel();
-            }
+
+            Stack.Push(type);
+            return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete variadic type",
+            luaDocVariadicTypeSyntax.Range);
     }
 
-    private static void CompileExtendType(LuaDocExtendTypeSyntax luaDocExtendTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileExtendType(LuaDocExtendTypeSyntax luaDocExtendTypeSyntax)
     {
         if (luaDocExtendTypeSyntax is { BaseType: { } baseTypeSyntax, ExtendType: { } extendTypeSyntax })
         {
-            CompileType(baseTypeSyntax, commentSyntax, context, stack);
-            CompileType(extendTypeSyntax, commentSyntax, context, stack);
-            var extendType = stack.Pop();
-            var baseType = stack.Pop();
-            stack.Push(new LuaExtendType(baseType, extendType));
+            CompileType(baseTypeSyntax);
+            CompileType(extendTypeSyntax);
+            var extendType = Stack.Pop();
+            var baseType = Stack.Pop();
+            // TODO check extend type
+            // if (baseType.IsSubTypeOf(extendType))
+            // {
+            //
+            // }
+
+            Stack.Push(new LuaExtendType(baseType, extendType));
+            return;
         }
-        else
-        {
-            context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete extend type",
-                luaDocExtendTypeSyntax.ExtendToken.Range));
-        }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete extend type",
+            luaDocExtendTypeSyntax.ExtendToken.Range);
     }
 
-    private static void CompileExpandType(LuaDocExpandTypeSyntax luaDocExpandTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    // T...
+    private void CompileExpandType(LuaDocExpandTypeSyntax luaDocExpandTypeSyntax)
     {
         if (luaDocExpandTypeSyntax.Name?.RepresentText is { } name)
         {
-            var type = new LuaExpandTplType(name);
-            stack.Push(type);
+            var type = context.FindType(name, commentSyntax);
+            if (type is not LuaTplType)
+            {
+                throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type is not a template type",
+                    luaDocExpandTypeSyntax.Range);
+            }
+
+            Stack.Push(new LuaExpandTplType(name));
+            return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete expand type",
+            luaDocExpandTypeSyntax.Range);
     }
 
-    private static void CompileConditionalType(LuaDocConditionalTypeSyntax luaDocConditionalTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileConditionalType(LuaDocConditionalTypeSyntax luaDocConditionalTypeSyntax)
     {
         if (luaDocConditionalTypeSyntax is
             {
@@ -193,73 +207,77 @@ public static class TypeCompiler
                 FalseType: { } falseTypeSyntax
             })
         {
-            CompileType(checkTypeSyntax, commentSyntax, context, stack);
-            CompileType(trueTypeSyntax, commentSyntax, context, stack);
-            CompileType(falseTypeSyntax, commentSyntax, context, stack);
-            var falseType = stack.Pop();
-            var trueType = stack.Pop();
-            var checkType = stack.Pop();
+            CompileType(checkTypeSyntax);
+            CompileType(trueTypeSyntax);
+            CompileType(falseTypeSyntax);
+            var falseType = Stack.Pop();
+            var trueType = Stack.Pop();
+            var checkType = Stack.Pop();
             if (checkType is LuaBooleanLiteralType booleanLiteralType)
             {
-                stack.Push(booleanLiteralType.Value ? trueType : falseType);
+                Stack.Push(booleanLiteralType.Value ? trueType : falseType);
             }
             else
             {
-                stack.Push(new LuaTernaryType(checkType, trueType, falseType));
+                Stack.Push(new LuaTernaryType(checkType, trueType, falseType));
             }
+
+            return;
         }
-        else
-        {
-            context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete conditional type",
-                luaDocConditionalTypeSyntax.QuestionToken.Range));
-        }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete conditional type",
+            luaDocConditionalTypeSyntax.QuestionToken.Range);
     }
 
-    private static void CompileMappedType(LuaDocMappedTypeSyntax luaDocMappedTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileMappedType(LuaDocMappedTypeSyntax luaDocMappedTypeSyntax)
     {
         throw new NotImplementedException();
     }
 
-    private static void CompileLiteralType(LuaDocLiteralTypeSyntax luaDocLiteralTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileLiteralType(LuaDocLiteralTypeSyntax luaDocLiteralTypeSyntax)
     {
         switch (luaDocLiteralTypeSyntax)
         {
             case { Boolean.Kind: { } kind }:
-                stack.Push(new LuaBooleanLiteralType(kind == LuaTokenKind.TkTrue));
-                break;
+                Stack.Push(new LuaBooleanLiteralType(kind == LuaTokenKind.TkTrue));
+                return;
             case { Integer: { } integer }:
-                stack.Push(new LuaIntegerLiteralType(integer.Value));
-                break;
+                Stack.Push(new LuaIntegerLiteralType(integer.Value));
+                return;
             case { String: { } str }:
-                stack.Push(new LuaStringLiteralType(str.Value));
-                break;
+                Stack.Push(new LuaStringLiteralType(str.Value));
+                return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete literal type",
+            luaDocLiteralTypeSyntax.Range);
     }
 
-    private static void CompileKeyOfType(LuaDocKeyOfTypeSyntax luaDocKeyOfTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileKeyOfType(LuaDocKeyOfTypeSyntax luaDocKeyOfTypeSyntax)
     {
         if (luaDocKeyOfTypeSyntax.Type is { } typeSyntax)
         {
-            CompileType(typeSyntax, commentSyntax, context, stack);
-            var type = stack.Pop();
-            if (TryGetKeys(type, out var list, commentSyntax, context))
+            CompileType(typeSyntax);
+            var type = Stack.Pop();
+            if (TryGetKeys(type, out var list))
             {
                 var stringLiteralTypes = list.Select(s => new LuaStringLiteralType(s));
                 var luaUnionType = new LuaUnionType(stringLiteralTypes.Cast<LuaType>().ToList());
-                stack.Push(luaUnionType);
+                Stack.Push(luaUnionType);
             }
             else
             {
-                stack.Push(new LuaKeyOfType(type));
+                Stack.Push(new LuaKeyOfType(type));
             }
+
+            return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete key of type",
+            luaDocKeyOfTypeSyntax.KeyOfToken.Range);
     }
 
-    private static bool TryGetKeys(LuaType type, out List<string> result, LuaCommentSyntax commentSyntax,
-        TypeContext context)
+    private bool TryGetKeys(LuaType type, out List<string> result)
     {
         result = [];
         if (type is LuaNamedType namedType)
@@ -279,207 +297,207 @@ public static class TypeCompiler
         return false;
     }
 
-    private static void CompileInType(LuaDocInTypeSyntax luaDocInTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileInType(LuaDocInTypeSyntax luaDocInTypeSyntax)
     {
-        if (luaDocInTypeSyntax is { KeyType: { } keyType, IndexType: { } indexType })
+        if (luaDocInTypeSyntax is { KeyType.Name.RepresentText: { } name, IndexType: { } indexType })
         {
-            if (keyType is { Name.RepresentText: { } name })
-            {
-                CompileType(indexType, commentSyntax, context, stack);
-                var baseType = stack.Pop();
-                var inType = new LuaInType(name, baseType);
-                stack.Push(inType);
-            }
+            CompileType(indexType);
+            var baseType = Stack.Pop();
+            var inType = new LuaInType(name, baseType);
+            Stack.Push(inType);
+            return;
         }
-        else
-        {
-            context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete in type",
-                luaDocInTypeSyntax.InToken.Range));
-            throw new LuaTypeCompilationCancel();
-        }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete in type",
+            luaDocInTypeSyntax.InToken.Range);
     }
 
-    private static void CompileIntersectionType(LuaDocIntersectionTypeSyntax luaDocIntersectionTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileIntersectionType(LuaDocIntersectionTypeSyntax luaDocIntersectionTypeSyntax)
     {
         var count = 0;
         foreach (var luaDocTypeSyntax in luaDocIntersectionTypeSyntax.IntersectionTypes)
         {
-            CompileType(luaDocTypeSyntax, commentSyntax, context, stack);
+            CompileType(luaDocTypeSyntax);
             count++;
         }
 
-        if (count > 1)
+        if (count == 0)
         {
-            var types = new List<LuaType>();
-            for (var i = count - 1; i >= 0; i--)
-            {
-                var type = stack.Pop();
-                types.Add(type);
-            }
-            // TODO calculate intersection
-
-            stack.Push(new LuaIntersectionType(types));
+            throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete intersection type",
+                luaDocIntersectionTypeSyntax.Range);
         }
+
+        var types = new List<LuaType>();
+        for (var i = count - 1; i >= 0; i--)
+        {
+            var type = Stack.Pop();
+            types.Add(type);
+        }
+        // TODO calculate intersection
+
+        Stack.Push(new LuaIntersectionType(types));
     }
 
-    private static void CompileIndexAccessType(LuaDocIndexAccessTypeSyntax luaDocIndexAccessTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileIndexAccessType(LuaDocIndexAccessTypeSyntax luaDocIndexAccessTypeSyntax)
     {
         if (luaDocIndexAccessTypeSyntax is { BaseType: { } baseTypeSyntax, IndexType: { } indexTypeSyntax })
         {
-            CompileType(baseTypeSyntax, commentSyntax, context, stack);
-            CompileType(indexTypeSyntax, commentSyntax, context, stack);
-            var indexType = stack.Pop();
-            var baseType = stack.Pop();
-            stack.Push(new LuaIndexedAccessType(baseType, indexType));
+            CompileType(baseTypeSyntax);
+            CompileType(indexTypeSyntax);
+            var indexType = Stack.Pop();
+            var baseType = Stack.Pop();
+
+            Stack.Push(new LuaIndexedAccessType(baseType, indexType));
+            return;
         }
-        else
-        {
-            context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete index access type",
-                luaDocIndexAccessTypeSyntax.Range));
-            throw new LuaTypeCompilationCancel();
-        }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete index access type",
+            luaDocIndexAccessTypeSyntax.Range);
     }
 
-    private static void CompileStringTemplateType(LuaDocStringTemplateTypeSyntax luaDocStringTemplateTypeSyntax,
-        LuaCommentSyntax commentSyntax, TypeContext context, Stack<LuaType> stack)
+    private void CompileStringTemplateType(LuaDocStringTemplateTypeSyntax luaDocStringTemplateTypeSyntax)
     {
         if (luaDocStringTemplateTypeSyntax is { TemplateName.Name: { } templateName })
         {
             var type = context.FindType(templateName, commentSyntax);
-            if (type is LuaTplType)
+            if (type is not LuaTplType)
             {
-                string prefix = string.Empty;
-                if (luaDocStringTemplateTypeSyntax.PrefixName is { RepresentText: { } prefixName })
-                {
-                    prefix = prefixName;
-                }
-
-                var stringTplType = new LuaStrTplType(prefix, templateName);
-                stack.Push(stringTplType);
-                return;
+                throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type is not a template type",
+                    luaDocStringTemplateTypeSyntax.Range);
             }
+
+            var prefix = string.Empty;
+            if (luaDocStringTemplateTypeSyntax.PrefixName is { RepresentText: { } prefixName })
+            {
+                prefix = prefixName;
+            }
+
+            var stringTplType = new LuaStrTplType(prefix, templateName);
+            Stack.Push(stringTplType);
+            return;
         }
 
-        context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.SyntaxError, "UnComplete string template type",
-            luaDocStringTemplateTypeSyntax.Range));
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete string template type",
+            luaDocStringTemplateTypeSyntax.Range);
     }
 
-    private static void CompileParenType(LuaDocParenTypeSyntax luaDocParenTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileParenType(LuaDocParenTypeSyntax luaDocParenTypeSyntax)
     {
         if (luaDocParenTypeSyntax.Type is { } typeSyntax)
         {
-            CompileType(typeSyntax, commentSyntax, context, stack);
+            CompileType(typeSyntax);
+            return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete paren type",
+            luaDocParenTypeSyntax.Range);
     }
 
-    private static void CompileObjectType(LuaDocObjectTypeSyntax luaDocObjectTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private static void CompileObjectType(LuaDocObjectTypeSyntax luaDocObjectTypeSyntax)
     {
         throw new NotImplementedException();
     }
 
-    private static void CompileUnionType(LuaDocUnionTypeSyntax unionTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileUnionType(LuaDocUnionTypeSyntax unionTypeSyntax)
     {
         var count = 0;
         foreach (var luaDocTypeSyntax in unionTypeSyntax.UnionTypes)
         {
-            CompileType(luaDocTypeSyntax, commentSyntax, context, stack);
+            CompileType(luaDocTypeSyntax);
             count++;
         }
 
-        if (count > 1)
+        if (count == 0)
         {
-            var types = new List<LuaType>();
-            for (var i = count - 1; i >= 0; i--)
-            {
-                var type = stack.Pop();
-                if (type is LuaUnionType unionType)
-                {
-                    types.AddRange(unionType.TypeList);
-                }
-                else
-                {
-                    types.Add(type);
-                }
-            }
-
-            stack.Push(new LuaUnionType(types));
+            throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete union type",
+                unionTypeSyntax.Range);
         }
+
+        var types = new List<LuaType>();
+        for (var i = count - 1; i >= 0; i--)
+        {
+            var type = Stack.Pop();
+            if (type is LuaUnionType unionType)
+            {
+                types.AddRange(unionType.TypeList);
+            }
+            else
+            {
+                types.Add(type);
+            }
+        }
+
+        Stack.Push(new LuaUnionType(types));
     }
 
-    private static void CompileArrayType(LuaDocArrayTypeSyntax arrayTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileArrayType(LuaDocArrayTypeSyntax arrayTypeSyntax)
     {
         if (arrayTypeSyntax.BaseType is null)
         {
-            throw new LuaTypeCompilationCancel();
+            throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete array type",
+                arrayTypeSyntax.Range);
         }
 
-        CompileType(arrayTypeSyntax.BaseType, commentSyntax, context, stack);
-        var baseType = stack.Pop();
-        stack.Push(new LuaArrayType(baseType));
+        CompileType(arrayTypeSyntax.BaseType);
+        var baseType = Stack.Pop();
+        Stack.Push(new LuaArrayType(baseType));
     }
 
-    private static void CompileTupleType(LuaDocTupleTypeSyntax tupleTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileTupleType(LuaDocTupleTypeSyntax tupleTypeSyntax)
     {
         var count = 0;
         foreach (var luaDocTypeSyntax in tupleTypeSyntax.TypeList)
         {
-            CompileType(luaDocTypeSyntax, commentSyntax, context, stack);
+            CompileType(luaDocTypeSyntax);
             count++;
         }
 
-        if (count > 1)
+        if (count == 1)
         {
-            var types = new List<LuaType>();
-            for (var i = count - 1; i >= 0; i--)
-            {
-                var type = stack.Pop();
-                types.Add(type);
-            }
-
-            stack.Push(new LuaTupleType(types));
+            throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "Tuple type must have more than one type",
+                tupleTypeSyntax.Range);
         }
+
+        var types = new List<LuaType>();
+        for (var i = count - 1; i >= 0; i--)
+        {
+            var type = Stack.Pop();
+            types.Add(type);
+        }
+
+        Stack.Push(new LuaTupleType(types));
     }
 
-    private static void CompileFuncType(LuaDocFuncTypeSyntax funcTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private static void CompileFuncType(LuaDocFuncTypeSyntax funcTypeSyntax)
     {
         throw new NotImplementedException();
     }
 
-    private static void CompileGenericType(LuaDocGenericTypeSyntax genericTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private static void CompileGenericType(LuaDocGenericTypeSyntax genericTypeSyntax)
     {
         // var type = context.FindType(genericTypeSyntax.Name);
         // if (type is not null)
         // {
-        //     stack.Push(type);
+        //     Stack.Push(type);
         // }
     }
 
-    private static void CompileNameType(LuaDocNameTypeSyntax nameTypeSyntax, LuaCommentSyntax commentSyntax,
-        TypeContext context, Stack<LuaType> stack)
+    private void CompileNameType(LuaDocNameTypeSyntax nameTypeSyntax)
     {
         if (nameTypeSyntax.Name?.RepresentText is { } name)
         {
             var type = context.FindType(name, commentSyntax);
-            if (type is not null)
+            if (type is null)
             {
-                stack.Push(type);
+                throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type not found",
+                    nameTypeSyntax.Range);
             }
-            else
-            {
-                context.AddDiagnostic(Diagnostic.Error(DiagnosticCode.TypeNotFound, "Type not found",
-                    nameTypeSyntax.Range));
-                throw new LuaTypeCompilationCancel();
-            }
+
+            Stack.Push(type);
+            return;
         }
+
+        throw new LuaTypeCompilationCancel(DiagnosticCode.SyntaxError, "UnComplete name type",
+            nameTypeSyntax.Range);
     }
 }

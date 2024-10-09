@@ -80,6 +80,23 @@ public class LuaSyntaxTree
         return SyntaxFactory.CreateSyntax(elementId, this);
     }
 
+    internal T? GetElement<T>(int elementId) where T : LuaSyntaxElement
+    {
+        return GetElement(elementId) as T;
+    }
+
+    internal IEnumerable<T> GetElements<T>(IEnumerable<int> ids) where T : LuaSyntaxElement
+    {
+        foreach (var id in ids)
+        {
+            var element = GetElement(id);
+            if (element is T t)
+            {
+                yield return t;
+            }
+        }
+    }
+
     internal int GetRawKind(int elementId)
     {
         if (elementId < 0 || elementId >= RedNodes.Count)
