@@ -7,156 +7,414 @@ public class LuaDocTypeSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(ind
 {
     public static bool CanCast(LuaSyntaxKind kind) => kind is >= LuaSyntaxKind.TypeArray and <= LuaSyntaxKind.TypeMatch;
 
-    public LuaDescriptionSyntax? Description => Iter.FirstChildNode(LuaSyntaxKind.Description).ToNode<LuaDescriptionSyntax>();
+    public LuaDescriptionSyntax? Description =>
+        Iter.FirstChildNode(LuaSyntaxKind.Description).ToNode<LuaDescriptionSyntax>();
 }
 
-public class LuaDocLiteralTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocLiteralTypeSyntax : LuaDocTypeSyntax
 {
-    public bool IsInteger => FirstChild<LuaIntegerToken>() != null;
+    public LuaDocLiteralTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            switch (it.TokenKind)
+            {
+                case LuaTokenKind.TkInt:
+                    IsInteger = true;
+                    _literalIndex = it.Index;
+                    break;
+                case LuaTokenKind.TkString:
+                    IsString = true;
+                    _literalIndex = it.Index;
+                    break;
+                case LuaTokenKind.TkDocBoolean:
+                    IsBoolean = true;
+                    _literalIndex = it.Index;
+                    break;
+            }
+        }
+    }
 
-    public bool IsString => FirstChild<LuaStringToken>() != null;
+    public bool IsInteger { get; }
 
-    public bool IsBoolean => FirstChildToken(LuaTokenKind.TkDocBoolean) != null;
+    public bool IsString { get; }
 
-    public LuaIntegerToken? Integer => FirstChild<LuaIntegerToken>();
+    public bool IsBoolean { get; }
 
-    public LuaStringToken? String => FirstChild<LuaStringToken>();
+    private int _literalIndex = -1;
 
-    public LuaSyntaxToken? Boolean => FirstChildToken(LuaTokenKind.TkDocBoolean);
+    public LuaIntegerToken? Integer => IsInteger ? Tree.GetElement<LuaIntegerToken>(_literalIndex) : null;
+
+    public LuaStringToken? String => IsString ? Tree.GetElement<LuaStringToken>(_literalIndex) : null;
+
+    public LuaSyntaxToken? Boolean => IsBoolean ? Tree.GetElement<LuaSyntaxToken>(_literalIndex) : null;
 }
 
 public class LuaDocNameTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaNameToken? Name => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 }
 
 public class LuaDocArrayTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocTypeSyntax? BaseType => Iter.FirstChildNode(CanCast).ToNode<LuaDocTypeSyntax>();
 }
 
 public class LuaDocObjectTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocBodySyntax? Body => FirstChild<LuaDocBodySyntax>();
+    public LuaDocBodySyntax? Body => Iter.FirstChildNode(LuaSyntaxKind.DocBody).ToNode<LuaDocBodySyntax>();
 }
 
-public class LuaDocTypedParamSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree)
+public class LuaDocTypedParamSyntax : LuaSyntaxNode
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaDocTypedParamSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkDots)
+            {
+                IsVarArgs = true;
+                _nameIndex = it.Index;
+                break;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkName)
+            {
+                _nameIndex = it.Index;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkDocQuestion)
+            {
+                Nullable = true;
+            }
+            else if (LuaDocTypeSyntax.CanCast(it.Kind))
+            {
+                _typeIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaDotsToken? VarArgs => FirstChild<LuaDotsToken>();
+    private int _nameIndex = -1;
 
-    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+    public LuaNameToken? Name => !IsVarArgs ? Tree.GetElement<LuaNameToken>(_nameIndex) : null;
 
-    public bool Nullable => FirstChildToken(LuaTokenKind.TkDocQuestion) != null;
+    public LuaDotsToken? VarArgs => IsVarArgs ? Tree.GetElement<LuaDotsToken>(_nameIndex) : null;
 
-    public bool IsVarArgs => VarArgs != null;
+    private int _typeIndex = -1;
+
+    public LuaDocTypeSyntax? Type => Tree.GetElement<LuaDocTypeSyntax>(_typeIndex);
+
+    public bool Nullable { get; }
+
+    public bool IsVarArgs { get; }
 }
 
-public class LuaDocFuncTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocFuncTypeSyntax : LuaDocTypeSyntax
 {
-    public IEnumerable<LuaDocTypedParamSyntax> ParamList => ChildrenElement<LuaDocTypedParamSyntax>();
+    public LuaDocFuncTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind == LuaSyntaxKind.TypedParameter)
+            {
+                _paramListIndex.Add(it.Index);
+            }
+            else if (CanCast(it.Kind))
+            {
+                _returnTypeIndex.Add(it.Index);
+            }
+        }
+    }
 
-    public IEnumerable<LuaDocTypeSyntax> ReturnType => ChildrenElement<LuaDocTypeSyntax>();
+    private List<int> _paramListIndex = [];
+
+    public IEnumerable<LuaDocTypedParamSyntax> ParamList => Tree.GetElements<LuaDocTypedParamSyntax>(_paramListIndex);
+
+    private List<int> _returnTypeIndex = [];
+
+    public IEnumerable<LuaDocTypeSyntax> ReturnType => Tree.GetElements<LuaDocTypeSyntax>(_returnTypeIndex);
 }
 
-public class LuaDocUnionTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocUnionTypeSyntax : LuaDocTypeSyntax
 {
-    public IEnumerable<LuaDocTypeSyntax> UnionTypes => ChildrenElement<LuaDocTypeSyntax>();
+    public LuaDocUnionTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                _unionTypeIndex.Add(it.Index);
+            }
+        }
+    }
+
+    private List<int> _unionTypeIndex = [];
+
+    public IEnumerable<LuaDocTypeSyntax> UnionTypes => Tree.GetElements<LuaDocTypeSyntax>(_unionTypeIndex);
 }
 
-public class LuaDocTupleTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocTupleTypeSyntax : LuaDocTypeSyntax
 {
-    public IEnumerable<LuaDocTypeSyntax> TypeList => ChildrenElement<LuaDocTypeSyntax>();
+    public LuaDocTupleTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                _tupleTypeIndex.Add(it.Index);
+            }
+        }
+    }
+
+    private List<int> _tupleTypeIndex = [];
+
+    public IEnumerable<LuaDocTypeSyntax> TypeList => Tree.GetElements<LuaDocTypeSyntax>(_tupleTypeIndex);
 }
 
 public class LuaDocParenTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocTypeSyntax? Type => Iter.FirstChildNode(CanCast).ToNode<LuaDocTypeSyntax>();
 }
 
-public class LuaDocGenericTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocGenericTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaDocGenericTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkName)
+            {
+                _nameIndex = it.Index;
+            }
+            else if (CanCast(it.Kind))
+            {
+                _genericTypeListIndex.Add(it.Index);
+            }
+        }
+    }
 
-    public IEnumerable<LuaDocTypeSyntax> GenericArgs => ChildrenElement<LuaDocTypeSyntax>();
+    private int _nameIndex = -1;
+
+    public LuaNameToken? Name => Tree.GetElement<LuaNameToken>(_nameIndex);
+
+    private List<int> _genericTypeListIndex = [];
+
+    public IEnumerable<LuaDocTypeSyntax> GenericArgs => Tree.GetElements<LuaDocTypeSyntax>(_genericTypeListIndex);
 }
 
 public class LuaDocVariadicTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaNameToken? Name => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 }
 
 public class LuaDocExpandTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaNameToken? Name => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 }
 
 public class LuaDocStringTemplateTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaNameToken? PrefixName => FirstChild<LuaNameToken>();
+    public LuaNameToken? PrefixName => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 
-    public LuaTemplateTypeToken? TemplateName => FirstChild<LuaTemplateTypeToken>();
+    public LuaTemplateTypeToken? TemplateName =>
+        Iter.FirstChildToken(LuaTokenKind.TkStringTemplateType).ToToken<LuaTemplateTypeToken>();
 }
 
 public class LuaDocKeyOfTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaSyntaxToken KeyOfToken => FirstChildToken(LuaTokenKind.TkDocKeyOf)!;
+    public LuaSyntaxToken KeyOfToken => Iter.FirstChildToken(LuaTokenKind.TkDocKeyOf).ToToken<LuaSyntaxToken>()!;
 
-    public LuaDocTypeSyntax? Type => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocTypeSyntax? Type => Iter.FirstChildNode(CanCast).ToNode<LuaDocTypeSyntax>();
 }
 
-public class LuaDocConditionalTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocConditionalTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaSyntaxToken QuestionToken => FirstChildToken(LuaTokenKind.TkDocQuestion)!;
+    public LuaDocConditionalTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        var typeCount = 0;
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkDocQuestion)
+            {
+                _questionIndex = it.Index;
+            }
+            else if (CanCast(it.Kind))
+            {
+                switch (typeCount)
+                {
+                    case 0:
+                        _checkTypeIndex = it.Index;
+                        break;
+                    case 1:
+                        _trueTypeIndex = it.Index;
+                        break;
+                    case 2:
+                        _falseTypeIndex = it.Index;
+                        break;
+                }
 
-    public LuaDocTypeSyntax? CheckType => FirstChild<LuaDocTypeSyntax>();
+                typeCount++;
+            }
+        }
+    }
 
-    public LuaDocTypeSyntax? TrueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+    private int _questionIndex = -1;
 
-    public LuaDocTypeSyntax? FalseType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(2).FirstOrDefault();
+    public LuaSyntaxToken QuestionToken => Tree.GetElement<LuaSyntaxToken>(_questionIndex)!;
+
+    private int _checkTypeIndex = -1;
+
+    public LuaDocTypeSyntax? CheckType => Tree.GetElement<LuaDocTypeSyntax>(_checkTypeIndex);
+
+    private int _trueTypeIndex = -1;
+
+    public LuaDocTypeSyntax? TrueType => Tree.GetElement<LuaDocTypeSyntax>(_trueTypeIndex);
+
+    private int _falseTypeIndex = -1;
+
+    public LuaDocTypeSyntax? FalseType => Tree.GetElement<LuaDocTypeSyntax>(_falseTypeIndex);
 }
 
 public class LuaDocMappedTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public LuaDocMappedKeysSyntax? KeyType => FirstChild<LuaDocMappedKeysSyntax>();
+    public LuaDocMappedKeysSyntax? KeyType =>
+        Iter.FirstChildNode(LuaSyntaxKind.TypeMappedKeys).ToNode<LuaDocMappedKeysSyntax>();
 
-    public LuaDocTypeSyntax? ValueType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+    public LuaDocTypeSyntax? ValueType => Iter.FirstChildNode(CanCast).ToNode<LuaDocTypeSyntax>();
 }
 
-public class LuaDocMappedKeysSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocMappedKeysSyntax : LuaDocTypeSyntax
 {
-    public LuaDocTypeSyntax? IterType => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocMappedKeysSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                _iterTypeIndex = it.Index;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkMinus)
+            {
+                IsMinus = true;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkDocQuestion)
+            {
+                HasNullable = true;
+            }
+        }
+    }
 
-    // other TODO
+    private int _iterTypeIndex = -1;
+
+    public LuaDocTypeSyntax? IterType => Tree.GetElement<LuaDocTypeSyntax>(_iterTypeIndex);
+
+    public bool IsMinus { get; }
+
+    public bool HasNullable { get; }
 }
 
-public class LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocIndexAccessTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+    public LuaDocIndexAccessTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                if (_baseTypeIndex == -1)
+                {
+                    _baseTypeIndex = it.Index;
+                }
+                else
+                {
+                    _indexTypeIndex = it.Index;
+                }
+            }
+        }
+    }
 
-    public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+    private int _baseTypeIndex = -1;
+
+    public LuaDocTypeSyntax? BaseType => Tree.GetElement<LuaDocTypeSyntax>(_baseTypeIndex);
+
+    private int _indexTypeIndex = -1;
+
+    public LuaDocTypeSyntax? IndexType => Tree.GetElement<LuaDocTypeSyntax>(_indexTypeIndex);
 }
 
-public class LuaDocInTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocInTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaSyntaxToken InToken => FirstChildToken(LuaTokenKind.TkDocIn)!;
+    public LuaDocInTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                if (_keyTypeIndex == -1)
+                {
+                    _keyTypeIndex = it.Index;
+                }
+                else
+                {
+                    _indexTypeIndex = it.Index;
+                }
+            }
+            else if (it.TokenKind == LuaTokenKind.TkDocIn)
+            {
+                _inTypeIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaDocNameTypeSyntax? KeyType => FirstChild<LuaDocNameTypeSyntax>();
+    private int _inTypeIndex = -1;
 
-    public LuaDocTypeSyntax? IndexType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+    public LuaSyntaxToken InToken => Tree.GetElement<LuaSyntaxToken>(_inTypeIndex)!;
+
+    private int _keyTypeIndex = -1;
+
+    public LuaDocNameTypeSyntax? KeyType => Tree.GetElement<LuaDocNameTypeSyntax>(_keyTypeIndex);
+
+    private int _indexTypeIndex = -1;
+
+    public LuaDocTypeSyntax? IndexType => Tree.GetElement<LuaDocTypeSyntax>(_indexTypeIndex);
 }
 
-public class LuaDocExtendTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
+public class LuaDocExtendTypeSyntax : LuaDocTypeSyntax
 {
-    public LuaSyntaxToken ExtendToken => FirstChildToken(LuaTokenKind.TkDocExtends)!;
+    public LuaDocExtendTypeSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (CanCast(it.Kind))
+            {
+                if (_baseTypeIndex == -1)
+                {
+                    _baseTypeIndex = it.Index;
+                }
+                else
+                {
+                    _extendTypeIndex = it.Index;
+                }
+            }
+            else if (it.TokenKind == LuaTokenKind.TkDocExtends)
+            {
+                _extendsIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaDocTypeSyntax? BaseType => FirstChild<LuaDocTypeSyntax>();
+    private int _extendsIndex = -1;
 
-    public LuaDocTypeSyntax? ExtendType => ChildrenElements.OfType<LuaDocTypeSyntax>().Skip(1).FirstOrDefault();
+    public LuaSyntaxToken ExtendToken => Tree.GetElement<LuaSyntaxToken>(_extendsIndex)!;
+
+    private int _baseTypeIndex = -1;
+
+    public LuaDocTypeSyntax? BaseType => Tree.GetElement<LuaDocTypeSyntax>(_baseTypeIndex);
+
+    private int _extendTypeIndex = -1;
+
+    public LuaDocTypeSyntax? ExtendType => Tree.GetElement<LuaDocTypeSyntax>(_extendTypeIndex);
 }
 
 public class LuaDocIntersectionTypeSyntax(int index, LuaSyntaxTree tree) : LuaDocTypeSyntax(index, tree)
 {
-    public IEnumerable<LuaDocTypeSyntax> IntersectionTypes => ChildrenElement<LuaDocTypeSyntax>();
+    public IEnumerable<LuaDocTypeSyntax> IntersectionTypes => Iter.ChildrenNodeOfType<LuaDocTypeSyntax>(CanCast);
 }

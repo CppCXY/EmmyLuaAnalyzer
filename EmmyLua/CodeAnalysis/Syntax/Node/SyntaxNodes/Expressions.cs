@@ -1,4 +1,5 @@
-﻿using EmmyLua.CodeAnalysis.Compile.Kind;
+﻿using System.Diagnostics;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
@@ -8,16 +9,49 @@ public class LuaExprSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index,
     public static bool CanCast(LuaSyntaxKind kind) => kind is >= LuaSyntaxKind.ParenExpr and <= LuaSyntaxKind.NameExpr;
 }
 
-public class LuaNameExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaNameExprSyntax : LuaExprSyntax
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaNameExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind is LuaTokenKind.TkName)
+            {
+                _nameIndex = it.Index;
+                break;
+            }
+        }
+    }
+
+    private int _nameIndex = -1;
+
+    public LuaNameToken? Name => Tree.GetElement<LuaNameToken>(_nameIndex);
 }
 
-public class LuaCallExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaCallExprSyntax : LuaExprSyntax
 {
-    public LuaCallArgListSyntax? ArgList => FirstChild<LuaCallArgListSyntax>();
+    public LuaCallExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind is LuaSyntaxKind.CallArgList)
+            {
+                _argListIndex = it.Index;
+            }
+            else if (it.Kind is LuaSyntaxKind.IndexExpr or LuaSyntaxKind.NameExpr)
+            {
+                _prefixExprIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
+    private int _argListIndex = -1;
+
+    public LuaCallArgListSyntax? ArgList => Tree.GetElement<LuaCallArgListSyntax>(_argListIndex);
+
+    private int _prefixExprIndex = -1;
+
+    public LuaExprSyntax? PrefixExpr => Tree.GetElement<LuaExprSyntax>(_prefixExprIndex);
 
     public string Name
     {
@@ -39,94 +73,221 @@ public class LuaCallExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(in
     }
 }
 
-public class LuaBinaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaBinaryExprSyntax : LuaExprSyntax
 {
-    public LuaExprSyntax LeftExpr => FirstChild<LuaExprSyntax>()!;
-
-    public OperatorKind.BinaryOperator Operator
+    public LuaBinaryExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
     {
-        get
+        foreach (var it in Iter.Children)
         {
-            var tk = FirstChildToken(it => OperatorKind.ToBinaryOperator(it) != OperatorKind.BinaryOperator.OpNop);
-            return tk != null ? OperatorKind.ToBinaryOperator(tk.Kind) : OperatorKind.BinaryOperator.OpNop;
+            if (CanCast(it.Kind))
+            {
+                if (_leftExprIndex == -1)
+                {
+                    _leftExprIndex = it.Index;
+                }
+                else
+                {
+                    _rightExprIndex = it.Index;
+                    break;
+                }
+            }
+            else if (OperatorKind.ToBinaryOperator(it.TokenKind) is { } op && op != OperatorKind.BinaryOperator.OpNop)
+            {
+                Operator = op;
+            }
         }
     }
 
-    public LuaExprSyntax? RightExpr => ChildrenElement<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    private int _leftExprIndex = -1;
+
+    public LuaExprSyntax LeftExpr => Tree.GetElement<LuaExprSyntax>(_leftExprIndex)!;
+
+    public OperatorKind.BinaryOperator Operator { get; } = OperatorKind.BinaryOperator.OpNop;
+
+    private int _rightExprIndex = -1;
+
+    public LuaExprSyntax? RightExpr => Tree.GetElement<LuaExprSyntax>(_rightExprIndex);
 }
 
-public class LuaUnaryExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaUnaryExprSyntax : LuaExprSyntax
 {
-    public OperatorKind.UnaryOperator Operator
+    public LuaUnaryExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
     {
-        get
+        foreach (var it in Iter.Children)
         {
-            var tk = FirstChildToken(it => OperatorKind.ToUnaryOperator(it) != OperatorKind.UnaryOperator.OpNop);
-            return tk != null ? OperatorKind.ToUnaryOperator(tk.Kind) : OperatorKind.UnaryOperator.OpNop;
+            if (OperatorKind.ToUnaryOperator(it.TokenKind) is { } op && op != OperatorKind.UnaryOperator.OpNop)
+            {
+                Operator = op;
+            }
+            else if (CanCast(it.Kind))
+            {
+                _exprIndex = it.Index;
+                break;
+            }
         }
     }
 
-    public LuaExprSyntax? Expression => FirstChild<LuaExprSyntax>();
+    public OperatorKind.UnaryOperator Operator { get; } = OperatorKind.UnaryOperator.OpNop;
+
+    private int _exprIndex = -1;
+
+    public LuaExprSyntax? Expression => Tree.GetElement<LuaExprSyntax>(_exprIndex);
 }
 
-public class LuaTableExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaTableExprSyntax : LuaExprSyntax
 {
-    public IEnumerable<LuaTableFieldSyntax> FieldList => ChildrenElement<LuaTableFieldSyntax>();
+    public enum TableState
+    {
+        Empty,
+        Array,
+        Dictionary,
+        Mixed
+    }
+
+    public LuaTableExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind is LuaSyntaxKind.TableFieldAssign or LuaSyntaxKind.TableFieldValue)
+            {
+                _fieldListIndex.Add(it.Index);
+                switch (_tableState)
+                {
+                    case TableState.Empty:
+                        _tableState = it.Kind == LuaSyntaxKind.TableFieldAssign
+                            ? TableState.Dictionary
+                            : TableState.Array;
+                        break;
+                    case TableState.Array when it.Kind == LuaSyntaxKind.TableFieldAssign:
+                    case TableState.Dictionary when it.Kind == LuaSyntaxKind.TableFieldValue:
+                        _tableState = TableState.Mixed;
+                        break;
+                }
+            }
+        }
+    }
+
+    private TableState _tableState = TableState.Empty;
+
+    public bool IsArray => _tableState == TableState.Array;
+
+    public bool IsDictionary => _tableState == TableState.Dictionary;
+
+    public bool IsMixed => _tableState == TableState.Mixed;
+
+    public bool IsEmpty => _tableState == TableState.Empty;
+
+    private List<int> _fieldListIndex = [];
+
+    public IEnumerable<LuaTableFieldSyntax> FieldList => Tree.GetElements<LuaTableFieldSyntax>(_fieldListIndex);
 }
 
-public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(index, tree), ICommentOwner
+public class LuaTableFieldSyntax : LuaSyntaxNode, ICommentOwner
 {
-    public bool IsExprKey => ChildrenElement<LuaExprSyntax>().Count() == 2;
+    public enum TableFieldState
+    {
+        UnknownKeyValue,
+        NameKeyValue,
+        StringKeyValue,
+        IntegerKeyValue,
+        ExprKeyValue,
+        Value
+    }
 
-    public bool IsNameKey => FirstChild<LuaNameToken>() != null;
+    public LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        _tableFieldState = Kind switch
+        {
+            LuaSyntaxKind.TableFieldAssign => TableFieldState.UnknownKeyValue,
+            LuaSyntaxKind.TableFieldValue => TableFieldState.Value,
+            _ => throw new UnreachableException()
+        };
 
-    public bool IsNumberKey => FirstChild<LuaNumberToken>() != null;
+        foreach (var it in Iter.Children)
+        {
+            if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                if (_tableFieldState == TableFieldState.UnknownKeyValue)
+                {
+                    _tableFieldState = TableFieldState.ExprKeyValue;
+                    _keyIndex = it.Index;
+                }
+                else
+                {
+                    _valueIndex = it.Index;
+                }
+            }
+            else
+            {
+                switch (it.TokenKind)
+                {
+                    case LuaTokenKind.TkString:
+                    case LuaTokenKind.TkLongString:
+                    {
+                        _tableFieldState = TableFieldState.StringKeyValue;
+                        _keyIndex = it.Index;
+                        break;
+                    }
+                    case LuaTokenKind.TkName:
+                    {
+                        _tableFieldState = TableFieldState.NameKeyValue;
+                        _keyIndex = it.Index;
+                        break;
+                    }
+                    case LuaTokenKind.TkInt:
+                    {
+                        _tableFieldState = TableFieldState.IntegerKeyValue;
+                        _keyIndex = it.Index;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-    public bool IsStringKey => FirstChild<LuaStringToken>() != null;
+    private TableFieldState _tableFieldState;
 
-    public bool IsValue => FirstChildToken(LuaTokenKind.TkAssign) == null;
+    public bool IsExprKey => _tableFieldState == TableFieldState.ExprKeyValue;
 
-    public LuaExprSyntax? ExprKey => FirstChild<LuaExprSyntax>();
+    public bool IsNameKey => _tableFieldState == TableFieldState.NameKeyValue;
 
-    public LuaNameToken? NameKey => FirstChild<LuaNameToken>();
+    public bool IsIntegerKey => _tableFieldState == TableFieldState.IntegerKeyValue;
 
-    public LuaNumberToken? NumberKey => FirstChild<LuaNumberToken>();
+    public bool IsStringKey => _tableFieldState == TableFieldState.StringKeyValue;
 
-    public LuaStringToken? StringKey => FirstChild<LuaStringToken>();
+    public bool IsValue => _tableFieldState == TableFieldState.Value;
 
-    public LuaExprSyntax? Value => ChildrenElement<LuaExprSyntax>().LastOrDefault();
+    private int _keyIndex = -1;
 
-    public LuaTableExprSyntax? ParentTable => Parent as LuaTableExprSyntax;
+    public LuaExprSyntax? ExprKey => Tree.GetElement<LuaExprSyntax>(_keyIndex);
+
+    public LuaNameToken? NameKey => Tree.GetElement<LuaNameToken>(_keyIndex);
+
+    public LuaIntegerToken? IntegerKey => Tree.GetElement<LuaIntegerToken>(_keyIndex);
+
+    public LuaStringToken? StringKey => Tree.GetElement<LuaStringToken>(_keyIndex);
+
+    private int _valueIndex = -1;
+
+    public LuaExprSyntax? Value => Tree.GetElement<LuaExprSyntax>(_valueIndex);
+
+    public LuaTableExprSyntax? ParentTable => Iter.Parent.ToNode<LuaTableExprSyntax>();
 
     public string? Name
     {
         get
         {
-            // optimize
-            foreach (var element in ChildrenElements)
+            switch (_tableFieldState)
             {
-                switch (element)
-                {
-                    case LuaNameToken nameToken:
-                    {
-                        return nameToken.RepresentText;
-                    }
-                    case LuaIntegerToken integerToken:
-                    {
-                        return $"[{integerToken.Value}]";
-                    }
-                    case LuaStringToken stringToken:
-                    {
-                        return stringToken.Value;
-                    }
-                    case LuaSyntaxToken { Kind: LuaTokenKind.TkEq }:
-                    {
-                        goto endLoop;
-                    }
-                }
+                case TableFieldState.NameKeyValue:
+                    return NameKey?.RepresentText;
+                case TableFieldState.StringKeyValue:
+                    return StringKey?.Value;
+                case TableFieldState.IntegerKeyValue:
+                    return $"[{IntegerKey?.Value}]";
+                default:
+                    return null;
             }
-            endLoop:
-            return null;
         }
     }
 
@@ -134,34 +295,19 @@ public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(
     {
         get
         {
-            foreach (var element in ChildrenElements)
+            switch (_tableFieldState)
             {
-                switch (element)
-                {
-                    case LuaNameToken nameToken:
-                    {
-                        return nameToken;
-                    }
-                    case LuaIntegerToken integerToken:
-                    {
-                        return integerToken;
-                    }
-                    case LuaStringToken stringToken:
-                    {
-                        return stringToken;
-                    }
-                    case LuaExprSyntax exprSyntax:
-                    {
-                        return exprSyntax;
-                    }
-                    case LuaSyntaxToken { Kind: LuaTokenKind.TkEq }:
-                    {
-                        goto endLoop;
-                    }
-                }
+                case TableFieldState.NameKeyValue:
+                    return NameKey;
+                case TableFieldState.StringKeyValue:
+                    return StringKey;
+                case TableFieldState.IntegerKeyValue:
+                    return IntegerKey;
+                case TableFieldState.ExprKeyValue:
+                    return ExprKey;
+                default:
+                    return null;
             }
-            endLoop:
-            return null;
         }
     }
 
@@ -169,100 +315,203 @@ public class LuaTableFieldSyntax(int index, LuaSyntaxTree tree) : LuaSyntaxNode(
         Tree.BinderData?.GetComments(this) ?? [];
 }
 
-public class LuaClosureExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaClosureExprSyntax : LuaExprSyntax
 {
-    public LuaParamListSyntax? ParamList => FirstChild<LuaParamListSyntax>();
+    public LuaClosureExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind is LuaSyntaxKind.ParamList)
+            {
+                _paramListIndex = it.Index;
+            }
+            else if (it.Kind is LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    private int _paramListIndex = -1;
+
+    public LuaParamListSyntax? ParamList => Tree.GetElement<LuaParamListSyntax>(_paramListIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaLiteralExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaLiteralExprSyntax : LuaExprSyntax
 {
-    public LuaSyntaxToken Literal => FirstChildToken()!;
+    public enum LiteralType
+    {
+        None,
+        Nil,
+        True,
+        False,
+        Integer,
+        Number,
+        String
+    }
+
+    public LuaLiteralExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind is LuaTokenKind.TkNil)
+            {
+                Type = LiteralType.Nil;
+                _literalIndex = it.Index;
+            }
+            else if (it.TokenKind is LuaTokenKind.TkTrue)
+            {
+                Type = LiteralType.True;
+                _literalIndex = it.Index;
+            }
+            else if (it.TokenKind is LuaTokenKind.TkFalse)
+            {
+                Type = LiteralType.False;
+                _literalIndex = it.Index;
+            }
+            else if (it.TokenKind is LuaTokenKind.TkInt)
+            {
+                Type = LiteralType.Integer;
+                _literalIndex = it.Index;
+            }
+            else if (it.TokenKind is LuaTokenKind.TkFloat or LuaTokenKind.TkComplex)
+            {
+                Type = LiteralType.Number;
+                _literalIndex = it.Index;
+            }
+            else if (it.TokenKind is LuaTokenKind.TkString or LuaTokenKind.TkLongString)
+            {
+                Type = LiteralType.String;
+                _literalIndex = it.Index;
+            }
+        }
+    }
+
+    public LiteralType Type { get; } = LiteralType.None;
+
+    public bool IsNil => Type == LiteralType.Nil;
+
+    public bool IsTrue => Type == LiteralType.True;
+
+    public bool IsFalse => Type == LiteralType.False;
+
+    public bool IsInteger => Type == LiteralType.Integer;
+
+    public bool IsNumber => Type == LiteralType.Number;
+
+    public bool IsString => Type == LiteralType.String;
+
+    private int _literalIndex = -1;
+
+    public LuaSyntaxToken Literal => Tree.GetElement<LuaSyntaxToken>(_literalIndex)!;
 }
 
 public class LuaParenExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
 {
-    public LuaSyntaxToken LeftParen => FirstChildToken(LuaTokenKind.TkLeftParen)!;
+    public LuaSyntaxToken LeftParen => Iter.FirstChildToken(LuaTokenKind.TkLeftParen).ToToken<LuaSyntaxToken>()!;
 
-    public LuaExprSyntax? Inner => FirstChild<LuaExprSyntax>();
+    public LuaExprSyntax? Inner => Iter.FirstChildNode(LuaExprSyntax.CanCast).ToNode<LuaExprSyntax>();
 
-    public LuaSyntaxToken? RightParen => FirstChildToken(LuaTokenKind.TkRightParen);
+    public LuaSyntaxToken? RightParen => Iter.FirstChildToken(LuaTokenKind.TkRightParen).ToToken<LuaSyntaxToken>();
 }
 
-public class LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : LuaExprSyntax(index, tree)
+public class LuaIndexExprSyntax : LuaExprSyntax
 {
-    public bool IsDotIndex => FirstChildToken(LuaTokenKind.TkDot) != null;
-
-    public LuaSyntaxToken? Dot => FirstChildToken(LuaTokenKind.TkDot);
-
-    public bool IsColonIndex => FirstChildToken(LuaTokenKind.TkColon) != null;
-
-    public bool IsKeyIndex => FirstChildToken(LuaTokenKind.TkLeftBracket) != null;
-
-    public LuaNameToken? DotOrColonIndexName => FirstChild<LuaNameToken>();
-
-    public LuaExprSyntax? IndexKeyExpr
+    enum IndexState
     {
-        get
+        None,
+        Dot,
+        Colon,
+        Key
+    }
+
+    public LuaIndexExprSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
         {
-            var start = ChildStartIndex;
-            if (start == -1)
+            if (CanCast(it.Kind))
             {
-                return null;
-            }
-
-            var finish = ChildFinishIndex;
-            for (var i = start; i <= finish; i++)
-            {
-                if (Tree.GetTokenKind(i) == LuaTokenKind.TkLeftBracket)
+                if (_prefixExprIndex == -1)
                 {
-                    if (i + 1 < finish)
-                    {
-                        var element = Tree.GetElement(i + 1);
-                        if (element is LuaExprSyntax exprSyntax)
-                        {
-                            return exprSyntax;
-                        }
-                    }
-
+                    _prefixExprIndex = it.Index;
+                }
+                else
+                {
+                    _indexKeyIndex = it.Index;
                     break;
                 }
             }
-
-            return null;
+            else
+            {
+                switch (it.TokenKind)
+                {
+                    case LuaTokenKind.TkDot:
+                        _indexState = IndexState.Dot;
+                        break;
+                    case LuaTokenKind.TkColon:
+                        _indexState = IndexState.Colon;
+                        break;
+                    case LuaTokenKind.TkLeftBracket:
+                        _indexState = IndexState.Key;
+                        break;
+                    case LuaTokenKind.TkName:
+                        _indexKeyIndex = it.Index;
+                        break;
+                }
+            }
         }
     }
 
-    public LuaExprSyntax? PrefixExpr => FirstChild<LuaExprSyntax>();
+    private IndexState _indexState = IndexState.None;
+
+    public bool IsDotIndex => _indexState == IndexState.Dot;
+
+    public LuaSyntaxToken? Dot => Iter.FirstChildToken(LuaTokenKind.TkDot).ToToken<LuaSyntaxToken>();
+
+    public bool IsColonIndex => _indexState == IndexState.Colon;
+
+    public bool IsKeyIndex => _indexState == IndexState.Key;
+
+    private int _indexKeyIndex = -1;
+
+    public LuaNameToken? DotOrColonIndexName => Tree.GetElement<LuaNameToken>(_indexKeyIndex);
+
+    public LuaExprSyntax? IndexKeyExpr => Tree.GetElement<LuaExprSyntax>(_indexKeyIndex);
+
+    private int _prefixExprIndex = -1;
+
+    public LuaExprSyntax? PrefixExpr => Tree.GetElement<LuaExprSyntax>(_prefixExprIndex);
 
     public string? Name
     {
         get
         {
-            if (DotOrColonIndexName != null)
+            if (IsKeyIndex)
             {
-                return DotOrColonIndexName.RepresentText;
+                if (IndexKeyExpr is LuaLiteralExprSyntax literal)
+                {
+                    if (literal is { IsString: true, Literal: LuaStringToken { Value: { } value } })
+                    {
+                        return value;
+                    }
+                    else if (literal is { IsInteger: true, Literal: LuaIntegerToken { Value: { } value2 } })
+                    {
+                        return $"[{value2}]";
+                    }
+                }
             }
-
-            if (IndexKeyExpr is LuaLiteralExprSyntax literal)
+            else
             {
-                if (literal.Literal is LuaStringToken stringToken)
-                {
-                    return stringToken.Value;
-                }
-
-                if (literal.Literal is LuaIntegerToken luaIntegerToken)
-                {
-                    return $"[{luaIntegerToken.Value}]";
-                }
-
-                return literal.Literal.RepresentText;
+                return DotOrColonIndexName?.RepresentText;
             }
 
             return null;
         }
     }
 
-    public LuaSyntaxElement? KeyElement => DotOrColonIndexName != null ? DotOrColonIndexName : IndexKeyExpr;
+    public LuaSyntaxElement? KeyElement => IsKeyIndex ? IndexKeyExpr : DotOrColonIndexName;
 }
