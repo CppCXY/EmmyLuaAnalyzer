@@ -32,4 +32,6 @@ public class LuaSyntaxElement(int index, LuaSyntaxTree tree)
     }
 
     public SyntaxIterator Iter => new(ElementId, Tree);
+
+    public LuaSyntaxNode? Parent => Tree.GetElement(Tree.GetParent(ElementId)) as LuaSyntaxNode;
 }

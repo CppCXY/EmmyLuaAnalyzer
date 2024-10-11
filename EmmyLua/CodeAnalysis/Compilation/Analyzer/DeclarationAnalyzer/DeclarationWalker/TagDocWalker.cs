@@ -11,6 +11,11 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
+    private void AnalyzeMeta()
+    {
+        Compilation.Diagnostics.AddMeta(DocumentId);
+    }
+
     private void AnalyzeTagClass(LuaDocTagClassSyntax tagClassSyntax)
     {
         if (tagClassSyntax is { Name: { } name })
@@ -366,11 +371,12 @@ public partial class DeclarationWalker
 
     private void AnalyzeTypeFields(LuaTypeInfo luaTypeInfo, LuaDocTagSyntax typeTag)
     {
-        foreach (var tagField in typeTag.NextOfType<LuaDocTagFieldSyntax>())
+        foreach (var tagFieldIt in typeTag.Iter.NextOf(it => it.Kind == LuaSyntaxKind.DocField))
         {
-            if (tagField.Field is not null)
+            var tagField = tagFieldIt.ToNode<LuaDocTagFieldSyntax>();
+            if (tagField is { Field: { } field })
             {
-                if (tagField.Field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
+                if (field is { TypeField: { } typeField, Type: { } type, UniqueId: { } id })
                 {
                     var keyType = builder.CreateRef(typeField);
                     var valueType = builder.CreateRef(type);
@@ -379,7 +385,7 @@ public partial class DeclarationWalker
                     continue;
                 }
 
-                if (AnalyzeDocDetailField(tagField.Field) is { } fieldSymbol)
+                if (AnalyzeDocDetailField(field) is { } fieldSymbol)
                 {
                     luaTypeInfo.AddDeclaration(fieldSymbol);
                 }

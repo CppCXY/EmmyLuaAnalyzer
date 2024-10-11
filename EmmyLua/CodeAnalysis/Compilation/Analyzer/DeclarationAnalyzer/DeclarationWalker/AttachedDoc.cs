@@ -15,41 +15,41 @@ public partial class DeclarationWalker
 
     private void AttachToNext(LuaDocTagSyntax docTagSyntax)
     {
-        var comment = docTagSyntax.Parent;
-        if (comment is LuaCommentSyntax)
+        var commentIt = docTagSyntax.Iter.Parent;
+        if (commentIt.IsValid)
         {
-            if (_attachedDocs.TryGetValue(comment.UniqueId, out var list))
+            if (_attachedDocs.TryGetValue(commentIt.UniqueId, out var list))
             {
                 list.Add(new LuaElementPtr<LuaDocTagSyntax>(docTagSyntax));
             }
             else
             {
-                _attachedDocs.Add(comment.UniqueId, [new(docTagSyntax)]);
+                _attachedDocs.Add(commentIt.UniqueId, [new(docTagSyntax)]);
             }
         }
     }
 
     private void AttachTypeToNext(LuaType type, LuaDocTagSyntax docTagSyntax)
     {
-        var comment = docTagSyntax.Parent;
-        if (comment is LuaCommentSyntax)
+        var commentIt = docTagSyntax.Iter.Parent;
+        if (commentIt.IsValid)
         {
-            if (_attachedTypes.TryGetValue(comment.UniqueId, out var list))
+            if (_attachedTypes.TryGetValue(commentIt.UniqueId, out var list))
             {
                 list.Add(type);
             }
             else
             {
-                _attachedTypes.Add(comment.UniqueId, [type]);
+                _attachedTypes.Add(commentIt.UniqueId, [type]);
             }
         }
     }
 
-    public void FinishAttachedAnalyze()
+    private void FinishAttachedAnalyze()
     {
         foreach (var (elementId, tagSyntaxes) in _attachedDocs)
         {
-            if (elementId.ToSyntaxElement(Compilation) is LuaCommentSyntax { Owner: { } attachedElement })
+            if (elementId.ToElement(Document) is LuaCommentSyntax { Owner: { } attachedElement })
             {
                 var docList = new List<LuaDocTagSyntax>();
                 foreach (var elementPtr in tagSyntaxes)
@@ -220,11 +220,11 @@ public partial class DeclarationWalker
         return null;
     }
 
-    private List<LuaDocTagSyntax> FindAttachedDoc(LuaSyntaxElement element)
+    private List<LuaDocTagSyntax> FindAttachedDoc(LuaSyntaxElement? element)
     {
         while (element is not null && element is not ICommentOwner)
         {
-            element = element.Parent;
+            element = element.Iter.Parent.ToElement();
         }
 
         if (element is ICommentOwner commentOwner)

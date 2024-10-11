@@ -1,26 +1,72 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Analyzer.ResolveAnalyzer;
-using EmmyLua.CodeAnalysis.Compilation.Search;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
-using EmmyLua.CodeAnalysis.Syntax.Walker;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.DeclarationWalker;
 
 public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilation compilation)
-    : ILuaElementWalker
 {
     private LuaCompilation Compilation => compilation;
 
     private LuaDocumentId DocumentId => builder.DocumentId;
 
-    public void WalkIn(LuaSyntaxElement node)
+    private LuaDocument Document => builder.Document;
+
+    enum TraverseState
     {
-        if (IsScopeOwner(node))
+        Enter,
+        Leave
+    }
+
+    public void Walk(LuaSyntaxElement root)
+    {
+        var tree = root.Tree;
+        var rootIt = root.Iter;
+        var traverseStack = new Stack<(int, TraverseState)>();
+        foreach (var it in rootIt.Children.Reverse())
         {
-            builder.PushScope(node);
+            traverseStack.Push((it.Index, TraverseState.Enter));
         }
 
+        while (traverseStack.Count > 0)
+        {
+            var (itIndex, state) = traverseStack.Pop();
+            if (state == TraverseState.Enter)
+            {
+                if (tree.IsNode(itIndex))
+                {
+                    var it = new SyntaxIterator(itIndex, tree);
+                    if (IsScopeOwner(tree.GetSyntaxKind(itIndex)))
+                    {
+                        builder.PushScope(it);
+                        traverseStack.Push((itIndex, TraverseState.Leave));
+                    }
+
+                    var element = tree.GetElement(itIndex);
+                    if (element is not null)
+                    {
+                        WalkNode(element);
+                    }
+
+                    foreach (var child in it.Children.Reverse())
+                    {
+                        traverseStack.Push((child.Index, TraverseState.Enter));
+                    }
+                }
+            }
+            else
+            {
+                builder.PopScope();
+            }
+        }
+
+        FinishAttachedAnalyze();
+    }
+
+    private void WalkNode(LuaSyntaxElement node)
+    {
         switch (node)
         {
             case LuaLocalStatSyntax localStatSyntax:
@@ -176,17 +222,9 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
         }
     }
 
-    public void WalkOut(LuaSyntaxElement node)
-    {
-        if (IsScopeOwner(node))
-        {
-            builder.PopScope();
-        }
-    }
-
-    private static bool IsScopeOwner(LuaSyntaxElement element)
-        => element is LuaBlockSyntax or LuaRepeatStatSyntax or LuaForRangeStatSyntax or LuaForStatSyntax
-            or LuaClosureExprSyntax;
+    private static bool IsScopeOwner(LuaSyntaxKind kind) =>
+        kind is LuaSyntaxKind.Block or LuaSyntaxKind.RepeatStat or LuaSyntaxKind.ForRangeStat or LuaSyntaxKind.ForStat
+            or LuaSyntaxKind.ClosureExpr;
 
     private void AnalyzeSource(LuaSourceSyntax sourceSyntax)
     {
@@ -194,10 +232,5 @@ public partial class DeclarationWalker(DeclarationBuilder builder, LuaCompilatio
         {
             builder.AddUnResolved(new UnResolvedSource(DocumentId, block, ResolveState.UnResolveReturn));
         }
-    }
-
-    private void AnalyzeMeta()
-    {
-        Compilation.Diagnostics.AddMeta(DocumentId);
     }
 }

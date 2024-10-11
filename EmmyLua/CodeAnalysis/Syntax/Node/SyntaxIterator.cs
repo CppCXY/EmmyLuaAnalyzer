@@ -4,7 +4,6 @@ using EmmyLua.CodeAnalysis.Syntax.Tree;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-// TODO : future use this module to iterate syntax nodes
 public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
 {
     public int Index => index;
@@ -28,9 +27,17 @@ public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
     // return true if the iter is valid
     public bool IsValid => index != -1;
 
-    private SyntaxIterator Default => new(-1, tree);
+    public SyntaxIterator Default => new(-1, tree);
+
+    public LuaElementPtr<LuaSyntaxElement> ToPtr() => new(UniqueId);
+
+    public LuaElementPtr<T> ToPtr<T>() where T : LuaSyntaxElement => new(UniqueId);
 
     public SourceRange Range => tree.GetSourceRange(index);
+
+    public SyntaxElementId UniqueId => new(tree.Document.Id, index);
+
+    public int Position => tree.GetSourceRange(index).StartOffset;
 
     public IEnumerable<SyntaxIterator> Children
     {
@@ -97,6 +104,11 @@ public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
                 }
             }
         }
+    }
+
+    public IEnumerable<SyntaxIterator> DescendantsOfKind(LuaSyntaxKind kind)
+    {
+        return Descendants.Where(it => it.Kind == kind);
     }
 
     public IEnumerable<SyntaxIterator> DescendantsInRange(SourceRange range)
@@ -410,5 +422,10 @@ public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
     public T? ToToken<T>() where T : LuaSyntaxToken
     {
         return tree.GetElement(index) as T;
+    }
+
+    public LuaSyntaxElement? ToElement()
+    {
+        return tree.GetElement(index);
     }
 }

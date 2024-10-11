@@ -20,48 +20,53 @@ public class LuaLocalStatSyntax : LuaStatSyntax
         {
             if (it.TokenKind == LuaTokenKind.TkLocal)
             {
-                Local = it.ToToken<LuaSyntaxToken>();
+                _localTokenIndex = it.Index;
             }
             else if (it.TokenKind == LuaTokenKind.TkAssign)
             {
-                Assign = it.ToToken<LuaSyntaxToken>();
+                _assignTokenIndex = it.Index;
             }
             else if (it.Kind == LuaSyntaxKind.LocalName)
             {
-                if (it.ToNode<LuaLocalNameSyntax>() is { } localName)
-                {
-                    NameList.Add(localName);
-                }
+                _nameListIndex.Add(it.Index);
             }
             else if (LuaExprSyntax.CanCast(it.Kind))
             {
-                if (it.ToNode<LuaExprSyntax>() is { } expr)
-                {
-                    ExprList.Add(expr);
-                }
+                _exprListIndex.Add(it.Index);
             }
         }
     }
 
-    public LuaSyntaxToken? Local { get; }
 
-    public List<LuaLocalNameSyntax> NameList { get; } = [];
+    private int _localTokenIndex = -1;
 
-    public LuaSyntaxToken? Assign { get; }
+    public LuaSyntaxToken? Local => Tree.GetElement<LuaSyntaxToken>(_localTokenIndex);
 
-    public List<LuaExprSyntax> ExprList { get; } = [];
+    private List<int> _nameListIndex = [];
+
+    public IEnumerable<LuaLocalNameSyntax> NameList => Tree.GetElements<LuaLocalNameSyntax>(_nameListIndex);
+
+    private int _assignTokenIndex = -1;
+
+    public LuaSyntaxToken? Assign => Tree.GetElement<LuaSyntaxToken>(_assignTokenIndex);
+
+    private List<int> _exprListIndex = [];
+
+    public IEnumerable<LuaExprSyntax> ExprList => Tree.GetElements<LuaExprSyntax>(_exprListIndex);
 
     public IEnumerable<(LuaLocalNameSyntax, (LuaExprSyntax?, int))> NameExprPairs
     {
         get
         {
+            var nameList = NameList.ToList();
+            var exprList = ExprList.ToList();
             LuaExprSyntax? lastValidExpr = null;
-            var count = NameList.Count;
+            var count = nameList.Count;
             var retId = 0;
             for (var i = 0; i < count; i++)
             {
-                var localName = NameList[i];
-                var expr = ExprList.ElementAtOrDefault(i);
+                var localName = nameList[i];
+                var expr = exprList.ElementAtOrDefault(i);
                 if (expr is not null)
                 {
                     lastValidExpr = expr;
@@ -87,43 +92,49 @@ public class LuaAssignStatSyntax : LuaStatSyntax
         {
             if (it.TokenKind == LuaTokenKind.TkAssign)
             {
-                Assign = it.ToToken<LuaSyntaxToken>();
+                _assignTokenIndex = it.Index;
                 foundAssign = true;
             }
             else if (LuaExprSyntax.CanCast(it.Kind))
             {
-                if (it.ToNode<LuaExprSyntax>() is { } expr)
+                if (foundAssign)
                 {
-                    if (foundAssign)
-                    {
-                        ExprList.Add(expr);
-                    }
-                    else
-                    {
-                        VarList.Add(expr);
-                    }
+                    _exprListIndex.Add(it.Index);
+                }
+                else
+                {
+                    _varListIndex.Add(it.Index);
                 }
             }
         }
     }
 
-    public List<LuaExprSyntax> VarList { get; } = [];
+    private List<int> _varListIndex = [];
 
-    public List<LuaExprSyntax> ExprList { get; } = [];
+    public IEnumerable<LuaExprSyntax> VarList => Tree.GetElements<LuaExprSyntax>(_varListIndex);
 
-    public LuaSyntaxToken? Assign { get; }
+    private List<int> _exprListIndex = [];
+
+    public IEnumerable<LuaExprSyntax> ExprList => Tree.GetElements<LuaExprSyntax>(_exprListIndex);
+
+    private int _assignTokenIndex = -1;
+
+    public LuaSyntaxToken? Assign => Tree.GetElement<LuaSyntaxToken>(_assignTokenIndex);
 
     public IEnumerable<(LuaExprSyntax, (LuaExprSyntax?, int))> VarExprPairs
     {
         get
         {
+            var varList = VarList.ToList();
+            var exprList = ExprList.ToList();
+
             LuaExprSyntax? lastValidExpr = null;
-            var count = VarList.Count;
+            var count = varList.Count;
             var retId = 0;
             for (var i = 0; i < count; i++)
             {
-                var varExpr = VarList[i];
-                var expr = ExprList.ElementAtOrDefault(i);
+                var varExpr = varList[i];
+                var expr = exprList.ElementAtOrDefault(i);
                 if (expr is not null)
                 {
                     lastValidExpr = expr;
@@ -142,71 +153,91 @@ public class LuaAssignStatSyntax : LuaStatSyntax
 
 public class LuaFuncStatSyntax : LuaStatSyntax
 {
+    enum LuaFuncStatState
+    {
+        None,
+        Local,
+        Global,
+        DotMethod,
+        ColonMethod,
+    }
+
     public LuaFuncStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
     {
+        _state = LuaFuncStatState.None;
         foreach (var it in Iter.Children)
         {
             if (it.TokenKind == LuaTokenKind.TkLocal)
             {
-                IsLocal = true;
-                IsMethod = false;
+                _state = LuaFuncStatState.Local;
             }
             else if (it.Kind == LuaSyntaxKind.NameExpr)
             {
-                if (it.ToNode<LuaNameExprSyntax>() is { } nameExpr)
+                if (_state == LuaFuncStatState.None)
                 {
-                    NameExpr = nameExpr;
+                    _state = LuaFuncStatState.Global;
                 }
+
+                _funcNameIndex = it.Index;
             }
             else if (it.Kind == LuaSyntaxKind.IndexExpr)
             {
-                if (it.ToNode<LuaIndexExprSyntax>() is { IsColonIndex: { } colonIndex } indexExpr)
+                _state = LuaFuncStatState.DotMethod;
+                foreach (var it2 in it.ChildrenTokens)
                 {
-                    IndexExpr = indexExpr;
-                    IsColonFunc = colonIndex;
+                    if (it2.TokenKind == LuaTokenKind.TkColon)
+                    {
+                        _state = LuaFuncStatState.ColonMethod;
+                        break;
+                    }
                 }
+
+                _funcNameIndex = it.Index;
             }
             else if (it.Kind == LuaSyntaxKind.ClosureExpr)
             {
-                if (it.ToNode<LuaClosureExprSyntax>() is { } closureExpr)
-                {
-                    ClosureExpr = closureExpr;
-                }
+                _closureExprIndex = it.Index;
             }
             else if (it.Kind == LuaSyntaxKind.LocalName)
             {
-                if (it.ToNode<LuaLocalNameSyntax>() is { } localName)
-                {
-                    LocalName = localName;
-                }
+                _funcNameIndex = it.Index;
             }
         }
     }
 
+    private LuaFuncStatState _state;
 
-    public bool IsLocal { get; }
+    public bool IsLocal => _state == LuaFuncStatState.Local;
 
-    public bool IsMethod { get; } = true;
+    public bool IsGlobal => _state == LuaFuncStatState.Global;
 
-    public bool IsColonFunc { get; }
+    public bool IsMethod => _state is LuaFuncStatState.DotMethod or LuaFuncStatState.ColonMethod;
 
-    public LuaLocalNameSyntax? LocalName { get; }
+    public bool IsColonMethod => _state == LuaFuncStatState.ColonMethod;
 
-    public LuaNameExprSyntax? NameExpr { get; }
+    public bool IsDotMethod => _state == LuaFuncStatState.DotMethod;
 
-    public LuaIndexExprSyntax? IndexExpr { get; }
+    private int _funcNameIndex = -1;
 
-    public LuaClosureExprSyntax? ClosureExpr { get; }
+    public LuaLocalNameSyntax? LocalName => Tree.GetElement<LuaLocalNameSyntax>(_funcNameIndex);
+
+    public LuaNameExprSyntax? NameExpr => Tree.GetElement<LuaNameExprSyntax>(_funcNameIndex);
+
+    public LuaIndexExprSyntax? IndexExpr => Tree.GetElement<LuaIndexExprSyntax>(_funcNameIndex);
+
+    private int _closureExprIndex = -1;
+
+    public LuaClosureExprSyntax? ClosureExpr => Tree.GetElement<LuaClosureExprSyntax>(_closureExprIndex);
 
     public LuaSyntaxElement? NameElement
     {
         get
         {
-            if (LocalName is  { Name: { } name1 })
+            if (IsLocal && LocalName is { Name: { } name1 })
             {
                 return name1;
             }
-            else if (NameExpr is { Name: { } name2 })
+            else if (IsGlobal && NameExpr is { Name: { } name2 })
             {
                 return name2;
             }
@@ -222,118 +253,385 @@ public class LuaFuncStatSyntax : LuaStatSyntax
 
 public class LuaLabelStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
 {
-    public LuaNameToken? Name => FirstChild<LuaNameToken>();
+    public LuaNameToken? Name => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 }
 
 public class LuaGotoStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
 {
-    public LuaSyntaxToken Goto => FirstChildToken(LuaTokenKind.TkGoto)!;
+    public LuaSyntaxToken Goto => Iter.FirstChildToken(LuaTokenKind.TkGoto).ToToken<LuaSyntaxToken>()!;
 
-    public LuaNameToken? LabelName => FirstChild<LuaNameToken>();
+    public LuaNameToken? LabelName => Iter.FirstChildToken(LuaTokenKind.TkName).ToToken<LuaNameToken>();
 }
 
 public class LuaBreakStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
 {
-    public LuaSyntaxToken Break => FirstChildToken(LuaTokenKind.TkBreak)!;
+    public LuaSyntaxToken Break => Iter.FirstChildToken(LuaTokenKind.TkBreak).ToToken<LuaSyntaxToken>()!;
 }
 
-public class LuaReturnStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaReturnStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken Return => FirstChildToken(LuaTokenKind.TkReturn)!;
+    public LuaReturnStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkReturn)
+            {
+                _returnTokenIndex = it.Index;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                _exprListIndex.Add(it.Index);
+            }
+        }
+    }
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
+    private int _returnTokenIndex = -1;
+
+    public LuaSyntaxToken Return => Tree.GetElement<LuaSyntaxToken>(_returnTokenIndex)!;
+
+    private List<int> _exprListIndex = [];
+
+    public IEnumerable<LuaExprSyntax> ExprList => Tree.GetElements<LuaExprSyntax>(_exprListIndex);
 }
 
-public class LuaIfStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaIfStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken If => FirstChildToken(LuaTokenKind.TkIf)!;
+    [Flags]
+    enum LuaIfStatState
+    {
+        None = 0,
+        HasElse = 1,
+        HasElseIf = 2,
+    }
 
-    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+    public LuaIfStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        _state = LuaIfStatState.None;
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkIf)
+            {
+                _ifTokenIndex = it.Index;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkThen)
+            {
+                _thenTokenIndex = it.Index;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkEnd)
+            {
+                _endTokenIndex = it.Index;
+            }
+            else if (it.Kind == LuaSyntaxKind.IfClauseStat)
+            {
+                _ifClauseStatIndex.Add(it.Index);
+                if (it.FirstChildToken(i => i is LuaTokenKind.TkElse or LuaTokenKind.TkElseIf) is { } token)
+                {
+                    if (token.TokenKind == LuaTokenKind.TkElse)
+                    {
+                        _state |= LuaIfStatState.HasElse;
+                    }
+                    else if (token.TokenKind == LuaTokenKind.TkElseIf)
+                    {
+                        _state |= LuaIfStatState.HasElseIf;
+                    }
+                }
+            }
+        }
+    }
 
-    public LuaSyntaxToken? Then => FirstChildToken(LuaTokenKind.TkThen);
+    private LuaIfStatState _state;
 
-    public LuaBlockSyntax? ThenBlock => FirstChild<LuaBlockSyntax>();
+    public bool HasElse => _state.HasFlag(LuaIfStatState.HasElse);
 
-    public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList => ChildrenElement<LuaIfClauseStatSyntax>();
+    public bool HasElseIf => _state.HasFlag(LuaIfStatState.HasElseIf);
 
-    public LuaSyntaxToken End => FirstChildToken(LuaTokenKind.TkEnd)!;
+    private int _ifTokenIndex = -1;
+
+    public LuaSyntaxToken If => Tree.GetElement<LuaSyntaxToken>(_ifTokenIndex)!;
+
+    private int _conditionIndex = -1;
+
+    public LuaExprSyntax? Condition => Tree.GetElement<LuaExprSyntax>(_conditionIndex);
+
+    private int _thenTokenIndex = -1;
+
+    public LuaSyntaxToken? Then => Tree.GetElement<LuaSyntaxToken>(_thenTokenIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? ThenBlock => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
+
+    private List<int> _ifClauseStatIndex = [];
+
+    public IEnumerable<LuaIfClauseStatSyntax> IfClauseStatementList =>
+        Tree.GetElements<LuaIfClauseStatSyntax>(_ifClauseStatIndex);
+
+    private int _endTokenIndex = -1;
+
+    public LuaSyntaxToken? End => Tree.GetElement<LuaSyntaxToken>(_endTokenIndex);
 }
 
-public class LuaIfClauseStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaIfClauseStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken? ElseIf => FirstChildToken(LuaTokenKind.TkElseIf);
+    enum LuaIfClauseStatState
+    {
+        None,
+        ElseIf,
+        Else,
+    }
 
-    public LuaSyntaxToken? Else => FirstChildToken(LuaTokenKind.TkElse);
+    public LuaIfClauseStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkElseIf)
+            {
+                _keywordIndex = it.Index;
+                _state = LuaIfClauseStatState.ElseIf;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkElse)
+            {
+                _keywordIndex = it.Index;
+                _state = LuaIfClauseStatState.Else;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                _conditionIndex = it.Index;
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public bool IsElseIf => ElseIf != null;
+    private LuaIfClauseStatState _state;
 
-    public bool IsElse => Else != null;
+    public bool IsElseIf => _state == LuaIfClauseStatState.ElseIf;
 
-    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+    public bool IsElse => _state == LuaIfClauseStatState.Else;
 
-    public LuaSyntaxToken? Then => FirstChildToken(LuaTokenKind.TkThen);
+    private int _keywordIndex = -1;
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    public LuaSyntaxToken? ElseIf => Tree.GetElement<LuaSyntaxToken>(_keywordIndex);
+
+    public LuaSyntaxToken? Else => Tree.GetElement<LuaSyntaxToken>(_keywordIndex);
+
+    private int _conditionIndex = -1;
+
+    public LuaExprSyntax? Condition => Tree.GetElement<LuaExprSyntax>(_conditionIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaWhileStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaWhileStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken While => FirstChildToken(LuaTokenKind.TkWhile)!;
+    public LuaWhileStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkWhile)
+            {
+                _whileTokenIndex = it.Index;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                _conditionIndex = it.Index;
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+    private int _whileTokenIndex = -1;
 
-    public LuaSyntaxToken? Do => FirstChildToken(LuaTokenKind.TkDo);
+    public LuaSyntaxToken While => Tree.GetElement<LuaSyntaxToken>(_whileTokenIndex)!;
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    private int _conditionIndex = -1;
 
-    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+    public LuaExprSyntax? Condition => Tree.GetElement<LuaExprSyntax>(_conditionIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaDoStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaDoStatSyntax: LuaStatSyntax
 {
-    public LuaSyntaxToken Do => FirstChildToken(LuaTokenKind.TkDo)!;
+    public LuaDoStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkDo)
+            {
+                _doTokenIndex = it.Index;
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    private int _doTokenIndex = -1;
 
-    public LuaSyntaxToken? End => FirstChildToken(LuaTokenKind.TkEnd);
+    public LuaSyntaxToken Do => Tree.GetElement<LuaSyntaxToken>(_doTokenIndex)!;
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaForStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaForStatSyntax : LuaStatSyntax
 {
-    public LuaParamDefSyntax? IteratorName => FirstChild<LuaParamDefSyntax>();
+    public LuaForStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind == LuaSyntaxKind.ParamName)
+            {
+                _itIndex = it.Index;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                if (_initExprIndex == -1)
+                {
+                    _initExprIndex = it.Index;
+                }
+                else if (_limitExpIndex == -1)
+                {
+                    _limitExpIndex = it.Index;
+                }
+                else if (_stepExpIndex == -1)
+                {
+                    _stepExpIndex = it.Index;
+                }
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaExprSyntax? InitExpr => FirstChild<LuaExprSyntax>();
+    private int _itIndex = -1;
 
-    public LuaExprSyntax? LimitExpr => ChildrenElement<LuaExprSyntax>().Skip(1).FirstOrDefault();
+    public LuaParamDefSyntax? IteratorName => Tree.GetElement<LuaParamDefSyntax>(_itIndex);
 
-    public LuaExprSyntax? Step => ChildrenElement<LuaExprSyntax>().Skip(2).FirstOrDefault();
+    private int _initExprIndex = -1;
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    public LuaExprSyntax? InitExpr => Tree.GetElement<LuaExprSyntax>(_initExprIndex);
+
+    private int _limitExpIndex = -1;
+
+    public LuaExprSyntax? LimitExpr => Tree.GetElement<LuaExprSyntax>(_limitExpIndex);
+
+    private int _stepExpIndex = -1;
+
+    public LuaExprSyntax? Step => Tree.GetElement<LuaExprSyntax>(_stepExpIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaForRangeStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaForRangeStatSyntax: LuaStatSyntax
 {
-    public IEnumerable<LuaParamDefSyntax> IteratorNames => ChildrenElement<LuaParamDefSyntax>();
+    public LuaForRangeStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind == LuaSyntaxKind.ParamName)
+            {
+                _itNamesIndex.Add(it.Index);
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                _exprListIndex.Add(it.Index);
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public IEnumerable<LuaExprSyntax> ExprList => ChildrenElement<LuaExprSyntax>();
+    private List<int> _itNamesIndex = [];
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    public IEnumerable<LuaParamDefSyntax> IteratorNames => Tree.GetElements<LuaParamDefSyntax>(_itNamesIndex);
+
+    private List<int> _exprListIndex = [];
+
+    public IEnumerable<LuaExprSyntax> ExprList => Tree.GetElements<LuaExprSyntax>(_exprListIndex);
+
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
 }
 
-public class LuaRepeatStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaRepeatStatSyntax : LuaStatSyntax
 {
-    public LuaSyntaxToken Repeat => FirstChildToken(LuaTokenKind.TkRepeat)!;
+    public LuaRepeatStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.TokenKind == LuaTokenKind.TkRepeat)
+            {
+                _repeatTokenIndex = it.Index;
+            }
+            else if (it.TokenKind == LuaTokenKind.TkUntil)
+            {
+                _untilTokenIndex = it.Index;
+            }
+            else if (LuaExprSyntax.CanCast(it.Kind))
+            {
+                _conditionIndex = it.Index;
+            }
+            else if (it.Kind == LuaSyntaxKind.Block)
+            {
+                _blockIndex = it.Index;
+            }
+        }
+    }
 
-    public LuaBlockSyntax? Block => FirstChild<LuaBlockSyntax>();
+    private int _repeatTokenIndex = -1;
 
-    public LuaSyntaxToken? Until => FirstChildToken(LuaTokenKind.TkUntil);
+    public LuaSyntaxToken Repeat => Tree.GetElement<LuaSyntaxToken>(_repeatTokenIndex)!;
 
-    public LuaExprSyntax? Condition => FirstChild<LuaExprSyntax>();
+    private int _blockIndex = -1;
+
+    public LuaBlockSyntax? Block => Tree.GetElement<LuaBlockSyntax>(_blockIndex);
+
+    private int _untilTokenIndex = -1;
+
+    public LuaSyntaxToken? Until => Tree.GetElement<LuaSyntaxToken>(_untilTokenIndex);
+
+    private int _conditionIndex = -1;
+
+    public LuaExprSyntax? Condition => Tree.GetElement<LuaExprSyntax>(_conditionIndex);
 }
 
-public class LuaCallStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree)
+public class LuaCallStatSyntax: LuaStatSyntax
 {
-    public LuaExprSyntax? Expr => FirstChild<LuaExprSyntax>();
+    public LuaCallStatSyntax(int index, LuaSyntaxTree tree) : base(index, tree)
+    {
+        foreach (var it in Iter.Children)
+        {
+            if (it.Kind == LuaSyntaxKind.CallExpr)
+            {
+                _exprIndex = it.Index;
+                break;
+            }
+        }
+    }
+
+    private int _exprIndex = -1;
+
+    public LuaCallExprSyntax? CallExpr => Tree.GetElement<LuaCallExprSyntax>(_exprIndex);
 }
 
 public class LuaEmptyStatSyntax(int index, LuaSyntaxTree tree) : LuaStatSyntax(index, tree);

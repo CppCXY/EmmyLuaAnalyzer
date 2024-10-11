@@ -33,7 +33,7 @@ public readonly record struct SyntaxElementId(LuaDocumentId DocumentId, int Elem
         return LuaLocation.Empty;
     }
 
-    // public LuaSyntaxElement? ToSyntaxElement(SearchContext context)
+    // public LuaSyntaxElement? ToElement(SearchContext context)
     // {
     //     var document = context.Compilation.Project.GetDocument(DocumentId);
     //     if (document is not null)
@@ -44,11 +44,10 @@ public readonly record struct SyntaxElementId(LuaDocumentId DocumentId, int Elem
     //     return null;
     // }
     //
-    // public LuaSyntaxElement? ToSyntaxElement(LuaCompilation compilation)
-    // {
-    //     var document = compilation.Project.GetDocument(DocumentId);
-    //     return document?.SyntaxTree.GetElement(ElementId);
-    // }
+    public LuaSyntaxElement? ToElement(LuaDocument document)
+    {
+        return document.SyntaxTree.GetElement(ElementId);
+    }
 
     public override string ToString()
     {

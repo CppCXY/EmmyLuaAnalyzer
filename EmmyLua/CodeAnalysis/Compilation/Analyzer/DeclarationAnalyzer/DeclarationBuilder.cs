@@ -7,6 +7,7 @@ using EmmyLua.CodeAnalysis.Compilation.Signature;
 using EmmyLua.CodeAnalysis.Compilation.Symbol;
 using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Diagnostics;
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Node;
@@ -64,8 +65,8 @@ public class DeclarationBuilder(
 
     public DeclarationScope? FindScope(LuaSyntaxNode element)
     {
-        LuaSyntaxElement? cur = element;
-        while (cur != null)
+        var cur = element.Iter;
+        while (cur.IsValid)
         {
             if (_scopeOwners.TryGetValue(cur.UniqueId, out var scope))
             {
@@ -105,46 +106,46 @@ public class DeclarationBuilder(
         AnalyzeContext.UnResolves.Add(declaration);
     }
 
-    public void PushScope(LuaSyntaxElement element)
+    public void PushScope(SyntaxIterator it)
     {
-        if (_scopeOwners.TryGetValue(element.UniqueId, out var scope))
+        if (_scopeOwners.TryGetValue(it.UniqueId, out var scope))
         {
             _scopeStack.Push(scope);
             _curScope = scope;
             return;
         }
 
-        var position = element.Position;
-        switch (element)
+        var position = it.Position;
+        switch (it.Kind)
         {
-            case LuaLocalStatSyntax:
+            case LuaSyntaxKind.LocalStat:
             {
-                SetScope(new LocalStatDeclarationScope(position, [], _curScope), element);
+                SetScope(new LocalStatDeclarationScope(position, [], _curScope), it);
                 break;
             }
-            case LuaRepeatStatSyntax:
+            case LuaSyntaxKind.RepeatStat:
             {
-                SetScope(new RepeatStatDeclarationScope(position, [], _curScope), element);
+                SetScope(new RepeatStatDeclarationScope(position, [], _curScope), it);
                 break;
             }
-            case LuaForRangeStatSyntax:
+            case LuaSyntaxKind.ForRangeStat:
             {
-                SetScope(new ForRangeStatDeclarationScope(position, [], _curScope), element);
+                SetScope(new ForRangeStatDeclarationScope(position, [], _curScope), it);
                 break;
             }
             default:
             {
-                SetScope(new DeclarationScope(position, [], _curScope), element);
+                SetScope(new DeclarationScope(position, [], _curScope), it);
                 break;
             }
         }
     }
 
-    private void SetScope(DeclarationScope scope, LuaSyntaxElement element)
+    private void SetScope(DeclarationScope scope, SyntaxIterator it)
     {
         _scopeStack.Push(scope);
         _topScope ??= scope;
-        _scopeOwners.Add(element.UniqueId, scope);
+        _scopeOwners.Add(it.UniqueId, scope);
         _curScope?.Add(scope);
         _curScope = scope;
     }

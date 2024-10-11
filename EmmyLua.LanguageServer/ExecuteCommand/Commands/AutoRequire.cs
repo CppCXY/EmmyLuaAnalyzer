@@ -113,7 +113,7 @@ public class AutoRequire : ICommandBase
         }
         else if (stat is LuaCallStatSyntax callStat)
         {
-            if (callStat.Expr is LuaCallExprSyntax { Name: { } name } && features.RequireLikeFunction.Contains(name))
+            if (callStat.CallExpr is LuaCallExprSyntax { Name: { } name } && features.RequireLikeFunction.Contains(name))
             {
                 return true;
             }

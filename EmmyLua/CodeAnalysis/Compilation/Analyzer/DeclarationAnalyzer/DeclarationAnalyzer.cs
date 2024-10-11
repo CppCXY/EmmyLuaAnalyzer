@@ -8,8 +8,7 @@ public class DeclarationAnalyzer(LuaCompilation compilation) : LuaAnalyzer(compi
         {
             var builder = new DeclarationBuilder(document, Compilation, analyzeContext);
             var walker = new DeclarationWalker.DeclarationWalker(builder, Compilation);
-            document.SyntaxTree.SyntaxRoot.Accept(walker);
-            walker.FinishAttachedAnalyze();
+            walker.Walk(document.SyntaxTree.SyntaxRoot);
 
             var tree = builder.Build();
             if (tree is not null)

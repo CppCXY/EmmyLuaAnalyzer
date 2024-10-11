@@ -1,6 +1,7 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type;
 using EmmyLua.CodeAnalysis.Compilation.Type.TypeInfo;
 using EmmyLua.CodeAnalysis.Compilation.Type.Types;
+using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
@@ -10,9 +11,10 @@ public partial class DeclarationWalker
 {
     private void AnalyzeTypeOperator(LuaTypeInfo luaTypeInfo, LuaNamedType namedType, LuaDocTagSyntax typeTag)
     {
-        foreach (var operatorSyntax in typeTag.NextOfType<LuaDocTagOperatorSyntax>())
+        foreach (var it in typeTag.Iter.NextOf(it=>it.Kind == LuaSyntaxKind.DocOperator))
         {
-            switch (operatorSyntax.Operator?.RepresentText)
+            var operatorSyntax = it.ToNode<LuaDocTagOperatorSyntax>();
+            switch (operatorSyntax?.Operator?.RepresentText)
             {
                 case "add":
                 {
@@ -113,20 +115,20 @@ public partial class DeclarationWalker
         }
 
         // var overloads = new List<LuaTypeInfo.OverloadStub>();
-        foreach (var overloadSyntax in typeTag.NextOfType<LuaDocTagOverloadSyntax>())
+        foreach (var overloadSyntax in typeTag.Iter.NextOf(it=>it.Kind == LuaSyntaxKind.DocOverload))
         {
-            if (overloadSyntax.TypeFunc is { UniqueId: { } id })
-            {
-                // var unResolved = new UnResolvedDocOperator(
-                //     luaTypeInfo,
-                //     namedType,
-                //     TypeOperatorKind.Call,
-                //     id,
-                //     [new(id)],
-                //     ResolveState.UnResolvedType
-                // );
-                // declarationContext.AddUnResolved(unResolved);
-            }
+            // if (overloadSyntax.TypeFunc is { UniqueId: { } id })
+            // {
+            //     // var unResolved = new UnResolvedDocOperator(
+            //     //     luaTypeInfo,
+            //     //     namedType,
+            //     //     TypeOperatorKind.Call,
+            //     //     id,
+            //     //     [new(id)],
+            //     //     ResolveState.UnResolvedType
+            //     // );
+            //     // declarationContext.AddUnResolved(unResolved);
+            // }
         }
     }
 
