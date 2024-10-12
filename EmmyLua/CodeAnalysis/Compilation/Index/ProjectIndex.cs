@@ -15,15 +15,15 @@ public class ProjectIndex
 {
     private Dictionary<LuaDocumentId, LuaType> ModuleTypes { get; } = new();
 
-    private Dictionary<LuaDocumentId, List<LuaElementPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
+    private Dictionary<LuaDocumentId, List<LuaPtr<LuaExprSyntax>>> ModuleReturns { get; } = new();
 
-    private MultiIndex<string, LuaElementPtr<LuaNameExprSyntax>> NameExpr { get; } = new();
+    private MultiIndex<string, LuaPtr<LuaNameExprSyntax>> NameExpr { get; } = new();
 
-    private MultiIndex<string, LuaElementPtr<LuaIndexExprSyntax>> MultiIndexExpr { get; } = new();
+    private MultiIndex<string, LuaPtr<LuaIndexExprSyntax>> MultiIndexExpr { get; } = new();
 
-    private MultiIndex<string, LuaElementPtr<LuaTableFieldSyntax>> TableField { get; } = new();
+    private MultiIndex<string, LuaPtr<LuaTableFieldSyntax>> TableField { get; } = new();
 
-    private MultiIndex<string, LuaElementPtr<LuaDocNameTypeSyntax>> NameType { get; } = new();
+    private MultiIndex<string, LuaPtr<LuaDocNameTypeSyntax>> NameType { get; } = new();
 
     private InFileIndex<SyntaxElementId, List<LuaReference>> InFiledReferences { get; } = new();
 
@@ -199,12 +199,12 @@ public class ProjectIndex
         }
     }
 
-    public IEnumerable<LuaElementPtr<LuaDocNameTypeSyntax>> QueryAllNamedType()
+    public IEnumerable<LuaPtr<LuaDocNameTypeSyntax>> QueryAllNamedType()
     {
         return NameType.QueryAll();
     }
 
-    public IEnumerable<LuaElementPtr<LuaExprSyntax>> QueryModuleReturns(LuaDocumentId documentId)
+    public IEnumerable<LuaPtr<LuaExprSyntax>> QueryModuleReturns(LuaDocumentId documentId)
     {
         return ModuleReturns.GetValueOrDefault(documentId) ?? [];
     }

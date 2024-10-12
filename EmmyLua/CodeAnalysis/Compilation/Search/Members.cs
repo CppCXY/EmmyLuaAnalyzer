@@ -263,7 +263,7 @@ public class Members(SearchContext context)
                     var namedType = new LuaNamedType(LuaDocumentId.VirtualDocumentId,
                         $"{namespaceString.Content}.{namespaceOrTypeInfo.Name}");
                     namespaces.Add(new LuaSymbol(namespaceOrTypeInfo.Name, namedType, new NamedTypeInfo(
-                        new LuaElementPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Id),
+                        new LuaPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Id),
                         namespaceOrTypeInfo.Kind
                     )));
                 }

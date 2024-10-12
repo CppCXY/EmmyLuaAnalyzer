@@ -18,12 +18,11 @@ public class TypeContext(LuaCompilation compilation, LuaDocument document)
 
     private Dictionary<SyntaxElementId, SyntaxElementId> GenericEffectRanges { get; } = new();
 
-    public LuaType? FindType(string name, LuaCommentSyntax comment)
+    public LuaType? FindType(string name, SyntaxElementId commentId)
     {
-        var id = comment.UniqueId;
-        if (!GenericNames.TryGetValue(id, out var names))
+        if (!GenericNames.TryGetValue(commentId, out var names))
         {
-            var sourceId = GenericEffectRanges.GetValueOrDefault(id);
+            var sourceId = GenericEffectRanges.GetValueOrDefault(commentId);
             if (!GenericNames.TryGetValue(sourceId, out names))
             {
                 return FindDefinedType(name);

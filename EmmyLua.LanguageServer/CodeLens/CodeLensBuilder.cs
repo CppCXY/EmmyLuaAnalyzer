@@ -71,7 +71,7 @@ public class CodeLensBuilder
     private Framework.Protocol.Message.CodeLens.CodeLens ResolveUsage(
         Framework.Protocol.Message.CodeLens.CodeLens codeLens, string uniqueIdString, ServerContext context)
     {
-        var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
+        var ptr = LuaPtr<LuaSyntaxElement>.From(uniqueIdString);
         if (ptr.DocumentId is { } documentId)
         {
             if (ptr.ToNode(context.LuaProject) is LuaFuncStatSyntax
@@ -98,7 +98,7 @@ public class CodeLensBuilder
     private  Framework.Protocol.Message.CodeLens.CodeLens ResolveImplement(
         Framework.Protocol.Message.CodeLens.CodeLens codeLens, string uniqueIdString, ServerContext context)
     {
-        var ptr = LuaElementPtr<LuaSyntaxElement>.From(uniqueIdString);
+        var ptr = LuaPtr<LuaSyntaxElement>.From(uniqueIdString);
         if (ptr.DocumentId is { } documentId)
         {
             if (ptr.ToNode(context.LuaProject) is LuaFuncStatSyntax

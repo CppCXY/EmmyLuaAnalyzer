@@ -1,17 +1,18 @@
 ﻿using EmmyLua.CodeAnalysis.Compilation.Type.Types;
 using EmmyLua.CodeAnalysis.Compile.Kind;
 using EmmyLua.CodeAnalysis.Diagnostics;
+using EmmyLua.CodeAnalysis.Syntax.Node;
 using EmmyLua.CodeAnalysis.Syntax.Node.SyntaxNodes;
 
 namespace EmmyLua.CodeAnalysis.Compilation.Type.Compile;
 
-public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
+public class TypeCompiler(SyntaxElementId commentId, TypeContext context)
 {
     private Stack<LuaType> Stack { get; } = new();
 
-    public static void Compile(LuaDocTypeSyntax typeSyntax, LuaCommentSyntax commentSyntax, TypeContext context)
+    public static void Compile(LuaDocTypeSyntax typeSyntax, SyntaxElementId commentId, TypeContext context)
     {
-        var compiler = new TypeCompiler(commentSyntax, context);
+        var compiler = new TypeCompiler(commentId, context);
         try
         {
             compiler.CompileType(typeSyntax);
@@ -141,7 +142,7 @@ public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
     {
         if (luaDocVariadicTypeSyntax.Name?.RepresentText is { } name)
         {
-            var type = context.FindType(name, commentSyntax);
+            var type = context.FindType(name, commentId);
             if (type is null)
             {
                 throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type not found",
@@ -183,7 +184,7 @@ public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
     {
         if (luaDocExpandTypeSyntax.Name?.RepresentText is { } name)
         {
-            var type = context.FindType(name, commentSyntax);
+            var type = context.FindType(name, commentId);
             if (type is not LuaTplType)
             {
                 throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type is not a template type",
@@ -359,7 +360,7 @@ public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
     {
         if (luaDocStringTemplateTypeSyntax is { TemplateName.Name: { } templateName })
         {
-            var type = context.FindType(templateName, commentSyntax);
+            var type = context.FindType(templateName, commentId);
             if (type is not LuaTplType)
             {
                 throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type is not a template type",
@@ -486,7 +487,7 @@ public class TypeCompiler(LuaCommentSyntax commentSyntax, TypeContext context)
     {
         if (nameTypeSyntax.Name?.RepresentText is { } name)
         {
-            var type = context.FindType(name, commentSyntax);
+            var type = context.FindType(name, commentId);
             if (type is null)
             {
                 throw new LuaTypeCompilationCancel(DiagnosticCode.TypeNotFound, "Type not found",

@@ -9,7 +9,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Analyzer.DeclarationAnalyzer.Declarat
 
 public partial class DeclarationWalker
 {
-    private Dictionary<SyntaxElementId, List<LuaElementPtr<LuaDocTagSyntax>>> _attachedDocs = new();
+    private Dictionary<SyntaxElementId, List<LuaPtr<LuaDocTagSyntax>>> _attachedDocs = new();
 
     private Dictionary<SyntaxElementId, List<LuaType>> _attachedTypes = new();
 
@@ -20,7 +20,7 @@ public partial class DeclarationWalker
         {
             if (_attachedDocs.TryGetValue(commentIt.UniqueId, out var list))
             {
-                list.Add(new LuaElementPtr<LuaDocTagSyntax>(docTagSyntax));
+                list.Add(new LuaPtr<LuaDocTagSyntax>(docTagSyntax));
             }
             else
             {
@@ -220,14 +220,12 @@ public partial class DeclarationWalker
         return null;
     }
 
-    private List<LuaDocTagSyntax> FindAttachedDoc(LuaSyntaxElement? element)
+    private List<LuaDocTagSyntax> FindAttachedDoc(LuaSyntaxElement element)
     {
-        while (element is not null && element is not ICommentOwner)
-        {
-            element = element.Iter.Parent.ToElement();
-        }
+        var elementIt = element.Iter;
+        var commentOwnerIt = elementIt.AncestorsAndSelf.FirstOrDefault(it => LuaCommentSyntax.CanOwner(it.Kind));
 
-        if (element is ICommentOwner commentOwner)
+        if (commentOwnerIt.IsValid && commentOwnerIt.ToElement() is ICommentOwner commentOwner)
         {
             return commentOwner.Comments.SelectMany(it => it.DocList).ToList();
         }

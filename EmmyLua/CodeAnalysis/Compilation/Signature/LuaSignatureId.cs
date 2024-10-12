@@ -15,7 +15,7 @@ public readonly record struct LuaSignatureId(SyntaxElementId Id)
         return new LuaSignatureId(docFuncType.UniqueId);
     }
 
-    public LuaElementPtr<LuaClosureExprSyntax> ClosurePtr => new(Id);
+    public LuaPtr<LuaClosureExprSyntax> ClosurePtr => new(Id);
 
-    public LuaElementPtr<LuaDocFuncTypeSyntax> DocFuncTypePtr => new(Id);
+    public LuaPtr<LuaDocFuncTypeSyntax> DocFuncTypePtr => new(Id);
 }

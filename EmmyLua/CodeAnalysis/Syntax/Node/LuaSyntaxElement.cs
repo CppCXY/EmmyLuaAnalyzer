@@ -2,7 +2,6 @@
 using EmmyLua.CodeAnalysis.Document;
 using EmmyLua.CodeAnalysis.Syntax.Tree;
 
-
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
 public class LuaSyntaxElement(int index, LuaSyntaxTree tree)
@@ -32,6 +31,8 @@ public class LuaSyntaxElement(int index, LuaSyntaxTree tree)
     }
 
     public SyntaxIterator Iter => new(ElementId, Tree);
+
+    public LuaPtr<T> ToPtr<T>() where T : LuaSyntaxNode => new(UniqueId);
 
     public LuaSyntaxNode? Parent => Tree.GetElement(Tree.GetParent(ElementId)) as LuaSyntaxNode;
 }

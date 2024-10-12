@@ -2,4 +2,4 @@
 
 namespace EmmyLua.CodeAnalysis.Compilation.Reference;
 
-public record struct LuaReference(LuaElementPtr<LuaSyntaxElement> Ptr, ReferenceKind Kind);
+public record struct LuaReference(LuaPtr<LuaSyntaxElement> Ptr, ReferenceKind Kind);

@@ -8,8 +8,8 @@ public static class BinderAnalyzer
 {
     public static void Analyze(LuaSyntaxElement root, LuaSyntaxTree tree)
     {
-        Dictionary<SyntaxElementId, LuaElementPtr<LuaSyntaxElement>> commentOwners = new();
-        Dictionary<SyntaxElementId, List<LuaElementPtr<LuaCommentSyntax>>> comments = new();
+        Dictionary<SyntaxElementId, LuaPtr<LuaSyntaxElement>> commentOwners = new();
+        Dictionary<SyntaxElementId, List<LuaPtr<LuaCommentSyntax>>> comments = new();
 
         foreach (var it in root.Iter.DescendantsOfKind(LuaSyntaxKind.Comment))
         {

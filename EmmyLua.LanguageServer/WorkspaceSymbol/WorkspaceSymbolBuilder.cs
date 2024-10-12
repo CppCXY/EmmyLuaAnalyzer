@@ -30,7 +30,7 @@ public class WorkspaceSymbolBuilder
                         var document = luaProject.GetDocument(elementId.DocumentId);
                         if (document is not null)
                         {
-                            var ptr = new LuaElementPtr<LuaSyntaxElement>(elementId);
+                            var ptr = new LuaPtr<LuaSyntaxElement>(elementId);
                             if (ptr.ToNode(document) is { } node)
                             {
                                 var location = node.Location.ToLspLocation();

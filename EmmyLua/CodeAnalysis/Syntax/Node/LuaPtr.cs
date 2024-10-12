@@ -5,10 +5,10 @@ using EmmyLua.CodeAnalysis.Workspace;
 
 namespace EmmyLua.CodeAnalysis.Syntax.Node;
 
-public readonly record struct LuaElementPtr<TNode>(SyntaxElementId UniqueId)
+public readonly record struct LuaPtr<TNode>(SyntaxElementId UniqueId)
     where TNode : LuaSyntaxElement
 {
-    public static readonly LuaElementPtr<TNode> Empty = new(SyntaxElementId.Empty);
+    public static readonly LuaPtr<TNode> Empty = new(SyntaxElementId.Empty);
 
     public SyntaxElementId UniqueId { get; } = UniqueId;
 
@@ -16,12 +16,12 @@ public readonly record struct LuaElementPtr<TNode>(SyntaxElementId UniqueId)
 
     public int ElementId => UniqueId.ElementId;
 
-    public static LuaElementPtr<TNode> From(string idString)
+    public static LuaPtr<TNode> From(string idString)
     {
-        return new LuaElementPtr<TNode>(SyntaxElementId.From(idString));
+        return new LuaPtr<TNode>(SyntaxElementId.From(idString));
     }
 
-    public LuaElementPtr(TNode syntaxNode) : this(syntaxNode.UniqueId)
+    public LuaPtr(TNode syntaxNode) : this(syntaxNode.UniqueId)
     {
     }
 
@@ -51,15 +51,20 @@ public readonly record struct LuaElementPtr<TNode>(SyntaxElementId UniqueId)
         return ToNode(compilation.Project);
     }
 
-    public LuaElementPtr<TBaseNode> Cast<TBaseNode>()
-        where TBaseNode : LuaSyntaxNode
+    public SyntaxIterator ToIter(LuaDocument document)
     {
-        return new LuaElementPtr<TBaseNode>(UniqueId);
+        return new(ElementId, document.SyntaxTree);
     }
 
-    public LuaElementPtr<LuaSyntaxElement> UpCast()
+    public LuaPtr<TBaseNode> Cast<TBaseNode>()
+        where TBaseNode : LuaSyntaxNode
     {
-        return new LuaElementPtr<LuaSyntaxElement>(UniqueId);
+        return new LuaPtr<TBaseNode>(UniqueId);
+    }
+
+    public LuaPtr<LuaSyntaxElement> UpCast()
+    {
+        return new LuaPtr<LuaSyntaxElement>(UniqueId);
     }
 
     // same as unique id

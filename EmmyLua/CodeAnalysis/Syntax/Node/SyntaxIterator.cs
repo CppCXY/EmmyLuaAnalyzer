@@ -29,9 +29,9 @@ public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
 
     public SyntaxIterator Default => new(-1, tree);
 
-    public LuaElementPtr<LuaSyntaxElement> ToPtr() => new(UniqueId);
+    public LuaPtr<LuaSyntaxElement> ToPtr() => new(UniqueId);
 
-    public LuaElementPtr<T> ToPtr<T>() where T : LuaSyntaxElement => new(UniqueId);
+    public LuaPtr<T> ToPtr<T>() where T : LuaSyntaxElement => new(UniqueId);
 
     public SourceRange Range => tree.GetSourceRange(index);
 
@@ -159,6 +159,20 @@ public readonly struct SyntaxIterator(int index, LuaSyntaxTree tree)
     {
         get
         {
+            var parent = ParentIndex;
+            while (parent != -1)
+            {
+                yield return new SyntaxIterator(parent, tree);
+                parent = tree.GetParent(parent);
+            }
+        }
+    }
+
+    public IEnumerable<SyntaxIterator> AncestorsAndSelf
+    {
+        get
+        {
+            yield return this;
             var parent = ParentIndex;
             while (parent != -1)
             {

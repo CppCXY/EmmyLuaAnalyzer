@@ -159,7 +159,7 @@ public partial class DeclarationWalker
                 {
                     var valueExprPtr = (idx == 0 && expr is not null)
                         ? new(expr)
-                        : LuaElementPtr<LuaExprSyntax>.Empty;
+                        : LuaPtr<LuaExprSyntax>.Empty;
                     var declaration = new LuaSymbol(
                         name,
                         type,

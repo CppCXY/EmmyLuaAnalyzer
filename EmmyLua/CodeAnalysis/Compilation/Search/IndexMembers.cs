@@ -283,7 +283,7 @@ public class IndexMembers(SearchContext context)
                 var namedType = new LuaNamedType(LuaDocumentId.VirtualDocumentId,
                     $"{namespaceString.Content}.{name}");
                 return new LuaSymbol(name, namedType, new NamedTypeInfo(
-                    new LuaElementPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Value.Id),
+                    new LuaPtr<LuaDocTagNamedTypeSyntax>(namespaceOrTypeInfo.Value.Id),
                     namespaceOrTypeInfo.Value.Kind
                 ));
             }

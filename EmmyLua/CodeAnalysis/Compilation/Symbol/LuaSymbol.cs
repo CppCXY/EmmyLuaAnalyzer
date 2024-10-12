@@ -10,7 +10,7 @@ namespace EmmyLua.CodeAnalysis.Compilation.Symbol;
 
 public interface ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr { get; }
+    public LuaPtr<LuaSyntaxElement> Ptr { get; }
 };
 
 [Flags]
@@ -209,124 +209,124 @@ public class LuaSymbol(
 }
 
 public record LocalInfo(
-    LuaElementPtr<LuaLocalNameSyntax> LocalNamePtr,
+    LuaPtr<LuaLocalNameSyntax> LocalNamePtr,
     bool IsConst = false,
     bool IsClose = false
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => LocalNamePtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => LocalNamePtr.UpCast();
 }
 
 public record GlobalInfo(
-    LuaElementPtr<LuaNameExprSyntax> VarNamePtr
+    LuaPtr<LuaNameExprSyntax> VarNamePtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => VarNamePtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => VarNamePtr.UpCast();
 }
 
 public record ParamInfo(
-    LuaElementPtr<LuaSyntaxElement> Ptr,
+    LuaPtr<LuaSyntaxElement> Ptr,
     bool IsVararg,
     bool Nullable = false
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaParamDefSyntax> ParamDefPtr => Ptr.Cast<LuaParamDefSyntax>();
+    public LuaPtr<LuaParamDefSyntax> ParamDefPtr => Ptr.Cast<LuaParamDefSyntax>();
 
-    public LuaElementPtr<LuaDocTypedParamSyntax> TypedParamPtr => Ptr.Cast<LuaDocTypedParamSyntax>();
+    public LuaPtr<LuaDocTypedParamSyntax> TypedParamPtr => Ptr.Cast<LuaDocTypedParamSyntax>();
 }
 
 public record MethodInfo(
-    LuaElementPtr<LuaSyntaxElement> Ptr,
-    LuaElementPtr<LuaFuncStatSyntax> FuncStatPtr
+    LuaPtr<LuaSyntaxElement> Ptr,
+    LuaPtr<LuaFuncStatSyntax> FuncStatPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaNameExprSyntax> NamePtr => Ptr.Cast<LuaNameExprSyntax>();
+    public LuaPtr<LuaNameExprSyntax> NamePtr => Ptr.Cast<LuaNameExprSyntax>();
 
-    public LuaElementPtr<LuaIndexExprSyntax> IndexPtr => Ptr.Cast<LuaIndexExprSyntax>();
+    public LuaPtr<LuaIndexExprSyntax> IndexPtr => Ptr.Cast<LuaIndexExprSyntax>();
 
-    public LuaElementPtr<LuaLocalNameSyntax> LocalPtr => Ptr.Cast<LuaLocalNameSyntax>();
+    public LuaPtr<LuaLocalNameSyntax> LocalPtr => Ptr.Cast<LuaLocalNameSyntax>();
 }
 
 public record NamedTypeInfo(
-    LuaElementPtr<LuaDocTagNamedTypeSyntax> TypeDefinePtr,
+    LuaPtr<LuaDocTagNamedTypeSyntax> TypeDefinePtr,
     NamedTypeKind Kind)
     : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => TypeDefinePtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => TypeDefinePtr.UpCast();
 }
 
 public record DocFieldInfo(
-    LuaElementPtr<LuaDocFieldSyntax> FieldDefPtr
+    LuaPtr<LuaDocFieldSyntax> FieldDefPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => FieldDefPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => FieldDefPtr.UpCast();
 }
 
 public record TableFieldInfo(
-    LuaElementPtr<LuaTableFieldSyntax> TableFieldPtr
+    LuaPtr<LuaTableFieldSyntax> TableFieldPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => TableFieldPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => TableFieldPtr.UpCast();
 }
 
 public record EnumFieldInfo(
-    LuaElementPtr<LuaDocTagEnumFieldSyntax> EnumFieldDefPtr
+    LuaPtr<LuaDocTagEnumFieldSyntax> EnumFieldDefPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => EnumFieldDefPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => EnumFieldDefPtr.UpCast();
 }
 
 public record GenericParamInfo(
-    LuaElementPtr<LuaDocGenericParamSyntax> GenericParamDefPtr
+    LuaPtr<LuaDocGenericParamSyntax> GenericParamDefPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => GenericParamDefPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => GenericParamDefPtr.UpCast();
 }
 
 public record IndexInfo(
-    LuaElementPtr<LuaIndexExprSyntax> IndexExprPtr,
-    LuaElementPtr<LuaExprSyntax> ValueExprPtr
+    LuaPtr<LuaIndexExprSyntax> IndexExprPtr,
+    LuaPtr<LuaExprSyntax> ValueExprPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => IndexExprPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => IndexExprPtr.UpCast();
 }
 
 public record TypeIndexInfo(
     LuaType KeyType,
     LuaType ValueType,
-    LuaElementPtr<LuaDocFieldSyntax> FieldDefPtr)
+    LuaPtr<LuaDocFieldSyntax> FieldDefPtr)
     : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => FieldDefPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => FieldDefPtr.UpCast();
 }
 
 public record TypeOpInfo(
-    LuaElementPtr<LuaDocTagOperatorSyntax> OpFieldPtr
+    LuaPtr<LuaDocTagOperatorSyntax> OpFieldPtr
 ) : ISymbolInfo
 {
-    public LuaElementPtr<LuaSyntaxElement> Ptr => OpFieldPtr.UpCast();
+    public LuaPtr<LuaSyntaxElement> Ptr => OpFieldPtr.UpCast();
 }
 
 // public record TupleMemberInfo(
 //     int Index,
-//     LuaElementPtr<LuaDocTypeSyntax> TypePtr)
+//     LuaPtr<LuaDocTypeSyntax> TypePtr)
 //     : ISymbolInfo
 // {
-//     public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
+//     public LuaPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
 // }
 //
 // public record AggregateMemberInfo(
-//     LuaElementPtr<LuaDocTypeSyntax> TypePtr
+//     LuaPtr<LuaDocTypeSyntax> TypePtr
 // ) : ISymbolInfo
 // {
-//     public LuaElementPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
+//     public LuaPtr<LuaSyntaxElement> Ptr => TypePtr.UpCast();
 // }
 
 public record VirtualInfo : ISymbolInfo
 {
     private static VirtualInfo Default { get; } = new();
 
-    public LuaElementPtr<LuaSyntaxElement> Ptr => LuaElementPtr<LuaSyntaxElement>.Empty;
+    public LuaPtr<LuaSyntaxElement> Ptr => LuaPtr<LuaSyntaxElement>.Empty;
 
     public static LuaSymbol CreateVirtualSymbol(string name, LuaType? type, SymbolFeature feature = SymbolFeature.None,
         SymbolVisibility visibility = SymbolVisibility.Public)
