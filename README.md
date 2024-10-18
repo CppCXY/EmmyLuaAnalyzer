@@ -1,5 +1,9 @@
 # EmmyLuaAnalyzer
 
+## Migrate
+
+I plan to rewrite the language server in Rust. see: https://github.com/CppCXY/emmylua-analyzer-rust
+
 ## Introduction
 
 The EmmyLuaAnalyzer project is a static analyzer and language service for the Lua language implemented in C#. It mainly consists of two parts:
@@ -11,7 +15,6 @@ The EmmyLuaAnalyzer project is a static analyzer and language service for the Lu
 - Supports mainstream Lua versions, including Lua 5.1, Lua 5.2, Lua 5.3, Lua 5.4, LuaJIT.
 - Supports EmmyLua Doc comments and is compatible with the Doc format of Lua-Language-Server (abbreviated as LuaLs).
 - Supports all language service features (not all are supported yet, currently supports the main ones that will be used).
-- Formatting is not supported yet (EmmyLuaCodeStyle, which I also wrote, has its own independent language service).
 
 ## Documentation
 

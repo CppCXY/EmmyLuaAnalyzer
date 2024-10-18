@@ -38,7 +38,7 @@ jobs:
     - name: Build-Maxos
       if: matrix.target == 'osx-arm64' || matrix.target == 'osx-x64'
       run: |
-        dotnet publish EmmyLua.LanguageServer -r osx-arm64 -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
+        dotnet publish EmmyLua.LanguageServer -r ${{ matrix.target }} -c Release -o ${{ github.workspace }}/artifact/ --sc /p:DebugType=None
         rm -rf ${{ github.workspace }}/artifact/EmmyLua.LanguageServer.dSYM
     - name: Upload
       uses: actions/upload-artifact@v3
